@@ -1,0 +1,173 @@
+definitions:
+  app.UserDTO:
+    properties:
+      account:
+        type: string
+      avatar_id:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+    type: object
+  controller.userBasicInfoUpdateRequest:
+    properties:
+      avatar_id:
+        type: string
+      bio:
+        type: string
+    type: object
+  controller.userDetail:
+    properties:
+      account:
+        type: string
+      avatar_id:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_follower:
+        type: boolean
+      points:
+        type: integer
+    type: object
+  session.SessionDTO:
+    properties:
+      email:
+        type: string
+      info:
+        type: string
+      user_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/login:
+    get:
+      consumes:
+      - application/json
+      description: callback of authentication by authing
+      parameters:
+      - description: authing code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: redirect uri
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.UserDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+        "501":
+          description: Not Implemented
+          schema:
+            type: duplicate_creating
+      tags:
+      - Login
+  /v1/logout:
+    get:
+      consumes:
+      - application/json
+      description: get info of login
+      parameters:
+      - description: account
+        in: path
+        name: account
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/session.SessionDTO'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      tags:
+      - Login
+  /v1/user:
+    get:
+      consumes:
+      - application/json
+      description: get user
+      parameters:
+      - description: account
+        in: query
+        name: account
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.userDetail'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: resource_not_exists
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      summary: Get
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: update user basic info
+      parameters:
+      - description: body of updating user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.userBasicInfoUpdateRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Update
+      tags:
+      - User
+  /v1/user/check_email:
+    get:
+      consumes:
+      - application/json
+      description: check user email
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            type: "no"
+      tags:
+      - User
+swagger: "2.0"

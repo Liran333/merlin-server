@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: redis
+    entrypoint:
+    - "/usr/local/bin/redis-server"
+    - --requirepass merlin
+  db:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: merlin
+      MONGO_INITDB_ROOT_PASSWORD: merlin
+  server:
+    build: .
+    depends_on:
+    - redis
+    - db
+    entrypoint:
+      - /home/openmerlin/merlin-server
+      - --config-file
+      - /home/openmerlin/config.yml
+      - --enable_debug
+      - "true"
+      - --rm-cfg
+      - "false"
+    volumes:
+      - ./compose-config.yml:/home/openmerlin/config.yml:ro
+    expose:
+    - 8888
