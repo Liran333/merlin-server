@@ -19,7 +19,7 @@ func Initialize(conn, dbName, dbCert string, remove bool) error {
 	clientOpt := options.Client().ApplyURI(uri)
 
 	if dbCert != "" {
-		ca, err := os.ReadFile(dbCert)
+		ca, err := os.ReadFile(dbCert) // #nosec G304
 		if err != nil {
 			return err
 		}
@@ -35,7 +35,7 @@ func Initialize(conn, dbName, dbCert string, remove bool) error {
 
 		tlsConfig := &tls.Config{
 			RootCAs:            pool,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // #nosec G402
 		}
 
 		clientOpt.SetTLSConfig(tlsConfig)

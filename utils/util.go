@@ -17,7 +17,7 @@ const (
 )
 
 func LoadFromYaml(path string, cfg interface{}) error {
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return err
 	}

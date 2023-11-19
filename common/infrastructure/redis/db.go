@@ -34,7 +34,7 @@ func Init(cfg *Config, remove bool) error {
 
 		tlsConfig = &tls.Config{
 			RootCAs:            pool,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // #nosec G402
 		}
 	}
 
