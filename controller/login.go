@@ -157,7 +157,7 @@ func (ctl *LoginController) newLogin(ctx *gin.Context, info login.Login) (err er
 }
 
 func (ctl *LoginController) newUser(ctx *gin.Context, info login.Login) (user userapp.UserDTO, err error) {
-	cmd := userapp.UserCreateCmd{
+	cmd := domain.UserCreateCmd{
 		Email:    info.Email,
 		Account:  info.Name,
 		Bio:      info.Bio,

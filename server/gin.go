@@ -14,12 +14,14 @@ import (
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/controller"
+	"github.com/openmerlin/merlin-server/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
 	session "github.com/openmerlin/merlin-server/session/app"
 	sessionrepo "github.com/openmerlin/merlin-server/session/infrastructure"
 
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 
@@ -67,10 +69,12 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 
 	authingUser := oidcimpl.NewAuthingUser()
 
+	git := usergit.NewUserGit(gitea.GetClient())
+
 	v1 := engine.Group(api.SwaggerInfo.BasePath)
 
 	userAppService := userapp.NewUserService(
-		user)
+		user, git)
 
 	{
 

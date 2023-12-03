@@ -9,7 +9,7 @@ import (
 func TestCreateCmdValidate(t *testing.T) {
 	validAcc, _ := domain.NewAccount("xxx")
 	validEmail, _ := domain.NewEmail("yyy")
-	tests := []UserCreateCmd{
+	tests := []domain.UserCreateCmd{
 		{},
 		{
 			Email:   validEmail,

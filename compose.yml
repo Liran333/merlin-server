@@ -4,16 +4,34 @@ services:
     entrypoint:
     - "/usr/local/bin/redis-server"
     - --requirepass merlin
+  pg:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: gitea
+      POSTGRES_USER: gitea
   db:
     image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: merlin
       MONGO_INITDB_ROOT_PASSWORD: merlin
+  gitea:
+    image: gitea/gitea:1.21.1
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    volumes:
+      - gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
   server:
     build: .
     depends_on:
     - redis
     - db
+    - gitea
     entrypoint:
       - /home/openmerlin/merlin-server
       - --config-file
@@ -24,5 +42,8 @@ services:
       - "false"
     volumes:
       - ./compose-config.yml:/home/openmerlin/config.yml:ro
-    expose:
-    - 8888
+    ports:
+    - "8888:8888"
+
+volumes:
+  gitea:

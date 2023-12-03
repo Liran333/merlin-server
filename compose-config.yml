@@ -3,6 +3,11 @@ authing:
   secret: "e292127cf0754cd9e46e823f1da0ee21"
   endpoint: "https://merlinapi.test.osinfra.cn/oneid"
 
+gitea:
+  url: http://gitea:3000
+  # need manually generate a root token and fill it here
+  token: ""
+
 mongodb:
   db_conn: "mongodb://merlin:merlin@db:27017/merlin?authSource=admin"
   db_name: "merlin"

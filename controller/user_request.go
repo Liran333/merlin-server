@@ -34,7 +34,7 @@ type userCreateRequest struct {
 	AvatarId string `json:"avatar_id"`
 }
 
-func (req *userCreateRequest) toCmd() (cmd app.UserCreateCmd, err error) {
+func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 	if cmd.Account, err = domain.NewAccount(req.Account); err != nil {
 		return
 	}

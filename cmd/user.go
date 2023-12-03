@@ -12,11 +12,13 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/config"
-	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
-	"github.com/openmerlin/merlin-server/server"
+
+	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
+	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
+	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 
 type options struct {
@@ -29,6 +31,8 @@ type ServiceOptions struct {
 	ConfigFile  string
 	GracePeriod time.Duration
 	RemoveCfg   bool
+	username    string
+	email       string
 }
 
 func (o *ServiceOptions) Validate() error {
@@ -36,15 +40,20 @@ func (o *ServiceOptions) Validate() error {
 		return fmt.Errorf("missing config-file")
 	}
 
+	if o.username == "" {
+		return fmt.Errorf("missing username")
+	}
+
+	if o.email == "" {
+		return fmt.Errorf("missing email")
+	}
 	return nil
 }
 
 func (o *ServiceOptions) AddFlags(fs *flag.FlagSet) {
-	fs.IntVar(&o.Port, "port", 8888, "Port to listen on.")
-	fs.BoolVar(&o.RemoveCfg, "rm-cfg", true, "whether remove the cfg file after initialized .")
-
 	fs.StringVar(&o.ConfigFile, "config-file", "", "Path to config file.")
-	fs.DurationVar(&o.GracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration.")
+	fs.StringVar(&o.username, "username", "", "username.")
+	fs.StringVar(&o.email, "email", "", "email.")
 }
 
 func (o *options) Validate() error {
@@ -67,8 +76,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) (options, error) {
 }
 
 func main() {
-	logrusutil.ComponentInit("merlin")
-	log := logrus.NewEntry(logrus.StandardLogger())
+	logrusutil.ComponentInit("admin")
 
 	o, err := gatherOptions(
 		flag.NewFlagSet(os.Args[0], flag.ExitOnError),
@@ -94,15 +102,10 @@ func main() {
 		logrus.Fatalf("load config, err:%s", err.Error())
 	}
 
+	collections := &cfg.Mongodb.Collections
+
 	// authing
 	oidcimpl.Init(&cfg.Authing)
-
-	// controller
-	api := &cfg.API
-
-	if err := controller.Init(api, log); err != nil {
-		logrus.Fatalf("initialize api controller failed, err:%s", err.Error())
-	}
 
 	// mongo
 	m := &cfg.Mongodb
@@ -119,10 +122,37 @@ func main() {
 	// user
 	domain.Init(&cfg.User)
 
+	fmt.Printf("gitea: %+v", cfg.Git)
 	// gitea
 	if err := gitea.Init(&cfg.Git); err != nil {
 		logrus.Fatalf("init gitea failed, err:%s", err.Error())
 	}
-	// run
-	server.StartWebServer(o.service.Port, o.service.GracePeriod, cfg)
+
+	acc, _ := domain.NewAccount(o.service.username)
+	email, _ := domain.NewEmail(o.service.email)
+	b, _ := domain.NewBio("testb")
+	ava, _ := domain.NewAvatarId("1")
+
+	user := userrepoimpl.NewUserRepo(
+		mongodb.NewCollection(collections.User),
+	)
+
+	git := usergit.NewUserGit(gitea.GetClient())
+
+	userAppService := userapp.NewUserService(
+		user, git)
+
+	_, err = userAppService.Create(&domain.UserCreateCmd{
+		Email:   email,
+		Account: acc,
+
+		Bio:      b,
+		AvatarId: ava,
+	})
+	if err != nil {
+		logrus.Errorf("create user failed :%s", err.Error())
+	} else {
+		logrus.Info("create user successfully")
+	}
+
 }

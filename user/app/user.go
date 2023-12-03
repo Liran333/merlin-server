@@ -3,11 +3,12 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
+	"github.com/openmerlin/merlin-server/user/infrastructure/git"
 )
 
 type UserService interface {
 	// user
-	Create(*UserCreateCmd) (UserDTO, error)
+	Create(*domain.UserCreateCmd) (UserDTO, error)
 	UserInfo(domain.Account) (UserInfoDTO, error)
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) error
 	GetByAccount(domain.Account) (UserDTO, error)
@@ -17,25 +18,32 @@ type UserService interface {
 // ps: platform user service
 func NewUserService(
 	repo repository.User,
+	git git.User,
 ) UserService {
 	return userService{
 		repo: repo,
+		git:  git,
 	}
 }
 
 type userService struct {
 	repo repository.User
+	git  git.User
 }
 
-func (s userService) Create(cmd *UserCreateCmd) (dto UserDTO, err error) {
-	v := cmd.toUser()
+func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
+	v := cmd.ToUser()
 
-	// update user
+	// create user
 	u, err := s.repo.Save(&v)
 	if err != nil {
 		return
 	}
 
+	// create git user
+	if err = s.git.Create(cmd); err != nil {
+		return
+	}
 	dto = newUserDTO(&u)
 
 	return

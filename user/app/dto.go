@@ -1,50 +1,8 @@
 package app
 
 import (
-	"errors"
-
 	"github.com/openmerlin/merlin-server/user/domain"
 )
-
-// user
-type UserCreateCmd struct {
-	Email   domain.Email
-	Account domain.Account
-
-	Bio      domain.Bio
-	AvatarId domain.AvatarId
-}
-
-func (cmd *UserCreateCmd) Validate() error {
-	b := cmd.Email != nil &&
-		cmd.Account != nil
-
-	if !b {
-		return errors.New("invalid cmd of creating user")
-	}
-
-	return nil
-}
-
-func (cmd *UserCreateCmd) toUser() domain.User {
-	return domain.User{
-		Email:   cmd.Email,
-		Account: cmd.Account,
-
-		Bio:      cmd.Bio,
-		AvatarId: cmd.AvatarId,
-	}
-}
-
-func (cmd *UserCreateCmd) toUserDTO() domain.User {
-	return domain.User{
-		Email:   cmd.Email,
-		Account: cmd.Account,
-
-		Bio:      cmd.Bio,
-		AvatarId: cmd.AvatarId,
-	}
-}
 
 type UserInfoDTO struct {
 	Points int `json:"points"`
