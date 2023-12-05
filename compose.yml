@@ -15,7 +15,12 @@ services:
       MONGO_INITDB_ROOT_USERNAME: merlin
       MONGO_INITDB_ROOT_PASSWORD: merlin
   gitea:
-    image: gitea/gitea:1.21.1
+    build:
+      context: https://github.com/openmerlin/gitea.git
+      dockerfile: Dockerfile.rootless_cdn
+      args:
+        GITEA_VERSION: 1.21.1
+
     environment:
       - USER_UID=1000
       - USER_GID=1000
