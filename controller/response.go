@@ -1,7 +1,8 @@
 package controller
 
 import (
-	apperr "github.com/openmerlin/merlin-server/common/error"
+	"github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
 const (
@@ -34,7 +35,7 @@ type responseData struct {
 }
 
 func isErrorOfAccessingPrivateRepo(err error) bool {
-	_, ok := err.(apperr.ErrorPrivateRepo)
+	_, ok := err.(app.ErrorPrivateRepo)
 
 	return ok
 }
@@ -43,16 +44,25 @@ func newResponseError(err error) responseData {
 	code := errorSystemError
 
 	switch err.(type) {
-	case apperr.ErrorExceedMaxRelatedResourceNum:
+	case repository.ErrorDuplicateCreating:
+		code = errorDuplicateCreating
+
+	case repository.ErrorResourceNotExists:
+		code = errorResourceNotExists
+
+	case repository.ErrorConcurrentUpdating:
+		code = errorConcurrentUpdating
+
+	case app.ErrorExceedMaxRelatedResourceNum:
 		code = errorExccedMaxNum
 
-	case apperr.ErrorUpdateLFSFile:
+	case app.ErrorUpdateLFSFile:
 		code = errorUpdateLFSFile
 
-	case apperr.ErrorUnavailableRepoFile:
+	case app.ErrorUnavailableRepoFile:
 		code = errorUnavailableRepoFile
 
-	case apperr.ErrorPreviewLFSFile:
+	case app.ErrorPreviewLFSFile:
 		code = errorPreviewLFSFile
 
 	default:

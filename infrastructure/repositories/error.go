@@ -1,5 +1,7 @@
 package repositories
 
+import "github.com/openmerlin/merlin-server/common/domain/repository"
+
 // errorDuplicateCreating
 type errorDuplicateCreating struct {
 	error
@@ -31,4 +33,27 @@ type errorConcurrentUpdating struct {
 
 func NewErrorConcurrentUpdating(err error) errorConcurrentUpdating {
 	return errorConcurrentUpdating{err}
+}
+
+// convertError
+func ConvertError(err error) (out error) {
+	return convertError(err)
+}
+
+func convertError(err error) (out error) {
+	switch err.(type) {
+	case errorDuplicateCreating:
+		out = repository.NewErrorDuplicateCreating(err)
+
+	case errorDataNotExists:
+		out = repository.NewErrorResourceNotExists(err)
+
+	case errorConcurrentUpdating:
+		out = repository.NewErrorConcurrentUpdating(err)
+
+	default:
+		out = err
+	}
+
+	return
 }

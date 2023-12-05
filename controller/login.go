@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	login "github.com/openmerlin/merlin-server/login/domain"
 	session "github.com/openmerlin/merlin-server/session/app"
+	"github.com/sirupsen/logrus"
 
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -86,6 +87,7 @@ func (ctl *LoginController) Login(ctx *gin.Context) {
 	user, err := ctl.us.GetByAccount(info.Name)
 	if err != nil {
 		if d := newResponseError(err); d.Code != errorResourceNotExists {
+			logrus.Errorf("get user by account %s failed: code:%s err:%s", info.Name, d.Code, err)
 			ctl.sendRespWithInternalError(ctx, d)
 
 			return

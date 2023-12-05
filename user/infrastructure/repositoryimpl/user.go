@@ -48,7 +48,7 @@ func (impl *userRepoImpl) Save(u *domain.User) (r domain.User, err error) {
 
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
 	if r, _, err = impl.GetByFollower(account, nil); err != nil {
-		err = fmt.Errorf("failed to get user by account: %w", err)
+		err = repositories.ConvertError(err)
 
 		return
 	}
