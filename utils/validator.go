@@ -88,6 +88,6 @@ func isMatchRegex(pattern string, v string) bool {
 }
 
 // filter
-func XSSFilter(input string) (output string) {
+func XSSEscapeString(input string) (output string) {
 	return template.HTMLEscapeString(input)
 }

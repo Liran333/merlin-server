@@ -1,0 +1,31 @@
+package primitive
+
+import "testing"
+
+func TestMSDDescEqual(t *testing.T) {
+	var desc1 MSDDesc
+	var desc2 MSDDesc
+
+	// case1
+	if desc1 != desc2 {
+		t.Fatalf("empty interfaces should be equal")
+	}
+
+	// case2
+	desc2 = CreateMSDDesc("desc")
+	if desc1 == desc2 {
+		t.Fatalf("it should be unequal when desc1=%v, desc2=%v", desc1, desc2)
+	}
+
+	// case3
+	desc1 = CreateMSDDesc("desc")
+	if desc1 != desc2 {
+		t.Fatalf("it should be equal when desc1=%v, desc2=%v", desc1, desc2)
+	}
+
+	// case4
+	desc1 = CreateMSDDesc("abc")
+	if desc1 == desc2 {
+		t.Fatalf("it should be unequal when desc1=%v, desc2=%v", desc1, desc2)
+	}
+}

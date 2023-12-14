@@ -20,9 +20,7 @@ type oldUserTokenPayload struct {
 }
 
 func (pl *oldUserTokenPayload) DomainAccount() domain.Account {
-	a, _ := primitive.NewAccount(pl.Account)
-
-	return a
+	return primitive.CreateAccount(pl.Account)
 }
 
 func (pl *oldUserTokenPayload) isNotMe(a domain.Account) bool {

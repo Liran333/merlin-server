@@ -156,7 +156,7 @@ type Name interface {
 }
 
 func NewName(v string) (Name, error) {
-	v = utils.XSSFilter(v)
+	v = utils.XSSEscapeString(v)
 
 	if v == "" || utils.StrLen(v) > 30 {
 		return nil, errors.New("invalid name")
