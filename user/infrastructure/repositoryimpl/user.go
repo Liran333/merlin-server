@@ -10,7 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 
-	common "github.com/openmerlin/merlin-server/common/domain"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
@@ -75,7 +75,7 @@ func (impl *userRepoImpl) update(u *domain.User) (err error) {
 		)
 	}
 
-	if err = common.WithContext(f); err != nil && impl.cli.IsDocNotExists(err) {
+	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocNotExists(err) {
 		err = fmt.Errorf("concurrent updating: %w", err)
 	}
 
@@ -104,7 +104,7 @@ func (impl *userRepoImpl) insert(u *domain.User) (id string, err error) {
 		return err
 	}
 
-	if err = common.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
+	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
 		err = repositories.NewErrorDuplicateCreating(err)
 	}
 
@@ -151,7 +151,7 @@ func (impl *userRepoImpl) GetByFollower(owner, follower domain.Account) (
 		return cursor.All(ctx, &v)
 	}
 
-	if err = common.WithContext(f); err != nil {
+	if err = primitive.WithContext(f); err != nil {
 		return
 	}
 
@@ -192,7 +192,7 @@ func (impl *userRepoImpl) FindUsersInfo(accounts []domain.Account) (r []domain.U
 		)
 	}
 
-	if err := common.WithContext(f); err != nil {
+	if err := primitive.WithContext(f); err != nil {
 		err = fmt.Errorf("failed to find user info: %w", err)
 
 		return nil, err
@@ -223,7 +223,7 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.Ava
 		)
 	}
 
-	if err := common.WithContext(f); err != nil {
+	if err := primitive.WithContext(f); err != nil {
 		err = fmt.Errorf("failed to get user avatar id: %w", err)
 
 		return nil, err
@@ -277,7 +277,7 @@ func (impl *userRepoImpl) Search(opt *repository.UserSearchOption) (
 		return cursor.All(ctx, &v)
 	}
 
-	if err = common.WithContext(f); err != nil || len(v) == 0 {
+	if err = primitive.WithContext(f); err != nil || len(v) == 0 {
 		return
 	}
 
@@ -299,7 +299,7 @@ func (impl *userRepoImpl) Search(opt *repository.UserSearchOption) (
 
 	top := make([]domain.Account, n)
 	for i := range top {
-		if top[i], err = domain.NewAccount(items[i].Name); err != nil {
+		if top[i], err = primitive.NewAccount(items[i].Name); err != nil {
 			return
 		}
 	}

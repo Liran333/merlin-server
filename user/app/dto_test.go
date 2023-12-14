@@ -3,11 +3,12 @@ package app
 import (
 	"testing"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
 func TestCreateCmdValidate(t *testing.T) {
-	validAcc, _ := domain.NewAccount("xxx")
+	validAcc := primitive.CreateAccount("xxx")
 	validEmail, _ := domain.NewEmail("yyy")
 	tests := []domain.UserCreateCmd{
 		{},

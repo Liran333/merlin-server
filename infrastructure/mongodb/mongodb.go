@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openmerlin/merlin-server/common/domain"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
 var cli *client
@@ -68,7 +69,7 @@ type client struct {
 }
 
 func (cli *client) disconnect() error {
-	return domain.WithContext(cli.c.Disconnect)
+	return primitive.WithContext(cli.c.Disconnect)
 }
 
 func (cli *client) collection(name string) *mongo.Collection {

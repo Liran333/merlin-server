@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	common "github.com/openmerlin/merlin-server/common/domain"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -404,8 +404,8 @@ func (ctl *baseController) getTokenForWebsocket(ctx *gin.Context) (csrftoken str
 	return ctx.GetHeader(headerSecWebsocket)
 }
 
-func (ctl *baseController) languageRuquested(ctx *gin.Context) (common.Language, error) {
-	v := common.NewLanguage(ctx.GetHeader(headerLanguage))
+func (ctl *baseController) languageRuquested(ctx *gin.Context) (primitive.Language, error) {
+	v := primitive.NewLanguage(ctx.GetHeader(headerLanguage))
 	if v == nil {
 		return nil, errors.New("unknown language")
 	}

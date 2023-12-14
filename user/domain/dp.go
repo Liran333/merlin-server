@@ -3,11 +3,13 @@ package domain
 import (
 	"errors"
 	"net/url"
-	"strings"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
 	libutil "github.com/opensourceways/community-robot-lib/utils"
 )
+
+type Account = primitive.Account
 
 // DomainValue
 type DomainValue interface {
@@ -24,25 +26,6 @@ func IsSameDomainValue(a, b DomainValue) bool {
 	}
 
 	return false
-}
-
-// Account
-type Account interface {
-	Account() string
-}
-
-func NewAccount(v string) (Account, error) {
-	if v == "" || strings.ToLower(v) == "root" || !utils.IsUserName(v) {
-		return nil, errors.New("invalid user name")
-	}
-
-	return dpAccount(v), nil
-}
-
-type dpAccount string
-
-func (r dpAccount) Account() string {
-	return string(r)
 }
 
 // Password

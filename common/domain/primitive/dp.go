@@ -1,4 +1,4 @@
-package domain
+package primitive
 
 import (
 	"context"

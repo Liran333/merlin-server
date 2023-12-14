@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	login "github.com/openmerlin/merlin-server/login/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -95,7 +96,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	var target domain.Account
 
 	if account := ctl.getQueryParameter(ctx, "account"); account != "" {
-		v, err := domain.NewAccount(account)
+		v, err := primitive.NewAccount(account)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, newResponseCodeError(
 				errorBadRequestParam, err,

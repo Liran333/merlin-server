@@ -8,6 +8,7 @@ import (
 
 	"github.com/opensourceways/community-robot-lib/utils"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	login "github.com/openmerlin/merlin-server/login/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	serverUtils "github.com/openmerlin/merlin-server/utils"
@@ -63,7 +64,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo login.UserInfo,
 		return
 	}
 
-	if userInfo.Name, err = domain.NewAccount(v.Name); err != nil {
+	if userInfo.Name, err = primitive.NewAccount(v.Name); err != nil {
 		return
 	}
 

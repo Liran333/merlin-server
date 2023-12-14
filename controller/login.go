@@ -8,6 +8,7 @@ import (
 	session "github.com/openmerlin/merlin-server/session/app"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
@@ -19,7 +20,7 @@ type oldUserTokenPayload struct {
 }
 
 func (pl *oldUserTokenPayload) DomainAccount() domain.Account {
-	a, _ := domain.NewAccount(pl.Account)
+	a, _ := primitive.NewAccount(pl.Account)
 
 	return a
 }
@@ -186,7 +187,7 @@ func (ctl *LoginController) newUser(ctx *gin.Context, info login.Login) (user us
 // @Failure		500	system_error		system	error
 // @Router			/v1/logout [get]
 func (ctl *LoginController) Logout(ctx *gin.Context) {
-	account, err := domain.NewAccount(ctx.Param("account"))
+	account, err := primitive.NewAccount(ctx.Param("account"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
 			errorBadRequestParam, err,

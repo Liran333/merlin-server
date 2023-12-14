@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
@@ -35,7 +36,7 @@ type userCreateRequest struct {
 }
 
 func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
-	if cmd.Account, err = domain.NewAccount(req.Account); err != nil {
+	if cmd.Account, err = primitive.NewAccount(req.Account); err != nil {
 		return
 	}
 

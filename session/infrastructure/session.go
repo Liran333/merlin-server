@@ -5,7 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/openmerlin/merlin-server/common/domain"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 )
@@ -52,7 +52,7 @@ func (se sessionStore) Insert(do SessionDO) error {
 		return err
 	}
 
-	return domain.WithContext(f)
+	return primitive.WithContext(f)
 }
 
 func (se sessionStore) Get(account string) (do SessionDO, err error) {
@@ -64,7 +64,7 @@ func (se sessionStore) Get(account string) (do SessionDO, err error) {
 		)
 	}
 
-	if err = domain.WithContext(f); err == nil {
+	if err = primitive.WithContext(f); err == nil {
 		se.toSessionDO(&v, &do)
 
 		return

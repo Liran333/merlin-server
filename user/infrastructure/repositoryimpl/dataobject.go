@@ -1,6 +1,7 @@
 package repositoryimpl
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
@@ -28,7 +29,7 @@ func toUser(doc DUser, u *domain.User) (err error) {
 		return
 	}
 
-	if u.Account, err = domain.NewAccount(doc.Name); err != nil {
+	if u.Account, err = primitive.NewAccount(doc.Name); err != nil {
 		return
 	}
 
@@ -48,7 +49,7 @@ func toUser(doc DUser, u *domain.User) (err error) {
 
 func toUserInfo(doc DUser, info *domain.UserInfo) (err error) {
 
-	if info.Account, err = domain.NewAccount(doc.Name); err != nil {
+	if info.Account, err = primitive.NewAccount(doc.Name); err != nil {
 		return
 	}
 

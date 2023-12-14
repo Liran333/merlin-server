@@ -3,6 +3,7 @@ package session
 import (
 	"fmt"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	sessiondomain "github.com/openmerlin/merlin-server/session/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
@@ -57,7 +58,7 @@ type SessionDO struct {
 }
 
 func (do *SessionDO) toSession(r *sessiondomain.Session) (err error) {
-	if r.Account, err = domain.NewAccount(do.Account); err != nil {
+	if r.Account, err = primitive.NewAccount(do.Account); err != nil {
 		return
 	}
 
