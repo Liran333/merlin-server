@@ -73,7 +73,14 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 func (ctl *ModelController) Delete(ctx *gin.Context) {
 	user := middleware.UserMiddleware().GetUser(ctx)
 
-	if err := ctl.appService.Delete(user, ctx.Param("id")); err != nil {
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if err := ctl.appService.Delete(user, modelId); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
@@ -103,9 +110,16 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 		return
 	}
 
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
 	err = ctl.appService.Update(
 		middleware.UserMiddleware().GetUser(ctx),
-		ctx.Param("id"), &cmd,
+		modelId, &cmd,
 	)
 	if err != nil {
 		commonctl.SendError(ctx, err)

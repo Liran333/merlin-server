@@ -1,10 +1,13 @@
 package app
 
-import "github.com/openmerlin/merlin-server/coderepo/domain"
+import (
+	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+)
 
 type CodeRepoAppService interface {
 	Create(cmd *CmdToCreateRepo) (domain.CodeRepo, error)
-	Delete(string) error
+	Delete(primitive.Identity) error
 	Update(*domain.CodeRepo, *CmdToUpdateRepo) (bool, error)
 }
 
@@ -22,7 +25,7 @@ func (impl *codeRepoAppService) Create(cmd *CmdToCreateRepo) (domain.CodeRepo, e
 	return repo, nil
 }
 
-func (impl *codeRepoAppService) Delete(string) error {
+func (impl *codeRepoAppService) Delete(primitive.Identity) error {
 	// TODO if the repo does not exist, ignore it
 
 	return nil

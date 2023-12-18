@@ -59,5 +59,6 @@ func (c *Client) CreateUser(cmd *UserCreateCmd) (err error) {
 		Password: genPasswd(),
 	}
 	_, _, err = c.client.AdminCreateUser(o)
+
 	return
 }

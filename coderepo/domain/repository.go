@@ -5,7 +5,7 @@ import (
 )
 
 type CodeRepo struct {
-	Id         string
+	Id         primitive.Identity
 	Name       primitive.MSDName
 	Owner      primitive.Account
 	License    primitive.License

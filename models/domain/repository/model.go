@@ -42,8 +42,8 @@ type ListOption struct {
 type ModelRepositoryAdapter interface {
 	Add(*domain.Model) error
 	FindByName(primitive.Account, primitive.MSDName) (domain.Model, error)
-	FindById(string) (domain.Model, error)
-	Delete(string) error
+	FindById(primitive.Identity) (domain.Model, error)
+	Delete(primitive.Identity) error
 	Save(*domain.Model) error
 	List(*ListOption) ([]ModelSummary, int, error)
 }

@@ -58,7 +58,7 @@ type ModelDTO struct {
 
 func toModelDTO(model *domain.Model) ModelDTO {
 	dto := ModelDTO{
-		Id:            model.Id,
+		Id:            model.Id.Identity(),
 		Name:          model.Name.MSDName(),
 		Owner:         model.Owner.Account(),
 		Labels:        model.Labels,

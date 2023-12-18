@@ -16,8 +16,8 @@ var (
 
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
-	Delete(primitive.Account, string) error
-	Update(primitive.Account, string, *CmdToUpdateModel) error
+	Delete(primitive.Account, primitive.Identity) error
+	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) error
 	GetByName(primitive.Account, *ModelIndex) (ModelDTO, error)
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
@@ -46,12 +46,12 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 		UpdatedAt: now,
 	})
 
-	return coderepo.Id, err
+	return coderepo.Id.Identity(), err
 
 	// TODO send model created event in order to add activity and operation log
 }
 
-func (s *modelAppService) Delete(user primitive.Account, modelId string) error {
+func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Identity) error {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -77,7 +77,7 @@ func (s *modelAppService) Delete(user primitive.Account, modelId string) error {
 }
 
 func (s *modelAppService) Update(
-	user primitive.Account, modelId string, cmd *CmdToUpdateModel,
+	user primitive.Account, modelId primitive.Identity, cmd *CmdToUpdateModel,
 ) error {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
