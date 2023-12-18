@@ -8,8 +8,6 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-type ModelIndex = CmdToDeleteModel
-
 type CmdToCreateModel struct {
 	coderepoapp.CmdToCreateRepo
 
@@ -17,7 +15,7 @@ type CmdToCreateModel struct {
 	Fullname primitive.MSDFullname
 }
 
-type CmdToDeleteModel struct {
+type ModelIndex struct {
 	Owner primitive.Account
 	Name  primitive.MSDName
 }

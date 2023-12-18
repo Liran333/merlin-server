@@ -3,9 +3,11 @@ package allerror
 import "strings"
 
 const (
+	errorCodeNoPermission = "no_permission"
+
 	ErrorCodeModelNotFound = "model_not_found"
 
-	errorCodeNoPermission = "no_permission"
+	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 )
 
 // errorImpl

@@ -15,8 +15,11 @@ var (
 )
 
 type ModelAppService interface {
-	Create(user primitive.Account, cmd *CmdToCreateModel) (string, error)
-	Delete(user primitive.Account, cmd *CmdToDeleteModel) error
+	Create(primitive.Account, *CmdToCreateModel) (string, error)
+	Delete(primitive.Account, string) error
+	Update(primitive.Account, string, *CmdToUpdateModel) error
+	GetByName(primitive.Account, *ModelIndex) (ModelDTO, error)
+	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
 
 type modelAppService struct {
@@ -36,6 +39,7 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 
 	err = s.repoAdapter.Add(&domain.Model{
 		Desc:      cmd.Desc,
+		Labels:    []string{cmd.License.License()},
 		Fullname:  cmd.Fullname,
 		CodeRepo:  coderepo,
 		CreatedAt: now,
@@ -47,10 +51,8 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 	// TODO send model created event in order to add activity and operation log
 }
 
-func (s *modelAppService) Delete(user primitive.Account, cmd *CmdToDeleteModel) error {
-	// TODO check if can delete
-
-	model, err := s.repoAdapter.FindByName(cmd.Owner, cmd.Name)
+func (s *modelAppService) Delete(user primitive.Account, modelId string) error {
+	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -58,6 +60,8 @@ func (s *modelAppService) Delete(user primitive.Account, cmd *CmdToDeleteModel) 
 
 		return err
 	}
+
+	// TODO check if can delete
 
 	if err = s.codeRepoApp.Delete(model.Id); err != nil {
 		return err
@@ -73,11 +77,9 @@ func (s *modelAppService) Delete(user primitive.Account, cmd *CmdToDeleteModel) 
 }
 
 func (s *modelAppService) Update(
-	user primitive.Account, index *ModelIndex, cmd *CmdToUpdateModel,
+	user primitive.Account, modelId string, cmd *CmdToUpdateModel,
 ) error {
-	// TODO check if can update
-
-	model, err := s.repoAdapter.FindByName(index.Owner, index.Name)
+	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errorModelNotFound
@@ -85,6 +87,8 @@ func (s *modelAppService) Update(
 
 		return err
 	}
+
+	// TODO check if can update
 
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
@@ -117,11 +121,14 @@ func (s *modelAppService) GetByName(user primitive.Account, index *ModelIndex) (
 		return toModelDTO(&model), nil
 	}
 
+	// can't access private model anonymously
 	if user == nil {
 		return dto, errorModelNotFound
 	}
 
-	//TODO check if can get
+	if user != index.Owner {
+		//TODO check if can get
+	}
 
 	return toModelDTO(&model), nil
 }
@@ -135,12 +142,14 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 		option.Visibility = primitive.VisibilityPublic
 	} else {
 		if cmd.Owner == nil {
+			// It can list the private models of user,
+			// but it maybe no need to do it.
 			option.Visibility = primitive.VisibilityPublic
-		}
-
-		if user != cmd.Owner {
-			// TODO if user can't get, then
-			// option.Visibility = primitive.VisibilityPublic
+		} else {
+			if user != cmd.Owner {
+				// TODO if user can't get, then
+				// option.Visibility = primitive.VisibilityPublic
+			}
 		}
 	}
 
