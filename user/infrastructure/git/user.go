@@ -6,7 +6,8 @@ import (
 )
 
 type User interface {
-	Create(*domain.UserCreateCmd) error
+	Create(*domain.UserCreateCmd) (domain.User, error)
+	Delete(user *domain.User) error
 }
 
 func NewUserGit(c *git.Client) User {
@@ -17,9 +18,13 @@ type userGitImpl struct {
 	client *git.Client
 }
 
-func (u *userGitImpl) Create(cmd *domain.UserCreateCmd) error {
+func (u *userGitImpl) Create(cmd *domain.UserCreateCmd) (domain.User, error) {
 	return u.client.CreateUser(&git.UserCreateCmd{
 		Username: cmd.Account.Account(),
 		Email:    cmd.Email.Email(),
 	})
+}
+
+func (u *userGitImpl) Delete(user *domain.User) error {
+	return u.client.DeleteUser(user.Account.Account())
 }

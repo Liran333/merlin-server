@@ -20,7 +20,7 @@ func NewErrorDataNotExists(err error) errorDataNotExists {
 	return errorDataNotExists{err}
 }
 
-func isErrorDataNotExists(err error) bool {
+func IsErrorDataNotExists(err error) bool {
 	_, ok := err.(errorDataNotExists)
 
 	return ok

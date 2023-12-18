@@ -1,4 +1,66 @@
 definitions:
+  app.ApproveDTO:
+    properties:
+      expires_at:
+        type: integer
+      org_name:
+        type: string
+      role:
+        type: string
+      user_name:
+        type: string
+    type: object
+  app.MemberDTO:
+    properties:
+      org_full_name:
+        type: string
+      org_name:
+        type: string
+      role:
+        type: string
+      user_name:
+        type: string
+    type: object
+  app.OrganizationDTO:
+    properties:
+      approves:
+        items:
+          $ref: '#/definitions/app.ApproveDTO'
+        type: array
+      avatar_id:
+        type: string
+      created_at:
+        type: integer
+      description:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      platform_id:
+        type: string
+      website:
+        type: string
+    type: object
+  app.TokenDTO:
+    properties:
+      account:
+        type: string
+      created_at:
+        type: integer
+      expired:
+        type: integer
+      name:
+        type: string
+      permission:
+        type: string
+      token:
+        type: string
+    type: object
   app.UserDTO:
     properties:
       account:
@@ -11,12 +73,64 @@ definitions:
         type: string
       id:
         type: string
+      tokens:
+        items:
+          $ref: '#/definitions/app.TokenDTO'
+        type: array
+    type: object
+  controller.OrgInviteMemberRequest:
+    properties:
+      role:
+        type: string
+      user:
+        type: string
+    required:
+    - role
+    - user
+    type: object
+  controller.orgBasicInfoUpdateRequest:
+    properties:
+      avatar_id:
+        type: string
+      description:
+        type: string
+      full_name:
+        type: string
+      website:
+        type: string
+    type: object
+  controller.orgCreateRequest:
+    properties:
+      avatar_id:
+        type: string
+      description:
+        type: string
+      full_name:
+        type: string
+      name:
+        type: string
+      website:
+        type: string
+    required:
+    - name
+    type: object
+  controller.tokenCreateRequest:
+    properties:
+      name:
+        type: string
+      perm:
+        type: string
+    required:
+    - name
+    - perm
     type: object
   controller.userBasicInfoUpdateRequest:
     properties:
       avatar_id:
         type: string
       bio:
+        type: string
+      email:
         type: string
     type: object
   controller.userDetail:
@@ -31,10 +145,10 @@ definitions:
         type: string
       id:
         type: string
-      is_follower:
-        type: boolean
-      points:
-        type: integer
+      tokens:
+        items:
+          $ref: '#/definitions/app.TokenDTO'
+        type: array
     type: object
   session.SessionDTO:
     properties:
@@ -109,6 +223,285 @@ paths:
             type: system_error
       tags:
       - Login
+  /v1/organization:
+    get:
+      consumes:
+      - application/json
+      description: get organization info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.OrganizationDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: resource_not_exists
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      summary: Get all organization of the user
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: create a new organization
+      parameters:
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCreateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app.OrganizationDTO'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "404":
+          description: Not Found
+          schema:
+            type: not_found
+      tags:
+      - Organization
+  /v1/organization/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a organization
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "403":
+          description: Forbidden
+          schema:
+            type: permission
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: get organization info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.userDetail'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: resource_not_exists
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      summary: Get one organization info
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: update org basic info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgBasicInfoUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/app.OrganizationDTO'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: resource_not_exists
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      summary: Update
+      tags:
+      - Organization
+  /v1/organization/{name}/invite:
+    post:
+      consumes:
+      - application/json
+      description: Revoke invitation of the organization
+      parameters:
+      - description: body of the invitation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgInviteMemberRequest'
+      - description: organization name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.ApproveDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      tags:
+      - Organization
+  /v1/organization/{name}/member:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a member from a organization
+      parameters:
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCreateRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: list organization members
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.MemberDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "403":
+          description: Forbidden
+          schema:
+            type: permission
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Add a member to the organization
+      parameters:
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCreateRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      tags:
+      - Organization
   /v1/user:
     get:
       consumes:
@@ -168,6 +561,81 @@ paths:
           description: Bad Request
           schema:
             type: "no"
+      tags:
+      - User
+  /v1/user/token:
+    get:
+      consumes:
+      - application/json
+      description: list all platform tokens of user
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.TokenDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: create a new platform token of user
+      parameters:
+      - description: body of create token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.tokenCreateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: created
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      tags:
+      - User
+  /v1/user/token/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a new platform token of user
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "404":
+          description: Not Found
+          schema:
+            type: not_found
       tags:
       - User
 swagger: "2.0"

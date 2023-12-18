@@ -168,6 +168,36 @@ func (cli *client) updateDoc(
 	return nil
 }
 
+func (cli *client) delete(
+	ctx context.Context, collection string,
+	filterOfDoc bson.M,
+) error {
+	_, err := cli.collection(collection).DeleteOne(
+		ctx, filterOfDoc,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cli *client) deleteMany(
+	ctx context.Context, collection string,
+	filterOfDoc bson.M,
+) error {
+	_, err := cli.collection(collection).DeleteMany(
+		ctx, filterOfDoc,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (cli *client) updateIncDoc(
 	ctx context.Context, collection string,
 	filterOfDoc, update bson.M, version int,

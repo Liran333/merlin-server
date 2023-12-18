@@ -8,6 +8,10 @@ type ErrorPrivateRepo struct {
 	error
 }
 
+func NewErrorPrivateRepo(err error) ErrorPrivateRepo {
+	return ErrorPrivateRepo{err}
+}
+
 type ErrorExccedMaxTrainingRecord struct {
 	error
 }

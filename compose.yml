@@ -4,16 +4,23 @@ services:
     entrypoint:
     - "/usr/local/bin/redis-server"
     - --requirepass merlin
+    ports:
+      - "6379:6379"
   pg:
     image: postgres:16
     environment:
       POSTGRES_PASSWORD: gitea
       POSTGRES_USER: gitea
+    ports:
+      - "5432:5432"
   db:
     image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: merlin
       MONGO_INITDB_ROOT_PASSWORD: merlin
+      MONGO_INITDB_DATABASE: merlin
+    ports:
+      - "27017:27017"
   gitea:
     build:
       context: https://github.com/openmerlin/gitea.git

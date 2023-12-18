@@ -6,7 +6,7 @@ authing:
 gitea:
   url: http://gitea:3000
   # need manually generate a root token and fill it here
-  token: ""
+  token: "493aaf3f355415e9381aac76cb89c61cb2c4f123"
 
 mongodb:
   db_conn: "mongodb://merlin:merlin@db:27017/merlin?authSource=admin"
@@ -15,6 +15,8 @@ mongodb:
   collections:
     user: user
     session: session
+    organization: organization
+    member: member
 
 redis:
   db:
@@ -29,6 +31,10 @@ api:
   token_expiry: 28800
   encryption_key: "Pligc50pGer6xC5d9UX1mnD3EzHcEJm3YUQCte4/XgQ="
   encryption_key_csrf: "ddPgIlGFRpTNV7ah/9oDCh3D2mXNYHyfhgApZhP+KSs="
+
+organization:
+  # each invite will live 14 days
+  invite_expiry: 1209600
 
 user:
   max_bio_length: 200

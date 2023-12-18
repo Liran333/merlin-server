@@ -9,6 +9,7 @@ import (
 type userBasicInfoUpdateRequest struct {
 	AvatarId *string `json:"avatar_id"`
 	Bio      *string `json:"bio"`
+	Email    *string `json:"email"`
 }
 
 func (req *userBasicInfoUpdateRequest) toCmd() (
@@ -25,12 +26,16 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		cmd.AvatarId, err = domain.NewAvatarId(*req.AvatarId)
 	}
 
+	if req.Email != nil {
+		cmd.Email, err = domain.NewEmail(*req.Email)
+	}
+
 	return
 }
 
 type userCreateRequest struct {
-	Account  string `json:"account"`
-	Email    string `json:"email"`
+	Account  string `json:"account" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Bio      string `json:"bio"`
 	AvatarId string `json:"avatar_id"`
 }
@@ -57,13 +62,15 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 	return
 }
 
-type followingCreateRequest struct {
-	Account string `json:"account" required:"true"`
-}
-
 type userDetail struct {
 	*app.UserDTO
+}
 
-	Points     int  `json:"points"`
-	IsFollower bool `json:"is_follower"`
+type tokenCreateRequest struct {
+	Name string `json:"name" binding:"required"`
+	Perm string `json:"perm" binding:"required"`
+}
+
+type userToken struct {
+	app.TokenDTO
 }

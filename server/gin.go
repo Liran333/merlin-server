@@ -23,12 +23,16 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
+
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
+	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 )
 
 func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(logRequest())
+	r.TrustedPlatform = "x-real-ip"
 
 	if err := setRouter(r, cfg); err != nil {
 		logrus.Error(err)
@@ -58,7 +62,12 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 	user := userrepoimpl.NewUserRepo(
 		mongodb.NewCollection(collections.User),
 	)
-
+	member := orgrepoimpl.NewMemberRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Member),
+	)
+	org := orgrepoimpl.NewOrgRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
+	)
 	sessrepo := sessionrepo.NewSessionRepository(
 		sessionrepo.NewSessionStore(
 			mongodb.NewCollection(collections.Session),
@@ -76,6 +85,10 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 	userAppService := userapp.NewUserService(
 		user, git)
 
+	orgAppService := orgapp.NewOrgService(
+		userAppService, org, member, cfg.Org.InviteExpiry,
+	)
+
 	{
 
 		controller.AddRouterForUserController(
@@ -87,8 +100,11 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 			v1, userAppService, authingUser, session,
 		)
 
-	}
+		controller.AddRouterForOrgController(
+			v1, orgAppService,
+		)
 
+	}
 	engine.UseRawPath = true
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 

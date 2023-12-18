@@ -142,6 +142,18 @@ func (c collection) UpdateDoc(
 	return cli.updateDoc(ctx, c.name, filterOfDoc, update, op, version)
 }
 
+func (c collection) DeleteOne(
+	ctx context.Context, filterOfDoc bson.M,
+) error {
+	return cli.delete(ctx, c.name, filterOfDoc)
+}
+
+func (c collection) DeleteMany(
+	ctx context.Context, filterOfDoc bson.M,
+) error {
+	return cli.deleteMany(ctx, c.name, filterOfDoc)
+}
+
 func (c collection) UpdateIncDoc(
 	ctx context.Context, filterOfDoc, update bson.M, version int,
 ) error {

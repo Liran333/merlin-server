@@ -123,6 +123,7 @@ func main() {
 	if err := gitea.Init(&cfg.Git); err != nil {
 		logrus.Fatalf("init gitea failed, err:%s", err.Error())
 	}
+
 	// run
 	server.StartWebServer(o.service.Port, o.service.GracePeriod, cfg)
 }

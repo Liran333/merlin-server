@@ -140,6 +140,10 @@ func NewAvatarId(v string) (AvatarId, error) {
 	return dpAvatarId(DefaultAvatarURL()), nil
 }
 
+func CreateAvatarId(v string) AvatarId {
+	return dpAvatarId(v)
+}
+
 type dpAvatarId string
 
 func (r dpAvatarId) AvatarId() string {

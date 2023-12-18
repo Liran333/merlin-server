@@ -1,1 +1,4 @@
 merlin-server
+cmd/cmd
+cmd/config.yaml
+.vscode

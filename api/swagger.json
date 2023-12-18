@@ -97,6 +97,430 @@
                 }
             }
         },
+        "/v1/organization": {
+            "get": {
+                "description": "get organization info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get all organization of the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.OrganizationDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "resource_not_exists"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "system_error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "description": "body of new organization",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.orgCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/app.OrganizationDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "not_found"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/organization/{name}": {
+            "get": {
+                "description": "get organization info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get one organization info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.userDetail"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "resource_not_exists"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "system_error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update org basic info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of new organization",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.orgBasicInfoUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/app.OrganizationDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "resource_not_exists"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "system_error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete a organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "permission"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/organization/{name}/invite": {
+            "post": {
+                "description": "Revoke invitation of the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "description": "body of the invitation",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.OrgInviteMemberRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "organization name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.ApproveDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/organization/{name}/member": {
+            "get": {
+                "description": "list organization members",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.MemberDTO"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "permission"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a member to the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "description": "body of new organization",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.orgCreateRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a member from a organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "parameters": [
+                    {
+                        "description": "body of new organization",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.orgCreateRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user": {
             "get": {
                 "description": "get user",
@@ -189,9 +613,220 @@
                     }
                 }
             }
+        },
+        "/v1/user/token": {
+            "get": {
+                "description": "list all platform tokens of user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.TokenDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new platform token of user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "description": "body of create token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.tokenCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "created"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/token/{name}": {
+            "delete": {
+                "description": "delete a new platform token of user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "not_found"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "app.ApproveDTO": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "integer"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.MemberDTO": {
+            "type": "object",
+            "properties": {
+                "org_full_name": {
+                    "type": "string"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.OrganizationDTO": {
+            "type": "object",
+            "properties": {
+                "approves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/app.ApproveDTO"
+                    }
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "platform_id": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.TokenDTO": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "expired": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permission": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "app.UserDTO": {
             "type": "object",
             "properties": {
@@ -209,6 +844,82 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "tokens": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/app.TokenDTO"
+                    }
+                }
+            }
+        },
+        "controller.OrgInviteMemberRequest": {
+            "type": "object",
+            "required": [
+                "role",
+                "user"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.orgBasicInfoUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.orgCreateRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.tokenCreateRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "perm"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "perm": {
+                    "type": "string"
                 }
             }
         },
@@ -219,6 +930,9 @@
                     "type": "string"
                 },
                 "bio": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 }
             }
@@ -241,11 +955,11 @@
                 "id": {
                     "type": "string"
                 },
-                "is_follower": {
-                    "type": "boolean"
-                },
-                "points": {
-                    "type": "integer"
+                "tokens": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/app.TokenDTO"
+                    }
                 }
             }
         },
