@@ -21,6 +21,15 @@ definitions:
       user_name:
         type: string
     type: object
+  app.ModelsDTO:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/repository.ModelSummary'
+        type: array
+      total:
+        type: integer
+    type: object
   app.OrganizationDTO:
     properties:
       approves:
@@ -88,6 +97,60 @@ definitions:
     - role
     - user
     type: object
+  controller.ResponseData:
+    properties:
+      code:
+        type: string
+      data: {}
+      msg:
+        type: string
+    type: object
+  controller.modelDetail:
+    properties:
+      avatar_id:
+        type: string
+      created_at:
+        type: string
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      like_count:
+        type: integer
+      liked:
+        type: boolean
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.modelsInfo:
+    properties:
+      avatar_id:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/repository.ModelSummary'
+        type: array
+      owner:
+        type: string
+      total:
+        type: integer
+    type: object
   controller.orgBasicInfoUpdateRequest:
     properties:
       avatar_id:
@@ -113,6 +176,32 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  controller.reqToCreateModel:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      license:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.reqToUpdateModel:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      name:
+        type: string
+      visibility:
+        type: string
     type: object
   controller.tokenCreateRequest:
     properties:
@@ -149,6 +238,27 @@ definitions:
         items:
           $ref: '#/definitions/app.TokenDTO'
         type: array
+    type: object
+  repository.ModelSummary:
+    properties:
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      task_label:
+        type: string
+      updated_at:
+        type: string
     type: object
   session.SessionDTO:
     properties:
@@ -223,6 +333,169 @@ paths:
             type: system_error
       tags:
       - Login
+  /v1/model:
+    get:
+      consumes:
+      - application/json
+      description: list global public model
+      parameters:
+      - description: name of model
+        in: query
+        name: name
+        type: string
+      - description: labels, separate multiple each ones with commas
+        in: query
+        name: labels
+        type: string
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        in: query
+        name: sort_by
+        type: string
+      - description: id of the last element on the previous page
+        in: query
+        name: last_id
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ModelsDTO'
+      summary: ListGlobal
+      tags:
+      - Model
+    post:
+      consumes:
+      - application/json
+      description: create model
+      parameters:
+      - description: body of creating model
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateModel'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: Create
+      tags:
+      - Model
+  /v1/model/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete
+      tags:
+      - Model
+    put:
+      consumes:
+      - application/json
+      description: update model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating model
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateModel'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: Update
+      tags:
+      - Model
+  /v1/model/{owner}:
+    get:
+      consumes:
+      - application/json
+      description: list model
+      parameters:
+      - description: owner of model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of model
+        in: query
+        name: name
+        type: string
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        in: query
+        name: sort_by
+        type: string
+      - description: id of the last element on the previous page
+        in: query
+        name: last_id
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.modelsInfo'
+      summary: List
+      tags:
+      - Model
+  /v1/model/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get model
+      parameters:
+      - description: owner of model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of model
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.modelDetail'
+      summary: Get
+      tags:
+      - Model
   /v1/organization:
     get:
       consumes:
@@ -284,6 +557,7 @@ paths:
           description: Not Found
           schema:
             type: not_found
+      summary: Create organization
       tags:
       - Organization
   /v1/organization/{name}:
@@ -312,6 +586,7 @@ paths:
           description: Forbidden
           schema:
             type: permission
+      summary: Delete organization
       tags:
       - Organization
     get:
@@ -379,7 +654,7 @@ paths:
           description: Internal Server Error
           schema:
             type: system_error
-      summary: Update
+      summary: Update org basic info
       tags:
       - Organization
   /v1/organization/{name}/invite:
@@ -414,6 +689,7 @@ paths:
           description: Unauthorized
           schema:
             type: not_allowed
+      summary: Revoke invitation of the organization
       tags:
       - Organization
   /v1/organization/{name}/member:
@@ -444,6 +720,7 @@ paths:
           description: Unauthorized
           schema:
             type: not_allowed
+      summary: Remove organization members
       tags:
       - Organization
     get:
@@ -471,12 +748,14 @@ paths:
           description: Forbidden
           schema:
             type: permission
+      summary: List organization members
       tags:
       - Organization
     post:
       consumes:
       - application/json
-      description: Add a member to the organization
+      description: Add a member to the organization, the user must be on invite list
+        before adding
       parameters:
       - description: body of new organization
         in: body
@@ -500,6 +779,7 @@ paths:
           description: Unauthorized
           schema:
             type: not_allowed
+      summary: Add organization members
       tags:
       - Organization
   /v1/user:
@@ -529,7 +809,7 @@ paths:
           description: Internal Server Error
           schema:
             type: system_error
-      summary: Get
+      summary: Get a user info
       tags:
       - User
     put:
@@ -546,7 +826,7 @@ paths:
       produces:
       - application/json
       responses: {}
-      summary: Update
+      summary: Update user basic info
       tags:
       - User
   /v1/user/check_email:
@@ -609,6 +889,7 @@ paths:
           description: Unauthorized
           schema:
             type: not_allowed
+      summary: Create a user token
       tags:
       - User
   /v1/user/token/{name}:
@@ -636,6 +917,7 @@ paths:
           description: Not Found
           schema:
             type: not_found
+      summary: Delete a user token
       tags:
       - User
 swagger: "2.0"

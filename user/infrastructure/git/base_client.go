@@ -72,6 +72,7 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 	token.Account = cmd.Account
 	token.Permission = cmd.Permission
 	token.Expire = cmd.Expire
+	token.LastEight = t.TokenLastEight
 
 	return
 }

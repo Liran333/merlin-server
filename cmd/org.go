@@ -54,11 +54,13 @@ var orgAddCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -101,7 +103,9 @@ var memberAddCmd = &cobra.Command{
 		member := orgrepoimpl.NewMemberRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
 		)
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
@@ -109,7 +113,7 @@ var memberAddCmd = &cobra.Command{
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -148,11 +152,13 @@ var memberListCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -201,9 +207,11 @@ var inviteSendCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -243,11 +251,13 @@ var inviteListCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -295,9 +305,11 @@ var removeInviteCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -343,9 +355,11 @@ var memberEditCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -391,9 +405,11 @@ var memberRemoveCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -431,9 +447,11 @@ var orgGetCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		orgAppService := orgapp.NewOrgService(
 			userAppService, org, member, 1209600)
@@ -507,9 +525,11 @@ var orgDelCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 		member := orgrepoimpl.NewMemberRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
 		)
@@ -560,11 +580,13 @@ var orgEditCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 		member := orgrepoimpl.NewMemberRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
 		)

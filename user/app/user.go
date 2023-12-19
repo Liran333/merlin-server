@@ -7,6 +7,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
+	"github.com/sirupsen/logrus"
 )
 
 type UserService interface {
@@ -16,7 +17,7 @@ type UserService interface {
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) error
 
 	UserInfo(domain.Account) (UserInfoDTO, error)
-	GetByAccount(domain.Account) (UserDTO, error)
+	GetByAccount(domain.Account, bool) (UserDTO, error)
 	GetByFollower(owner, follower domain.Account) (UserDTO, bool, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
@@ -24,22 +25,26 @@ type UserService interface {
 	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
 	DeleteToken(*domain.TokenDeletedCmd, platform.BaseAuthClient) error
 	ListTokens(domain.Account) ([]TokenDTO, error)
+	VerifyToken(string) (TokenDTO, bool)
 }
 
 // ps: platform user service
 func NewUserService(
 	repo repository.User,
 	git git.User,
+	token repository.Token,
 ) UserService {
 	return userService{
-		repo: repo,
-		git:  git,
+		repo:  repo,
+		git:   git,
+		token: token,
 	}
 }
 
 type userService struct {
-	repo repository.User
-	git  git.User
+	repo  repository.User
+	git   git.User
+	token repository.Token
 }
 
 func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
@@ -73,7 +78,7 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 		err = fmt.Errorf("account is nil")
 		return
 	}
-	usernew, err := s.GetByAccount(account)
+	usernew, err := s.GetByAccount(account, true)
 	if err != nil {
 		return
 	}
@@ -107,18 +112,22 @@ func (s userService) Delete(account domain.Account) (err error) {
 }
 
 func (s userService) UserInfo(account domain.Account) (dto UserInfoDTO, err error) {
-	if dto.UserDTO, err = s.GetByAccount(account); err != nil {
+	if dto.UserDTO, err = s.GetByAccount(account, false); err != nil {
 		return
 	}
 
 	return
 }
 
-func (s userService) GetByAccount(account domain.Account) (dto UserDTO, err error) {
+func (s userService) GetByAccount(account domain.Account, pwd bool) (dto UserDTO, err error) {
 	// update user
 	u, err := s.repo.GetByAccount(account)
 	if err != nil {
 		return
+	}
+
+	if !pwd {
+		u.PlatformPwd = ""
 	}
 
 	dto = newUserDTO(&u)
@@ -134,6 +143,8 @@ func (s userService) GetByFollower(owner, follower domain.Account) (
 		return
 	}
 
+	v.PlatformPwd = ""
+
 	dto = newUserDTO(&v)
 
 	return
@@ -144,27 +155,22 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd, client platform.Ba
 		return
 	}
 
-	user, err := s.repo.GetByAccount(cmd.Account)
-	if err != nil {
-		return
-	}
-
 	t, err := client.CreateToken(cmd)
 	if err != nil {
 		return
 	}
 
-	user.PlatformTokens[cmd.Name] = domain.PlatformToken{
-		CreatedAt:  t.CreatedAt,
-		Permission: t.Permission,
-		Expire:     t.Expire,
-		Account:    t.Account,
-		Name:       t.Name,
+	enc, salt, err := domain.EncryptToken(t.Token)
+	if err != nil {
+		return
 	}
 
 	token = newTokenDTO(&t)
 
-	_, err = s.repo.Save(&user)
+	t.Token = enc
+	t.Salt = salt
+
+	_, err = s.token.Save(&t)
 
 	return
 }
@@ -174,32 +180,43 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 		return
 	}
 
-	user, err := s.repo.GetByAccount(cmd.Account)
-	if err != nil {
-		return
-	}
-
 	err = client.DeleteToken(cmd)
 	if err != nil {
 		return
 	}
 
-	delete(user.PlatformTokens, cmd.Name)
-	_, err = s.repo.Save(&user)
+	err = s.token.Delete(cmd.Account, cmd.Name)
 
 	return
 }
 
 func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error) {
-	user, err := s.repo.GetByAccount(u)
+	ts, err := s.token.GetByAccount(u)
 	if err != nil {
 		return
 	}
 
-	tokens = make([]TokenDTO, 0, len(user.PlatformTokens))
-	for k := range user.PlatformTokens {
-		t := user.PlatformTokens[k]
-		tokens = append(tokens, newTokenDTO(&t))
+	tokens = make([]TokenDTO, len(ts))
+	for t := range ts {
+		tokens[t] = newTokenDTO(&ts[t])
+	}
+
+	return
+}
+
+func (s userService) VerifyToken(token string) (dto TokenDTO, b bool) {
+	tokens, err := s.token.GetByLastEight(token[len(token)-8:])
+	if err != nil {
+		logrus.Errorf("get token by last eight failed: %s", err)
+		return
+	}
+
+	for t := range tokens {
+		if tokens[t].Compare(token) {
+			b = true
+			dto = newTokenDTO(&tokens[t])
+			return
+		}
 	}
 
 	return

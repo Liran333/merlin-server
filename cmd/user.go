@@ -48,6 +48,10 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
+
+		token := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
@@ -55,7 +59,7 @@ var userAddCmd = &cobra.Command{
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, token)
 
 		_, err = userAppService.Create(&domain.UserCreateCmd{
 			Email:    email,
@@ -85,13 +89,15 @@ var userGetCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		token := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, token)
 
-		u, err := userAppService.GetByAccount(acc)
+		u, err := userAppService.GetByAccount(acc, false)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		} else {
@@ -119,11 +125,13 @@ var userDelCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		token := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, token)
 
 		err = userAppService.Delete(acc)
 		if err != nil {
@@ -161,11 +169,13 @@ var userEditCmd = &cobra.Command{
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
-
+		token := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		git := usergit.NewUserGit(gitea.GetClient())
 
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, token)
 
 		err = userAppService.UpdateBasicInfo(acc, updateCmd)
 		if err != nil {

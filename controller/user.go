@@ -44,7 +44,7 @@ type UserController struct {
 	s    userapp.UserService
 }
 
-// @Summary		Update
+// @Summary		Update user basic info
 // @Description	update user basic info
 // @Tags			User
 // @Param			body	body	userBasicInfoUpdateRequest	true	"body of updating user"
@@ -88,7 +88,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, newResponseData(nil))
 }
 
-// @Summary		Get
+// @Summary		Get a user info
 // @Description	get user
 // @Tags			User
 // @Param			account	query	string	false	"account"
@@ -141,12 +141,12 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 		}
 
 		// get by visitor
-		if u, err := ctl.s.GetByAccount(target); err != nil {
+		if u, err := ctl.s.GetByAccount(target, false); err != nil {
 			logrus.Errorf("get by visitor err: %s", err)
 			ctl.sendRespWithInternalError(ctx, newResponseError(fmt.Errorf("failed to get user(%s) info", target.Account())))
 		} else {
 			u.Email = ""
-			//u.Password = ""
+			u.Password = ""
 			resp(&u, 0, false)
 		}
 
@@ -189,6 +189,7 @@ func (ctl *UserController) CheckEmail(ctx *gin.Context) {
 	ctl.sendRespOfGet(ctx, "")
 }
 
+// @Summary			Delete a user token
 // @Title			DeletePlatformToken
 // @Description	delete a new platform token of user
 // @Tags			User
@@ -235,6 +236,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 	}
 }
 
+// @Summary			Create a user token
 // @Title			CreatePlatformToken
 // @Description	create a new platform token of user
 // @Tags			User
@@ -269,7 +271,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		Permission: domain.TokenPerm(r.Perm),
 	}
 
-	usernew, err := ctl.s.GetByAccount(pl.DomainAccount())
+	usernew, err := ctl.s.GetByAccount(pl.DomainAccount(), true)
 	if err != nil {
 		logrus.Error(err)
 
@@ -353,7 +355,7 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 		return
 	}
 
-	usernew, err := ctl.s.GetByAccount(pl.DomainAccount())
+	tokens, err := ctl.s.ListTokens(pl.DomainAccount())
 	if err != nil {
 		logrus.Error(err)
 
@@ -365,5 +367,5 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newResponseData(usernew.Tokens))
+	ctx.JSON(http.StatusOK, newResponseData(tokens))
 }

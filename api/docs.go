@@ -108,6 +108,250 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/model": {
+            "get": {
+                "description": "list global public model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "ListGlobal",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of model",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "labels, separate multiple each ones with commas",
+                        "name": "labels",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of the last element on the previous page",
+                        "name": "last_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page num which starts from 1",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "count per page",
+                        "name": "count_per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.ModelsDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "Create",
+                "parameters": [
+                    {
+                        "description": "body of creating model",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/{id}": {
+            "put": {
+                "description": "update model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating model",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "Delete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/model/{owner}": {
+            "get": {
+                "description": "list model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of model",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of the last element on the previous page",
+                        "name": "last_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page num which starts from 1",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "count per page",
+                        "name": "count_per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.modelsInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/{owner}/{name}": {
+            "get": {
+                "description": "get model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "Get",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of model",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.modelDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/organization": {
             "get": {
                 "description": "get organization info",
@@ -165,6 +409,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
+                "summary": "Create organization",
                 "parameters": [
                     {
                         "description": "body of new organization",
@@ -261,7 +506,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Update",
+                "summary": "Update org basic info",
                 "parameters": [
                     {
                         "type": "string",
@@ -315,6 +560,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
+                "summary": "Delete organization",
                 "parameters": [
                     {
                         "type": "string",
@@ -358,6 +604,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
+                "summary": "Revoke invitation of the organization",
                 "parameters": [
                     {
                         "description": "body of the invitation",
@@ -410,6 +657,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
+                "summary": "List organization members",
                 "parameters": [
                     {
                         "type": "string",
@@ -444,13 +692,14 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Add a member to the organization",
+                "description": "Add a member to the organization, the user must be on invite list before adding",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Organization"
                 ],
+                "summary": "Add organization members",
                 "parameters": [
                     {
                         "description": "body of new organization",
@@ -495,6 +744,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
+                "summary": "Remove organization members",
                 "parameters": [
                     {
                         "description": "body of new organization",
@@ -541,7 +791,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get",
+                "summary": "Get a user info",
                 "parameters": [
                     {
                         "type": "string",
@@ -588,7 +838,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Update",
+                "summary": "Update user basic info",
                 "parameters": [
                     {
                         "description": "body of updating user",
@@ -666,6 +916,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
+                "summary": "Create a user token",
                 "parameters": [
                     {
                         "description": "body of create token",
@@ -708,6 +959,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
+                "summary": "Delete a user token",
                 "parameters": [
                     {
                         "type": "string",
@@ -774,6 +1026,20 @@ const docTemplate = `{
                 },
                 "user_name": {
                     "type": "string"
+                }
+            }
+        },
+        "app.ModelsDTO": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.ModelSummary"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -879,6 +1145,88 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.ResponseData": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.modelDetail": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "liked": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.modelsInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.ModelSummary"
+                    }
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "controller.orgBasicInfoUpdateRequest": {
             "type": "object",
             "properties": {
@@ -915,6 +1263,46 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToCreateModel": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateModel": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "visibility": {
                     "type": "string"
                 }
             }
@@ -971,6 +1359,38 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/app.TokenDTO"
                     }
+                }
+            }
+        },
+        "repository.ModelSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "task_label": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },

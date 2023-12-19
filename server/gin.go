@@ -62,6 +62,11 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 	user := userrepoimpl.NewUserRepo(
 		mongodb.NewCollection(collections.User),
 	)
+
+	token := userrepoimpl.NewTokenRepo(
+		mongodb.NewCollection(collections.Token),
+	)
+
 	member := orgrepoimpl.NewMemberRepo(
 		mongodb.NewCollection(cfg.Mongodb.Collections.Member),
 	)
@@ -83,7 +88,7 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 	v1 := engine.Group(api.SwaggerInfo.BasePath)
 
 	userAppService := userapp.NewUserService(
-		user, git)
+		user, git, token)
 
 	orgAppService := orgapp.NewOrgService(
 		userAppService, org, member, cfg.Org.InviteExpiry,

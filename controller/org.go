@@ -42,7 +42,7 @@ type OrgController struct {
 	org orgapp.OrgService
 }
 
-// @Summary		Update
+// @Summary		Update org basic info
 // @Description	update org basic info
 // @Tags			Organization
 // @Param			name	path	string	true	"name"
@@ -171,6 +171,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 	}
 }
 
+// @Summary			Create organization
 // @Title			Create organization
 // @Description	create a new organization
 // @Tags			Organization
@@ -220,6 +221,7 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 	}
 }
 
+// @Summary			Delete organization
 // @Title			Delete organization
 // @Description	delete a organization
 // @Tags			Organization
@@ -263,6 +265,7 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 	}
 }
 
+// @Summary			List organization members
 // @Title			List organization members
 // @Description	list organization members
 // @Tags			Organization
@@ -302,8 +305,9 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, newResponseData(members))
 }
 
+// @Summary			Add organization members
 // @Title			Add organization members
-// @Description Add a member to the organization
+// @Description Add a member to the organization, the user must be on invite list before adding
 // @Tags			Organization
 // @Param			body	body	orgCreateRequest	true	"body of new organization"
 // @Param			name	path	string	true	"name"
@@ -371,6 +375,7 @@ func (ctl *OrgController) AddMember(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, newResponseData(nil))
 }
 
+// @Summary			Remove organization members
 // @Title			Remove organization members
 // @Description Remove a member from a organization
 // @Tags			Organization
@@ -441,6 +446,7 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, newResponseData(nil))
 }
 
+// @Summary			Invite a user to be a member of the organization
 // @Title			Send invitation to a user
 // @Description Send invitation to a user to join the organization
 // @Tags			Organization
@@ -512,6 +518,7 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, newResponseData(dto))
 }
 
+// @Summary			List invitation of the organization
 // @Title			List invitation of the organization
 // @Description List invitation of the organization
 // @Tags			Organization
@@ -555,6 +562,7 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, newResponseData(dtos))
 }
 
+// @Summary			Revoke invitation of the organization
 // @Title			Revoke invitation of the organization
 // @Description Revoke invitation of the organization
 // @Tags			Organization

@@ -92,4 +92,5 @@ type MongodbCollections struct {
 	Session      string `json:"session"                required:"true"`
 	Organization string `json:"organization"           required:"true"`
 	Member       string `json:"member"                 required:"true"`
+	Token        string `json:"token"                  required:"true"`
 }

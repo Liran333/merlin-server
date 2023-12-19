@@ -21,22 +21,25 @@ func toUserDoc(u domain.User, doc *DUser) error {
 		PlatformPwd: u.PlatformPwd,
 	}
 
-	doc.PlatformTokens = make([]DToken, 0, len(u.PlatformTokens))
-	for name, t := range u.PlatformTokens {
-
-		doc.PlatformTokens = append(doc.PlatformTokens, DToken{
-			Name:       t.Name,
-			Expire:     t.Expire,
-			CreatedAt:  t.CreatedAt,
-			Account:    name,
-			Permission: string(t.Permission),
-		})
-
-	}
-
 	if u.Bio != nil {
 		doc.Bio = u.Bio.Bio()
 	}
+	return nil
+}
+
+func toTokenDoc(t domain.PlatformToken, doc *DToken) error {
+
+	*doc = DToken{
+		Name:       t.Name,
+		Expire:     t.Expire,
+		CreatedAt:  t.CreatedAt,
+		Account:    t.Account.Account(),
+		Permission: string(t.Permission),
+		Salt:       t.Salt,
+		Token:      t.Token,
+		LastEight:  t.LastEight,
+	}
+
 	return nil
 }
 
@@ -63,18 +66,18 @@ func toUser(doc DUser, u *domain.User) (err error) {
 	u.PlatformId = doc.PlatformId
 	u.Version = doc.Version
 
-	u.PlatformTokens = make(map[string]domain.PlatformToken)
-	for _, t := range doc.PlatformTokens {
-		u.PlatformTokens[t.Name] = domain.PlatformToken{
-			CreatedAt:  t.CreatedAt,
-			Expire:     t.Expire,
-			Name:       t.Name,
-			Permission: domain.TokenPerm(t.Permission),
-			Account:    u.Account,
-		}
-	}
-
 	return
+}
+
+func toToken(doc DToken, t *domain.PlatformToken) {
+	t.Name = doc.Name
+	t.Account = primitive.CreateAccount(doc.Account)
+	t.CreatedAt = doc.CreatedAt
+	t.Expire = doc.Expire
+	t.Salt = doc.Salt
+	t.Token = doc.Token
+	t.LastEight = doc.LastEight
+	t.Permission = domain.TokenPerm(doc.Permission)
 }
 
 func toUserInfo(doc DUser, info *domain.UserInfo) (err error) {

@@ -83,7 +83,7 @@ func (ctl *LoginController) Login(ctx *gin.Context) {
 	}
 	defer utils.ClearStringMemory(info.AccessToken)
 
-	user, err := ctl.us.GetByAccount(info.Name)
+	user, err := ctl.us.GetByAccount(info.Name, false)
 	if err != nil {
 		if d := newResponseError(err); d.Code != errorResourceNotExists {
 			logrus.Errorf("get user by account %s failed: code:%s err:%s", info.Name, d.Code, err)

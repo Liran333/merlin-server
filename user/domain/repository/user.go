@@ -38,12 +38,4 @@ type User interface {
 	GetUserAvatarId(domain.Account) (domain.AvatarId, error)
 
 	Search(*UserSearchOption) (UserSearchResult, error)
-
-	AddFollowing(*domain.FollowerInfo) error
-	RemoveFollowing(*domain.FollowerInfo) error
-	FindFollowing(domain.Account, *FollowFindOption) (FollowerUserInfos, error)
-
-	AddFollower(*domain.FollowerInfo) error
-	RemoveFollower(*domain.FollowerInfo) error
-	FindFollower(domain.Account, *FollowFindOption) (FollowerUserInfos, error)
 }

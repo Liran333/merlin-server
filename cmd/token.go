@@ -44,9 +44,11 @@ var tokenAddCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
@@ -86,9 +88,11 @@ var tokenDelCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
@@ -124,9 +128,11 @@ var tokenGetCmd = &cobra.Command{
 		)
 
 		git := usergit.NewUserGit(gitea.GetClient())
-
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
 		userAppService := userapp.NewUserService(
-			user, git)
+			user, git, t)
 
 		tokens, err := userAppService.ListTokens(acc)
 		if err != nil {
@@ -134,13 +140,34 @@ var tokenGetCmd = &cobra.Command{
 		} else {
 			fmt.Println("User tokens:")
 			for _, token := range tokens {
-				fmt.Println("Name:", token.Name)
-				fmt.Println("Token create at:", token.CreatedAt)
-				fmt.Println("Token permission:", token.Permission)
-				fmt.Println("Token expire:", token.Expire)
-				fmt.Println("Token owner:", token.Account)
+				fmt.Printf("%#v\n", token)
 			}
 		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+	},
+}
+
+var tokenVerifyCmd = &cobra.Command{
+	Use: "verify",
+	Run: func(cmd *cobra.Command, args []string) {
+		token := viper.GetString("token.verify.token")
+
+		user := userrepoimpl.NewUserRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.User),
+		)
+		t := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
+		git := usergit.NewUserGit(gitea.GetClient())
+
+		userAppService := userapp.NewUserService(
+			user, git, t)
+
+		_, b := userAppService.VerifyToken(token)
+		logrus.Infof("verify user token result %t", b)
+
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
@@ -151,6 +178,7 @@ func init() {
 	tokenCmd.AddCommand(tokenGetCmd)
 	tokenCmd.AddCommand(tokenDelCmd)
 	tokenCmd.AddCommand(tokenAddCmd)
+	tokenCmd.AddCommand(tokenVerifyCmd)
 	// 添加命令行参数
 	tokenAddCmd.Flags().StringP("name", "n", "", "user name")
 	tokenAddCmd.Flags().StringP("token", "t", "", "token name")
@@ -163,6 +191,15 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := tokenAddCmd.MarkFlagRequired("perm"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	tokenVerifyCmd.Flags().StringP("token", "t", "", "token value")
+	if err := tokenVerifyCmd.MarkFlagRequired("token"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := viper.BindPFlag("token.verify.token", tokenVerifyCmd.Flags().Lookup("token")); err != nil {
 		logrus.Fatal(err)
 	}
 

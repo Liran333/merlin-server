@@ -315,7 +315,7 @@ func (org *orgService) AddMember(cmd *OrgAddMemberCmd) error {
 		return fmt.Errorf("failed to get platform user for adding member, %w", err)
 	}
 
-	_, err = org.user.GetByAccount(cmd.Account)
+	_, err = org.user.GetByAccount(cmd.Account, false)
 	if err != nil {
 		return fmt.Errorf("failed to get user for adding member, %w", err)
 	}
@@ -514,7 +514,7 @@ func (org *orgService) CheckName(name primitive.Account) bool {
 	}
 	_, err1 := org.repo.GetByName(name)
 
-	_, err2 := org.user.GetByAccount(name)
+	_, err2 := org.user.GetByAccount(name, false)
 
 	if repositories.IsErrorDataNotExists(err1) && commonrepo.IsErrorResourceNotExists(err2) {
 		return true

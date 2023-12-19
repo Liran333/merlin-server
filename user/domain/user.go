@@ -1,8 +1,14 @@
 package domain
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 // user
@@ -12,9 +18,8 @@ type User struct {
 	Email   Email
 	Account Account
 
-	PlatformPwd    string                   //password for git user
-	PlatformId     int64                    // id in gitea
-	PlatformTokens map[string]PlatformToken // token for git user
+	PlatformPwd string //password for git user
+	PlatformId  int64  // id in gitea
 
 	Bio      Bio
 	AvatarId AvatarId
@@ -35,6 +40,7 @@ const (
 )
 
 type PlatformToken struct {
+	Id      string
 	Token   string
 	Name    string
 	Account Account
@@ -42,14 +48,47 @@ type PlatformToken struct {
 	Expire     int64 // timeout in seconds
 	CreatedAt  int64
 	Permission TokenPerm
+	Salt       string
+	LastEight  string
+	Version    int
+}
+
+func (t PlatformToken) Compare(token string) bool {
+	saltBtye, err := base64.RawStdEncoding.DecodeString(t.Salt)
+	if err != nil {
+		return false
+	}
+
+	srcBtye, err := base64.RawStdEncoding.DecodeString(t.Token)
+	if err != nil {
+		return false
+	}
+
+	dstBytes := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
+
+	return bytes.Equal(srcBtye, dstBytes)
+}
+
+func EncryptToken(token string) (enc, salt string, err error) {
+	saltBtye := make([]byte, 32)
+	_, err = rand.Read(saltBtye)
+	if err != nil {
+		return
+	}
+
+	encBytes := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
+
+	enc = base64.RawStdEncoding.EncodeToString(encBytes)
+	salt = base64.RawStdEncoding.EncodeToString(saltBtye)
+	return
 }
 
 func ToPerms(t TokenPerm) []string {
 	switch t {
 	case TokenPermWrite:
-		return []string{"write:organization", "write:repository"}
+		return []string{"write:organization", "write:repository", "write:user"}
 	case TokenPermRead:
-		return []string{"read:organization", "read:repository"}
+		return []string{"read:organization", "read:repository", "read:user"}
 	default:
 		return []string{}
 	}
