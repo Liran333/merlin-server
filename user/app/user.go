@@ -199,6 +199,7 @@ func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error)
 	tokens = make([]TokenDTO, len(ts))
 	for t := range ts {
 		tokens[t] = newTokenDTO(&ts[t])
+		tokens[t].Token = ""
 	}
 
 	return

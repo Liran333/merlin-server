@@ -340,8 +340,63 @@ func (org *orgService) AddMember(cmd *OrgAddMemberCmd) error {
 	return nil
 }
 
+func (org *orgService) canRemoveMember(cmd *OrgRemoveMemberCmd) (err error) {
+	// check if this is the only owner
+	members, err := org.member.GetByOrg(cmd.Org.Account())
+	if err != nil {
+		err = fmt.Errorf("failed to get members by org name: %s, %s", cmd.Org, err)
+		return
+	}
+
+	member := cmd.ToMember()
+
+	count := len(members)
+	if count == 1 {
+		err = fmt.Errorf("the org has only one member")
+		return
+	}
+
+	if count == 0 {
+		err = fmt.Errorf("the org has no member")
+		return
+	}
+
+	ownerCount := 0
+	removeOwner := false
+	can := false
+	for _, m := range members {
+		if m.Role == domain.OrgRoleOwner {
+			ownerCount++
+			if m.Username == member.Username {
+				removeOwner = true
+				can = true
+			}
+		}
+		if m.Username == member.Username {
+			can = true
+		}
+	}
+
+	if ownerCount == 1 && removeOwner {
+		err = fmt.Errorf("the only owner can not be removed")
+		return
+	}
+
+	if !can {
+		err = fmt.Errorf("the member is not in the org")
+		return
+	}
+
+	return
+}
+
 func (org *orgService) RemoveMember(cmd *OrgRemoveMemberCmd) error {
 	err := cmd.Validate()
+	if err != nil {
+		return err
+	}
+
+	err = org.canRemoveMember(cmd)
 	if err != nil {
 		return err
 	}
