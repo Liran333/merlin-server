@@ -91,13 +91,14 @@ func (p *reqToUpdateModel) toCmd() (cmd app.CmdToUpdateModel, err error) {
 type reqToListUserModels struct {
 	Name         string `form:"name"`
 	SortBy       string `form:"sort_by"`
-	LastId       string `form:"last_id"`
+	Count        bool   `form:"count"`
 	PageNum      int    `form:"page_num"`
 	CountPerPage int    `form:"count_per_page"`
 }
 
 func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 	cmd.Name = req.Name
+	cmd.Count = req.Count
 
 	if req.SortBy != "" {
 		if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
@@ -111,25 +112,15 @@ func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 		cmd.CountPerPage = v
 	}
 
-	if req.LastId != "" && req.PageNum > 0 {
-		err = errors.New("it can't set last_id and page_num at same time")
-
-		return
-	}
-
-	if req.LastId != "" {
-		cmd.LastId = req.LastId
+	if v := req.PageNum; v <= 0 {
+		cmd.PageNum = firstPage
 	} else {
-		if v := req.PageNum; v <= 0 {
-			cmd.PageNum = firstPage
-		} else {
-			if v > (math.MaxInt / cmd.CountPerPage) {
-				err = errors.New("invalid page num")
+		if v > (math.MaxInt / cmd.CountPerPage) {
+			err = errors.New("invalid page num")
 
-				return
-			}
-			cmd.PageNum = v
+			return
 		}
+		cmd.PageNum = v
 	}
 
 	return

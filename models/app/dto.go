@@ -99,8 +99,7 @@ type CmdToListModels struct {
 
 	SortType primitive.SortType
 
-	// LastId is id of the last element on the previous page
-	LastId       string
+	Count        bool
 	PageNum      int
 	CountPerPage int
 }
@@ -110,7 +109,7 @@ func (cmd *CmdToListModels) toOption() repository.ListOption {
 		Name:         cmd.Name,
 		Owner:        cmd.Owner,
 		Labels:       cmd.Labels,
-		LastId:       cmd.LastId,
+		Count:        cmd.Count,
 		PageNum:      cmd.PageNum,
 		CountPerPage: cmd.CountPerPage,
 	}

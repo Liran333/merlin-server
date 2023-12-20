@@ -185,8 +185,8 @@ func (ctl *ModelController) Get(ctx *gin.Context) {
 // @Tags     Model
 // @Param    owner           path   string  true   "owner of model"
 // @Param    name            query  string  false  "name of model"
+// @Param    count           query  bool    false  "whether to calculate the total"
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    last_id         query  string  false  "id of the last element on the previous page"
 // @Param    page_num        query  int     false  "page num which starts from 1"
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json
@@ -248,9 +248,9 @@ func (ctl *ModelController) List(ctx *gin.Context) {
 // @Description  list global public model
 // @Tags     Model
 // @Param    name            query  string  false  "name of model"
+// @Param    count           query  bool    false  "whether to calculate the total"
 // @Param    labels          query  string  false  "labels, separate multiple each ones with commas"
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    last_id         query  string  false  "id of the last element on the previous page"
 // @Param    page_num        query  int     false  "page num which starts from 1"
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json

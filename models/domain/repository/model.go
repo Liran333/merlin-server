@@ -33,10 +33,18 @@ type ListOption struct {
 	// list models which have the labels
 	Labels []string
 
-	// LastId is id of the last element on the previous page
-	LastId       string
-	PageNum      int // will return the total num when PageNum == 1
+	// whether to calculate the total
+	Count        bool
+	PageNum      int
 	CountPerPage int
+}
+
+func (opt *ListOption) Pagination() (bool, int) {
+	if opt.PageNum > 0 && opt.CountPerPage > 0 {
+		return true, (opt.PageNum - 1) * opt.CountPerPage
+	}
+
+	return false, 0
 }
 
 type ModelRepositoryAdapter interface {

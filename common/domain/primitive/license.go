@@ -15,6 +15,10 @@ func NewLicense(v string) (License, error) {
 	return license(v), nil
 }
 
+func CreateLicense(v string) License {
+	return license(v)
+}
+
 type license string
 
 func (r license) License() string {

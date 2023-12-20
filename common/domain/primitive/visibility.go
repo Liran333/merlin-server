@@ -31,6 +31,10 @@ func NewVisibility(v string) (Visibility, error) {
 	return visibility(v), nil
 }
 
+func CreateVisibility(v string) Visibility {
+	return visibility(v)
+}
+
 type visibility string
 
 func (r visibility) Visibility() string {
