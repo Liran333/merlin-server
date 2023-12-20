@@ -12,12 +12,13 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/controller"
-	"github.com/openmerlin/merlin-server/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
 	session "github.com/openmerlin/merlin-server/session/app"
@@ -36,13 +37,14 @@ import (
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
 )
 
 func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
-	r := gin.New()
-	r.Use(gin.Recovery())
-	r.Use(logRequest())
-	r.TrustedPlatform = "x-real-ip"
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+	engine.Use(logRequest())
+	engine.TrustedPlatform = "x-real-ip"
 
 	middleware.Init()
 
@@ -56,17 +58,19 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	// web api
 	services.userMiddleWare = middleware.WebAPI()
 
-	setRouter("/web", r, cfg, &services)
+	setRouter("/web", engine, cfg, &services)
 
 	// restfull api
 	services.userMiddleWare = middleware.RestfullAPI()
 
-	setRouter("/api", r, cfg, &services)
+	setRouter("/api", engine, cfg, &services)
+
+	engine.UseRawPath = true
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", port),
+		Handler:           engine,
 		ReadHeaderTimeout: time.Duration(cfg.ReadHeaderTimeout) * time.Second,
-		Handler:           r,
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
@@ -108,8 +112,7 @@ func setRouter(prefix string, engine *gin.Engine, cfg *config.Config, services *
 
 	setRouterOfUserAndOrg(rg, cfg)
 
-	engine.UseRawPath = true
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }
 
 func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
@@ -139,7 +142,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 
 	authingUser := oidcimpl.NewAuthingUser()
 
-	git := usergit.NewUserGit(gitea.GetClient())
+	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 	userAppService := userapp.NewUserService(
 		user, git, token)
@@ -167,7 +170,9 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 }
 
 func codeRepoAppService(cfg *config.Config) coderepoapp.CodeRepoAppService {
-	return coderepoapp.NewCodeRepoAppService()
+	return coderepoapp.NewCodeRepoAppService(
+		coderepoadapter.NewRepoAdapter(gitea.Client()),
+	)
 }
 
 func setRouterOfModel(rg *gin.RouterGroup, services *allServices) {

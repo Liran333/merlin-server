@@ -5,9 +5,7 @@ import (
 
 	"code.gitea.io/sdk/gitea"
 
-	infra "github.com/openmerlin/merlin-server/infrastructure/gitea"
-
-	//orgapp "github.com/openmerlin/merlin-server/organization/app"
+	common "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
@@ -15,19 +13,17 @@ import (
 
 type BaseAuthClient struct {
 	username string
-	password string
 	client   *gitea.Client
 }
 
 func NewBaseAuthClient(username, password string) (*BaseAuthClient, error) {
-	client, err := gitea.NewClient(infra.GetClient().Url(), gitea.SetBasicAuth(username, password))
+	client, err := common.NewClient(username, password)
 	if err != nil {
 		return nil, err
 	}
 
 	return &BaseAuthClient{
 		username: username,
-		password: password,
 		client:   client,
 	}, nil
 }

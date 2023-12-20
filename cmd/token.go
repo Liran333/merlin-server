@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	gitea "github.com/openmerlin/merlin-server/infrastructure/gitea"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
+	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -43,7 +43,7 @@ var tokenAddCmd = &cobra.Command{
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
 
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 		t := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
@@ -87,7 +87,7 @@ var tokenDelCmd = &cobra.Command{
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
 
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 		t := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
@@ -127,7 +127,7 @@ var tokenGetCmd = &cobra.Command{
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
 
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 		t := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
@@ -160,7 +160,7 @@ var tokenVerifyCmd = &cobra.Command{
 		t := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 		userAppService := userapp.NewUserService(
 			user, git, t)

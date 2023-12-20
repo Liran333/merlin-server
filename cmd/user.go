@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	gitea "github.com/openmerlin/merlin-server/infrastructure/gitea"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
+	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -56,7 +56,7 @@ var userAddCmd = &cobra.Command{
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
 
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 		userAppService := userapp.NewUserService(
 			user, git, token)
@@ -92,7 +92,7 @@ var userGetCmd = &cobra.Command{
 		token := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 		userAppService := userapp.NewUserService(
 			user, git, token)
@@ -128,7 +128,7 @@ var userDelCmd = &cobra.Command{
 		token := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 		userAppService := userapp.NewUserService(
 			user, git, token)
@@ -172,7 +172,7 @@ var userEditCmd = &cobra.Command{
 		token := userrepoimpl.NewTokenRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
 		)
-		git := usergit.NewUserGit(gitea.GetClient())
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 		userAppService := userapp.NewUserService(
 			user, git, token)

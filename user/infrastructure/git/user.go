@@ -1,7 +1,7 @@
 package git
 
 import (
-	git "github.com/openmerlin/merlin-server/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
@@ -10,16 +10,16 @@ type User interface {
 	Delete(user *domain.User) error
 }
 
-func NewUserGit(c *git.Client) User {
+func NewUserGit(c *giteauser.UserClient) User {
 	return &userGitImpl{c}
 }
 
 type userGitImpl struct {
-	client *git.Client
+	client *giteauser.UserClient
 }
 
 func (u *userGitImpl) Create(cmd *domain.UserCreateCmd) (domain.User, error) {
-	return u.client.CreateUser(&git.UserCreateCmd{
+	return u.client.CreateUser(&giteauser.UserCreateCmd{
 		Username: cmd.Account.Account(),
 		Email:    cmd.Email.Email(),
 	})

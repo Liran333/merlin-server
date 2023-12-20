@@ -24,7 +24,7 @@ func AddRouteForModelController(
 	r.PUT("/v1/model/:id", m.Write, ctl.Update)
 	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
 	r.GET("/v1/model/:owner", m.Optional, ctl.List)
-	r.GET("/v1/model/:owner", m.Optional, ctl.ListGlobal)
+	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
 }
 
 type ModelController struct {

@@ -1,4 +1,4 @@
-package gitea
+package giteauser
 
 import (
 	"bytes"
@@ -45,7 +45,18 @@ func toUser(u *gitea.User) (user domain.User, err error) {
 	return
 }
 
-func (c *Client) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
+func GetClient(c *gitea.Client) *UserClient {
+	return &UserClient{
+		client: c,
+	}
+}
+
+// Client admin client
+type UserClient struct {
+	client *gitea.Client
+}
+
+func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
 	changePwd := false
 	pwd := genPasswd()
 	o := gitea.CreateUserOption{
@@ -66,7 +77,7 @@ func (c *Client) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
 	return
 }
 
-func (c *Client) DeleteUser(name string) (err error) {
+func (c *UserClient) DeleteUser(name string) (err error) {
 	_, err = c.client.AdminDeleteUser(name)
 
 	return

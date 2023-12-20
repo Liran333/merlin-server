@@ -19,3 +19,15 @@ func (r *CodeRepo) IsPrivate() bool {
 func (r *CodeRepo) IsPublic() bool {
 	return r.Visibility.IsPublic()
 }
+
+func (r *CodeRepo) RepoIndex() CodeRepoIndex {
+	return CodeRepoIndex{
+		Name:  r.Name,
+		Owner: r.Owner,
+	}
+}
+
+type CodeRepoIndex struct {
+	Name  primitive.MSDName
+	Owner primitive.Account
+}

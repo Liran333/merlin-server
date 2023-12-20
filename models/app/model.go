@@ -73,7 +73,7 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 
 	// TODO check if can delete
 
-	if err = s.codeRepoApp.Delete(model.Id); err != nil {
+	if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
 		return err
 	}
 
