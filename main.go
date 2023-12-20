@@ -6,10 +6,12 @@ import (
 	"os"
 	"time"
 
-	gitea "github.com/openmerlin/merlin-server/infrastructure/gitea"
+	infrauserclient "github.com/openmerlin/merlin-server/infrastructure/gitea"
 	"github.com/opensourceways/community-robot-lib/logrusutil"
 	"github.com/sirupsen/logrus"
 
+	coderepoadaptercient "github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
+	basegitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/config"
@@ -137,11 +139,12 @@ func main() {
 	}
 
 	// gitea
-	if err := gitea.Init(&cfg.Git); err != nil {
-		logrus.Errorf("init gitea failed, err:%s", err.Error())
-
-		return
+	giteaClient, err := basegitea.Init(&cfg.Git)
+	if err != nil {
+		logrus.Fatalf("init gitea failed, err:%s", err.Error())
 	}
+	infrauserclient.Init(giteaClient)
+	coderepoadaptercient.Init(giteaClient)
 
 	// init
 	cfg.InitUserDomain()

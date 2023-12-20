@@ -5,10 +5,10 @@ import (
 
 	common "github.com/openmerlin/merlin-server/common/config"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/controller"
-	gitea "github.com/openmerlin/merlin-server/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
 	modelctl "github.com/openmerlin/merlin-server/models/controller"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
