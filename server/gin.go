@@ -11,6 +11,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 
 	"github.com/openmerlin/merlin-server/api"
@@ -31,6 +32,7 @@ import (
 
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	modelctl "github.com/openmerlin/merlin-server/models/controller"
+	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
@@ -42,11 +44,24 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	r.Use(logRequest())
 	r.TrustedPlatform = "x-real-ip"
 
-	if err := setRouter(r, cfg); err != nil {
+	middleware.Init()
+
+	services, err := initServices(cfg)
+	if err != nil {
 		logrus.Error(err)
 
 		return
 	}
+
+	// web api
+	services.userMiddleWare = middleware.WebAPI()
+
+	setRouter("/web", r, cfg, &services)
+
+	// restfull api
+	services.userMiddleWare = middleware.RestfullAPI()
+
+	setRouter("/api", r, cfg, &services)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", port),
@@ -59,26 +74,42 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	interrupts.ListenAndServe(srv, timeout)
 }
 
+type allServices struct {
+	modelRepoAdapter modelrepo.ModelRepositoryAdapter
+
+	codeRepoApp coderepoapp.CodeRepoAppService
+
+	userMiddleWare middleware.UserMiddleWare
+}
+
+func initServices(cfg *config.Config) (services allServices, err error) {
+	services.modelRepoAdapter, err = modelrepositoryadapter.NewModelAdapter(
+		postgresql.DB(), &cfg.Model.Tables,
+	)
+	if err != nil {
+		return
+	}
+
+	services.codeRepoApp = codeRepoAppService(cfg)
+
+	return
+}
+
 // setRouter init router
-func setRouter(engine *gin.Engine, cfg *config.Config) error {
-	api.SwaggerInfo.BasePath = "/api"
+func setRouter(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
+	api.SwaggerInfo.BasePath = prefix
 	api.SwaggerInfo.Title = "merlin"
 	api.SwaggerInfo.Description = "set header: 'PRIVATE-TOKEN=xxx'"
 
-	v1 := engine.Group(api.SwaggerInfo.BasePath)
+	rg := engine.Group(api.SwaggerInfo.BasePath)
 
-	codeRepoApp := codeRepoAppService(v1, cfg)
+	// set routers
+	setRouterOfModel(rg, services)
 
-	if err := setRouterOfModel(v1, cfg, codeRepoApp); err != nil {
-		return err
-	}
-
-	setRouterOfUserAndOrg(v1, cfg)
+	setRouterOfUserAndOrg(rg, cfg)
 
 	engine.UseRawPath = true
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-
-	return nil
 }
 
 func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
@@ -135,29 +166,16 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 	}
 }
 
-func codeRepoAppService(
-	v1 *gin.RouterGroup, cfg *config.Config,
-) coderepoapp.CodeRepoAppService {
+func codeRepoAppService(cfg *config.Config) coderepoapp.CodeRepoAppService {
 	return coderepoapp.NewCodeRepoAppService()
 }
 
-func setRouterOfModel(
-	v1 *gin.RouterGroup, cfg *config.Config,
-	codeRepoApp coderepoapp.CodeRepoAppService,
-) error {
-	repo, err := modelrepositoryadapter.NewModelAdapter(
-		postgresql.DB(), &cfg.Model.Tables,
-	)
-	if err != nil {
-		return err
-	}
-
+func setRouterOfModel(rg *gin.RouterGroup, services *allServices) {
 	modelctl.AddRouteForModelController(
-		v1,
-		modelapp.NewModelAppService(codeRepoApp, repo),
+		rg,
+		modelapp.NewModelAppService(services.codeRepoApp, services.modelRepoAdapter),
+		services.userMiddleWare,
 	)
-
-	return nil
 }
 
 func logRequest() gin.HandlerFunc {

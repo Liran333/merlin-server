@@ -12,24 +12,24 @@ import (
 func AddRouteForModelController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
+	m middleware.UserMiddleWare,
 ) {
 	ctl := ModelController{
-		appService: s,
+		appService:     s,
+		userMiddleWare: m,
 	}
 
-	must := middleware.UserMiddleware().Must
-	optional := middleware.UserMiddleware().Optional
-
-	r.POST(`/v1/model`, must, ctl.Create)
-	r.DELETE("/v1/model/:id", must, ctl.Delete)
-	r.PUT("/v1/model/:id", must, ctl.Update)
-	r.GET("/v1/model/:owner/:name", optional, ctl.Get)
-	r.GET("/v1/model/:owner", optional, ctl.List)
-	r.GET("/v1/model/:owner", optional, ctl.ListGlobal)
+	r.POST(`/v1/model`, m.Write, ctl.Create)
+	r.DELETE("/v1/model/:id", m.Write, ctl.Delete)
+	r.PUT("/v1/model/:id", m.Write, ctl.Update)
+	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
+	r.GET("/v1/model/:owner", m.Optional, ctl.List)
+	r.GET("/v1/model/:owner", m.Optional, ctl.ListGlobal)
 }
 
 type ModelController struct {
-	appService app.ModelAppService
+	appService     app.ModelAppService
+	userMiddleWare middleware.UserMiddleWare
 }
 
 // @Summary  Create
@@ -54,7 +54,7 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 		return
 	}
 
-	user := middleware.UserMiddleware().GetUser(ctx)
+	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if v, err := ctl.appService.Create(user, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -71,7 +71,7 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/model/{id} [delete]
 func (ctl *ModelController) Delete(ctx *gin.Context) {
-	user := middleware.UserMiddleware().GetUser(ctx)
+	user := ctl.userMiddleWare.GetUser(ctx)
 
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
@@ -118,7 +118,7 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 	}
 
 	err = ctl.appService.Update(
-		middleware.UserMiddleware().GetUser(ctx),
+		ctl.userMiddleWare.GetUser(ctx),
 		modelId, &cmd,
 	)
 	if err != nil {
@@ -142,7 +142,7 @@ func (ctl *ModelController) Get(ctx *gin.Context) {
 		return
 	}
 
-	user := middleware.UserMiddleware().GetUser(ctx)
+	user := ctl.userMiddleWare.GetUser(ctx)
 
 	dto, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
@@ -214,7 +214,7 @@ func (ctl *ModelController) List(ctx *gin.Context) {
 		return
 	}
 
-	user := middleware.UserMiddleware().GetUser(ctx)
+	user := ctl.userMiddleWare.GetUser(ctx)
 
 	dto, err := ctl.appService.List(user, &cmd)
 	if err != nil {
@@ -271,7 +271,7 @@ func (ctl *ModelController) ListGlobal(ctx *gin.Context) {
 		return
 	}
 
-	user := middleware.UserMiddleware().GetUser(ctx)
+	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if result, err := ctl.appService.List(user, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
