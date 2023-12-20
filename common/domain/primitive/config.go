@@ -1,7 +1,31 @@
 package primitive
 
-var msdConfig MSDConfig
+import "strings"
 
+var (
+	msdConfig   MSDConfig
+	allLicenses map[string]bool
+)
+
+func Init(cfg *Config) {
+	msdConfig = cfg.MSDConfig
+
+	m := map[string]bool{}
+	for _, v := range cfg.Licenses {
+		m[strings.ToLower(v)] = true
+	}
+
+	allLicenses = m
+}
+
+// Config
+type Config struct {
+	MSDConfig
+
+	Licenses []string `json:"licenses" required:"true"`
+}
+
+// MSDConfig
 type MSDConfig struct {
 	MaxNameLength     int `json:"max_name_length"`
 	MinNameLength     int `json:"min_name_length"`

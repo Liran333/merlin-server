@@ -1,6 +1,9 @@
 package primitive
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 // License
 type License interface {
@@ -8,7 +11,9 @@ type License interface {
 }
 
 func NewLicense(v string) (License, error) {
-	if v == "" || !licenseValidator.IsValidLicense(v) {
+	v = strings.ToLower(strings.TrimSpace(v))
+
+	if v == "" || !allLicenses[v] {
 		return nil, errors.New("unsupported license")
 	}
 

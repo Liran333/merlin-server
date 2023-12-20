@@ -54,7 +54,7 @@ func initServer(configFile string) {
 	}
 
 	//redis
-	if err := redis.Init(&cfg.Redis.DB, false); err != nil {
+	if err := redis.Init(&cfg.Redis, false); err != nil {
 		logrus.Fatalf("init redis failed, err:%s", err.Error())
 	}
 

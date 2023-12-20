@@ -93,6 +93,13 @@ definitions:
     - role
     - user
     type: object
+  controller.OrgRevokeInviteRequest:
+    properties:
+      user:
+        type: string
+    required:
+    - user
+    type: object
   controller.ResponseData:
     properties:
       code:
@@ -172,6 +179,23 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  controller.orgMemberAddRequest:
+    properties:
+      user:
+        type: string
+    required:
+    - user
+    type: object
+  controller.orgMemberRemoveRequest:
+    properties:
+      role:
+        type: string
+      user:
+        type: string
+    required:
+    - role
+    - user
     type: object
   controller.reqToCreateModel:
     properties:
@@ -335,6 +359,10 @@ paths:
         in: query
         name: name
         type: string
+      - description: whether to calculate the total
+        in: query
+        name: count
+        type: boolean
       - description: labels, separate multiple each ones with commas
         in: query
         name: labels
@@ -343,10 +371,6 @@ paths:
           recently_created'
         in: query
         name: sort_by
-        type: string
-      - description: id of the last element on the previous page
-        in: query
-        name: last_id
         type: string
       - description: page num which starts from 1
         in: query
@@ -396,7 +420,7 @@ paths:
         type: string
       responses:
         "204":
-          description: No Content
+          description: ""
       summary: Delete
       tags:
       - Model
@@ -439,14 +463,14 @@ paths:
         in: query
         name: name
         type: string
+      - description: whether to calculate the total
+        in: query
+        name: count
+        type: boolean
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'
         in: query
         name: sort_by
-        type: string
-      - description: id of the last element on the previous page
-        in: query
-        name: last_id
         type: string
       - description: page num which starts from 1
         in: query
@@ -588,7 +612,7 @@ paths:
         type: string
       responses:
         "204":
-          description: No Content
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -683,7 +707,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.OrgInviteMemberRequest'
+          $ref: '#/definitions/controller.OrgRevokeInviteRequest'
       - description: organization name
         in: path
         name: name
@@ -773,12 +797,12 @@ paths:
       - application/json
       description: Remove a member from a organization
       parameters:
-      - description: body of new organization
+      - description: body of the removed member
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.orgCreateRequest'
+          $ref: '#/definitions/controller.orgMemberRemoveRequest'
       - description: name
         in: path
         name: name
@@ -786,7 +810,7 @@ paths:
         type: string
       responses:
         "204":
-          description: No Content
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -832,12 +856,12 @@ paths:
       description: Add a member to the organization, the user must be on invite list
         before adding
       parameters:
-      - description: body of new organization
+      - description: body of new member
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.orgCreateRequest'
+          $ref: '#/definitions/controller.orgMemberAddRequest'
       - description: name
         in: path
         name: name
@@ -845,7 +869,7 @@ paths:
         type: string
       responses:
         "201":
-          description: Created
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -911,7 +935,7 @@ paths:
       description: check user email
       responses:
         "200":
-          description: OK
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -979,7 +1003,7 @@ paths:
         type: string
       responses:
         "204":
-          description: No Content
+          description: ""
         "400":
           description: Bad Request
           schema:

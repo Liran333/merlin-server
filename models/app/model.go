@@ -22,6 +22,16 @@ type ModelAppService interface {
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
 
+func NewModelAppService(
+	codeRepoApp coderepoapp.CodeRepoAppService,
+	repoAdapter repository.ModelRepositoryAdapter,
+) ModelAppService {
+	return &modelAppService{
+		codeRepoApp: codeRepoApp,
+		repoAdapter: repoAdapter,
+	}
+}
+
 type modelAppService struct {
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter

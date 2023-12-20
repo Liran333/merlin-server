@@ -10,13 +10,13 @@ import (
 	"github.com/opensourceways/community-robot-lib/logrusutil"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/server"
-	"github.com/openmerlin/merlin-server/user/domain"
 )
 
 type options struct {
@@ -75,11 +75,15 @@ func main() {
 		os.Args[1:]...,
 	)
 	if err != nil {
-		logrus.Fatalf("new options failed, err:%s", err.Error())
+		logrus.Errorf("new options failed, err:%s", err.Error())
+
+		return
 	}
 
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options, err:%s", err.Error())
+		logrus.Errorf("Invalid options, err:%s", err.Error())
+
+		return
 	}
 
 	if o.enableDebug {
@@ -91,7 +95,9 @@ func main() {
 	cfg := new(config.Config)
 
 	if err := config.LoadConfig(o.service.ConfigFile, cfg, o.service.RemoveCfg); err != nil {
-		logrus.Fatalf("load config, err:%s", err.Error())
+		logrus.Errorf("load config, err:%s", err.Error())
+
+		return
 	}
 
 	// authing
@@ -101,28 +107,46 @@ func main() {
 	api := &cfg.API
 
 	if err := controller.Init(api, log); err != nil {
-		logrus.Fatalf("initialize api controller failed, err:%s", err.Error())
+		logrus.Errorf("initialize api controller failed, err:%s", err.Error())
+
+		return
 	}
 
 	// mongo
 	m := &cfg.Mongodb
 	if err := mongodb.Initialize(m.DBConn, m.DBName, m.DBCert, o.service.RemoveCfg); err != nil {
-		logrus.Fatalf("initialize mongodb failed, err:%s", err.Error())
+		logrus.Errorf("initialize mongodb failed, err:%s", err.Error())
+
+		return
 	}
 
 	defer mongodb.Close()
+
 	//redis
-	if err := redis.Init(&cfg.Redis.DB, o.service.RemoveCfg); err != nil {
-		logrus.Fatalf("init redis failed, err:%s", err.Error())
+	if err := redis.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
+		logrus.Errorf("init redis failed, err:%s", err.Error())
+
+		return
 	}
 
-	// user
-	domain.Init(&cfg.User)
+	// postgresql
+	if err := postgresql.Init(&cfg.Postgresql); err != nil {
+		logrus.Errorf("init postgresql failed, err:%s", err.Error())
+
+		return
+	}
 
 	// gitea
 	if err := gitea.Init(&cfg.Git); err != nil {
-		logrus.Fatalf("init gitea failed, err:%s", err.Error())
+		logrus.Errorf("init gitea failed, err:%s", err.Error())
+
+		return
 	}
+
+	// init
+	cfg.InitUserDomain()
+	cfg.InitPrimitive()
+	cfg.InitModel()
 
 	// run
 	server.StartWebServer(o.service.Port, o.service.GracePeriod, cfg)

@@ -115,6 +115,12 @@
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "description": "whether to calculate the total",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "labels, separate multiple each ones with commas",
                         "name": "labels",
@@ -124,12 +130,6 @@
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "id of the last element on the previous page",
-                        "name": "last_id",
                         "in": "query"
                     },
                     {
@@ -241,7 +241,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": ""
                     }
                 }
             }
@@ -271,15 +271,15 @@
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
-                        "name": "sort_by",
+                        "type": "boolean",
+                        "description": "whether to calculate the total",
+                        "name": "count",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "id of the last element on the previous page",
-                        "name": "last_id",
+                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
+                        "name": "sort_by",
                         "in": "query"
                     },
                     {
@@ -596,7 +596,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -726,7 +726,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.OrgInviteMemberRequest"
+                            "$ref": "#/definitions/controller.OrgRevokeInviteRequest"
                         }
                     },
                     {
@@ -816,12 +816,12 @@
                 "summary": "Add organization members",
                 "parameters": [
                     {
-                        "description": "body of new organization",
+                        "description": "body of new member",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.orgCreateRequest"
+                            "$ref": "#/definitions/controller.orgMemberAddRequest"
                         }
                     },
                     {
@@ -834,7 +834,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -861,12 +861,12 @@
                 "summary": "Remove organization members",
                 "parameters": [
                     {
-                        "description": "body of new organization",
+                        "description": "body of the removed member",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.orgCreateRequest"
+                            "$ref": "#/definitions/controller.orgMemberRemoveRequest"
                         }
                     },
                     {
@@ -879,7 +879,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -978,7 +978,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1084,7 +1084,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1253,6 +1253,17 @@
                 }
             }
         },
+        "controller.OrgRevokeInviteRequest": {
+            "type": "object",
+            "required": [
+                "user"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.ResponseData": {
             "type": "object",
             "properties": {
@@ -1371,6 +1382,32 @@
                     "type": "string"
                 },
                 "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.orgMemberAddRequest": {
+            "type": "object",
+            "required": [
+                "user"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.orgMemberRemoveRequest": {
+            "type": "object",
+            "required": [
+                "role",
+                "user"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "user": {
                     "type": "string"
                 }
             }

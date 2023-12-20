@@ -1,9 +1,6 @@
 package domain
 
-import "k8s.io/apimachinery/pkg/util/sets"
-
 type Config struct {
-	avatarURL    sets.Set[string]
 	AvatarURL    []string `json:"avatar_url"        required:"true"`
 	MaxBioLength int      `json:"max_bio_length"    required:"true"`
 }

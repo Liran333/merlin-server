@@ -9,7 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/app"
 )
 
-func AddRouteForSoftwarePkgController(
+func AddRouteForModelController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
 ) {

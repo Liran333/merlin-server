@@ -11,6 +11,8 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/controller"
@@ -26,6 +28,12 @@ import (
 
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
+
+	modelapp "github.com/openmerlin/merlin-server/models/app"
+	modelctl "github.com/openmerlin/merlin-server/models/controller"
+	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+
+	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 )
 
 func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
@@ -57,6 +65,23 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 	api.SwaggerInfo.Title = "merlin"
 	api.SwaggerInfo.Description = "set header: 'PRIVATE-TOKEN=xxx'"
 
+	v1 := engine.Group(api.SwaggerInfo.BasePath)
+
+	codeRepoApp := codeRepoAppService(v1, cfg)
+
+	if err := setRouterOfModel(v1, cfg, codeRepoApp); err != nil {
+		return err
+	}
+
+	setRouterOfUserAndOrg(v1, cfg)
+
+	engine.UseRawPath = true
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
+	return nil
+}
+
+func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 	collections := &cfg.Mongodb.Collections
 
 	user := userrepoimpl.NewUserRepo(
@@ -85,8 +110,6 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 
 	git := usergit.NewUserGit(gitea.GetClient())
 
-	v1 := engine.Group(api.SwaggerInfo.BasePath)
-
 	userAppService := userapp.NewUserService(
 		user, git, token)
 
@@ -110,8 +133,29 @@ func setRouter(engine *gin.Engine, cfg *config.Config) error {
 		)
 
 	}
-	engine.UseRawPath = true
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+}
+
+func codeRepoAppService(
+	v1 *gin.RouterGroup, cfg *config.Config,
+) coderepoapp.CodeRepoAppService {
+	return coderepoapp.NewCodeRepoAppService()
+}
+
+func setRouterOfModel(
+	v1 *gin.RouterGroup, cfg *config.Config,
+	codeRepoApp coderepoapp.CodeRepoAppService,
+) error {
+	repo, err := modelrepositoryadapter.NewModelAdapter(
+		postgresql.DB(), &cfg.Model.Tables,
+	)
+	if err != nil {
+		return err
+	}
+
+	modelctl.AddRouteForModelController(
+		v1,
+		modelapp.NewModelAppService(codeRepoApp, repo),
+	)
 
 	return nil
 }
