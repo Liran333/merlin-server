@@ -26,6 +26,7 @@ func AddRouterForOrgController(
 	rg.GET("/v1/organization/:name", ctl.Get)
 	rg.GET("/v1/organization", ctl.List)
 	rg.DELETE("/v1/organization/:name", ctl.Delete)
+	rg.HEAD("/v1/name", ctl.Check)
 
 	rg.POST("/v1/organization/:name/invite", ctl.InviteMember)
 	rg.GET("/v1/organization/:name/invite", ctl.ListInvitation)
@@ -111,7 +112,7 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 // @Tags			Organization
 // @Param			name	path	string	true	"name"
 // @Accept			json
-// @Success		200	{object}			userDetail
+// @Success		200	{object}			orgapp.OrganizationDTO
 // @Failure		400	bad_request_param	account	is		invalid
 // @Failure		401	resource_not_exists	user	does	not	exist
 // @Failure		500	system_error		system	error
@@ -141,6 +142,32 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 		ctl.sendRespWithInternalError(ctx, newResponseError(err))
 	} else {
 		ctx.JSON(http.StatusOK, newResponseData(o))
+	}
+}
+
+// @Summary		Check the name is available
+// @Description	 Check the name is available
+// @Tags			Name
+// @Param			name	query	string	true	"name"
+// @Accept			json
+// @Success		200	name is valid
+// @Failure		409	name is been used
+// @Router			/v1/name [head]
+func (ctl *OrgController) Check(ctx *gin.Context) {
+	name, err := primitive.NewAccount(ctl.getQueryParameter(ctx, "name"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
+			errorBadRequestParam, fmt.Errorf("name invalid"),
+		))
+
+		return
+	}
+
+	// get org info
+	if bool := ctl.org.CheckName(name); bool {
+		ctx.JSON(http.StatusOK, newResponseData(nil))
+	} else {
+		ctx.JSON(http.StatusConflict, newResponseData(nil))
 	}
 }
 
@@ -309,7 +336,7 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 // @Title			Add organization members
 // @Description Add a member to the organization, the user must be on invite list before adding
 // @Tags			Organization
-// @Param			body	body	orgCreateRequest	true	"body of new organization"
+// @Param			body	body	orgMemberAddRequest	true	"body of new member"
 // @Param			name	path	string	true	"name"
 // @Accept			json
 // @Success		201
@@ -379,7 +406,7 @@ func (ctl *OrgController) AddMember(ctx *gin.Context) {
 // @Title			Remove organization members
 // @Description Remove a member from a organization
 // @Tags			Organization
-// @Param			body	body	orgCreateRequest	true	"body of new organization"
+// @Param			body	body	orgMemberRemoveRequest	true	"body of the removed member"
 // @Param			name	path	string	true	"name"
 // @Accept			json
 // @Success		204
@@ -527,7 +554,7 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 // @Success		200 {object} []orgapp.ApproveDTO
 // @Failure		400	bad_request_param	account	is	invalid
 // @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Router			/v1/organization/{name}/invite [post]
+// @Router			/v1/organization/{name}/invite [get]
 func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {
@@ -566,13 +593,13 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 // @Title			Revoke invitation of the organization
 // @Description Revoke invitation of the organization
 // @Tags			Organization
-// @Param			body	body	OrgInviteMemberRequest	true	"body of the invitation"
+// @Param			body	body	OrgRevokeInviteRequest	true	"body of the invitation"
 // @Param			name	path	string	true	"organization name"
 // @Accept			json
 // @Success		200 {object} []orgapp.ApproveDTO
 // @Failure		400	bad_request_param	account	is	invalid
 // @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Router			/v1/organization/{name}/invite [post]
+// @Router			/v1/organization/{name}/invite [delete]
 func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {

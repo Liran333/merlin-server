@@ -352,6 +352,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/name": {
+            "head": {
+                "description": "Check the name is available",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Name"
+                ],
+                "summary": "Check the name is available",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "name"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "name"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/organization": {
             "get": {
                 "description": "get organization info",
@@ -472,7 +507,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.userDetail"
+                            "$ref": "#/definitions/app.OrganizationDTO"
                         }
                     },
                     "400": {
@@ -596,7 +631,97 @@ const docTemplate = `{
             }
         },
         "/v1/organization/{name}/invite": {
+            "get": {
+                "description": "List invitation of the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List invitation of the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "organization name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.ApproveDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            },
             "post": {
+                "description": "Send invitation to a user to join the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Invite a user to be a member of the organization",
+                "parameters": [
+                    {
+                        "description": "body of the invitation",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.OrgInviteMemberRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/app.OrganizationDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            },
+            "delete": {
                 "description": "Revoke invitation of the organization",
                 "consumes": [
                     "application/json"
@@ -1121,12 +1246,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "tokens": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/app.TokenDTO"
-                    }
                 }
             }
         },
@@ -1353,12 +1472,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "tokens": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/app.TokenDTO"
-                    }
                 }
             }
         },

@@ -82,10 +82,6 @@ definitions:
         type: string
       id:
         type: string
-      tokens:
-        items:
-          $ref: '#/definitions/app.TokenDTO'
-        type: array
     type: object
   controller.OrgInviteMemberRequest:
     properties:
@@ -234,10 +230,6 @@ definitions:
         type: string
       id:
         type: string
-      tokens:
-        items:
-          $ref: '#/definitions/app.TokenDTO'
-        type: array
     type: object
   repository.ModelSummary:
     properties:
@@ -496,6 +488,29 @@ paths:
       summary: Get
       tags:
       - Model
+  /v1/name:
+    head:
+      consumes:
+      - application/json
+      description: Check the name is available
+      parameters:
+      - description: name
+        in: query
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: name
+        "409":
+          description: Conflict
+          schema:
+            type: name
+      summary: Check the name is available
+      tags:
+      - Name
   /v1/organization:
     get:
       consumes:
@@ -603,7 +618,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.userDetail'
+            $ref: '#/definitions/app.OrganizationDTO'
         "400":
           description: Bad Request
           schema:
@@ -658,7 +673,7 @@ paths:
       tags:
       - Organization
   /v1/organization/{name}/invite:
-    post:
+    delete:
       consumes:
       - application/json
       description: Revoke invitation of the organization
@@ -690,6 +705,66 @@ paths:
           schema:
             type: not_allowed
       summary: Revoke invitation of the organization
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: List invitation of the organization
+      parameters:
+      - description: organization name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.ApproveDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      summary: List invitation of the organization
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to a user to join the organization
+      parameters:
+      - description: body of the invitation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgInviteMemberRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app.OrganizationDTO'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      summary: Invite a user to be a member of the organization
       tags:
       - Organization
   /v1/organization/{name}/member:

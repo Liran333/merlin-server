@@ -22,6 +22,7 @@ func toOrgDoc(o domain.Organization) Organization {
 		OwnerTeamId: o.OwnerTeamId,
 		WriteTeamId: o.WriteTeamId,
 		ReadTeamId:  o.ReadTeamId,
+		AdminTeamId: o.AdminTeamId,
 		Approves:    approves,
 	}
 }

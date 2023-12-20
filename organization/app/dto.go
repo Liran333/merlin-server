@@ -59,7 +59,8 @@ type OrgListOptions struct {
 func (cmd OrgInviteMemberCmd) Validate() error {
 	if cmd.Role != string(domain.OrgRoleOwner) &&
 		cmd.Role != string(domain.OrgRoleReader) &&
-		cmd.Role != string(domain.OrgRoleWriter) {
+		cmd.Role != string(domain.OrgRoleWriter) &&
+		cmd.Role != string(domain.OrgRoleAdmin) {
 		return fmt.Errorf("invalid role: %s", cmd.Role)
 	}
 
