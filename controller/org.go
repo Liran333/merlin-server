@@ -235,6 +235,7 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 		Website:     req.Website,
 		AvatarId:    req.AvatarId,
 		Description: req.Description,
+		FullName:    req.FullName,
 	})
 	if err != nil {
 		logrus.Errorf("create org failed: %s", err)
