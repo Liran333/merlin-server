@@ -36,6 +36,6 @@ type User interface {
 	GetByFollower(owner, follower domain.Account) (domain.User, bool, error)
 	FindUsersInfo([]domain.Account) ([]domain.UserInfo, error)
 	GetUserAvatarId(domain.Account) (domain.AvatarId, error)
-
+	GetUserFullname(domain.Account) (string, error)
 	Search(*UserSearchOption) (UserSearchResult, error)
 }

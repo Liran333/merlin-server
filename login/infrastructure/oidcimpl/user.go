@@ -54,10 +54,11 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo login.UserInfo,
 	}
 
 	var v struct {
-		Name    string `json:"username,omitempty"`
-		Picture string `json:"picture,omitempty"`
-		Email   string `json:"email,omitempty"`
-		Sub     string `json:"sub,omitempty"`
+		Name     string `json:"username,omitempty"`
+		Picture  string `json:"picture,omitempty"`
+		Email    string `json:"email,omitempty"`
+		Sub      string `json:"sub,omitempty"`
+		FullName string `json:"nickname,omitempty"`
 	}
 
 	if err = impl.getUserInfoByAccessToken(accessToken, &v); err != nil {
@@ -77,6 +78,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo login.UserInfo,
 	}
 
 	userInfo.UserId = v.Sub
+	userInfo.Fullname = v.FullName
 
 	return
 }

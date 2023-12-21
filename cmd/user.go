@@ -107,6 +107,7 @@ var userGetCmd = &cobra.Command{
 			fmt.Printf("Bio: %s\n", u.Bio)
 			fmt.Printf("AvatarId: %s\n", u.AvatarId)
 			fmt.Printf("Id: %s\n", u.Id)
+			fmt.Printf("Fullname: %s\n", u.Fullname)
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -165,7 +166,10 @@ var userEditCmd = &cobra.Command{
 		if err == nil {
 			updateCmd.Email = email
 		}
-
+		fullname := viper.GetString("user.edit.fullname")
+		if fullname != "" {
+			updateCmd.Fullname = fullname
+		}
 		user := userrepoimpl.NewUserRepo(
 			mongodb.NewCollection(cfg.Mongodb.Collections.User),
 		)
@@ -218,11 +222,12 @@ func init() {
 	userEditCmd.Flags().StringP("email", "e", "", "user email")
 	userEditCmd.Flags().StringP("bio", "b", "", "user bio")
 	userEditCmd.Flags().StringP("avatar", "a", "", "user avatar")
+	userEditCmd.Flags().StringP("fullname", "f", "", "user fullname")
 	if err := userEditCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
 
-	userEditCmd.MarkFlagsOneRequired("avatar", "bio", "email")
+	userEditCmd.MarkFlagsOneRequired("avatar", "bio", "email", "fullname")
 
 	if err := viper.BindPFlag("user.create.name", userAddCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
@@ -243,6 +248,9 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.edit.bio", userEditCmd.Flags().Lookup("bio")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.edit.fullname", userEditCmd.Flags().Lookup("fullname")); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.edit.avatar", userEditCmd.Flags().Lookup("avatar")); err != nil {

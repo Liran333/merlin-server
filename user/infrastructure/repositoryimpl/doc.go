@@ -11,6 +11,7 @@ const (
 	fieldAccount        = "account"
 	fieldBio            = "bio"
 	fieldAvatarId       = "avatar_id"
+	fieldFullname       = "fullname"
 	fieldVersion        = "version"
 	fieldFollower       = "follower"
 	fieldFollowing      = "following"
@@ -28,6 +29,7 @@ type DUser struct {
 	Email    string `bson:"email"      json:"email"`
 	Bio      string `bson:"bio"        json:"bio"`
 	AvatarId string `bson:"avatar_id"  json:"avatar_id"`
+	Fullname string `bson:"fullname"   json:"fullname"`
 
 	PlatformUserId          string `bson:"uid"        json:"uid"`
 	PlatformUserNamespaceId string `bson:"nid"        json:"nid"`

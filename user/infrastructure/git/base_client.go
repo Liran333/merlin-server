@@ -135,9 +135,9 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 	cmd.OwnerTeamId = teams[0].ID
 
 	team, _, err := c.client.CreateTeam(cmd.Name.Account(), gitea.CreateTeamOption{
-		Name:                    "admin",
-		Description:             "admin team",
-		Permission:              gitea.AccessModeAdmin,
+		Name:                    "contributor",
+		Description:             "contributor team",
+		Permission:              gitea.AccessModeRead,
 		CanCreateOrgRepo:        true,
 		IncludesAllRepositories: true,
 		Units:                   []gitea.RepoUnitType{gitea.RepoUnitCode},
@@ -146,7 +146,7 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		_, _ = c.client.DeleteOrg(cmd.Name.Account())
 		return
 	}
-	cmd.AdminTeamId = team.ID
+	cmd.ContributorTeamId = team.ID
 
 	team, _, err = c.client.CreateTeam(cmd.Name.Account(), gitea.CreateTeamOption{
 		Name:                    "write",
@@ -207,14 +207,14 @@ func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (
 	}
 
 	switch member.Role {
-	case org.OrgRoleOwner:
-		_, err = c.client.AddTeamMember(o.OwnerTeamId, member.Username)
+	case org.OrgRoleContributor:
+		_, err = c.client.AddTeamMember(o.ContributorTeamId, member.Username)
 	case org.OrgRoleReader:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, member.Username)
 	case org.OrgRoleWriter:
 		_, err = c.client.AddTeamMember(o.WriteTeamId, member.Username)
 	case org.OrgRoleAdmin:
-		_, err = c.client.AddTeamMember(o.AdminTeamId, member.Username)
+		_, err = c.client.AddTeamMember(o.OwnerTeamId, member.Username)
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
 	}
@@ -232,14 +232,14 @@ func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember
 	}
 
 	switch member.Role {
-	case org.OrgRoleOwner:
-		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, member.Username)
+	case org.OrgRoleContributor:
+		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, member.Username)
 	case org.OrgRoleReader:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, member.Username)
 	case org.OrgRoleWriter:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, member.Username)
 	case org.OrgRoleAdmin:
-		_, err = c.client.RemoveTeamMember(o.AdminTeamId, member.Username)
+		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, member.Username)
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
 	}
@@ -263,14 +263,14 @@ func (c *BaseAuthClient) CanDelete(name string) (can bool, err error) {
 
 func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, now *org.OrgMember) (err error) {
 	switch orig {
-	case org.OrgRoleOwner:
-		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username)
+	case org.OrgRoleContributor:
+		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, now.Username)
 	case org.OrgRoleReader:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, now.Username)
 	case org.OrgRoleWriter:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, now.Username)
 	case org.OrgRoleAdmin:
-		_, err = c.client.RemoveTeamMember(o.AdminTeamId, now.Username)
+		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username)
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)
 	}
@@ -280,14 +280,14 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, n
 	}
 
 	switch now.Role {
-	case org.OrgRoleOwner:
-		_, err = c.client.AddTeamMember(o.OwnerTeamId, now.Username)
+	case org.OrgRoleContributor:
+		_, err = c.client.AddTeamMember(o.ContributorTeamId, now.Username)
 	case org.OrgRoleReader:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, now.Username)
 	case org.OrgRoleWriter:
 		_, err = c.client.AddTeamMember(o.WriteTeamId, now.Username)
 	case org.OrgRoleAdmin:
-		_, err = c.client.AddTeamMember(o.AdminTeamId, now.Username)
+		_, err = c.client.AddTeamMember(o.OwnerTeamId, now.Username)
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)
 	}

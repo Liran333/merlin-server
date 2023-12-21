@@ -12,18 +12,18 @@ func toOrgDoc(o domain.Organization) Organization {
 		approves[i] = ToApproveDoc(approve)
 	}
 	return Organization{
-		Name:        o.Name.Account(),
-		AvatarId:    o.AvatarId.AvatarId(),
-		FullName:    o.FullName,
-		Website:     o.Website,
-		Description: o.Description,
-		PlatformId:  o.PlatformId,
-		Owner:       o.Owner.Account(),
-		OwnerTeamId: o.OwnerTeamId,
-		WriteTeamId: o.WriteTeamId,
-		ReadTeamId:  o.ReadTeamId,
-		AdminTeamId: o.AdminTeamId,
-		Approves:    approves,
+		Name:              o.Name.Account(),
+		AvatarId:          o.AvatarId.AvatarId(),
+		FullName:          o.FullName,
+		Website:           o.Website,
+		Description:       o.Description,
+		PlatformId:        o.PlatformId,
+		Owner:             o.Owner.Account(),
+		OwnerTeamId:       o.OwnerTeamId,
+		WriteTeamId:       o.WriteTeamId,
+		ReadTeamId:        o.ReadTeamId,
+		ContributorTeamId: o.ContributorTeamId,
+		Approves:          approves,
 	}
 }
 
@@ -79,6 +79,7 @@ func ToApproveDoc(o domain.Approve) Approve {
 		Orgname:  o.OrgName,
 		Role:     string(o.Role),
 		Expire:   o.ExpireAt,
+		Inviter:  o.Inviter,
 	}
 }
 
@@ -88,5 +89,6 @@ func toApprove(doc *Approve) domain.Approve {
 		OrgName:  doc.Orgname,
 		Role:     domain.OrgRole(doc.Role),
 		ExpireAt: doc.Expire,
+		Inviter:  doc.Inviter,
 	}
 }

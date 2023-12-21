@@ -238,6 +238,26 @@ func (impl *userRepoImpl) FindUsersInfo(accounts []domain.Account) (r []domain.U
 	return r, nil
 }
 
+func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
+
+	var v DUser
+
+	f := func(ctx context.Context) error {
+		return impl.cli.GetDoc(
+			ctx, bson.M{fieldName: account},
+			bson.M{fieldFullname: 1}, &v,
+		)
+	}
+
+	if err := primitive.WithContext(f); err != nil {
+		err = fmt.Errorf("failed to get user fullname: %w", err)
+
+		return "", err
+	}
+
+	return v.Fullname, nil
+}
+
 func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.AvatarId, err error) {
 
 	var v DUser

@@ -13,6 +13,7 @@ import (
 	modelctl "github.com/openmerlin/merlin-server/models/controller"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
+	"github.com/openmerlin/merlin-server/organization/domain/permission"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 	redislib "github.com/opensourceways/redis-lib"
@@ -45,6 +46,7 @@ type Config struct {
 	Authing    oidcimpl.Config      `json:"authing"`
 	Primitive  primitive.Config     `json:"primitive"`
 	Postgresql postgresql.Config    `json:"postgresql"`
+	Permission permission.Config    `json:"permission"`
 }
 
 func (cfg *Config) InitUserDomain() {

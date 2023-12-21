@@ -20,6 +20,33 @@ import (
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 
+var orgAppService orgapp.OrgService
+
+func Init() {
+	org := orgrepoimpl.NewOrgRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
+	)
+
+	member := orgrepoimpl.NewMemberRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Member),
+	)
+	p := orgapp.NewPermService(&cfg.Permission, member)
+
+	user := userrepoimpl.NewUserRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.User),
+	)
+	t := userrepoimpl.NewTokenRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+	)
+	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
+
+	userAppService := userapp.NewUserService(
+		user, git, t)
+
+	orgAppService = orgapp.NewOrgService(
+		userAppService, org, member, p, 1209600)
+}
+
 var orgCmd = &cobra.Command{
 	Use:   "org",
 	Short: "org is a admin tool for merlin server organization administrator.",
@@ -28,6 +55,7 @@ var orgCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
 	},
 }
 
@@ -35,40 +63,17 @@ var orgAddCmd = &cobra.Command{
 	Use: "add",
 	Run: func(cmd *cobra.Command, args []string) {
 		orgName := viper.GetString("org.create.name")
-		owner := viper.GetString("org.create.owner")
 		fullname := viper.GetString("org.create.fullname")
 		website := viper.GetString("org.create.website")
 		ava := viper.GetString("org.create.avatarid")
 		desc := viper.GetString("org.create.description")
-
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
 
 		_, err := orgAppService.Create(&domain.OrgCreatedCmd{
 			Name:        orgName,
 			AvatarId:    ava,
 			FullName:    fullname,
 			Website:     website,
-			Owner:       owner,
+			Owner:       actor,
 			Description: desc,
 		})
 		if err != nil {
@@ -79,6 +84,8 @@ var orgAddCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -94,29 +101,7 @@ var memberAddCmd = &cobra.Command{
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		err = orgAppService.AddMember(&orgapp.OrgAddMemberCmd{
+		err = orgAppService.AddMember(&domain.OrgAddMemberCmd{
 			Account: userName,
 			Org:     orgName,
 		})
@@ -128,6 +113,8 @@ var memberAddCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -139,43 +126,23 @@ var memberListCmd = &cobra.Command{
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
 		members, err := orgAppService.ListMember(orgName)
 		if err != nil {
 			logrus.Fatalf("list member failed :%s", err.Error())
 		} else {
-			logrus.Info("Member Info:")
+			fmt.Print("Member Info:")
 			for _, m := range members {
-				logrus.Infof("Member org: %s\n", m.OrgName)
-				logrus.Infof("Member org full name: %s\n", m.OrgFullName)
-				logrus.Infof("Member user: %s\n", m.UserName)
-				logrus.Infof("Member role: %s\n", m.Role)
+				fmt.Printf("Member org: %s\n", m.OrgName)
+				fmt.Printf("Member org full name: %s\n", m.OrgFullName)
+				fmt.Printf("Member user: %s\n", m.UserName)
+				fmt.Printf("Member role: %s\n", m.Role)
 			}
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -192,29 +159,8 @@ var inviteSendCmd = &cobra.Command{
 		}
 		role := viper.GetString("invite.add.role")
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		_, err = orgAppService.InviteMember(&orgapp.OrgInviteMemberCmd{
+		_, err = orgAppService.InviteMember(&domain.OrgInviteMemberCmd{
+			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Role:    role,
 			Org:     orgName,
@@ -227,6 +173,7 @@ var inviteSendCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
 	},
 }
 
@@ -238,43 +185,28 @@ var inviteListCmd = &cobra.Command{
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		members, err := orgAppService.ListInvitation(orgName)
+		members, err := orgAppService.ListInvitation(&domain.OrgNormalCmd{
+			Actor: primitive.CreateAccount(actor),
+			Org:   orgName,
+		})
 		if err != nil {
 			logrus.Fatalf("list member failed :%s", err.Error())
 		} else {
-			logrus.Info("Member Info:")
+			fmt.Print("Member Info:")
 			for _, m := range members {
-				logrus.Infof("Member org: %s\n", m.OrgName)
-				logrus.Infof("Member user: %s\n", m.UserName)
-				logrus.Infof("Member role: %s\n", m.Role)
-				logrus.Infof("Member expire: %d\n", m.ExpiresAt)
+				fmt.Printf("Member org: %s\n", m.OrgName)
+				fmt.Printf("Member user: %s\n", m.UserName)
+				fmt.Printf("Member role: %s\n", m.Role)
+				fmt.Printf("Member expire: %d\n", m.ExpiresAt)
+				fmt.Printf("Member fullname: %s\n", m.Fullname)
+				fmt.Printf("Member inviter: %s\n", m.Inviter)
 			}
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -290,29 +222,7 @@ var removeInviteCmd = &cobra.Command{
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		_, err = orgAppService.RevokeInvite(&orgapp.OrgRemoveInviteCmd{
+		_, err = orgAppService.RevokeInvite(&domain.OrgRemoveInviteCmd{
 			Org:     orgName,
 			Account: userName,
 		})
@@ -324,6 +234,8 @@ var removeInviteCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -340,29 +252,7 @@ var memberEditCmd = &cobra.Command{
 		}
 		role := viper.GetString("member.edit.role")
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		_, err = orgAppService.EditMember(&orgapp.OrgEditMemberCmd{
+		_, err = orgAppService.EditMember(&domain.OrgEditMemberCmd{
 			Account: userName,
 			Org:     orgName,
 			Role:    role,
@@ -375,6 +265,8 @@ var memberEditCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -390,29 +282,8 @@ var memberRemoveCmd = &cobra.Command{
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		err = orgAppService.RemoveMember(&orgapp.OrgRemoveMemberCmd{
+		err = orgAppService.RemoveMember(&domain.OrgRemoveMemberCmd{
+			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Org:     orgName,
 		})
@@ -424,6 +295,8 @@ var memberRemoveCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -433,26 +306,6 @@ var orgGetCmd = &cobra.Command{
 		acc, _ := primitive.NewAccount(viper.GetString("org.get.name"))
 		owner, _ := primitive.NewAccount(viper.GetString("org.get.owner"))
 		u, _ := primitive.NewAccount(viper.GetString("org.get.user"))
-
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
 
 		if acc != nil {
 			u, err := orgAppService.GetByAccount(acc)
@@ -504,6 +357,8 @@ var orgGetCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -515,26 +370,10 @@ var orgDelCmd = &cobra.Command{
 			logrus.Fatalf("del org failed :%s", err.Error())
 		}
 
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		err = orgAppService.Delete(acc)
+		err = orgAppService.Delete(&domain.OrgDeletedCmd{
+			Actor: primitive.CreateAccount(actor),
+			Name:  acc,
+		})
 		if err != nil {
 			logrus.Fatalf("delete org failed :%s", err.Error())
 		} else {
@@ -543,6 +382,8 @@ var orgDelCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -553,7 +394,7 @@ var orgEditCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.name"))
 		}
-		updateCmd := orgapp.UpdateOrgBasicInfoCmd{}
+		updateCmd := domain.OrgUpdatedBasicInfoCmd{}
 		avatar := viper.GetString("org.edit.avatar")
 		if avatar != "" {
 			updateCmd.AvatarId = avatar
@@ -564,34 +405,16 @@ var orgEditCmd = &cobra.Command{
 		}
 		fullname := viper.GetString("org.edit.fullname")
 		if fullname != "" {
-			logrus.Infof("change full name to %s", fullname)
+			fmt.Printf("change full name to %s", fullname)
 			updateCmd.FullName = fullname
 		}
 		desc := viper.GetString("org.edit.desc")
 		if desc != "" {
 			updateCmd.Description = desc
 		}
-
-		org := orgrepoimpl.NewOrgRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
-		)
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-		member := orgrepoimpl.NewMemberRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Member),
-		)
-		orgAppService := orgapp.NewOrgService(
-			userAppService, org, member, 1209600)
-
-		_, err = orgAppService.UpdateBasicInfo(acc, &updateCmd)
+		updateCmd.Actor = primitive.CreateAccount(actor)
+		updateCmd.OrgName = acc
+		_, err = orgAppService.UpdateBasicInfo(&updateCmd)
 		if err != nil {
 			logrus.Fatalf("edit org failed :%s", err.Error())
 		} else {
@@ -600,6 +423,8 @@ var orgEditCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		Init()
+
 	},
 }
 
@@ -618,15 +443,11 @@ func init() {
 	// 添加命令行参数
 
 	orgAddCmd.Flags().StringP("name", "n", "", "org name")
-	orgAddCmd.Flags().StringP("owner", "o", "", "org owner")
 	orgAddCmd.Flags().StringP("website", "w", "", "org website")
 	orgAddCmd.Flags().StringP("fullname", "f", "", "org fullname")
 	orgAddCmd.Flags().StringP("avatar", "a", "", "org avatar")
 	orgAddCmd.Flags().StringP("desc", "d", "", "org description")
 	if err := orgAddCmd.MarkFlagRequired("name"); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := orgAddCmd.MarkFlagRequired("owner"); err != nil {
 		logrus.Fatal(err)
 	}
 	orgAddCmd.MarkFlagsOneRequired("avatar", "fullname", "website", "desc")
@@ -643,9 +464,6 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("org.create.name", orgAddCmd.Flags().Lookup("name")); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := viper.BindPFlag("org.create.owner", orgAddCmd.Flags().Lookup("owner")); err != nil {
 		logrus.Fatal(err)
 	}
 

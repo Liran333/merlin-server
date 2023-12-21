@@ -9,20 +9,20 @@ import (
 )
 
 type Organization struct {
-	Id          string            `json:"id"`
-	Name        primitive.Account `json:"name"`
-	FullName    string            `json:"full_name"`
-	AvatarId    user.AvatarId     `json:"avatar_id"`
-	PlatformId  string            `json:"platform_id"`
-	Description string            `json:"description"`
-	CreatedAt   int64             `json:"created_at"`
-	Website     string            `json:"website"`
-	Owner       primitive.Account `json:"owner"`
-	WriteTeamId int64             `json:"write_team_id"`
-	ReadTeamId  int64             `json:"read_team_id"`
-	OwnerTeamId int64             `json:"owner_team_id"`
-	AdminTeamId int64             `json:"admin_team_id"`
-	Approves    []Approve         `json:"approves"`
+	Id                string            `json:"id"`
+	Name              primitive.Account `json:"name"`
+	FullName          string            `json:"full_name"`
+	AvatarId          user.AvatarId     `json:"avatar_id"`
+	PlatformId        string            `json:"platform_id"`
+	Description       string            `json:"description"`
+	CreatedAt         int64             `json:"created_at"`
+	Website           string            `json:"website"`
+	Owner             primitive.Account `json:"owner"`
+	WriteTeamId       int64             `json:"write_team_id"`
+	ReadTeamId        int64             `json:"read_team_id"`
+	OwnerTeamId       int64             `json:"owner_team_id"`
+	ContributorTeamId int64             `json:"contributor_team_id"`
+	Approves          []Approve         `json:"approves"`
 
 	Version int
 }
@@ -37,8 +37,29 @@ type OrgCreatedCmd struct {
 }
 
 type OrgDeletedCmd struct {
-	Name  string `json:"name"`
-	Owner string `json:"owner"`
+	Actor primitive.Account
+	Name  primitive.Account
+}
+
+func (cmd OrgDeletedCmd) Validate() error {
+	if cmd.Name == nil {
+		return fmt.Errorf("invalid org name")
+	}
+
+	if cmd.Actor == nil {
+		return fmt.Errorf("invalid actor name")
+	}
+
+	return nil
+}
+
+type OrgUpdatedBasicInfoCmd struct {
+	Actor       primitive.Account
+	OrgName     primitive.Account
+	FullName    string
+	Description string
+	Website     string
+	AvatarId    string
 }
 
 func (cmd OrgCreatedCmd) Validate() error {
@@ -69,22 +90,23 @@ func (cmd *OrgCreatedCmd) ToOrg() *Organization {
 	}
 }
 
-func ToApprove(member OrgMember, expiry int64) Approve {
+func ToApprove(member OrgMember, expiry int64, inviter string) Approve {
 	return Approve{
 		OrgName:  member.OrgName,
 		Username: member.Username,
 		Role:     member.Role,
 		ExpireAt: utils.Expiry(expiry),
+		Inviter:  inviter,
 	}
 }
 
 type OrgRole string
 
 const (
-	OrgRoleOwner  OrgRole = "owner"
-	OrgRoleReader OrgRole = "read"
-	OrgRoleWriter OrgRole = "write"
-	OrgRoleAdmin  OrgRole = "admin"
+	OrgRoleContributor OrgRole = "contributor" // in contributor team
+	OrgRoleReader      OrgRole = "read"        // in read team
+	OrgRoleWriter      OrgRole = "write"       // in write team
+	OrgRoleAdmin       OrgRole = "admin"       // in owner team
 )
 
 type OrgMember struct {
@@ -101,6 +123,7 @@ type Approve struct {
 	OrgName  string  `json:"org_name"`
 	Role     OrgRole `json:"role"`
 	ExpireAt int64   `json:"expire_at"`
+	Inviter  string  `json:"Inviter"`
 }
 
 func (a Approve) ToMember() OrgMember {
@@ -111,7 +134,7 @@ func (a Approve) ToMember() OrgMember {
 	}
 }
 
-func (org *Organization) AddInvite(member OrgMember, expiry int64) error {
+func (org *Organization) AddInvite(member OrgMember, expiry int64, inviter string) error {
 	if org.Approves == nil {
 		org.Approves = make([]Approve, 1)
 	} else {
@@ -122,7 +145,7 @@ func (org *Organization) AddInvite(member OrgMember, expiry int64) error {
 		}
 	}
 
-	org.Approves = append(org.Approves, ToApprove(member, expiry))
+	org.Approves = append(org.Approves, ToApprove(member, expiry, inviter))
 	return nil
 }
 
@@ -142,4 +165,83 @@ func (org *Organization) RemoveInvite(member OrgMember) (approve Approve, err er
 
 	err = fmt.Errorf("the target approve record not found")
 	return
+}
+
+func (cmd OrgInviteMemberCmd) Validate() error {
+	if cmd.Role != string(OrgRoleContributor) &&
+		cmd.Role != string(OrgRoleReader) &&
+		cmd.Role != string(OrgRoleWriter) &&
+		cmd.Role != string(OrgRoleAdmin) {
+		return fmt.Errorf("invalid role: %s", cmd.Role)
+	}
+
+	if cmd.Account == nil {
+		return fmt.Errorf("invalid account")
+	}
+
+	if cmd.Org == nil {
+		return fmt.Errorf("invalid org")
+	}
+
+	if cmd.Actor == nil {
+		return fmt.Errorf("invalid actor")
+	}
+	return nil
+}
+
+type OrgRemoveMemberCmd struct {
+	Actor   primitive.Account
+	Account primitive.Account
+	Org     primitive.Account
+}
+
+func (cmd OrgRemoveMemberCmd) Validate() error {
+	if cmd.Account == nil {
+		return fmt.Errorf("invalid account")
+	}
+
+	if cmd.Org == nil {
+		return fmt.Errorf("invalid org")
+	}
+
+	if cmd.Actor == nil {
+		return fmt.Errorf("invalid actor")
+	}
+
+	return nil
+}
+
+func (cmd OrgRemoveMemberCmd) ToMember() OrgMember {
+	return OrgMember{
+		Username: cmd.Account.Account(),
+		OrgName:  cmd.Org.Account(),
+	}
+}
+
+type OrgEditMemberCmd struct {
+	Actor   primitive.Account
+	Account primitive.Account
+	Org     primitive.Account
+	Role    string
+}
+type OrgInviteMemberCmd struct {
+	Actor   primitive.Account
+	Account primitive.Account
+	Org     primitive.Account
+	Role    string
+}
+type OrgAddMemberCmd = OrgRemoveMemberCmd
+type OrgRemoveInviteCmd = OrgRemoveMemberCmd
+
+type OrgNormalCmd struct {
+	Actor primitive.Account
+	Org   primitive.Account
+}
+
+func (cmd OrgInviteMemberCmd) ToMember() OrgMember {
+	return OrgMember{
+		Username: cmd.Account.Account(),
+		Role:     OrgRole(cmd.Role),
+		OrgName:  cmd.Org.Account(),
+	}
 }

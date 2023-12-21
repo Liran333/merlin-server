@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 
-	"github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
 
@@ -15,7 +14,7 @@ type orgBasicInfoUpdateRequest struct {
 }
 
 func (req *orgBasicInfoUpdateRequest) toCmd() (
-	cmd app.UpdateOrgBasicInfoCmd,
+	cmd domain.OrgUpdatedBasicInfoCmd,
 	err error,
 ) {
 	empty := true
@@ -75,6 +74,10 @@ type orgMemberAddRequest struct {
 }
 
 type orgMemberRemoveRequest struct {
+	User string `json:"user" binding:"required"`
+}
+
+type OrgMemberEditRequest struct {
 	Role string `json:"role" binding:"required"`
 	User string `json:"user" binding:"required"`
 }

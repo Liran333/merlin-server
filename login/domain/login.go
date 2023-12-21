@@ -9,6 +9,7 @@ type UserInfo struct {
 	Email    domain.Email
 	Bio      domain.Bio
 	AvatarId domain.AvatarId
+	Fullname string
 	UserId   string
 }
 

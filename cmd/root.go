@@ -16,6 +16,7 @@ import (
 )
 
 var configFile string
+var actor string
 var cfg *config.Config
 
 func Error(cmd *cobra.Command, args []string, err error) {
@@ -70,6 +71,7 @@ func initServer(configFile string) {
 
 func execute() {
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "config.yaml", "config file path")
+	rootCmd.PersistentFlags().StringVar(&actor, "actor", "", "actor")
 
 	rootCmd.AddCommand(userCmd)
 	rootCmd.AddCommand(tokenCmd)

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
 
@@ -25,6 +26,7 @@ func AddRouterForOrgController(
 	rg.POST("/v1/organization", ctl.Create)
 	rg.GET("/v1/organization/:name", ctl.Get)
 	rg.GET("/v1/organization", ctl.List)
+	rg.POST("/v1/organization/:name", ctl.Leave)
 	rg.DELETE("/v1/organization/:name", ctl.Delete)
 	rg.HEAD("/v1/name", ctl.Check)
 
@@ -34,6 +36,7 @@ func AddRouterForOrgController(
 
 	rg.DELETE("/v1/organization/:name/member", ctl.RemoveMember)
 	rg.GET("/v1/organization/:name/member", ctl.ListMember)
+	rg.PUT("/v1/organization/:name/member", ctl.EditMember)
 	rg.POST("/v1/organization/:name/member", ctl.AddMember)
 }
 
@@ -97,9 +100,12 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update org basic info")
 
-	o, err := ctl.org.UpdateBasicInfo(orgName, &cmd)
+	cmd.Actor = pl.DomainAccount()
+	cmd.OrgName = orgName
+
+	o, err := ctl.org.UpdateBasicInfo(&cmd)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, newResponseError(err))
+		controller.SendError(ctx, err)
 
 		return
 	}
@@ -139,9 +145,9 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 	if o, err := ctl.org.GetByAccount(orgName); err != nil {
 		logrus.Error(err)
 
-		ctl.sendRespWithInternalError(ctx, newResponseError(err))
+		controller.SendError(ctx, err)
 	} else {
-		ctx.JSON(http.StatusOK, newResponseData(o))
+		controller.SendRespOfGet(ctx, o)
 	}
 }
 
@@ -192,9 +198,9 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 	if os, err := ctl.org.GetByUser(pl.DomainAccount()); err != nil {
 		logrus.Error(err)
 
-		ctl.sendRespWithInternalError(ctx, newResponseError(err))
+		controller.SendError(ctx, err)
 	} else {
-		ctx.JSON(http.StatusOK, newResponseData(os))
+		controller.SendRespOfGet(ctx, os)
 	}
 }
 
@@ -239,13 +245,11 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 	})
 	if err != nil {
 		logrus.Errorf("create org failed: %s", err)
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, err,
-		))
+		controller.SendError(ctx, err)
 
 		return
 	} else {
-		ctx.JSON(http.StatusCreated, newResponseData(o))
+		controller.SendRespOfPost(ctx, o)
 	}
 }
 
@@ -279,17 +283,18 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "delete organization")
 
-	err = ctl.org.Delete(orgName)
+	err = ctl.org.Delete(&domain.OrgDeletedCmd{
+		Actor: pl.DomainAccount(),
+		Name:  orgName,
+	})
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, err,
-		))
+		controller.SendError(ctx, err)
 
 		return
 	} else {
-		ctx.JSON(http.StatusNoContent, newResponseData(nil))
+		controller.SendRespOfDelete(ctx)
 	}
 }
 
@@ -331,6 +336,78 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, newResponseData(members))
+}
+
+// @Summary			Edit organization member
+// @Title			Edit organization member role
+// @Description Edit a member to the organization's role
+// @Tags			Organization
+// @Param			body	body	OrgMemberEditRequest	true	"body of new member"
+// @Param			name	path	string	true	"name"
+// @Accept			json
+// @Success		202 {object} app.MemberDTO
+// @Failure		400	bad_request_param	account	is	invalid
+// @Failure		401	not_allowed			can't	get	info	of	other	user
+// @Router			/v1/organization/{name}/member [post]
+func (ctl *OrgController) EditMember(ctx *gin.Context) {
+	orgName, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		logrus.Error(err)
+
+		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
+			errorBadRequestParam, fmt.Errorf("organization name not valid"),
+		))
+
+		return
+	}
+
+	req := OrgMemberEditRequest{}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		logrus.Error(err)
+
+		ctx.JSON(http.StatusBadRequest, newResponseCodeMsg(
+			errorBadRequestBody,
+			"can't fetch request body",
+		))
+
+		return
+	}
+
+	acc, err := primitive.NewAccount(req.User)
+	if err != nil {
+		logrus.Error(err)
+
+		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
+			errorBadRequestParam, fmt.Errorf("user name not valid"),
+		))
+
+		return
+	}
+
+	pl, _, ok := ctl.checkUserApiToken(ctx, false)
+	if !ok {
+		return
+	}
+
+	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "add a member to organization")
+
+	newMember, err := ctl.org.EditMember(&domain.OrgEditMemberCmd{
+		Actor:   pl.DomainAccount(),
+		Org:     orgName,
+		Role:    req.Role,
+		Account: acc,
+	})
+	if err != nil {
+		logrus.Error(err)
+		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
+			errorNotAllowed,
+			fmt.Sprintf("can't add member %s to organization %s ", acc, orgName),
+		))
+
+		return
+	}
+
+	ctx.JSON(http.StatusAccepted, newResponseData(newMember))
 }
 
 // @Summary			Add organization members
@@ -386,7 +463,8 @@ func (ctl *OrgController) AddMember(ctx *gin.Context) {
 
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "add a member to organization")
 
-	err = ctl.org.AddMember(&orgapp.OrgAddMemberCmd{
+	err = ctl.org.AddMember(&domain.OrgAddMemberCmd{
+		Actor:   pl.DomainAccount(),
 		Org:     orgName,
 		Account: acc,
 	})
@@ -456,7 +534,8 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 		return
 	}
 
-	err = ctl.org.RemoveMember(&orgapp.OrgRemoveMemberCmd{
+	err = ctl.org.RemoveMember(&domain.OrgRemoveMemberCmd{
+		Actor:   pl.DomainAccount(),
 		Org:     orgName,
 		Account: acc,
 	})
@@ -472,6 +551,52 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, newResponseData(nil))
+}
+
+// @Summary			Leave the organization
+// @Title			Leave the organization
+// @Description	delete a organization
+// @Tags			Organization
+// @Param			name	path	string	true	"name"
+// @Accept			json
+// @Success		204
+// @Failure		400	bad_request_param	token	is	invalid
+// @Failure		401	not_allowed			can't	get	info	of	other	user
+// @Failure		403	permission denied user not allowed to delete organization
+// @Router			/v1/organization/{name} [post]
+func (ctl *OrgController) Leave(ctx *gin.Context) {
+	orgName, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		logrus.Error(err)
+
+		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
+			errorBadRequestParam, fmt.Errorf("organization name not valid"),
+		))
+
+		return
+	}
+
+	pl, _, ok := ctl.checkUserApiToken(ctx, false)
+	if !ok {
+		return
+	}
+
+	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "leave organization")
+
+	err = ctl.org.RemoveMember(&domain.OrgRemoveMemberCmd{
+		Actor:   pl.DomainAccount(),
+		Org:     orgName,
+		Account: pl.DomainAccount(),
+	})
+	if err != nil {
+		logrus.Error(err)
+
+		controller.SendError(ctx, err)
+
+		return
+	}
+
+	controller.SendRespOfDelete(ctx)
 }
 
 // @Summary			Invite a user to be a member of the organization
@@ -520,14 +645,13 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
-			errorBadRequestParam, fmt.Errorf("user name not valid"),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	dto, err := ctl.org.InviteMember(&orgapp.OrgInviteMemberCmd{
+	dto, err := ctl.org.InviteMember(&domain.OrgInviteMemberCmd{
+		Actor:   pl.DomainAccount(),
 		Org:     orgName,
 		Account: acc,
 		Role:    req.Role,
@@ -535,15 +659,12 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
-			errorNotAllowed,
-			fmt.Sprintf("can't invite user %s to org %s ", acc, orgName),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, newResponseData(dto))
+	controller.SendRespOfPost(ctx, dto)
 }
 
 // @Summary			List invitation of the organization
@@ -575,19 +696,19 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "invite a member to organization")
 
-	dtos, err := ctl.org.ListInvitation(orgName)
+	dtos, err := ctl.org.ListInvitation(&domain.OrgNormalCmd{
+		Actor: pl.DomainAccount(),
+		Org:   orgName,
+	})
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
-			errorNotAllowed,
-			fmt.Sprintf("can't get invitation of org %s ", orgName),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, newResponseData(dtos))
+	controller.SendRespOfGet(ctx, dtos)
 }
 
 // @Summary			Revoke invitation of the organization
@@ -641,20 +762,18 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "revoke a invitation of organization")
 
-	dto, err := ctl.org.RevokeInvite(&orgapp.OrgRemoveInviteCmd{
+	dto, err := ctl.org.RevokeInvite(&domain.OrgRemoveInviteCmd{
+		Actor:   pl.DomainAccount(),
 		Org:     orgName,
 		Account: acc,
 	})
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
-			errorNotAllowed,
-			fmt.Sprintf("can't get invitation of org %s ", orgName),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, newResponseData(dto))
+	controller.SendRespOfPost(ctx, dto)
 }

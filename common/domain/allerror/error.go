@@ -8,6 +8,8 @@ const (
 	ErrorCodeModelNotFound = "model_not_found"
 
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
+
+	errorCodeInvalidParam = "invalid_param"
 )
 
 // errorImpl
@@ -61,4 +63,8 @@ func (e noPermissionError) NoPermission() {}
 // NewNoPermission
 func NewNoPermission(msg string) noPermissionError {
 	return noPermissionError{New(errorCodeNoPermission, msg)}
+}
+
+func NewInvalidParam(msg string) errorImpl {
+	return New(errorCodeInvalidParam, msg)
 }

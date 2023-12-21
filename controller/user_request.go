@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -10,6 +12,7 @@ type userBasicInfoUpdateRequest struct {
 	AvatarId *string `json:"avatar_id"`
 	Bio      *string `json:"bio"`
 	Email    *string `json:"email"`
+	Fullname *string `json:"fullname"`
 }
 
 func (req *userBasicInfoUpdateRequest) toCmd() (
@@ -30,11 +33,14 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		cmd.Email, err = domain.NewEmail(*req.Email)
 	}
 
+	cmd.Fullname = *req.Fullname
+
 	return
 }
 
 type userCreateRequest struct {
 	Account  string `json:"account" binding:"required"`
+	Fullname string `json:"fullname" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Bio      string `json:"bio"`
 	AvatarId string `json:"avatar_id"`
@@ -54,6 +60,11 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 	}
 
 	if cmd.AvatarId, err = domain.NewAvatarId(req.AvatarId); err != nil {
+		return
+	}
+
+	if req.Fullname == "" {
+		err = fmt.Errorf("org full name can't be empty")
 		return
 	}
 

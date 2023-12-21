@@ -18,6 +18,7 @@ type UserDTO struct {
 	Account string `json:"account"`
 
 	Bio      string `json:"bio"`
+	Fullname string `json:"fullname"`
 	AvatarId string `json:"avatar_id"`
 	Password string `json:"-"`
 }
@@ -57,17 +58,20 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 	dto.Id = fmt.Sprint(u.PlatformId)
 
 	dto.Password = u.PlatformPwd
+	dto.Fullname = u.Fullname
 
 	return
 }
 
 type UpdateUserBasicInfoCmd struct {
-	Bio           domain.Bio
-	Email         domain.Email
-	AvatarId      domain.AvatarId
-	bioChanged    bool
-	avatarChanged bool
-	emailChanged  bool
+	Bio             domain.Bio
+	Email           domain.Email
+	AvatarId        domain.AvatarId
+	Fullname        string
+	bioChanged      bool
+	avatarChanged   bool
+	emailChanged    bool
+	fullNameChanged bool
 }
 
 func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
@@ -86,7 +90,12 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 		cmd.emailChanged = true
 	}
 
-	changed = cmd.avatarChanged || cmd.bioChanged || cmd.emailChanged
+	if cmd.Fullname != "" && u.Fullname != cmd.Fullname {
+		u.Fullname = cmd.Fullname
+		cmd.fullNameChanged = true
+	}
+
+	changed = cmd.avatarChanged || cmd.bioChanged || cmd.emailChanged || cmd.fullNameChanged
 
 	return
 }

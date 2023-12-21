@@ -3,6 +3,9 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
@@ -11,25 +14,25 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
-	"github.com/sirupsen/logrus"
 )
 
 type OrgService interface {
 	// user
 	Create(*domain.OrgCreatedCmd) (OrganizationDTO, error)
-	Delete(primitive.Account) error
-	UpdateBasicInfo(primitive.Account, *UpdateOrgBasicInfoCmd) (OrganizationDTO, error)
+	Delete(*domain.OrgDeletedCmd) error
+	UpdateBasicInfo(*domain.OrgUpdatedBasicInfoCmd) (OrganizationDTO, error)
 	GetByAccount(primitive.Account) (OrganizationDTO, error)
 	CheckName(primitive.Account) bool
 	GetByOwner(primitive.Account) ([]OrganizationDTO, error)
 	GetByUser(primitive.Account) ([]OrganizationDTO, error)
-	InviteMember(*OrgInviteMemberCmd) (OrganizationDTO, error)
-	RevokeInvite(*OrgRemoveInviteCmd) (OrganizationDTO, error)
-	ListInvitation(primitive.Account) ([]ApproveDTO, error)
-	AddMember(*OrgAddMemberCmd) error
-	RemoveMember(*OrgRemoveMemberCmd) error
-	EditMember(*OrgEditMemberCmd) (MemberDTO, error)
+	InviteMember(*domain.OrgInviteMemberCmd) (OrganizationDTO, error)
+	RevokeInvite(*domain.OrgRemoveInviteCmd) (OrganizationDTO, error)
+	ListInvitation(*domain.OrgNormalCmd) ([]ApproveDTO, error)
+	AddMember(*domain.OrgAddMemberCmd) error
+	RemoveMember(*domain.OrgRemoveMemberCmd) error
+	EditMember(*domain.OrgEditMemberCmd) (MemberDTO, error)
 	ListMember(primitive.Account) ([]MemberDTO, error)
+	GetMemberByUserAndOrg(primitive.Account, primitive.Account) (MemberDTO, error)
 }
 
 // ps: platform user service
@@ -37,6 +40,7 @@ func NewOrgService(
 	user userapp.UserService,
 	repo repository.Organization,
 	member repository.OrgMember,
+	perm Permission,
 	expiry int64,
 ) OrgService {
 	return &orgService{
@@ -44,6 +48,7 @@ func NewOrgService(
 		user:         user,
 		repo:         repo,
 		member:       member,
+		perm:         perm,
 	}
 }
 
@@ -52,6 +57,7 @@ type orgService struct {
 	user         userapp.UserService
 	repo         repository.Organization
 	member       repository.OrgMember
+	perm         Permission
 }
 
 func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o OrganizationDTO, err error) {
@@ -85,7 +91,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o OrganizationDTO, err
 	_, err = org.member.Save(&domain.OrgMember{
 		OrgName:  cmd.Name,
 		Username: cmd.Owner,
-		Role:     domain.OrgRoleOwner,
+		Role:     domain.OrgRoleAdmin,
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to save org member, %w", err)
@@ -107,8 +113,12 @@ func (org *orgService) GetByAccount(acc primitive.Account) (dto OrganizationDTO,
 	dto = ToDTO(&o)
 	return
 }
-func (org *orgService) Delete(acc primitive.Account) error {
-	o, err := org.repo.GetByName(acc)
+func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
+	err := org.perm.Check(cmd.Actor, cmd.Name, primitive.ObjTypeOrg, primitive.ActionDelete)
+	if err != nil {
+		return err
+	}
+	o, err := org.repo.GetByName(cmd.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get org, %w", err)
 	}
@@ -118,7 +128,7 @@ func (org *orgService) Delete(acc primitive.Account) error {
 		return fmt.Errorf("failed to get platform user, %w", err)
 	}
 
-	can, err := pl.CanDelete(acc.Account())
+	can, err := pl.CanDelete(cmd.Name.Account())
 	if err != nil {
 		return fmt.Errorf("failed to check platform user, %w", err)
 	}
@@ -137,7 +147,7 @@ func (org *orgService) Delete(acc primitive.Account) error {
 		return fmt.Errorf("failed to delete org member, %w", err)
 	}
 
-	err = pl.DeleteOrg(acc.Account())
+	err = pl.DeleteOrg(cmd.Name.Account())
 	if err != nil {
 		err = fmt.Errorf("failed to delete git org, %w", err)
 	}
@@ -145,18 +155,28 @@ func (org *orgService) Delete(acc primitive.Account) error {
 	return err
 }
 
-func (org *orgService) UpdateBasicInfo(acc primitive.Account, cmd *UpdateOrgBasicInfoCmd) (dto OrganizationDTO, err error) {
-	if acc == nil {
-		err = fmt.Errorf("account is nil")
-		return
-	}
-
+func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto OrganizationDTO, err error) {
 	if cmd == nil {
-		err = fmt.Errorf("cmd is nil")
+		err = allerror.NewInvalidParam("cmd is nil")
 		return
 	}
 
-	o, err := org.repo.GetByName(acc)
+	if cmd.Actor == nil {
+		err = allerror.NewInvalidParam("account is nil")
+		return
+	}
+
+	if cmd.OrgName == nil {
+		err = allerror.NewInvalidParam("org name is nil")
+		return
+	}
+
+	err = org.perm.Check(cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
+	if err != nil {
+		return
+	}
+
+	o, err := org.repo.GetByName(cmd.OrgName)
 	if err != nil {
 		err = fmt.Errorf("failed to get org, %w", err)
 		return
@@ -287,8 +307,13 @@ func (org *orgService) ListMember(acc primitive.Account) (dtos []MemberDTO, err 
 	return
 }
 
-func (org *orgService) AddMember(cmd *OrgAddMemberCmd) error {
+func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	err := cmd.Validate()
+	if err != nil {
+		return allerror.NewInvalidParam(err.Error())
+	}
+
+	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
 	if err != nil {
 		return err
 	}
@@ -340,7 +365,7 @@ func (org *orgService) AddMember(cmd *OrgAddMemberCmd) error {
 	return nil
 }
 
-func (org *orgService) canRemoveMember(cmd *OrgRemoveMemberCmd) (err error) {
+func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err error) {
 	// check if this is the only owner
 	members, err := org.member.GetByOrg(cmd.Org.Account())
 	if err != nil {
@@ -365,7 +390,7 @@ func (org *orgService) canRemoveMember(cmd *OrgRemoveMemberCmd) (err error) {
 	removeOwner := false
 	can := false
 	for _, m := range members {
-		if m.Role == domain.OrgRoleOwner {
+		if m.Role == domain.OrgRoleAdmin {
 			ownerCount++
 			if m.Username == member.Username {
 				removeOwner = true
@@ -378,22 +403,22 @@ func (org *orgService) canRemoveMember(cmd *OrgRemoveMemberCmd) (err error) {
 	}
 
 	if ownerCount == 1 && removeOwner {
-		err = fmt.Errorf("the only owner can not be removed")
+		err = allerror.NewNoPermission("the only owner can not be removed")
 		return
 	}
 
 	if !can {
-		err = fmt.Errorf("the member is not in the org")
+		err = allerror.NewNoPermission("the member is not in the org")
 		return
 	}
 
 	return
 }
 
-func (org *orgService) RemoveMember(cmd *OrgRemoveMemberCmd) error {
+func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 	err := cmd.Validate()
 	if err != nil {
-		return err
+		return allerror.NewInvalidParam(err.Error())
 	}
 
 	err = org.canRemoveMember(cmd)
@@ -401,6 +426,17 @@ func (org *orgService) RemoveMember(cmd *OrgRemoveMemberCmd) error {
 		return err
 	}
 
+	if cmd.Actor.Account() != cmd.Account.Account() {
+		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionDelete)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionRead)
+		if err != nil {
+			return err
+		}
+	}
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
 		return fmt.Errorf("failed to get org, %w", err)
@@ -430,7 +466,12 @@ func (org *orgService) RemoveMember(cmd *OrgRemoveMemberCmd) error {
 	return nil
 }
 
-func (org *orgService) EditMember(cmd *OrgEditMemberCmd) (dto MemberDTO, err error) {
+func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, err error) {
+	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
+	if err != nil {
+		return
+	}
+
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
 	if err != nil {
 		err = fmt.Errorf("failed to get member by org:%s and user:%s, %w", cmd.Org.Account(), cmd.Account.Account(), err)
@@ -476,9 +517,21 @@ func (org *orgService) EditMember(cmd *OrgEditMemberCmd) (dto MemberDTO, err err
 	return
 }
 
-func (org *orgService) InviteMember(cmd *OrgInviteMemberCmd) (dto OrganizationDTO, err error) {
+func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto OrganizationDTO, err error) {
 	if err = cmd.Validate(); err != nil {
 		return
+	}
+
+	if cmd.Actor.Account() != cmd.Account.Account() {
+		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionRead)
+		if err != nil {
+			return
+		}
+	} else {
+		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
+		if err != nil {
+			return
+		}
 	}
 
 	o, err := org.repo.GetByName(cmd.Org)
@@ -493,7 +546,7 @@ func (org *orgService) InviteMember(cmd *OrgInviteMemberCmd) (dto OrganizationDT
 		return
 	}
 
-	if err = o.AddInvite(cmd.ToMember(), org.inviteExpiry); err != nil {
+	if err = o.AddInvite(cmd.ToMember(), org.inviteExpiry, cmd.Actor.Account()); err != nil {
 		err = fmt.Errorf("failed to add invite, %w", err)
 		return
 	}
@@ -509,8 +562,13 @@ func (org *orgService) InviteMember(cmd *OrgInviteMemberCmd) (dto OrganizationDT
 	return
 }
 
-func (org *orgService) RevokeInvite(cmd *OrgRemoveInviteCmd) (dto OrganizationDTO, err error) {
+func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto OrganizationDTO, err error) {
 	if err = cmd.Validate(); err != nil {
+		return
+	}
+
+	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionDelete)
+	if err != nil {
 		return
 	}
 
@@ -537,26 +595,36 @@ func (org *orgService) RevokeInvite(cmd *OrgRemoveInviteCmd) (dto OrganizationDT
 	return
 }
 
-func (org *orgService) ListInvitation(acc primitive.Account) (dtos []ApproveDTO, err error) {
-	if acc == nil {
-		err = fmt.Errorf("account is nil")
+func (org *orgService) ListInvitation(cmd *domain.OrgNormalCmd) (dtos []ApproveDTO, err error) {
+	if cmd == nil {
+		err = allerror.NewInvalidParam("account is nil")
 		return
 	}
 
-	o, err := org.repo.GetByName(acc)
+	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
+	if err != nil {
+		return
+	}
+
+	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
 		err = fmt.Errorf("failed to get org, %w", err)
 		return
 	}
 
 	if o.Approves == nil {
-		logrus.Warnf("no invitation found for %s", acc.Account())
+		logrus.Warnf("no invitation found for %s", cmd.Org.Account())
 		return
 	}
 
 	dtos = make([]ApproveDTO, len(o.Approves))
 	for i := range o.Approves {
 		dtos[i] = ToApproveDTO(o.Approves[i])
+		dtos[i].Fullname, err = org.user.GetUserFullname(primitive.CreateAccount(o.Approves[i].Username))
+		if err != nil {
+			logrus.Errorf("failed to get fullname, skip, %s", err)
+			continue
+		}
 	}
 
 	return
@@ -576,4 +644,26 @@ func (org *orgService) CheckName(name primitive.Account) bool {
 	}
 
 	return false
+}
+
+func (org *orgService) GetMemberByUserAndOrg(u primitive.Account, o primitive.Account) (member MemberDTO, err error) {
+	if u == nil {
+		err = fmt.Errorf("user is nil")
+		return
+	}
+
+	if o == nil {
+		err = fmt.Errorf("org is nil")
+		return
+	}
+
+	m, err := org.member.GetByOrgAndUser(o.Account(), u.Account())
+	if err != nil {
+		err = fmt.Errorf("failed to get member by org:%s and user:%s, %w", o, u, err)
+		return
+	}
+
+	member = ToMemberDTO(&m)
+
+	return
 }

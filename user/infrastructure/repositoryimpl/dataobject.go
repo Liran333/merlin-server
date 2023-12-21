@@ -19,6 +19,7 @@ func toUserDoc(u domain.User, doc *DUser) error {
 		AvatarId:    u.AvatarId.AvatarId(),
 		PlatformId:  u.PlatformId,
 		PlatformPwd: u.PlatformPwd,
+		Fullname:    u.Fullname,
 	}
 
 	if u.Bio != nil {
@@ -65,6 +66,7 @@ func toUser(doc DUser, u *domain.User) (err error) {
 	u.PlatformPwd = doc.PlatformPwd
 	u.PlatformId = doc.PlatformId
 	u.Version = doc.Version
+	u.Fullname = doc.Fullname
 
 	return
 }
@@ -87,23 +89,6 @@ func toUserInfo(doc DUser, info *domain.UserInfo) (err error) {
 	}
 
 	if info.AvatarId, err = domain.NewAvatarId(doc.AvatarId); err != nil {
-		return
-	}
-
-	return
-}
-
-func toFollowerUserInfo(doc DUser, info *domain.FollowerUserInfo) (err error) {
-
-	if info.Account, err = primitive.NewAccount(doc.Name); err != nil {
-		return
-	}
-
-	if info.AvatarId, err = domain.NewAvatarId(doc.AvatarId); err != nil {
-		return
-	}
-
-	if info.Bio, err = domain.NewBio(doc.Bio); err != nil {
 		return
 	}
 

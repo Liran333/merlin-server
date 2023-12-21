@@ -144,11 +144,16 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
+	var orgAppService orgapp.OrgService
+
+	permission := orgapp.NewPermService(
+		&cfg.Permission, member)
+
 	userAppService := userapp.NewUserService(
 		user, git, token)
 
-	orgAppService := orgapp.NewOrgService(
-		userAppService, org, member, cfg.Org.InviteExpiry,
+	orgAppService = orgapp.NewOrgService(
+		userAppService, org, member, permission, cfg.Org.InviteExpiry,
 	)
 
 	{

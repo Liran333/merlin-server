@@ -15,8 +15,9 @@ import (
 type User struct {
 	Id string
 
-	Email   Email
-	Account Account
+	Email    Email
+	Account  Account
+	Fullname string
 
 	PlatformPwd string //password for git user
 	PlatformId  int64  // id in gitea
@@ -100,6 +101,7 @@ type UserCreateCmd struct {
 	Account  Account
 	Bio      Bio
 	AvatarId AvatarId
+	Fullname string
 }
 
 type TokenCreatedCmd struct {
@@ -169,5 +171,6 @@ func (cmd *UserCreateCmd) ToUser() User {
 
 		Bio:      cmd.Bio,
 		AvatarId: cmd.AvatarId,
+		Fullname: cmd.Fullname,
 	}
 }

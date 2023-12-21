@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
@@ -17,7 +15,7 @@ type OrganizationDTO struct {
 	CreatedAt   int64        `json:"created_at"`
 	Website     string       `json:"website"`
 	Owner       string       `json:"owner"`
-	Approves    []ApproveDTO `json:"approves"`
+	Approves    []ApproveDTO `json:"-"`
 }
 
 type ApproveDTO struct {
@@ -25,6 +23,8 @@ type ApproveDTO struct {
 	UserName  string `json:"user_name"`
 	Role      string `json:"role"`
 	ExpiresAt int64  `json:"expires_at"`
+	Fullname  string `json:"fullname"`
+	Inviter   string `json:"inviter"`
 }
 
 func ToApproveDTO(m domain.Approve) ApproveDTO {
@@ -33,6 +33,7 @@ func ToApproveDTO(m domain.Approve) ApproveDTO {
 		UserName:  m.Username,
 		Role:      string(m.Role),
 		ExpiresAt: m.ExpireAt, // will expire in 14 days
+		Inviter:   m.Inviter,
 	}
 }
 
@@ -43,74 +44,10 @@ type MemberDTO struct {
 	Role        string `json:"role"`
 }
 
-type UpdateOrgBasicInfoCmd struct {
-	FullName    string `json:"full_name"`
-	Description string `json:"description"`
-	Website     string `json:"website"`
-	AvatarId    string `json:"avatar_id"`
-}
-
 type OrgListOptions struct {
 	Page     int
 	PageSize int
 	Owner    primitive.Account
-}
-
-func (cmd OrgInviteMemberCmd) Validate() error {
-	if cmd.Role != string(domain.OrgRoleOwner) &&
-		cmd.Role != string(domain.OrgRoleReader) &&
-		cmd.Role != string(domain.OrgRoleWriter) &&
-		cmd.Role != string(domain.OrgRoleAdmin) {
-		return fmt.Errorf("invalid role: %s", cmd.Role)
-	}
-
-	if cmd.Account == nil {
-		return fmt.Errorf("invalid account")
-	}
-
-	if cmd.Org == nil {
-		return fmt.Errorf("invalid org")
-	}
-
-	return nil
-}
-
-func (cmd OrgInviteMemberCmd) ToMember() domain.OrgMember {
-	return domain.OrgMember{
-		Username: cmd.Account.Account(),
-		Role:     domain.OrgRole(cmd.Role),
-		OrgName:  cmd.Org.Account(),
-	}
-}
-
-type OrgRemoveMemberCmd struct {
-	Account primitive.Account
-	Org     primitive.Account
-}
-
-func (cmd OrgRemoveMemberCmd) Validate() error {
-	if cmd.Account == nil {
-		return fmt.Errorf("invalid account")
-	}
-
-	if cmd.Org == nil {
-		return fmt.Errorf("invalid org")
-	}
-
-	return nil
-}
-
-func (cmd OrgRemoveMemberCmd) ToMember() domain.OrgMember {
-	return domain.OrgMember{
-		Username: cmd.Account.Account(),
-		OrgName:  cmd.Org.Account(),
-	}
-}
-
-type OrgEditMemberCmd struct {
-	Account primitive.Account
-	Org     primitive.Account
-	Role    string
 }
 
 func ToDTO(org *domain.Organization) OrganizationDTO {
@@ -137,11 +74,3 @@ func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 		Role:     string(member.Role),
 	}
 }
-
-type OrgInviteMemberCmd struct {
-	Account primitive.Account
-	Org     primitive.Account
-	Role    string
-}
-type OrgAddMemberCmd = OrgRemoveMemberCmd
-type OrgRemoveInviteCmd = OrgRemoveMemberCmd

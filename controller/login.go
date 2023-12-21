@@ -163,6 +163,7 @@ func (ctl *LoginController) newUser(ctx *gin.Context, info login.Login) (user us
 		Account:  info.Name,
 		Bio:      info.Bio,
 		AvatarId: info.AvatarId,
+		Fullname: info.Fullname,
 	}
 
 	if user, err = ctl.us.Create(&cmd); err != nil {

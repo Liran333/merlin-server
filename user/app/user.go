@@ -19,6 +19,8 @@ type UserService interface {
 	UserInfo(domain.Account) (UserInfoDTO, error)
 	GetByAccount(domain.Account, bool) (UserDTO, error)
 	GetByFollower(owner, follower domain.Account) (UserDTO, bool, error)
+	GetUserAvatarId(domain.Account) (domain.AvatarId, error)
+	GetUserFullname(domain.Account) (string, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
 
@@ -148,6 +150,19 @@ func (s userService) GetByFollower(owner, follower domain.Account) (
 	dto = newUserDTO(&v)
 
 	return
+}
+
+func (s userService) GetUserAvatarId(user domain.Account) (
+	domain.AvatarId, error,
+) {
+	return s.repo.GetUserAvatarId(user)
+}
+
+func (s userService) GetUserFullname(user domain.Account) (
+	string, error,
+) {
+	return s.repo.GetUserFullname(user)
+
 }
 
 func (s userService) CreateToken(cmd *domain.TokenCreatedCmd, client platform.BaseAuthClient) (token TokenDTO, err error) {
