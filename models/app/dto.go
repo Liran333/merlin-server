@@ -102,39 +102,4 @@ type ModelsDTO struct {
 	Models []repository.ModelSummary `json:"models"`
 }
 
-type CmdToListModels struct {
-	// can't define Name as domain.ResourceName
-	// because the Name can be subpart of the real resource name
-	Name string
-
-	// list the models of Owner
-	Owner primitive.Account
-
-	// list models which have the labels
-	Labels []string
-
-	SortType primitive.SortType
-
-	Count        bool
-	PageNum      int
-	CountPerPage int
-}
-
-func (cmd *CmdToListModels) toOption() repository.ListOption {
-	v := repository.ListOption{
-		Name:         cmd.Name,
-		Owner:        cmd.Owner,
-		Labels:       cmd.Labels,
-		Count:        cmd.Count,
-		PageNum:      cmd.PageNum,
-		CountPerPage: cmd.CountPerPage,
-	}
-
-	if cmd.SortType == nil {
-		v.SortType = primitive.SortTypeRecentlyUpdated
-	} else {
-		v.SortType = cmd.SortType
-	}
-
-	return v
-}
+type CmdToListModels = repository.ListOption

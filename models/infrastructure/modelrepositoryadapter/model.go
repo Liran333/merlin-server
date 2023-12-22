@@ -2,6 +2,7 @@ package modelrepositoryadapter
 
 import (
 	"errors"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -9,6 +10,11 @@ import (
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
+)
+
+const (
+	README = "README"
+	readme = "readme"
 )
 
 type modelAdapter struct {
@@ -119,6 +125,12 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		query, arg := likeFilter(fieldName, opt.Name)
 
 		db = db.Where(query, arg)
+
+		if strings.Contains(readme, strings.ToLower(opt.Name)) {
+			db = db.Where(notEqualQuery(fieldName), README)
+		}
+	} else {
+		db = db.Where(notEqualQuery(fieldName), README)
 	}
 
 	if opt.Owner != nil {
@@ -129,7 +141,25 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(equalQuery(fieldVisibility), opt.Visibility.Visibility())
 	}
 
-	// TODO labels
+	if opt.License != nil {
+		db = db.Where(equalQuery(fieldLicense), opt.License.License())
+	}
+
+	if v := opt.Labels.Task; v != "" {
+		db = db.Where(equalQuery(fieldTask), v)
+	}
+
+	if v := opt.Labels.Others; v != nil && v.Len() > 0 {
+		query, arg := intersectionFilter(fieldOthers, v.UnsortedList())
+
+		db = db.Where(query, arg)
+	}
+
+	if v := opt.Labels.Frameworks; v != nil && v.Len() > 0 {
+		query, arg := intersectionFilter(fieldFrameworks, v.UnsortedList())
+
+		db = db.Where(query, arg)
+	}
 
 	return db
 }

@@ -5,6 +5,8 @@ import (
 	"math"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
 )
@@ -100,7 +102,9 @@ func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 	cmd.Name = req.Name
 	cmd.Count = req.Count
 
-	if req.SortBy != "" {
+	if req.SortBy == "" {
+		cmd.SortType = primitive.SortTypeRecentlyUpdated
+	} else {
 		if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
 			return
 		}
@@ -128,7 +132,10 @@ func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 
 // reqToListGlobalModels
 type reqToListGlobalModels struct {
-	Labels string `form:"labels"`
+	Task       string `form:"task"`
+	Others     string `form:"others"`
+	License    string `form:"license"`
+	Frameworks string `form:"frameworks"`
 
 	reqToListUserModels
 }
@@ -139,9 +146,20 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 		return cmd, err
 	}
 
-	if req.Labels != "" {
-		cmd.Labels = strings.Split(req.Labels, labelSpliter)
-		// TODO check each label if it is valid
+	// TODO check each label if it is valid
+
+	cmd.Labels.Task = req.Task
+
+	if cmd.License, err = primitive.NewLicense(req.License); err != nil {
+		return cmd, err
+	}
+
+	if v := strings.Split(req.Others, labelSpliter); len(v) > 0 {
+		cmd.Labels.Others = sets.Set[string](sets.NewString(v...))
+	}
+
+	if v := strings.Split(req.Frameworks, labelSpliter); len(v) > 0 {
+		cmd.Labels.Frameworks = sets.Set[string](sets.NewString(v...))
 	}
 
 	return cmd, nil

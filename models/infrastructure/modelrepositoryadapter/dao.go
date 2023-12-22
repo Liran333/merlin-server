@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
@@ -59,8 +60,20 @@ func likeFilter(field, value string) (query, arg string) {
 	return
 }
 
+func intersectionFilter(field string, value []string) (query string, arg pq.StringArray) {
+	query = fmt.Sprintf(`%s @> ?`, field)
+
+	arg = pq.StringArray(value)
+
+	return
+}
+
 func equalQuery(field string) string {
 	return fmt.Sprintf(`%s = ?`, field)
+}
+
+func notEqualQuery(field string) string {
+	return fmt.Sprintf(`%s <> ?`, field)
 }
 
 func orderByDesc(field string) string {

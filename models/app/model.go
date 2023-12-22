@@ -145,24 +145,22 @@ func (s *modelAppService) GetByName(user primitive.Account, index *ModelIndex) (
 func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 	ModelsDTO, error,
 ) {
-	option := cmd.toOption()
-
 	if user == nil {
-		option.Visibility = primitive.VisibilityPublic
+		cmd.Visibility = primitive.VisibilityPublic
 	} else {
 		if cmd.Owner == nil {
 			// It can list the private models of user,
 			// but it maybe no need to do it.
-			option.Visibility = primitive.VisibilityPublic
+			cmd.Visibility = primitive.VisibilityPublic
 		} else {
 			if user != cmd.Owner {
 				// TODO if user can't get, then
-				// option.Visibility = primitive.VisibilityPublic
+				// cmd.Visibility = primitive.VisibilityPublic
 			}
 		}
 	}
 
-	v, total, err := s.repoAdapter.List(&option)
+	v, total, err := s.repoAdapter.List(cmd)
 
 	return ModelsDTO{
 		Total:  total,

@@ -28,10 +28,14 @@ type ListOption struct {
 	// list by visibility
 	Visibility primitive.Visibility
 
-	SortType primitive.SortType
+	// list models which have one of licenses
+	License primitive.License
 
-	// list models which have the labels
-	Labels []string
+	// list models which have at least one label for each kind of lables.
+	Labels domain.ModelLabels
+
+	// sort
+	SortType primitive.SortType
 
 	// whether to calculate the total
 	Count        bool

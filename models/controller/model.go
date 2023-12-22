@@ -248,8 +248,11 @@ func (ctl *ModelController) List(ctx *gin.Context) {
 // @Description  list global public model
 // @Tags     Model
 // @Param    name            query  string  false  "name of model"
+// @Param    task            query  string  false  "task label"
+// @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
+// @Param    license         query  string  false  "license label"
+// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"
 // @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    labels          query  string  false  "labels, separate multiple each ones with commas"
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
 // @Param    page_num        query  int     false  "page num which starts from 1"
 // @Param    count_per_page  query  int     false  "count per page"

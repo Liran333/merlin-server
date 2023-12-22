@@ -16,6 +16,7 @@ const (
 	fieldTask       = "task"
 	fieldOwner      = "owner"
 	fieldOthers     = "others"
+	fieldLicense    = "license"
 	fieldVersion    = "version"
 	fieldUpdatedAt  = "updated_at"
 	fieldCreatedAt  = "created_at"
@@ -63,9 +64,9 @@ type modelDO struct {
 	Version    int    `gorm:"column:version"`
 
 	//labels
-	Task       string         `gorm:"column:task"`
-	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}'"`
-	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}'"`
+	Task       string         `gorm:"column:task;index:task"`
+	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
+	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
 }
 
 func (do *modelDO) TableName() string {
