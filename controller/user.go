@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	login "github.com/openmerlin/merlin-server/login/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -80,12 +80,12 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	if err := ctl.s.UpdateBasicInfo(pl.DomainAccount(), cmd); err != nil {
-		ctx.JSON(http.StatusBadRequest, newResponseError(err))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, newResponseData(nil))
+	controller.SendRespOfGet(ctx, nil)
 }
 
 // @Summary		Get a user info
@@ -143,7 +143,9 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 		// get by visitor
 		if u, err := ctl.s.GetByAccount(target, false); err != nil {
 			logrus.Errorf("get by visitor err: %s", err)
-			ctl.sendRespWithInternalError(ctx, newResponseError(fmt.Errorf("failed to get user(%s) info", target.Account())))
+			controller.SendError(ctx, err)
+
+			return
 		} else {
 			u.Email = ""
 			u.Password = ""
@@ -158,7 +160,9 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 		if u, isFollower, err := ctl.s.GetByFollower(target, pl.DomainAccount()); err != nil {
 			logrus.Error(err)
 
-			ctl.sendRespWithInternalError(ctx, newResponseError(err))
+			controller.SendError(ctx, err)
+
+			return
 		} else {
 			u.Email = ""
 			//u.Password = ""
@@ -172,7 +176,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	if u, err := ctl.s.UserInfo(pl.DomainAccount()); err != nil {
 		logrus.Error(err)
 
-		ctl.sendRespWithInternalError(ctx, newResponseError(err))
+		controller.SendError(ctx, err)
 	} else {
 		resp(&u.UserDTO, u.Points, true)
 	}
@@ -212,9 +216,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, fmt.Errorf("failed to init platform client"),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
@@ -226,13 +228,10 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, err,
-		))
+		controller.SendError(ctx, err)
 
-		return
 	} else {
-		ctx.JSON(http.StatusNoContent, newResponseData(nil))
+		controller.SendRespOfDelete(ctx)
 	}
 }
 
@@ -275,9 +274,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, err,
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
@@ -289,19 +286,16 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeError(
-			errorSystemError, fmt.Errorf("failed to init platform client"),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 	createdToken, err := ctl.s.CreateToken(&cmd, platform)
 	if err != nil {
 		logrus.Errorf("failed to create token %s", err)
-		ctx.JSON(http.StatusBadRequest, newResponseCodeMsg(
-			errorSystemError,
-			"can't refresh token",
-		))
+
+		controller.SendError(ctx, err)
+
 		return
 	}
 	// create new token
@@ -338,7 +332,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		}
 	}
 
-	ctl.sendRespOfPost(ctx, createdToken)
+	controller.SendRespOfPost(ctx, createdToken)
 }
 
 // @Title			ListUserTokens
@@ -359,13 +353,10 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 
-		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
-			errorNotAllowed,
-			fmt.Sprintf("can't get token of user %s ", pl.Account),
-		))
+		controller.SendError(ctx, err)
 
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newResponseData(tokens))
+	controller.SendRespOfGet(ctx, tokens)
 }

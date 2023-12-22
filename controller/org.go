@@ -19,9 +19,11 @@ import (
 func AddRouterForOrgController(
 	rg *gin.RouterGroup,
 	org orgapp.OrgService,
+	user userapp.UserService,
 ) {
 	ctl := OrgController{
-		org: org,
+		org:  org,
+		user: user,
 	}
 
 	rg.PUT("/v1/organization/:name", ctl.Update)
@@ -230,7 +232,6 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Summary		Get all organization of the user
 // @Description	get organization info
 // @Tags			Organization
-// @Param			name	path	string	true	"name"
 // @Accept			json
 // @Success		200	{object}			[]orgapp.OrganizationDTO
 // @Failure		400	bad_request_param	account	is		invalid
@@ -439,7 +440,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 		return
 	}
 
-	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "add a member to organization")
+	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "edit a member to organization")
 
 	newMember, err := ctl.org.EditMember(&domain.OrgEditMemberCmd{
 		Actor:   pl.DomainAccount(),
@@ -451,7 +452,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 		logrus.Error(err)
 		ctx.JSON(http.StatusInternalServerError, newResponseCodeMsg(
 			errorNotAllowed,
-			fmt.Sprintf("can't add member %s to organization %s ", acc, orgName),
+			fmt.Sprintf("can't edit member %s to organization %s ", acc, orgName),
 		))
 
 		return

@@ -8,13 +8,20 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
+
+func errOrgNotFound(msg string) error {
+	if msg == "" {
+		msg = "not found"
+	}
+
+	return allerror.NewNotFound(allerror.ErrorCodeOrganizationNotFound, msg)
+}
 
 type OrgService interface {
 	// user
@@ -107,12 +114,16 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o OrganizationDTO, err
 func (org *orgService) GetByAccount(acc primitive.Account) (dto OrganizationDTO, err error) {
 	o, err := org.repo.GetByName(acc)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", acc.Account()))
+		}
 		return
 	}
 
 	dto = ToDTO(&o)
 	return
 }
+
 func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	err := org.perm.Check(cmd.Actor, cmd.Name, primitive.ObjTypeOrg, primitive.ActionDelete)
 	if err != nil {
@@ -120,7 +131,10 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	}
 	o, err := org.repo.GetByName(cmd.Name)
 	if err != nil {
-		return fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
+		return err
 	}
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
@@ -178,7 +192,10 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 
 	o, err := org.repo.GetByName(cmd.OrgName)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.OrgName.Account()))
+		}
+
 		return
 	}
 
@@ -230,9 +247,16 @@ func (org *orgService) GetByOwner(acc primitive.Account) (orgs []OrganizationDTO
 		return
 	}
 
-	return org.List(&OrgListOptions{
+	orgs, err = org.List(&OrgListOptions{
 		Owner: acc,
 	})
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
+	}
+
+	return
 }
 
 func (org *orgService) GetByUser(acc primitive.Account) (orgs []OrganizationDTO, err error) {
@@ -243,7 +267,9 @@ func (org *orgService) GetByUser(acc primitive.Account) (orgs []OrganizationDTO,
 
 	members, err := org.member.GetByUser(acc.Account())
 	if err != nil {
-		err = fmt.Errorf("failed to get members, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
 		return
 	}
 
@@ -267,6 +293,9 @@ func (org *orgService) List(l *OrgListOptions) (orgs []OrganizationDTO, err erro
 
 	os, err := org.repo.GetByOwner(l.Owner)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
 		return
 	}
 
@@ -286,15 +315,15 @@ func (org *orgService) ListMember(acc primitive.Account) (dtos []MemberDTO, err 
 
 	o, err := org.GetByAccount(acc)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
 		return
 	}
 
 	members, e := org.member.GetByOrg(o.Name)
 	if e != nil {
-		err = fmt.Errorf("failed to get members by org name: %s, %s", o.Name, e)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
 		return
-
 	}
 
 	dtos = make([]MemberDTO, len(members))
@@ -320,7 +349,10 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		return fmt.Errorf("failed to get org name:%s for adding member, %w", cmd.Org, err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+		}
+		return err
 	}
 
 	approve, err := o.RemoveInvite(cmd.ToMember())
@@ -439,7 +471,10 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 	}
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		return fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
+		return err
 	}
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
@@ -480,7 +515,9 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+		}
 		return
 	}
 
@@ -536,7 +573,9 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Organiz
 
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+		}
 		return
 	}
 
@@ -574,7 +613,10 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Organiz
 
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			logrus.Warn("org not existed, skip revoke invite")
+			err = nil
+		}
 		return
 	}
 
@@ -608,7 +650,9 @@ func (org *orgService) ListInvitation(cmd *domain.OrgNormalCmd) (dtos []ApproveD
 
 	o, err := org.repo.GetByName(cmd.Org)
 	if err != nil {
-		err = fmt.Errorf("failed to get org, %w", err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+		}
 		return
 	}
 
@@ -640,7 +684,7 @@ func (org *orgService) CheckName(name primitive.Account) bool {
 
 	_, err2 := org.user.GetByAccount(name, false)
 
-	if repositories.IsErrorDataNotExists(err1) && commonrepo.IsErrorResourceNotExists(err2) {
+	if commonrepo.IsErrorResourceNotExists(err1) && commonrepo.IsErrorResourceNotExists(err2) {
 		return true
 	}
 
@@ -660,7 +704,9 @@ func (org *orgService) GetMemberByUserAndOrg(u primitive.Account, o primitive.Ac
 
 	m, err := org.member.GetByOrgAndUser(o.Account(), u.Account())
 	if err != nil {
-		err = fmt.Errorf("failed to get member by org:%s and user:%s, %w", o, u, err)
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s with user %s not found", o.Account(), u.Account()))
+		}
 		return
 	}
 

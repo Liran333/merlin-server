@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
@@ -59,16 +60,15 @@ func (impl *userRepoImpl) Delete(u *domain.User) (err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("Delete failed: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 	}
-
 	return
 }
 
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
 	if r, _, err = impl.GetByFollower(account, nil); err != nil {
-		err = repositories.ConvertError(err)
-
 		return
 	}
 
@@ -178,6 +178,10 @@ func (impl *userRepoImpl) GetByFollower(owner, follower domain.Account) (
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 
@@ -219,7 +223,9 @@ func (impl *userRepoImpl) FindUsersInfo(accounts []domain.Account) (r []domain.U
 	}
 
 	if err := primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("failed to find user info: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 
 		return nil, err
 	}
@@ -250,7 +256,9 @@ func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname stri
 	}
 
 	if err := primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("failed to get user fullname: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 
 		return "", err
 	}
@@ -262,7 +270,8 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 	var v []DUser
 
 	if len(names) == 0 {
-		err = repositories.NewErrorDataNotExists(fmt.Errorf("empty user name list"))
+		err = commonrepo.NewErrorResourceNotExists(err)
+
 		return
 	}
 
@@ -279,7 +288,9 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 	}
 
 	if err := primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("failed to get user avatar id: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 
 		return nil, err
 	}
@@ -307,7 +318,9 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.Ava
 	}
 
 	if err := primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("failed to get user avatar id: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 
 		return nil, err
 	}
@@ -360,7 +373,17 @@ func (impl *userRepoImpl) Search(opt *repository.UserSearchOption) (
 		return cursor.All(ctx, &v)
 	}
 
-	if err = primitive.WithContext(f); err != nil || len(v) == 0 {
+	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
+		return
+	}
+
+	if len(v) == 0 {
+		err = commonrepo.NewErrorResourceNotExists(err)
+
 		return
 	}
 
@@ -391,31 +414,4 @@ func (impl *userRepoImpl) Search(opt *repository.UserSearchOption) (
 	r.Total = n
 
 	return
-}
-
-func (impl *userRepoImpl) getPageItems(items []string, option *repository.FollowFindOption) []string {
-	if option.CountPerPage <= 0 {
-		return items
-	}
-
-	total := len(items)
-
-	if option.PageNum <= 1 {
-		if total > option.CountPerPage {
-			return items[:option.CountPerPage]
-		}
-
-		return items
-	}
-
-	skip := option.CountPerPage * (option.PageNum - 1)
-	if skip >= total {
-		return nil
-	}
-
-	if n := total - skip; n > option.CountPerPage {
-		return items[skip : skip+option.CountPerPage]
-	}
-
-	return items[skip:]
 }

@@ -167,7 +167,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config) {
 		)
 
 		controller.AddRouterForOrgController(
-			v1, orgAppService,
+			v1, orgAppService, userAppService,
 		)
 
 	}

@@ -7,6 +7,10 @@ const (
 
 	ErrorCodeModelNotFound = "model_not_found"
 
+	ErrorCodeUserNotFound = "user_not_found"
+
+	ErrorCodeOrganizationNotFound = "organization_not_found"
+
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 
 	errorCodeInvalidParam = "invalid_param"
@@ -51,6 +55,18 @@ func (e notfoudError) NotFound() {}
 // NewNotFound
 func NewNotFound(code string, msg string) notfoudError {
 	return notfoudError{New(code, msg)}
+}
+
+func IsNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if _, ok := err.(notfoudError); ok {
+		return true
+	}
+
+	return false
 }
 
 // noPermissionError

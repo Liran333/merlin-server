@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
 	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
@@ -65,7 +66,9 @@ func (impl *tokenRepoImpl) Delete(acc domain.Account, name string) (err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("Delete failed: %w", err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 	}
 
 	return
@@ -82,7 +85,7 @@ func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.Plat
 
 	if err = primitive.WithContext(f); err != nil {
 		if impl.cli.IsDocNotExists(err) {
-			err = repositories.NewErrorDataNotExists(err)
+			err = commonrepo.NewErrorResourceNotExists(err)
 		}
 
 		return
@@ -113,7 +116,7 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 
 	if err = primitive.WithContext(f); err != nil {
 		if impl.cli.IsDocNotExists(err) {
-			err = repositories.NewErrorDataNotExists(err)
+			err = commonrepo.NewErrorResourceNotExists(err)
 		}
 
 		return

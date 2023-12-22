@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -57,11 +57,9 @@ func (impl *orgRepoImpl) Delete(o *domain.Organization) (err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("Delete failed: %w", err)
-	}
-
-	if impl.cli.IsDocNotExists(err) {
-		err = repositories.NewErrorDataNotExists(err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 	}
 
 	return
@@ -119,7 +117,7 @@ func (impl *orgRepoImpl) insert(o *domain.Organization) (id string, err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = repositories.NewErrorDuplicateCreating(err)
+		err = commonrepo.NewErrorResourceNotExists(err)
 	}
 
 	return
@@ -138,7 +136,7 @@ func (impl *orgRepoImpl) GetByName(orgName primitive.Account) (
 
 	if err = primitive.WithContext(f); err != nil {
 		if impl.cli.IsDocNotExists(err) {
-			err = repositories.NewErrorDataNotExists(err)
+			err = commonrepo.NewErrorResourceNotExists(err)
 		}
 
 		return
@@ -167,6 +165,10 @@ func (impl *orgRepoImpl) GetByOwner(owner primitive.Account) (
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 

@@ -439,14 +439,26 @@ paths:
         in: query
         name: name
         type: string
+      - description: task label
+        in: query
+        name: task
+        type: string
+      - description: other labels, separate multiple each ones with commas
+        in: query
+        name: others
+        type: string
+      - description: license label
+        in: query
+        name: license
+        type: string
+      - description: framework labels, separate multiple each ones with commas
+        in: query
+        name: frameworks
+        type: string
       - description: whether to calculate the total
         in: query
         name: count
         type: boolean
-      - description: labels, separate multiple each ones with commas
-        in: query
-        name: labels
-        type: string
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'
         in: query
@@ -620,12 +632,6 @@ paths:
       consumes:
       - application/json
       description: get organization info
-      parameters:
-      - description: name
-        in: path
-        name: name
-        required: true
-        type: string
       responses:
         "200":
           description: OK

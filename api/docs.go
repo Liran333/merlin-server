@@ -126,15 +126,33 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "boolean",
-                        "description": "whether to calculate the total",
-                        "name": "count",
+                        "type": "string",
+                        "description": "task label",
+                        "name": "task",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "labels, separate multiple each ones with commas",
-                        "name": "labels",
+                        "description": "other labels, separate multiple each ones with commas",
+                        "name": "others",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "license label",
+                        "name": "license",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "framework labels, separate multiple each ones with commas",
+                        "name": "frameworks",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "whether to calculate the total",
+                        "name": "count",
                         "in": "query"
                     },
                     {
@@ -397,15 +415,6 @@ const docTemplate = `{
                     "Organization"
                 ],
                 "summary": "Get all organization of the user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",

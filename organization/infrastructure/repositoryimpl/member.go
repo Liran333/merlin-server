@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -57,11 +57,9 @@ func (impl *memberRepoImpl) Delete(o *domain.OrgMember) (err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil {
-		err = fmt.Errorf("Delete member failed: %w", err)
-	}
-
-	if impl.cli.IsDocNotExists(err) {
-		err = repositories.NewErrorDataNotExists(err)
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
 	}
 
 	return
@@ -126,7 +124,7 @@ func (impl *memberRepoImpl) insert(o *domain.OrgMember) (id string, err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = repositories.NewErrorDuplicateCreating(err)
+		err = commonrepo.NewErrorResourceNotExists(err)
 	}
 
 	return
@@ -165,11 +163,15 @@ func (impl *memberRepoImpl) GetByOrg(name string) (
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 
 	if len(v) == 0 {
-		err = repositories.NewErrorDataNotExists(fmt.Errorf("no member found"))
+		err = commonrepo.NewErrorResourceNotExists(fmt.Errorf("no member found"))
 		return
 	}
 
@@ -192,6 +194,10 @@ func (impl *memberRepoImpl) DeleteByOrg(name string) (
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 
@@ -213,7 +219,7 @@ func (impl *memberRepoImpl) GetByOrgAndUser(org, user string) (
 
 	if err = primitive.WithContext(f); err != nil {
 		if impl.cli.IsDocNotExists(err) {
-			err = repositories.NewErrorDataNotExists(err)
+			err = commonrepo.NewErrorResourceNotExists(err)
 		}
 
 		return
@@ -236,11 +242,15 @@ func (impl *memberRepoImpl) GetByOrgAndRole(org string, role domain.OrgRole) (me
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 
 	if len(v) == 0 {
-		err = repositories.NewErrorDataNotExists(fmt.Errorf("no member found"))
+		err = commonrepo.NewErrorResourceNotExists(fmt.Errorf("no member found"))
 		return
 	}
 
@@ -266,11 +276,15 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 	}
 
 	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
 		return
 	}
 
 	if len(v) == 0 {
-		err = repositories.NewErrorDataNotExists(fmt.Errorf("no member found"))
+		err = commonrepo.NewErrorResourceNotExists(fmt.Errorf("no member found"))
 		return
 	}
 
