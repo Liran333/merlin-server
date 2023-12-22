@@ -42,18 +42,35 @@ func (cmd *CmdToUpdateModel) toModel(model *domain.Model) (b bool) {
 }
 
 type ModelDTO struct {
-	Id            string   `json:"id"`
-	Name          string   `json:"name"`
-	Desc          string   `json:"desc"`
-	Owner         string   `json:"owner"`
-	Labels        []string `json:"labels"`
-	License       string   `json:"license"`
-	Fullname      string   `json:"fullname"`
-	CreatedAt     string   `json:"created_at"`
-	UpdatedAt     string   `json:"updated_at"`
-	LikeCount     int      `json:"like_count"`
-	Visibility    string   `json:"visibility"`
-	DownloadCount int      `json:"download_count"`
+	Id            string         `json:"id"`
+	Name          string         `json:"name"`
+	Desc          string         `json:"desc"`
+	Owner         string         `json:"owner"`
+	Labels        ModelLabelsDTO `json:"labels"`
+	Fullname      string         `json:"fullname"`
+	CreatedAt     string         `json:"created_at"`
+	UpdatedAt     string         `json:"updated_at"`
+	LikeCount     int            `json:"like_count"`
+	Visibility    string         `json:"visibility"`
+	DownloadCount int            `json:"download_count"`
+}
+
+type ModelLabelsDTO struct {
+	Task       string   `json:"task"`
+	Others     []string `json:"others"`
+	License    string   `json:"license"`
+	Frameworks []string `json:"frameworks"`
+}
+
+func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
+	labels := &model.Labels
+
+	return ModelLabelsDTO{
+		Task:       labels.Task,
+		Others:     labels.Others.UnsortedList(),
+		License:    model.License.License(),
+		Frameworks: labels.Frameworks.UnsortedList(),
+	}
 }
 
 func toModelDTO(model *domain.Model) ModelDTO {
@@ -61,8 +78,7 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		Id:            model.Id.Identity(),
 		Name:          model.Name.MSDName(),
 		Owner:         model.Owner.Account(),
-		Labels:        model.Labels,
-		License:       model.License.License(),
+		Labels:        toModelLabelsDTO(model),
 		CreatedAt:     utils.ToDate(model.CreatedAt),
 		UpdatedAt:     utils.ToDate(model.UpdatedAt),
 		LikeCount:     model.LikeCount,

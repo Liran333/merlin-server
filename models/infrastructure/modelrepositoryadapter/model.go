@@ -11,22 +11,6 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 )
 
-func NewModelAdapter(db *gorm.DB, tables *Tables) (*modelAdapter, error) {
-	modelTableName = tables.Model
-
-	if err := db.AutoMigrate(&modelDO{}); err != nil {
-		return nil, err
-	}
-
-	dbInstance = db
-
-	return &modelAdapter{
-		daoImpl{
-			table: tables.Model,
-		},
-	}, nil
-}
-
 type modelAdapter struct {
 	daoImpl
 }

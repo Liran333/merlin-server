@@ -3,6 +3,8 @@ package modelrepositoryadapter
 // "gorm.io/plugin/optimisticlock"
 
 import (
+	"github.com/lib/pq"
+
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
@@ -11,11 +13,14 @@ import (
 
 const (
 	fieldName       = "name"
+	fieldTask       = "task"
 	fieldOwner      = "owner"
+	fieldOthers     = "others"
 	fieldVersion    = "version"
 	fieldUpdatedAt  = "updated_at"
 	fieldCreatedAt  = "created_at"
 	fieldVisibility = "visibility"
+	fieldFrameworks = "frameworks"
 )
 
 var (
@@ -37,6 +42,14 @@ func toModelDO(m *domain.Model) modelDO {
 	}
 }
 
+func toLabelsDO(labels *domain.ModelLabels) modelDO {
+	return modelDO{
+		Task:       labels.Task,
+		Others:     labels.Others.UnsortedList(),
+		Frameworks: labels.Frameworks.UnsortedList(),
+	}
+}
+
 type modelDO struct {
 	Id         int64  `gorm:"column:id;"`
 	Desc       string `gorm:"column:desc"`
@@ -48,7 +61,11 @@ type modelDO struct {
 	CreatedAt  int64  `gorm:"column:created_at"`
 	UpdatedAt  int64  `gorm:"column:updated_at"`
 	Version    int    `gorm:"column:version"`
-	//Labels
+
+	//labels
+	Task       string         `gorm:"column:task"`
+	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}'"`
+	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}'"`
 }
 
 func (do *modelDO) TableName() string {
@@ -77,8 +94,9 @@ func (do *modelDO) toModelSummary() repository.ModelSummary {
 		Id:        primitive.CreateIdentity(do.Id).Identity(),
 		Name:      do.Name,
 		Desc:      do.Desc,
+		Task:      do.Task,
 		Owner:     do.Owner,
 		Fullname:  do.Fullname,
-		UpdatedAt: "", // TODO convert to "two days ago"
+		UpdatedAt: do.UpdatedAt,
 	}
 }

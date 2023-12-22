@@ -49,7 +49,6 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 
 	err = s.repoAdapter.Add(&domain.Model{
 		Desc:      cmd.Desc,
-		Labels:    []string{cmd.License.License()},
 		Fullname:  cmd.Fullname,
 		CodeRepo:  coderepo,
 		CreatedAt: now,

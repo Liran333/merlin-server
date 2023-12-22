@@ -87,13 +87,12 @@ type allServices struct {
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
-	services.modelRepoAdapter, err = modelrepositoryadapter.NewModelAdapter(
-		postgresql.DB(), &cfg.Model.Tables,
-	)
+	err = modelrepositoryadapter.Init(postgresql.DB(), &cfg.Model.Tables)
 	if err != nil {
 		return
 	}
 
+	services.modelRepoAdapter = modelrepositoryadapter.ModelAdapter()
 	services.codeRepoApp = codeRepoAppService(cfg)
 
 	return

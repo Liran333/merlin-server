@@ -9,10 +9,10 @@ type ModelSummary struct {
 	Id            string `json:"id"`
 	Name          string `json:"name"`
 	Desc          string `json:"desc"`
+	Task          string `json:"task"`
 	Owner         string `json:"owner"`
 	Fullname      string `json:"fullname"`
-	TaskLabel     string `json:"task_label"`
-	UpdatedAt     string `json:"updated_at"`
+	UpdatedAt     int64  `json:"updated_at"`
 	LikeCount     int    `json:"like_count"`
 	DownloadCount int    `json:"download_count"`
 }
@@ -54,4 +54,8 @@ type ModelRepositoryAdapter interface {
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
 	List(*ListOption) ([]ModelSummary, int, error)
+}
+
+type ModelLabelsRepoAdapter interface {
+	Save(modelId primitive.Identity, labels *domain.ModelLabels) error
 }
