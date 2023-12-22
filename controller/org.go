@@ -7,11 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
 
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
+	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
 func AddRouterForOrgController(
@@ -38,12 +40,14 @@ func AddRouterForOrgController(
 	rg.GET("/v1/organization/:name/member", ctl.ListMember)
 	rg.PUT("/v1/organization/:name/member", ctl.EditMember)
 	rg.POST("/v1/organization/:name/member", ctl.AddMember)
+	rg.GET("/v1/:name", ctl.GetUser)
 }
 
 type OrgController struct {
 	baseController
 
-	org orgapp.OrgService
+	org  orgapp.OrgService
+	user userapp.UserService
 }
 
 // @Summary		Update org basic info
@@ -148,6 +152,52 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 		controller.SendError(ctx, err)
 	} else {
 		controller.SendRespOfGet(ctx, o)
+	}
+}
+
+// @Summary		Get one organization or user info
+// @Description	get organization or user info
+// @Tags			Organization
+// @Param			name	path	string	true	"name"
+// @Accept			json
+// @Success		200	{object}			controller.User
+// @Failure		400	bad_request_param	account	is		invalid
+// @Failure		401	resource_not_exists	user	does	not	exist
+// @Failure		500	system_error		system	error
+// @Router			/v1/{name} [get]
+func (ctl *OrgController) GetUser(ctx *gin.Context) {
+	name, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		logrus.Error(err)
+
+		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
+			errorBadRequestParam, fmt.Errorf("organization name not valid"),
+		))
+
+		return
+	}
+
+	_, _, ok := ctl.checkUserApiToken(ctx, true)
+	if !ok {
+		logrus.Errorln("failed to get user info")
+		return
+	}
+
+	// get org info
+	if o, err := ctl.org.GetByAccount(name); err != nil {
+		if err != nil {
+			u, err := ctl.user.GetByAccount(name, false)
+			if err != nil {
+				logrus.Error(err)
+
+				controller.SendError(ctx, err)
+				return
+			}
+
+			controller.SendRespOfGet(ctx, commonapp.FromUserDTO(u))
+		}
+	} else {
+		controller.SendRespOfGet(ctx, commonapp.FromOrgDTO(o))
 	}
 }
 

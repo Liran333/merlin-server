@@ -16,6 +16,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 var userCmd = &cobra.Command{
@@ -108,6 +109,46 @@ var userGetCmd = &cobra.Command{
 			fmt.Printf("AvatarId: %s\n", u.AvatarId)
 			fmt.Printf("Id: %s\n", u.Id)
 			fmt.Printf("Fullname: %s\n", u.Fullname)
+			fmt.Printf("Created: %s\n", utils.ToDate(u.CreatedAt))
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+	},
+}
+
+var userGetAvaCmd = &cobra.Command{
+	Use: "showava",
+	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		acc := viper.GetStringSlice("user.getava.name")
+		users := make([]primitive.Account, len(acc))
+		for i := range acc {
+			users[i], err = primitive.NewAccount(acc[i])
+			if err != nil {
+				logrus.Fatalf("get user failed :%s", err.Error())
+			}
+		}
+
+		user := userrepoimpl.NewUserRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.User),
+		)
+		token := userrepoimpl.NewTokenRepo(
+			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		)
+		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
+
+		userAppService := userapp.NewUserService(
+			user, git, token)
+
+		u, err := userAppService.GetUsersAvatarId(users)
+		if err != nil {
+			logrus.Fatalf("get user failed :%s", err.Error())
+		} else {
+			for i := range u {
+				fmt.Printf("Name: %s\n", u[i].Name)
+				fmt.Printf("AvatarId: %s\n", u[i].AvatarId)
+			}
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -197,6 +238,7 @@ func init() {
 	userCmd.AddCommand(userAddCmd)
 	userCmd.AddCommand(userDelCmd)
 	userCmd.AddCommand(userGetCmd)
+	userCmd.AddCommand(userGetAvaCmd)
 	userCmd.AddCommand(userEditCmd)
 	// 添加命令行参数
 	userAddCmd.Flags().StringP("name", "n", "", "user name")
@@ -215,6 +257,14 @@ func init() {
 
 	userGetCmd.Flags().StringP("name", "n", "", "user name")
 	if err := userGetCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	userGetAvaCmd.Flags().StringSlice("name", make([]string, 0), "user name")
+	if err := userGetAvaCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.getava.name", userGetAvaCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
 

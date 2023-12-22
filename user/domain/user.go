@@ -22,6 +22,8 @@ type User struct {
 	PlatformPwd string //password for git user
 	PlatformId  int64  // id in gitea
 
+	CreatedAt int64
+
 	Bio      Bio
 	AvatarId AvatarId
 

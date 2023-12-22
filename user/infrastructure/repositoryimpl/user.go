@@ -258,6 +258,43 @@ func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname stri
 	return v.Fullname, nil
 }
 
+func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User, err error) {
+	var v []DUser
+
+	if len(names) == 0 {
+		err = repositories.NewErrorDataNotExists(fmt.Errorf("empty user name list"))
+		return
+	}
+
+	filter := bson.M{}
+	filter[fieldName] = bson.M{
+		"$in": names,
+	}
+
+	f := func(ctx context.Context) error {
+		return impl.cli.GetDocs(
+			ctx, filter,
+			bson.M{fieldAvatarId: 1, fieldName: 1}, &v,
+		)
+	}
+
+	if err := primitive.WithContext(f); err != nil {
+		err = fmt.Errorf("failed to get user avatar id: %w", err)
+
+		return nil, err
+	}
+
+	users = make([]domain.User, len(v))
+	for i := range v {
+		users[i] = domain.User{
+			Account:  primitive.CreateAccount(v[i].Name),
+			AvatarId: domain.CreateAvatarId(v[i].AvatarId),
+		}
+	}
+
+	return
+}
+
 func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.AvatarId, err error) {
 
 	var v DUser

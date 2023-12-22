@@ -20,6 +20,7 @@ func toUserDoc(u domain.User, doc *DUser) error {
 		PlatformId:  u.PlatformId,
 		PlatformPwd: u.PlatformPwd,
 		Fullname:    u.Fullname,
+		CreatedAt:   u.CreatedAt,
 	}
 
 	if u.Bio != nil {
@@ -67,6 +68,7 @@ func toUser(doc DUser, u *domain.User) (err error) {
 	u.PlatformId = doc.PlatformId
 	u.Version = doc.Version
 	u.Fullname = doc.Fullname
+	u.CreatedAt = doc.CreatedAt
 
 	return
 }

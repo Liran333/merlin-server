@@ -32,6 +32,83 @@ api:
   encryption_key: "Pligc50pGer6xC5d9UX1mnD3EzHcEJm3YUQCte4/XgQ="
   encryption_key_csrf: "ddPgIlGFRpTNV7ah/9oDCh3D2mXNYHyfhgApZhP+KSs="
 
+permission:
+  permissions:
+    - object_type: member
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: contributor
+          operation:
+          - read
+        - role: write
+          operation:
+          - read
+        - role: read
+          operation:
+          - read
+    - object_type: invite
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: contributor
+          operation:
+          - create
+          - read
+        - role: write
+          operation:
+          - create
+          - read
+        - role: read
+          operation:
+          - read
+    - object_type: organization
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: contributor
+          operation:
+          - read
+        - role: write
+          operation:
+          - read
+        - role: read
+          operation:
+          - read
+    - object_type: model
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: contributor
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: write
+          operation:
+          - write
+          - read
+        - role: read
+          operation:
+          - read
+
 organization:
   # each invite will live 14 days
   invite_expiry: 1209600

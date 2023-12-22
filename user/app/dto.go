@@ -17,10 +17,11 @@ type UserDTO struct {
 	Email   string `json:"email"`
 	Account string `json:"account"`
 
-	Bio      string `json:"bio"`
-	Fullname string `json:"fullname"`
-	AvatarId string `json:"avatar_id"`
-	Password string `json:"-"`
+	Bio       string `json:"bio"`
+	Fullname  string `json:"fullname"`
+	AvatarId  string `json:"avatar_id"`
+	CreatedAt int64  `json:"created_at"`
+	Password  string `json:"-"`
 }
 
 type TokenDTO struct {
@@ -44,6 +45,17 @@ func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 
 }
 
+type AvatarDTO struct {
+	AvatarId string `json:"avatar_id"`
+	Name     string `json:"name"`
+}
+
+func ToAvatarDTO(a *domain.User) (dto AvatarDTO) {
+	dto.AvatarId = a.AvatarId.AvatarId()
+	dto.Name = a.Account.Account()
+	return
+}
+
 func newUserDTO(u *domain.User) (dto UserDTO) {
 	dto.Account = u.Account.Account()
 	if u.AvatarId != nil {
@@ -59,6 +71,7 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 
 	dto.Password = u.PlatformPwd
 	dto.Fullname = u.Fullname
+	dto.CreatedAt = u.CreatedAt
 
 	return
 }

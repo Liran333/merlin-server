@@ -7,6 +7,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
+	"github.com/openmerlin/merlin-server/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,8 +20,9 @@ type UserService interface {
 	UserInfo(domain.Account) (UserInfoDTO, error)
 	GetByAccount(domain.Account, bool) (UserDTO, error)
 	GetByFollower(owner, follower domain.Account) (UserDTO, bool, error)
-	GetUserAvatarId(domain.Account) (domain.AvatarId, error)
+	GetUserAvatarId(domain.Account) (AvatarDTO, error)
 	GetUserFullname(domain.Account) (string, error)
+	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
 
@@ -61,6 +63,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 
 	v.PlatformId = repoUser.PlatformId
 	v.PlatformPwd = repoUser.PlatformPwd
+	v.CreatedAt = utils.Now()
 	// create user
 	u, err := s.repo.Save(&v)
 	if err != nil {
@@ -153,9 +156,38 @@ func (s userService) GetByFollower(owner, follower domain.Account) (
 }
 
 func (s userService) GetUserAvatarId(user domain.Account) (
-	domain.AvatarId, error,
+	AvatarDTO, error,
 ) {
-	return s.repo.GetUserAvatarId(user)
+	var ava AvatarDTO
+	a, err := s.repo.GetUserAvatarId(user)
+	if err != nil {
+		return ava, err
+	}
+
+	return AvatarDTO{
+		Name:     user.Account(),
+		AvatarId: a.AvatarId(),
+	}, nil
+}
+
+func (s userService) GetUsersAvatarId(users []domain.Account) (
+	[]AvatarDTO, error,
+) {
+	names := make([]string, len(users))
+	for i := range users {
+		names[i] = users[i].Account()
+	}
+	us, err := s.repo.GetUsersAvatarId(names)
+	if err != nil {
+		return nil, err
+	}
+
+	dtos := make([]AvatarDTO, len(us))
+	for i := range us {
+		dtos[i] = ToAvatarDTO(&us[i])
+	}
+
+	return dtos, nil
 }
 
 func (s userService) GetUserFullname(user domain.Account) (

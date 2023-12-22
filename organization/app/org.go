@@ -623,6 +623,7 @@ func (org *orgService) ListInvitation(cmd *domain.OrgNormalCmd) (dtos []ApproveD
 		dtos[i].Fullname, err = org.user.GetUserFullname(primitive.CreateAccount(o.Approves[i].Username))
 		if err != nil {
 			logrus.Errorf("failed to get fullname, skip, %s", err)
+			err = nil
 			continue
 		}
 	}

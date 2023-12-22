@@ -25,11 +25,12 @@ const (
 type DUser struct {
 	Id primitive.ObjectID `bson:"_id"       json:"-"`
 
-	Name     string `bson:"name"       json:"name"`
-	Email    string `bson:"email"      json:"email"`
-	Bio      string `bson:"bio"        json:"bio"`
-	AvatarId string `bson:"avatar_id"  json:"avatar_id"`
-	Fullname string `bson:"fullname"   json:"fullname"`
+	Name      string `bson:"name"       json:"name"`
+	Email     string `bson:"email"      json:"email"`
+	Bio       string `bson:"bio"        json:"bio"`
+	AvatarId  string `bson:"avatar_id"  json:"avatar_id"`
+	Fullname  string `bson:"fullname"   json:"fullname"`
+	CreatedAt int64  `bson:"created_at" json:"created_at"`
 
 	PlatformUserId          string `bson:"uid"        json:"uid"`
 	PlatformUserNamespaceId string `bson:"nid"        json:"nid"`
