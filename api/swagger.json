@@ -33,7 +33,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.UserDTO"
+                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
                         }
                     },
                     "500": {
@@ -241,7 +241,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     }
                 }
             }
@@ -576,6 +576,48 @@
                     }
                 }
             },
+            "post": {
+                "description": "delete a organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Leave the organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "permission"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "delete a organization",
                 "consumes": [
@@ -596,7 +638,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -805,6 +847,54 @@
                     }
                 }
             },
+            "put": {
+                "description": "Edit a member to the organization's role",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Edit organization member",
+                "parameters": [
+                    {
+                        "description": "body of new member",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.OrgMemberEditRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/app.MemberDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "not_allowed"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Add a member to the organization, the user must be on invite list before adding",
                 "consumes": [
@@ -834,7 +924,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": ""
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -879,7 +969,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -978,7 +1068,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1084,7 +1174,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1106,6 +1196,53 @@
                     }
                 }
             }
+        },
+        "/v1/{name}": {
+            "get": {
+                "description": "get organization or user info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get one organization or user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "bad_request_param"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "resource_not_exists"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "system_error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1114,6 +1251,12 @@
             "properties": {
                 "expires_at": {
                     "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "inviter": {
+                    "type": "string"
                 },
                 "org_name": {
                     "type": "string"
@@ -1143,6 +1286,29 @@
                 }
             }
         },
+        "app.ModelLabelsDTO": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "others": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
         "app.ModelsDTO": {
             "type": "object",
             "properties": {
@@ -1160,12 +1326,6 @@
         "app.OrganizationDTO": {
             "type": "object",
             "properties": {
-                "approves": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/app.ApproveDTO"
-                    }
-                },
                 "avatar_id": {
                     "type": "string"
                 },
@@ -1218,27 +1378,22 @@
                 }
             }
         },
-        "app.UserDTO": {
+        "controller.OrgInviteMemberRequest": {
             "type": "object",
+            "required": [
+                "role",
+                "user"
+            ],
             "properties": {
-                "account": {
+                "role": {
                     "type": "string"
                 },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "bio": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
+                "user": {
                     "type": "string"
                 }
             }
         },
-        "controller.OrgInviteMemberRequest": {
+        "controller.OrgMemberEditRequest": {
             "type": "object",
             "required": [
                 "role",
@@ -1276,6 +1431,38 @@
                 }
             }
         },
+        "controller.User": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.modelDetail": {
             "type": "object",
             "properties": {
@@ -1298,13 +1485,7 @@
                     "type": "string"
                 },
                 "labels": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "license": {
-                    "type": "string"
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
                 },
                 "like_count": {
                     "type": "integer"
@@ -1400,13 +1581,9 @@
         "controller.orgMemberRemoveRequest": {
             "type": "object",
             "required": [
-                "role",
                 "user"
             ],
             "properties": {
-                "role": {
-                    "type": "string"
-                },
                 "user": {
                     "type": "string"
                 }
@@ -1478,6 +1655,9 @@
                 },
                 "email": {
                     "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
                 }
             }
         },
@@ -1493,7 +1673,39 @@
                 "bio": {
                     "type": "string"
                 },
+                "created_at": {
+                    "type": "integer"
+                },
                 "email": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_openmerlin_merlin-server_user_app.UserDTO": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fullname": {
                     "type": "string"
                 },
                 "id": {
@@ -1525,11 +1737,11 @@
                 "owner": {
                     "type": "string"
                 },
-                "task_label": {
+                "task": {
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },

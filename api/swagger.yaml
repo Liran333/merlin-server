@@ -3,6 +3,10 @@ definitions:
     properties:
       expires_at:
         type: integer
+      fullname:
+        type: string
+      inviter:
+        type: string
       org_name:
         type: string
       role:
@@ -21,6 +25,21 @@ definitions:
       user_name:
         type: string
     type: object
+  app.ModelLabelsDTO:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      others:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
   app.ModelsDTO:
     properties:
       models:
@@ -32,10 +51,6 @@ definitions:
     type: object
   app.OrganizationDTO:
     properties:
-      approves:
-        items:
-          $ref: '#/definitions/app.ApproveDTO'
-        type: array
       avatar_id:
         type: string
       created_at:
@@ -70,20 +85,17 @@ definitions:
       token:
         type: string
     type: object
-  app.UserDTO:
-    properties:
-      account:
-        type: string
-      avatar_id:
-        type: string
-      bio:
-        type: string
-      email:
-        type: string
-      id:
-        type: string
-    type: object
   controller.OrgInviteMemberRequest:
+    properties:
+      role:
+        type: string
+      user:
+        type: string
+    required:
+    - role
+    - user
+    type: object
+  controller.OrgMemberEditRequest:
     properties:
       role:
         type: string
@@ -108,6 +120,27 @@ definitions:
       msg:
         type: string
     type: object
+  controller.User:
+    properties:
+      avatar_id:
+        type: string
+      created_at:
+        type: integer
+      description:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      website:
+        type: string
+    type: object
   controller.modelDetail:
     properties:
       avatar_id:
@@ -123,11 +156,7 @@ definitions:
       id:
         type: string
       labels:
-        items:
-          type: string
-        type: array
-      license:
-        type: string
+        $ref: '#/definitions/app.ModelLabelsDTO'
       like_count:
         type: integer
       liked:
@@ -189,12 +218,9 @@ definitions:
     type: object
   controller.orgMemberRemoveRequest:
     properties:
-      role:
-        type: string
       user:
         type: string
     required:
-    - role
     - user
     type: object
   controller.reqToCreateModel:
@@ -241,6 +267,8 @@ definitions:
         type: string
       email:
         type: string
+      fullname:
+        type: string
     type: object
   controller.userDetail:
     properties:
@@ -250,7 +278,28 @@ definitions:
         type: string
       bio:
         type: string
+      created_at:
+        type: integer
       email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_openmerlin_merlin-server_user_app.UserDTO:
+    properties:
+      account:
+        type: string
+      avatar_id:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: integer
+      email:
+        type: string
+      fullname:
         type: string
       id:
         type: string
@@ -271,10 +320,10 @@ definitions:
         type: string
       owner:
         type: string
-      task_label:
+      task:
         type: string
       updated_at:
-        type: string
+        type: integer
     type: object
   session.SessionDTO:
     properties:
@@ -288,6 +337,37 @@ definitions:
 info:
   contact: {}
 paths:
+  /v1/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get organization or user info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: resource_not_exists
+        "500":
+          description: Internal Server Error
+          schema:
+            type: system_error
+      summary: Get one organization or user info
+      tags:
+      - Organization
   /v1/login:
     get:
       consumes:
@@ -308,7 +388,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.UserDTO'
+            $ref: '#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO'
         "500":
           description: Internal Server Error
           schema:
@@ -420,7 +500,7 @@ paths:
         type: string
       responses:
         "204":
-          description: ""
+          description: No Content
       summary: Delete
       tags:
       - Model
@@ -612,7 +692,7 @@ paths:
         type: string
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
@@ -656,6 +736,34 @@ paths:
           schema:
             type: system_error
       summary: Get one organization info
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: delete a organization
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+        "403":
+          description: Forbidden
+          schema:
+            type: permission
+      summary: Leave the organization
       tags:
       - Organization
     put:
@@ -810,7 +918,7 @@ paths:
         type: string
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
@@ -869,7 +977,7 @@ paths:
         type: string
       responses:
         "201":
-          description: ""
+          description: Created
         "400":
           description: Bad Request
           schema:
@@ -879,6 +987,38 @@ paths:
           schema:
             type: not_allowed
       summary: Add organization members
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: Edit a member to the organization's role
+      parameters:
+      - description: body of new member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgMemberEditRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/app.MemberDTO'
+        "400":
+          description: Bad Request
+          schema:
+            type: bad_request_param
+        "401":
+          description: Unauthorized
+          schema:
+            type: not_allowed
+      summary: Edit organization member
       tags:
       - Organization
   /v1/user:
@@ -935,7 +1075,7 @@ paths:
       description: check user email
       responses:
         "200":
-          description: ""
+          description: OK
         "400":
           description: Bad Request
           schema:
@@ -1003,7 +1143,7 @@ paths:
         type: string
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:

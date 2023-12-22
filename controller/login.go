@@ -65,7 +65,7 @@ type LoginController struct {
 // @Param			code			query	string	true	"authing code"
 // @Param			redirect_uri	query	string	true	"redirect uri"
 // @Accept			json
-// @Success		200	{object}			app.UserDTO
+// @Success		200	{object}			userapp.UserDTO
 // @Failure		500	system_error		system	error
 // @Failure		501	duplicate_creating	create	user	repeatedly	which	should	not	happen
 // @Router			/v1/login [get]

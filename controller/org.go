@@ -398,7 +398,7 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 // @Success		202 {object} app.MemberDTO
 // @Failure		400	bad_request_param	account	is	invalid
 // @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Router			/v1/organization/{name}/member [post]
+// @Router			/v1/organization/{name}/member [put]
 func (ctl *OrgController) EditMember(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {
