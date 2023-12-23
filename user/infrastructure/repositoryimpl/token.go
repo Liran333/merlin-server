@@ -6,7 +6,6 @@ import (
 
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -186,7 +185,7 @@ func (impl *tokenRepoImpl) insert(u *domain.PlatformToken) (id string, err error
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = repositories.NewErrorDuplicateCreating(err)
+		err = commonrepo.NewErrorDuplicateCreating(err)
 	}
 
 	return

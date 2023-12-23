@@ -102,6 +102,7 @@ var memberAddCmd = &cobra.Command{
 		}
 
 		err = orgAppService.AddMember(&domain.OrgAddMemberCmd{
+			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Org:     orgName,
 		})
@@ -109,6 +110,28 @@ var memberAddCmd = &cobra.Command{
 			logrus.Fatalf("add member failed :%s", err.Error())
 		} else {
 			logrus.Info("add member successfully")
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		Init()
+
+	},
+}
+
+var orgCheckCmd = &cobra.Command{
+	Use: "check",
+	Run: func(cmd *cobra.Command, args []string) {
+		name, err := primitive.NewAccount(viper.GetString("org.check.name"))
+		if err != nil {
+			logrus.Fatalf("invalid org name :%s", err.Error())
+		}
+
+		ok := orgAppService.CheckName(name)
+		if !ok {
+			logrus.Fatalf("check name failed")
+		} else {
+			logrus.Info("check name successfully")
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -440,6 +463,7 @@ func init() {
 	orgCmd.AddCommand(removeInviteCmd)
 	orgCmd.AddCommand(inviteListCmd)
 	orgCmd.AddCommand(inviteSendCmd)
+	orgCmd.AddCommand(orgCheckCmd)
 	// 添加命令行参数
 
 	orgAddCmd.Flags().StringP("name", "n", "", "org name")
@@ -472,6 +496,14 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("org.del.name", orgDelCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+
+	orgCheckCmd.Flags().StringP("name", "n", "", "org name")
+	if err := orgCheckCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("org.check.name", orgCheckCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
 

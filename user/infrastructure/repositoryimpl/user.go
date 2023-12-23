@@ -8,7 +8,6 @@ import (
 
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -131,7 +130,7 @@ func (impl *userRepoImpl) insert(u *domain.User) (id string, err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = repositories.NewErrorDuplicateCreating(err)
+		err = commonrepo.NewErrorDuplicateCreating(err)
 	}
 
 	return
@@ -186,7 +185,7 @@ func (impl *userRepoImpl) GetByFollower(owner, follower domain.Account) (
 	}
 
 	if len(v) == 0 {
-		err = repositories.NewErrorDataNotExists(errors.New("no user"))
+		err = commonrepo.NewErrorResourceNotExists(errors.New("no user"))
 
 		return
 	}

@@ -342,9 +342,8 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 		return allerror.NewInvalidParam(err.Error())
 	}
 
-	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
-	if err != nil {
-		return err
+	if cmd.Actor.Account() != cmd.Account.Account() {
+		return allerror.NewNoPermission("can't accept invite for another user")
 	}
 
 	o, err := org.repo.GetByName(cmd.Org)
@@ -559,16 +558,9 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Organiz
 		return
 	}
 
-	if cmd.Actor.Account() != cmd.Account.Account() {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionRead)
-		if err != nil {
-			return
-		}
-	} else {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
-		if err != nil {
-			return
-		}
+	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
+	if err != nil {
+		return
 	}
 
 	o, err := org.repo.GetByName(cmd.Org)
@@ -684,7 +676,7 @@ func (org *orgService) CheckName(name primitive.Account) bool {
 
 	_, err2 := org.user.GetByAccount(name, false)
 
-	if commonrepo.IsErrorResourceNotExists(err1) && commonrepo.IsErrorResourceNotExists(err2) {
+	if commonrepo.IsErrorResourceNotExists(err1) && allerror.IsNotFound(err2) {
 		return true
 	}
 

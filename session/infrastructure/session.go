@@ -6,8 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"github.com/openmerlin/merlin-server/infrastructure/repositories"
 )
 
 const (
@@ -71,7 +71,7 @@ func (se sessionStore) Get(account string) (do SessionDO, err error) {
 	}
 
 	if isDocNotExists(err) {
-		err = repositories.NewErrorDataNotExists(err)
+		err = commonrepo.NewErrorResourceNotExists(err)
 	}
 
 	return

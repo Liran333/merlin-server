@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/opensourceways/community-robot-lib/logrusutil"
 	"github.com/sirupsen/logrus"
@@ -60,8 +59,6 @@ func initServer(configFile string) {
 
 	// user
 	domain.Init(&cfg.User)
-
-	fmt.Printf("gitea: %+v\n", cfg.Git)
 
 	// gitea
 	if err := basegitea.Init(&cfg.Git); err != nil {

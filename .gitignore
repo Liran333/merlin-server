@@ -4,3 +4,4 @@ cmd/config.yaml
 .vscode
 *.b
 */back
+compose-config.yml
