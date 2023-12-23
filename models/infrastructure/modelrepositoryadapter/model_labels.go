@@ -14,8 +14,10 @@ type modelLabelsAdapter struct {
 func (adapter *modelLabelsAdapter) Save(index *domain.ModelIndex, labels *domain.ModelLabels) error {
 	do := toLabelsDO(labels)
 
-	v := adapter.db().Model(
-		&modelDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()},
+	v := adapter.db().Model(&modelDO{}).Where(
+		equalQuery(fieldOwner), index.Owner.Account(),
+	).Where(
+		equalQuery(fieldName), index.Name.MSDName(),
 	).Select(
 		fieldTask, fieldOthers, fieldFrameworks,
 	).Updates(&do)
