@@ -4,6 +4,7 @@ package modelrepositoryadapter
 
 import (
 	"github.com/lib/pq"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -90,6 +91,12 @@ func (do *modelDO) toModel() domain.Model {
 		CreatedAt: do.CreatedAt,
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,
+
+		Labels: domain.ModelLabels{
+			Task:       do.Task,
+			Others:     sets.New[string](do.Others...),
+			Frameworks: sets.New[string](do.Frameworks...),
+		},
 	}
 }
 
