@@ -5,3 +5,4 @@ cmd/config.yaml
 *.b
 */back
 compose-config.yml
+.idea
