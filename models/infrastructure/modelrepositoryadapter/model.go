@@ -30,8 +30,8 @@ func (adapter *modelAdapter) Add(model *domain.Model) error {
 	return v.Error
 }
 
-func (adapter *modelAdapter) FindByName(owner primitive.Account, name primitive.MSDName) (domain.Model, error) {
-	do := modelDO{Owner: owner.Account(), Name: name.MSDName()}
+func (adapter *modelAdapter) FindByName(index *domain.ModelIndex) (domain.Model, error) {
+	do := modelDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
 	if err := adapter.GetRecord(&do, &do); err != nil {
 		return domain.Model{}, err

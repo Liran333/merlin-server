@@ -22,7 +22,7 @@ type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
 	Delete(primitive.Account, primitive.Identity) error
 	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) error
-	GetByName(primitive.Account, *ModelIndex) (ModelDTO, error)
+	GetByName(primitive.Account, *domain.ModelIndex) (ModelDTO, error)
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
 
@@ -138,10 +138,10 @@ func (s *modelAppService) Update(
 	// send model updated event to add activity
 }
 
-func (s *modelAppService) GetByName(user primitive.Account, index *ModelIndex) (ModelDTO, error) {
+func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelIndex) (ModelDTO, error) {
 	var dto ModelDTO
 
-	model, err := s.repoAdapter.FindByName(index.Owner, index.Name)
+	model, err := s.repoAdapter.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errorModelNotFound

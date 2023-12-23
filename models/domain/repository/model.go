@@ -53,7 +53,7 @@ func (opt *ListOption) Pagination() (bool, int) {
 
 type ModelRepositoryAdapter interface {
 	Add(*domain.Model) error
-	FindByName(primitive.Account, primitive.MSDName) (domain.Model, error)
+	FindByName(*domain.ModelIndex) (domain.Model, error)
 	FindById(primitive.Identity) (domain.Model, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
@@ -61,5 +61,5 @@ type ModelRepositoryAdapter interface {
 }
 
 type ModelLabelsRepoAdapter interface {
-	Save(modelId primitive.Identity, labels *domain.ModelLabels) error
+	Save(*domain.ModelIndex, *domain.ModelLabels) error
 }

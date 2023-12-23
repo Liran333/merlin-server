@@ -35,3 +35,8 @@ type ModelLabels struct {
 	Others     sets.Set[string] // other labels
 	Frameworks sets.Set[string] // framework labels
 }
+
+type ModelIndex struct {
+	Owner primitive.Account
+	Name  primitive.MSDName
+}

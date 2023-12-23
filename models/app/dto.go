@@ -15,11 +15,6 @@ type CmdToCreateModel struct {
 	Fullname primitive.MSDFullname
 }
 
-type ModelIndex struct {
-	Owner primitive.Account
-	Name  primitive.MSDName
-}
-
 type CmdToUpdateModel struct {
 	coderepoapp.CmdToUpdateRepo
 
