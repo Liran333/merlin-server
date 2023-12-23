@@ -49,6 +49,9 @@ type orgListRequest struct {
 	Page     int    `form:"page"`
 	PageSize int    `form:"page_size"`
 	Invitee  string `form:"invitee"`
+	Owner    string `form:"owner"`
+	Website  string `form:"website"`
+	Fullname string `form:"fullname"`
 }
 
 type orgCreateRequest struct {
