@@ -50,8 +50,8 @@ func (m *MessageServer) handle(payload []byte, header map[string]string) error {
 		return err
 	}
 
-	labels, err := m.labelService.GetLabels(&p)
-	if err != nil {
+	labels, ok, err := m.labelService.GetLabels(&p)
+	if !ok {
 		return err
 	}
 

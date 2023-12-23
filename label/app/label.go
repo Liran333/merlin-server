@@ -17,7 +17,7 @@ const (
 )
 
 type LabelService interface {
-	GetLabels(*structs.PushPayload) (domain.ModelLabels, error)
+	GetLabels(*structs.PushPayload) (domain.ModelLabels, bool, error)
 }
 
 type labelService struct {
@@ -30,7 +30,7 @@ func NewLabelHandler(g gitea.Gitea) *labelService {
 	}
 }
 
-func (l *labelService) GetLabels(p *structs.PushPayload) (labels domain.ModelLabels, err error) {
+func (l *labelService) GetLabels(p *structs.PushPayload) (labels domain.ModelLabels, b bool, err error) {
 	if strings.Split(p.Ref, "/")[2] != readMeFileResideBranch {
 		return
 	}
@@ -49,5 +49,10 @@ func (l *labelService) GetLabels(p *structs.PushPayload) (labels domain.ModelLab
 		Path: readMeFileName,
 	}
 
-	return l.gitea.GetLabels(&opt)
+	labels, err = l.gitea.GetLabels(&opt)
+	if err == nil {
+		b = true
+	}
+
+	return
 }
