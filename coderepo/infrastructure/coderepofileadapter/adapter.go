@@ -35,6 +35,7 @@ func (adapter *codeRepoFileAdapter) getContent(codeRepoFile *domain.CodeRepoFile
 	return crl, nil
 
 }
+
 func (adapter *codeRepoFileAdapter) getGitAttribute(codeRepoFile *domain.CodeRepoFile) ([]string, *string, error) {
 	filePath, err := primitive.NewCodeFilePath(gitAttributesFile)
 
@@ -42,10 +43,15 @@ func (adapter *codeRepoFileAdapter) getGitAttribute(codeRepoFile *domain.CodeRep
 		return nil, nil, err
 	}
 
-	codeRepoFile.FilePath = filePath
+	gitAttributesFile := &domain.CodeRepoFile{
+		Owner:    codeRepoFile.Owner,
+		Name:     codeRepoFile.Name,
+		Ref:      codeRepoFile.Ref,
+		FilePath: filePath,
+	}
 
 	// todo if not exist, there have error about 404
-	fileStream, err := adapter.getContent(codeRepoFile)
+	fileStream, err := adapter.getContent(gitAttributesFile)
 
 	if err != nil {
 		return nil, nil, err
@@ -53,7 +59,7 @@ func (adapter *codeRepoFileAdapter) getGitAttribute(codeRepoFile *domain.CodeRep
 
 	fileContent := string(fileStream)
 
-	matchStr := ParseGitAttributesFile(fileContent)
+	matchStr := parseGitAttributesFile(fileContent)
 
 	return matchStr, &fileContent, nil
 
@@ -82,10 +88,11 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) ([]d
 	for _, c := range crl {
 
 		fileInfo := domain.ListFileInfo{
-			Name: c.Name,
-			Path: c.Path,
-			Type: c.Type,
-			Size: c.Size,
+			Name:  c.Name,
+			Path:  c.Path,
+			Type:  c.Type,
+			Size:  c.Size,
+			IsLfs: false,
 		}
 
 		if c.Type == fileType {
@@ -97,10 +104,28 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) ([]d
 			fileInfo.IsLfs = checkLfs(matchStr, *content, c.Path)
 		}
 
+		if fileInfo.IsLfs {
+			filePath, err := primitive.NewCodeFilePath(c.Path)
+			if err == nil {
+
+				lfsRepoFile := codeRepoFile.NewCodeRepoFile(codeRepoFile)
+				lfsRepoFile.FilePath = filePath
+
+				lfsUrl, err := getLfsUrl(&lfsRepoFile, *c.DownloadURL)
+				if err == nil {
+					fileInfo.URL = lfsUrl
+				}
+
+			}
+
+		}
+
 		opt := gitea.ListCommitOptions{SHA: codeRepoFile.Ref.FileRef(), Path: c.Path}
 		opt.PageSize = 1
 		opt.Page = 1
+
 		commits, resp, err := adapter.client.ListRepoCommits(codeRepoFile.Owner.Account(), codeRepoFile.Name.MSDName(), opt)
+
 		if err != nil || resp.StatusCode != http.StatusOK {
 			codeRepoFiles = append(codeRepoFiles, fileInfo)
 			continue
@@ -116,6 +141,7 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) ([]d
 
 		codeRepoFiles = append(codeRepoFiles, fileInfo)
 	}
+
 	return codeRepoFiles, nil
 }
 
@@ -135,18 +161,15 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 		return nil, errors.New(resp.Status)
 	}
 
-	matchStr, content, IsErrGetAttr := adapter.getGitAttribute(codeRepoFile)
-
-	if err != nil {
-		return nil, err
-	}
-
 	fileInfo := domain.DetailFileInfo{
-		Name: crl.Name,
-		Path: crl.Path,
-		Type: crl.Type,
-		Size: crl.Size,
+		Name:  crl.Name,
+		Path:  crl.Path,
+		Type:  crl.Type,
+		Size:  crl.Size,
+		IsLfs: false,
 	}
+
+	matchStr, content, IsErrGetAttr := adapter.getGitAttribute(codeRepoFile)
 
 	if crl.Type == fileType {
 		fileInfo.URL = *crl.DownloadURL
@@ -156,25 +179,48 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 		fileInfo.IsLfs = checkLfs(matchStr, *content, crl.Path)
 	}
 
+	if fileInfo.IsLfs {
+		filePath, err := primitive.NewCodeFilePath(fileInfo.Path)
+
+		if err == nil {
+			lfsRepoFile := codeRepoFile.NewCodeRepoFile(codeRepoFile)
+			lfsRepoFile.FilePath = filePath
+
+			lfsUrl, err := getLfsUrl(&lfsRepoFile, *crl.DownloadURL)
+			if err == nil {
+				fileInfo.URL = lfsUrl
+			}
+		}
+
+	}
+
 	opt := gitea.ListCommitOptions{SHA: codeRepoFile.Ref.FileRef(), Path: crl.Path}
 	opt.PageSize = 1
 	opt.Page = 1
+
 	commits, resp, err := adapter.client.ListRepoCommits(codeRepoFile.Owner.Account(), codeRepoFile.Name.MSDName(), opt)
+
 	if err == nil && resp.StatusCode == http.StatusOK && len(commits) > 0 {
+
 		lastCommit := commits[0]
+
 		fileInfo.FileCommit = domain.FileCommitInfo{
 			Create:  lastCommit.Created,
 			Message: lastCommit.RepoCommit.Message,
 		}
+
 		fileInfo.FileAuthor = domain.FileAuthor{
 			Name: lastCommit.RepoCommit.Author.Name,
 		}
+
 	}
+
 	return &fileInfo, nil
 }
 
 func (adapter *codeRepoFileAdapter) Download(codeRepoFile *domain.CodeRepoFile) (*domain.DownLoadFileInfo, error) {
 	fileInfo, err := adapter.Get(codeRepoFile)
+
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +238,7 @@ func (adapter *codeRepoFileAdapter) Download(codeRepoFile *domain.CodeRepoFile) 
 			return nil, err
 		}
 
-		downloadFileInfo.Stream = stream
+		downloadFileInfo.Stream = string(stream)
 	}
 
 	return &downloadFileInfo, nil

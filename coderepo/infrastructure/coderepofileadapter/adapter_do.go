@@ -1,6 +1,9 @@
 package coderepofileadapter
 
 import (
+	"fmt"
+	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/utils"
 	"strings"
 
 	"github.com/gobwas/glob"
@@ -12,7 +15,7 @@ const (
 	fileType          = "file"
 )
 
-func ParseGitAttributesFile(gitAttributeContent string) []string {
+func parseGitAttributesFile(gitAttributeContent string) []string {
 
 	rows := strings.Split(gitAttributeContent, "\n")
 
@@ -46,4 +49,22 @@ func checkLfs(mathStr []string, gitAttribute, name string) bool {
 	}
 
 	return false
+}
+
+func getLfsUrl(codeRepoFile *domain.CodeRepoFile, downloadURL string) (lfsURL string, err error) {
+	hostName, err := utils.ExtractDomain(downloadURL)
+
+	if err != nil {
+		return "", err
+	}
+
+	lfsURL = fmt.Sprintf("https://%s/%s/%s/media/branch/%s/%s",
+		hostName,
+		codeRepoFile.Owner.Account(),
+		codeRepoFile.Name.MSDName(),
+		codeRepoFile.Ref.FileRef(),
+		codeRepoFile.FilePath.FilePath(),
+	)
+
+	return lfsURL, nil
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"net/url"
 	"os"
 	"time"
 	"unicode/utf8"
@@ -114,6 +115,17 @@ func GetUUID() (uuid string) {
 	}
 	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 	return
+}
+
+// ExtractDomain extract hostname in URL
+func ExtractDomain(inputURL string) (string, error) {
+	parsedURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+	domain := parsedURL.Hostname()
+
+	return domain, nil
 }
 
 // greatest common divisor (GCD) via Euclidean algorithm

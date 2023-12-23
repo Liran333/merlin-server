@@ -84,9 +84,9 @@ type allServices struct {
 	orgMember        orgrepo.OrgMember
 	permission       orgapp.Permission
 	codeRepoApp      coderepoapp.CodeRepoAppService
+	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 	userMiddleWare   middleware.UserMiddleWare
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
-	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -118,6 +118,7 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	services.userApp = userapp.NewUserService(services.userRepo, git, token)
 
 	services.codeRepoFileApp = codeRepoFileAppService(cfg)
+
 	return
 }
 
@@ -155,6 +156,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	setRouterOfModelRestful(rg, services)
 
 	setRouterOfUserAndOrg(rg, cfg, services)
+
+	setRouteOfCodeRepoFile(rg, services)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }

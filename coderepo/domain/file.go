@@ -12,6 +12,15 @@ type CodeRepoFile struct {
 	FilePath primitive.FilePath
 }
 
+func (c CodeRepoFile) NewCodeRepoFile(codeRepoFile *CodeRepoFile) CodeRepoFile {
+	return CodeRepoFile{
+		Owner:    codeRepoFile.Owner,
+		Name:     codeRepoFile.Name,
+		Ref:      codeRepoFile.Ref,
+		FilePath: codeRepoFile.FilePath,
+	}
+}
+
 type FileCommitInfo struct {
 	Message string    `json:"message"`
 	Create  time.Time `json:"created"`
@@ -40,12 +49,12 @@ type DetailFileInfo struct {
 	Size       int64          `json:"size"`
 	IsLfs      bool           `json:"isLfs"`
 	URL        string         `json:"url"`
-	FileCommit FileCommitInfo `json:"message"`
+	FileCommit FileCommitInfo `json:"commit"`
 	FileAuthor FileAuthor     `json:"author"`
 }
 
 type DownLoadFileInfo struct {
 	IsLfs  bool   `json:"isLfs"`
-	Stream []byte `json:"stream"`
+	Stream string `json:"stream"`
 	URL    string `json:"download_link"`
 }
