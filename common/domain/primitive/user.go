@@ -10,8 +10,8 @@ type AccountType int
 
 var (
 	regUserName             = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
-	UserType    AccountType = 1
-	OrgType     AccountType = 2
+	UserType    AccountType = 0
+	OrgType     AccountType = 1
 )
 
 // Account
