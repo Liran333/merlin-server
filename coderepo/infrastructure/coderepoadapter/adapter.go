@@ -23,10 +23,11 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 	obj, _, err := adapter.client.AdminCreateRepo(
 		repo.Owner.Account(),
 		gitea.CreateRepoOption{
-			Name:    repo.Name.MSDName(),
-			License: repo.License.License(),
-			Private: repo.Visibility.IsPrivate(),
-			Readme:  readme,
+			Name:          repo.Name.MSDName(),
+			Readme:        readme,
+			License:       repo.License.License(),
+			Private:       repo.Visibility.IsPrivate(),
+			DefaultBranch: "main",
 		},
 	)
 	if err == nil {
