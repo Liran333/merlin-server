@@ -30,7 +30,7 @@ type TokenDTO struct {
 	Account    string `json:"account"`
 	Name       string `json:"name"`
 	Permission string `json:"permission"`
-	Token      string `json:"-"`
+	Token      string `json:"token"`
 }
 
 func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
