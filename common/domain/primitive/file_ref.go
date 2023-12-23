@@ -9,6 +9,10 @@ func NewCodeFileRef(v string) (FileRef, error) {
 	return codeFileRef(v), nil
 }
 
+func InitCodeFileRef() FileRef {
+	return codeFileRef("main")
+}
+
 type codeFileRef string
 
 func (r codeFileRef) FileRef() string {

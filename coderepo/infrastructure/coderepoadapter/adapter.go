@@ -20,6 +20,7 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 		readme = repo.Name.MSDName()
 	}
 
+	defaultRef := primitive.InitCodeFileRef().FileRef()
 	obj, _, err := adapter.client.AdminCreateRepo(
 		repo.Owner.Account(),
 		gitea.CreateRepoOption{
@@ -27,7 +28,7 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 			Readme:        readme,
 			License:       repo.License.License(),
 			Private:       repo.Visibility.IsPrivate(),
-			DefaultBranch: "main",
+			DefaultBranch: defaultRef,
 		},
 	)
 	if err == nil {
