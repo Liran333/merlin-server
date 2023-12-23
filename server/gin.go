@@ -39,7 +39,9 @@ import (
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	coderepoctl "github.com/openmerlin/merlin-server/coderepo/controller"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
+	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepofileadapter"
 )
 
 func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
@@ -84,6 +86,7 @@ type allServices struct {
 	codeRepoApp      coderepoapp.CodeRepoAppService
 	userMiddleWare   middleware.UserMiddleWare
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
+	codeRepoFileApp coderepoapp.CodeRepoFileAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -114,6 +117,7 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 
 	services.userApp = userapp.NewUserService(services.userRepo, git, token)
 
+	services.codeRepoFileApp = codeRepoFileAppService(cfg)
 	return
 }
 
@@ -131,6 +135,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	setRouterOfModelWeb(rg, services)
 
 	setRouterOfUserAndOrg(rg, cfg, services)
+
+	setRouteOfCodeRepoFile(rg, services)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }
@@ -189,6 +195,11 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 	)
 }
 
+func codeRepoFileAppService(cfg *config.Config) coderepoapp.CodeRepoFileAppService {
+	return coderepoapp.NewCodeRepoFileAppService(
+		coderepofileadapter.NewCodeRepoFileAdapter(gitea.Client()))
+}
+
 func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 	modelctl.AddRouteForModelRestfulController(
 		rg,
@@ -196,6 +207,14 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 			services.codeRepoApp, services.modelRepoAdapter,
 			services.permission,
 		),
+		services.userMiddleWare,
+	)
+}
+
+func setRouteOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
+	coderepoctl.AddRouterForCodeRepoFileController(
+		rg,
+		services.codeRepoFileApp,
 		services.userMiddleWare,
 	)
 }
