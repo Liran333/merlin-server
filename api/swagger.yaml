@@ -107,8 +107,6 @@ definitions:
         type: string
       permission:
         type: string
-      token:
-        type: string
     type: object
   controller.OrgInviteMemberRequest:
     properties:
@@ -396,7 +394,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /v1/{name}:
+  /v1/account/{name}:
     get:
       consumes:
       - application/json

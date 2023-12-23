@@ -1,8 +1,7 @@
 package session
 
 import (
-	"errors"
-
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	session "github.com/openmerlin/merlin-server/session/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
@@ -16,7 +15,7 @@ type SessionCreateCmd struct {
 
 func (cmd *SessionCreateCmd) Validate() error {
 	if b := cmd.Account != nil && cmd.Info != "" && cmd.Email != nil && cmd.UserId != ""; !b {
-		return errors.New("invalid cmd of creating login")
+		return allerror.NewInvalidParam("invalid cmd of creating login")
 	}
 
 	return nil

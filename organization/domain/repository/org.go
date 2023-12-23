@@ -10,6 +10,6 @@ type Organization interface {
 	Delete(*domain.Organization) error
 	GetByName(primitive.Account) (domain.Organization, error)
 	GetByOwner(primitive.Account) ([]domain.Organization, error)
-
+	GetInviteByUser(primitive.Account) ([]domain.Organization, error)
 	//Search(*UserSearchOption) (UserSearchResult, error)
 }

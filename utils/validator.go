@@ -2,6 +2,7 @@ package utils
 
 import (
 	"html/template"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -44,6 +45,11 @@ func IsPath(url string) bool {
 
 func IsChinesePhone(phone string) bool {
 	return isMatchRegex(ReChinesePhone, phone)
+}
+
+func IsUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 func IsPictureName(pictureName string) bool {

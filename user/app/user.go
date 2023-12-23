@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func errOrgNotFound(msg string) error {
+func errUserNotFound(msg string) error {
 	if msg == "" {
 		msg = "not found"
 	}
@@ -62,6 +62,15 @@ type userService struct {
 }
 
 func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
+	if cmd == nil {
+		err = errUserNotFound("input param is empty")
+		return
+	}
+
+	if err = cmd.Validate(); err != nil {
+		return
+	}
+
 	v := cmd.ToUser()
 
 	// create git user
@@ -96,7 +105,7 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 	usernew, err := s.GetByAccount(account, true)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", account.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
 		return
 	}
@@ -136,7 +145,7 @@ func (s userService) Delete(account domain.Account) (err error) {
 func (s userService) UserInfo(account domain.Account) (dto UserInfoDTO, err error) {
 	if dto.UserDTO, err = s.GetByAccount(account, false); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", account.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
 		return
 	}
@@ -149,7 +158,7 @@ func (s userService) GetByAccount(account domain.Account, pwd bool) (dto UserDTO
 	u, err := s.repo.GetByAccount(account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", account.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
 		return
 	}
@@ -169,7 +178,7 @@ func (s userService) GetByFollower(owner, follower domain.Account) (
 	v, isFollower, err := s.repo.GetByFollower(owner, follower)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", owner.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", owner.Account()))
 		}
 		return
 	}
@@ -188,7 +197,7 @@ func (s userService) GetUserAvatarId(user domain.Account) (
 	a, err := s.repo.GetUserAvatarId(user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", user.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", user.Account()))
 		}
 		return ava, err
 	}
@@ -229,7 +238,7 @@ func (s userService) GetUserFullname(user domain.Account) (
 	name, err := s.repo.GetUserFullname(user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", user.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", user.Account()))
 		}
 		return "", err
 	}
@@ -282,10 +291,15 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 }
 
 func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error) {
+	if u == nil {
+		err = allerror.NewInvalidParam("username is empty")
+		return
+	}
+
 	ts, err := s.token.GetByAccount(u)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", u.Account()))
+			err = errUserNotFound(fmt.Sprintf("user %s not found", u.Account()))
 		}
 		return
 	}
@@ -307,7 +321,7 @@ func (s userService) VerifyToken(token string) (dto TokenDTO, b bool) {
 	}
 
 	for t := range tokens {
-		if tokens[t].Compare(token) {
+		if tokens[t].Compare(token) && tokens[t].Expire > utils.Now() {
 			b = true
 			dto = newTokenDTO(&tokens[t])
 			return

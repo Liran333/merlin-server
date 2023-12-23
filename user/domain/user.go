@@ -6,8 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"fmt"
 
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -115,29 +115,34 @@ type TokenCreatedCmd struct {
 
 func (cmd TokenCreatedCmd) Validate() error {
 	if cmd.Permission == "" {
-		return fmt.Errorf("missing permission when creating token")
+		return allerror.NewInvalidParam("missing permission when creating token")
 	}
 
 	if cmd.Permission != TokenPermWrite &&
 		cmd.Permission != TokenPermRead {
-		return fmt.Errorf("invalid permission when creating token")
+		return allerror.NewInvalidParam("invalid permission when creating token")
 	}
 
 	if cmd.Name == "" {
-		return fmt.Errorf("missing name when creating token")
+		return allerror.NewInvalidParam("missing name when creating token")
 	}
 
 	return nil
 }
 
 type TokenDeletedCmd struct {
+	Actor   Account
 	Account Account // user name
 	Name    string  // name of the token
 }
 
 func (cmd TokenDeletedCmd) Validate() error {
+	if cmd.Account == nil {
+		return allerror.NewInvalidParam("missing account when creating token")
+	}
+
 	if cmd.Name == "" {
-		return fmt.Errorf("missing name when creating token")
+		return allerror.NewInvalidParam("missing name when creating token")
 	}
 
 	return nil

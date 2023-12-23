@@ -147,6 +147,19 @@ func (impl *orgRepoImpl) GetByName(orgName primitive.Account) (
 	return
 }
 
+func inviteDocFilterByUser(account string) bson.M {
+	return bson.M{
+		fieldOwner: account,
+	}
+}
+
+func (impl *orgRepoImpl) GetInviteByUser(acc primitive.Account) (
+	os []domain.Organization, err error,
+) {
+
+	return
+}
+
 func orgDocFilterByOwner(account string) bson.M {
 	return bson.M{
 		fieldOwner: account,

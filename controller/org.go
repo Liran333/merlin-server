@@ -42,7 +42,7 @@ func AddRouterForOrgController(
 	rg.GET("/v1/organization/:name/member", ctl.ListMember)
 	rg.PUT("/v1/organization/:name/member", ctl.EditMember)
 	rg.POST("/v1/organization/:name/member", ctl.AddMember)
-	rg.GET("/v1/:name", ctl.GetUser)
+	rg.GET("/v1/account/:name", ctl.GetUser)
 }
 
 type OrgController struct {
@@ -166,7 +166,7 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 // @Failure		400	bad_request_param	account	is		invalid
 // @Failure		401	resource_not_exists	user	does	not	exist
 // @Failure		500	system_error		system	error
-// @Router			/v1/{name} [get]
+// @Router			/v1/account/{name} [get]
 func (ctl *OrgController) GetUser(ctx *gin.Context) {
 	name, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {

@@ -35,6 +35,7 @@ type OrgService interface {
 	InviteMember(*domain.OrgInviteMemberCmd) (OrganizationDTO, error)
 	RevokeInvite(*domain.OrgRemoveInviteCmd) (OrganizationDTO, error)
 	ListInvitation(*domain.OrgNormalCmd) ([]ApproveDTO, error)
+	ListInvitationByUser(primitive.Account) ([]OrganizationDTO, error)
 	AddMember(*domain.OrgAddMemberCmd) error
 	RemoveMember(*domain.OrgRemoveMemberCmd) error
 	EditMember(*domain.OrgEditMemberCmd) (MemberDTO, error)
@@ -662,6 +663,25 @@ func (org *orgService) ListInvitation(cmd *domain.OrgNormalCmd) (dtos []ApproveD
 			err = nil
 			continue
 		}
+	}
+
+	return
+}
+
+func (org *orgService) ListInvitationByUser(acc primitive.Account) (dtos []OrganizationDTO, err error) {
+	if acc == nil {
+		err = allerror.NewInvalidParam("account is nil")
+		return
+	}
+
+	os, err := org.repo.GetInviteByUser(acc)
+	if err != nil {
+		return
+	}
+
+	dtos = make([]OrganizationDTO, len(os))
+	for i := range os {
+		dtos[i] = ToDTO(&os[i])
 	}
 
 	return

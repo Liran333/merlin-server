@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
@@ -43,11 +44,11 @@ type OrgDeletedCmd struct {
 
 func (cmd OrgDeletedCmd) Validate() error {
 	if cmd.Name == nil {
-		return fmt.Errorf("invalid org name")
+		return allerror.NewInvalidParam("invalid org name")
 	}
 
 	if cmd.Actor == nil {
-		return fmt.Errorf("invalid actor name")
+		return allerror.NewInvalidParam("invalid actor name")
 	}
 
 	return nil
@@ -62,17 +63,37 @@ type OrgUpdatedBasicInfoCmd struct {
 	AvatarId    string
 }
 
+func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
+	if cmd.Website != "" && !utils.IsUrl(cmd.Website) {
+		return allerror.NewInvalidParam("invalid website")
+	}
+
+	if cmd.Actor == nil {
+		return allerror.NewInvalidParam("account is nil")
+	}
+
+	if cmd.OrgName == nil {
+		return allerror.NewInvalidParam("org name is nil")
+	}
+
+	return nil
+}
+
 func (cmd OrgCreatedCmd) Validate() error {
 	if _, err := primitive.NewAccount(cmd.Name); err != nil {
-		return err
+		return allerror.NewInvalidParam("org name is invalid")
 	}
 
 	if _, err := user.NewAvatarId(cmd.AvatarId); err != nil {
-		return err
+		return allerror.NewInvalidParam(err.Error())
 	}
 
 	if _, err := primitive.NewAccount(cmd.Owner); err != nil {
-		return err
+		return allerror.NewInvalidParam("owner name is invalid")
+	}
+
+	if cmd.Website != "" && !utils.IsUrl(cmd.Website) {
+		return allerror.NewInvalidParam("invalid website")
 	}
 
 	return nil
@@ -172,19 +193,19 @@ func (cmd OrgInviteMemberCmd) Validate() error {
 		cmd.Role != string(OrgRoleReader) &&
 		cmd.Role != string(OrgRoleWriter) &&
 		cmd.Role != string(OrgRoleAdmin) {
-		return fmt.Errorf("invalid role: %s", cmd.Role)
+		return allerror.NewInvalidParam(fmt.Sprintf("invalid role: %s", cmd.Role))
 	}
 
 	if cmd.Account == nil {
-		return fmt.Errorf("invalid account")
+		return allerror.NewInvalidParam("invalid account")
 	}
 
 	if cmd.Org == nil {
-		return fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam("invalid org")
 	}
 
 	if cmd.Actor == nil {
-		return fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam("invalid actor")
 	}
 	return nil
 }
@@ -197,15 +218,15 @@ type OrgRemoveMemberCmd struct {
 
 func (cmd OrgRemoveMemberCmd) Validate() error {
 	if cmd.Account == nil {
-		return fmt.Errorf("invalid account")
+		return allerror.NewInvalidParam("invalid account")
 	}
 
 	if cmd.Org == nil {
-		return fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam("invalid org")
 	}
 
 	if cmd.Actor == nil {
-		return fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam("invalid actor")
 	}
 
 	return nil
