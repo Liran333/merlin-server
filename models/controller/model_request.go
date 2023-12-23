@@ -160,15 +160,20 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 		}
 	}
 
-	if v := strings.Split(req.Others, labelSpliter); len(v) > 0 {
-		cmd.Labels.Others = sets.Set[string](sets.NewString(v...))
-	}
-
-	if v := strings.Split(req.Frameworks, labelSpliter); len(v) > 0 {
-		cmd.Labels.Frameworks = sets.Set[string](sets.NewString(v...))
-	}
+	cmd.Labels.Others = toStringsSets(req.Others)
+	cmd.Labels.Frameworks = toStringsSets(req.Frameworks)
 
 	return cmd, nil
+}
+
+func toStringsSets(v string) sets.Set[string] {
+	if v == "" {
+		return nil
+	}
+
+	items := strings.Split(v, labelSpliter)
+
+	return sets.New[string](items...)
 }
 
 // restfulReqToListModels
