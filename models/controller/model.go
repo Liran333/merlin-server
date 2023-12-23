@@ -9,22 +9,15 @@ import (
 	"github.com/openmerlin/merlin-server/models/app"
 )
 
-func AddRouteForModelController(
+func addRouteForModelController(
 	r *gin.RouterGroup,
-	s app.ModelAppService,
-	m middleware.UserMiddleWare,
+	ctl *ModelController,
 ) {
-	ctl := ModelController{
-		appService:     s,
-		userMiddleWare: m,
-	}
+	m := ctl.userMiddleWare
 
 	r.POST(`/v1/model`, m.Write, ctl.Create)
 	r.DELETE("/v1/model/:id", m.Write, ctl.Delete)
 	r.PUT("/v1/model/:id", m.Write, ctl.Update)
-	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
-	r.GET("/v1/model/:owner", m.Optional, ctl.List)
-	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
 }
 
 type ModelController struct {
@@ -126,162 +119,6 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 	} else {
 		commonctl.SendRespOfPut(ctx)
 	}
-}
-
-// @Summary  Get
-// @Description  get model
-// @Tags     Model
-// @Param    owner  path  string  true  "owner of model"
-// @Param    name   path  string  true  "name of model"
-// @Accept   json
-// @Success  200  {object}  modelDetail
-// @Router   /v1/model/{owner}/{name} [get]
-func (ctl *ModelController) Get(ctx *gin.Context) {
-	index, err := ctl.parseIndex(ctx)
-	if err != nil {
-		return
-	}
-
-	user := ctl.userMiddleWare.GetUser(ctx)
-
-	dto, err := ctl.appService.GetByName(user, &index)
-	if err != nil {
-		commonctl.SendError(ctx, err)
-
-		return
-	}
-
-	detail := modelDetail{
-		Liked:    true,
-		ModelDTO: &dto,
-	}
-
-	if user != nil {
-		//TODO check user like the model
-	}
-
-	/*
-		TODO get avatar of owner
-
-		avatar, err := ctl.user.GetUserAvatarId(owner)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, newResponseCodeError(
-				errorBadRequestParam, err,
-			))
-
-			return
-		}
-
-		if avatar != nil {
-			detail.AvatarId = avatar.AvatarId()
-		}
-	*/
-
-	commonctl.SendRespOfGet(ctx, &detail)
-}
-
-// @Summary  List
-// @Description  list model
-// @Tags     Model
-// @Param    owner           path   string  true   "owner of model"
-// @Param    name            query  string  false  "name of model"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
-// @Accept   json
-// @Success  200  {object}  modelsInfo
-// @Router   /v1/model/{owner} [get]
-func (ctl *ModelController) List(ctx *gin.Context) {
-	var req reqToListUserModels
-	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	cmd, err := req.toCmd()
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	user := ctl.userMiddleWare.GetUser(ctx)
-
-	dto, err := ctl.appService.List(user, &cmd)
-	if err != nil {
-		commonctl.SendError(ctx, err)
-
-		return
-	}
-
-	result := modelsInfo{
-		Owner:     cmd.Owner.Account(),
-		ModelsDTO: &dto,
-	}
-
-	/*
-		avatar, err := ctl.user.GetUserAvatarId(owner)
-		if err != nil {
-			ctl.sendRespWithInternalError(ctx, newResponseError(err))
-
-			return
-		}
-
-		if avatar != nil {
-			result.AvatarId = avatar.AvatarId()
-		}
-	*/
-
-	commonctl.SendRespOfGet(ctx, &result)
-}
-
-// @Summary  ListGlobal
-// @Description  list global public model
-// @Tags     Model
-// @Param    name            query  string  false  "name of model"
-// @Param    task            query  string  false  "task label"
-// @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
-// @Param    license         query  string  false  "license label"
-// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
-// @Accept   json
-// @Success  200  {object}  app.ModelsDTO
-// @Router   /v1/model [get]
-func (ctl *ModelController) ListGlobal(ctx *gin.Context) {
-	var req reqToListGlobalModels
-	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	cmd, err := req.toCmd()
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	user := ctl.userMiddleWare.GetUser(ctx)
-
-	if result, err := ctl.appService.List(user, &cmd); err != nil {
-		commonctl.SendError(ctx, err)
-	} else {
-		commonctl.SendRespOfGet(ctx, result)
-	}
-	// TODO: each model should include owner's avatar
 }
 
 func (ctl *ModelController) parseIndex(ctx *gin.Context) (index app.ModelIndex, err error) {

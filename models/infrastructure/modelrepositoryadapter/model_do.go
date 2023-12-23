@@ -36,6 +36,7 @@ func toModelDO(m *domain.Model) modelDO {
 		Owner:      m.Owner.Account(),
 		License:    m.License.License(),
 		Fullname:   m.Fullname.MSDFullname(),
+		CreatedBy:  m.CreatedBy.Account(),
 		Visibility: m.Visibility.Visibility(),
 		CreatedAt:  m.CreatedAt,
 		UpdatedAt:  m.UpdatedAt,
@@ -58,6 +59,7 @@ type modelDO struct {
 	Owner      string `gorm:"column:owner;index:model_index,unique,priority:1"`
 	License    string `gorm:"column:license"`
 	Fullname   string `gorm:"column:fullname"`
+	CreatedBy  string `gorm:"column:created_by"`
 	Visibility string `gorm:"column:visibility"`
 	CreatedAt  int64  `gorm:"column:created_at"`
 	UpdatedAt  int64  `gorm:"column:updated_at"`
@@ -84,6 +86,7 @@ func (do *modelDO) toModel() domain.Model {
 		},
 		Desc:      primitive.CreateMSDDesc(do.Desc),
 		Fullname:  primitive.CreateMSDFullname(do.Fullname),
+		CreatedBy: primitive.CreateAccount(do.CreatedBy),
 		CreatedAt: do.CreatedAt,
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,

@@ -10,15 +10,24 @@ import (
 type Model struct {
 	coderepo.CodeRepo
 
-	Desc     primitive.MSDDesc
-	Labels   ModelLabels
-	Fullname primitive.MSDFullname
+	Desc      primitive.MSDDesc
+	Labels    ModelLabels
+	Fullname  primitive.MSDFullname
+	CreatedBy primitive.Account
 
 	Version       int
 	CreatedAt     int64
 	UpdatedAt     int64
 	LikeCount     int
 	DownloadCount int
+}
+
+func (m *Model) OwnedBy(user primitive.Account) bool {
+	return m.Owner == user || m.CreatedBy == user
+}
+
+func (m *Model) OwnedByPerson() bool {
+	return m.Owner == m.CreatedBy
 }
 
 type ModelLabels struct {

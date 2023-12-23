@@ -10,6 +10,7 @@ type CmdToCreateRepo struct {
 	Owner      primitive.Account
 	License    primitive.License
 	Visibility primitive.Visibility
+	InitReadme bool
 }
 
 func (cmd *CmdToCreateRepo) toCodeRepo() domain.CodeRepo {

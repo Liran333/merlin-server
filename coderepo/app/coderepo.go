@@ -23,7 +23,7 @@ type codeRepoAppService struct {
 func (s *codeRepoAppService) Create(cmd *CmdToCreateRepo) (domain.CodeRepo, error) {
 	repo := cmd.toCodeRepo()
 
-	if err := s.repoAdapter.Add(&repo); err != nil {
+	if err := s.repoAdapter.Add(&repo, cmd.InitReadme); err != nil {
 		// TODO should check if duplicate creating and send allerror
 
 		return repo, err

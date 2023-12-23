@@ -25,6 +25,31 @@ definitions:
       user_name:
         type: string
     type: object
+  app.ModelDTO:
+    properties:
+      created_at:
+        type: string
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.ModelLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: string
+      visibility:
+        type: string
+    type: object
   app.ModelLabelsDTO:
     properties:
       frameworks:
@@ -170,16 +195,35 @@ definitions:
       visibility:
         type: string
     type: object
-  controller.modelsInfo:
+  controller.modelInfo:
     properties:
       avatar_id:
         type: string
-      models:
-        items:
-          $ref: '#/definitions/repository.ModelSummary'
-        type: array
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
       owner:
         type: string
+      task:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  controller.modelsInfo:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/controller.modelInfo'
+        type: array
       total:
         type: integer
     type: object
@@ -229,6 +273,8 @@ definitions:
         type: string
       fullname:
         type: string
+      init_readme:
+        type: boolean
       license:
         type: string
       name:
@@ -286,6 +332,19 @@ definitions:
         type: string
       id:
         type: string
+    type: object
+  controller.userModelsInfo:
+    properties:
+      avatar_id:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/repository.ModelSummary'
+        type: array
+      owner:
+        type: string
+      total:
+        type: integer
     type: object
   github_com_openmerlin_merlin-server_user_app.UserDTO:
     properties:
@@ -476,10 +535,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.ModelsDTO'
+            $ref: '#/definitions/controller.modelsInfo'
       summary: ListGlobal
       tags:
-      - Model
+      - ModelWeb
     post:
       consumes:
       - application/json
@@ -576,10 +635,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.modelsInfo'
+            $ref: '#/definitions/controller.userModelsInfo'
       summary: List
       tags:
-      - Model
+      - ModelWeb
   /v1/model/{owner}/{name}:
     get:
       consumes:
@@ -603,7 +662,7 @@ paths:
             $ref: '#/definitions/controller.modelDetail'
       summary: Get
       tags:
-      - Model
+      - ModelWeb
   /v1/name:
     head:
       consumes:
@@ -1165,4 +1224,84 @@ paths:
       summary: Delete a user token
       tags:
       - User
+  /v2/model:
+    get:
+      consumes:
+      - application/json
+      description: list global public model
+      parameters:
+      - description: name of model
+        in: query
+        name: name
+        type: string
+      - description: task label
+        in: query
+        name: task
+        type: string
+      - description: owner of model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: other labels, separate multiple each ones with commas
+        in: query
+        name: others
+        type: string
+      - description: license label
+        in: query
+        name: license
+        type: string
+      - description: framework labels, separate multiple each ones with commas
+        in: query
+        name: frameworks
+        type: string
+      - description: whether to calculate the total
+        in: query
+        name: count
+        type: boolean
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        in: query
+        name: sort_by
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ModelsDTO'
+      summary: List
+      tags:
+      - ModelRestful
+  /v2/model/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get model
+      parameters:
+      - description: owner of model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of model
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ModelDTO'
+      summary: Get
+      tags:
+      - ModelRestful
 swagger: "2.0"

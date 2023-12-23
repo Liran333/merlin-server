@@ -5,7 +5,7 @@ import (
 )
 
 type RepoAdapter interface {
-	Add(*domain.CodeRepo) error
+	Add(*domain.CodeRepo, bool) error
 	// TODO delete by id
 	Delete(*domain.CodeRepoIndex) error
 	// TODO change domain.CodeRepoIndex to id

@@ -12,13 +12,6 @@ const (
 	ObjTypeInvite  ObjType = "invite"
 )
 
-type Subject struct {
-	Identity string  `json:"id"`
-	Type     ObjType `json:"type"`
-}
-
-type Object = Subject
-
 type Action int
 
 const (

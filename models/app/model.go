@@ -14,6 +14,10 @@ var (
 	errorModelNotFound = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
 )
 
+type Permission interface {
+	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
+}
+
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
 	Delete(primitive.Account, primitive.Identity) error
@@ -25,6 +29,7 @@ type ModelAppService interface {
 func NewModelAppService(
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
+	permission Permission,
 ) ModelAppService {
 	return &modelAppService{
 		codeRepoApp: codeRepoApp,
@@ -33,12 +38,22 @@ func NewModelAppService(
 }
 
 type modelAppService struct {
+	permission  Permission
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter
 }
 
 func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) (string, error) {
-	// TODO check if can create
+	/* revert when ready
+	if user != cmd.Owner {
+		err := s.permission.Check(
+			user, cmd.Owner, primitive.ObjTypeModel, primitive.ActionCreate,
+		)
+		if err != nil {
+			return "", err
+		}
+	}
+	*/
 
 	coderepo, err := s.codeRepoApp.Create(&cmd.CmdToCreateRepo)
 	if err != nil {
@@ -51,6 +66,7 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 		Desc:      cmd.Desc,
 		Fullname:  cmd.Fullname,
 		CodeRepo:  coderepo,
+		CreatedBy: user,
 		CreatedAt: now,
 		UpdatedAt: now,
 	})
@@ -70,7 +86,11 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return err
 	}
 
-	// TODO check if can delete
+	/* revert when ready
+	if err := s.hasPermission(user, &model, primitive.ActionDelete); err != nil {
+		return err
+	}
+	*/
 
 	if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
 		return err
@@ -97,7 +117,11 @@ func (s *modelAppService) Update(
 		return err
 	}
 
-	// TODO check if can update
+	/* revert when ready
+	if err := s.hasPermission(user, &model, primitive.ActionWrite); err != nil {
+		return err
+	}
+	*/
 
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
@@ -135,9 +159,11 @@ func (s *modelAppService) GetByName(user primitive.Account, index *ModelIndex) (
 		return dto, errorModelNotFound
 	}
 
-	if user != index.Owner {
-		//TODO check if can get
+	/* revert when ready
+	if err := s.hasPermission(user, &model, primitive.ActionRead); err != nil {
+		return dto, err
 	}
+	*/
 
 	return toModelDTO(&model), nil
 }
@@ -154,8 +180,15 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 			cmd.Visibility = primitive.VisibilityPublic
 		} else {
 			if user != cmd.Owner {
-				// TODO if user can't get, then
-				// cmd.Visibility = primitive.VisibilityPublic
+				/* revert when ready
+				err := s.permission.Check(
+					user, cmd.Owner, primitive.ObjTypeModel,
+					primitive.ActionRead,
+				)
+				if err != nil {
+					cmd.Visibility = primitive.VisibilityPublic
+				}
+				*/
 			}
 		}
 	}
@@ -173,5 +206,21 @@ func (s *modelAppService) DeleteById(user primitive.Account, modelId string) err
 	// get model by model id
 	// check if user can delete it
 	// delete it
+	return nil
+}
+
+func (s *modelAppService) hasPermission(user primitive.Account, model *domain.Model, action primitive.Action) error {
+	if model.OwnedBy(user) {
+		return nil
+	}
+
+	if model.OwnedByPerson() {
+		return errorModelNotFound
+	}
+
+	if err := s.permission.Check(user, model.Owner, primitive.ObjTypeModel, action); err != nil {
+		return errorModelNotFound
+	}
+
 	return nil
 }

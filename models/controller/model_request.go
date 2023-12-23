@@ -9,6 +9,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
+	"github.com/openmerlin/merlin-server/models/domain/repository"
 )
 
 const (
@@ -23,6 +24,7 @@ type reqToCreateModel struct {
 	License    string `json:"license"    required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
+	InitReadme bool   `json:"init_readme"`
 }
 
 func (req *reqToCreateModel) toCmd() (cmd app.CmdToCreateModel, err error) {
@@ -49,6 +51,8 @@ func (req *reqToCreateModel) toCmd() (cmd app.CmdToCreateModel, err error) {
 	if cmd.Fullname, err = primitive.NewMSDFullname(req.Fullname); err != nil {
 		return
 	}
+
+	cmd.InitReadme = req.InitReadme
 
 	return
 }
@@ -150,8 +154,10 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 
 	cmd.Labels.Task = req.Task
 
-	if cmd.License, err = primitive.NewLicense(req.License); err != nil {
-		return cmd, err
+	if req.License != "" {
+		if cmd.License, err = primitive.NewLicense(req.License); err != nil {
+			return cmd, err
+		}
 	}
 
 	if v := strings.Split(req.Others, labelSpliter); len(v) > 0 {
@@ -165,6 +171,24 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 	return cmd, nil
 }
 
+// restfulReqToListModels
+type restfulReqToListModels struct {
+	owner string `form:"owner"`
+
+	reqToListGlobalModels
+}
+
+func (req *restfulReqToListModels) toCmd() (app.CmdToListModels, error) {
+	cmd, err := req.reqToListGlobalModels.toCmd()
+	if err != nil {
+		return cmd, err
+	}
+
+	cmd.Owner, err = primitive.NewAccount(req.owner)
+
+	return cmd, err
+}
+
 // modelDetail
 type modelDetail struct {
 	Liked    bool   `json:"liked"`
@@ -174,9 +198,22 @@ type modelDetail struct {
 }
 
 // modelsInfo
-type modelsInfo struct {
+type userModelsInfo struct {
 	Owner    string `json:"owner"`
 	AvatarId string `json:"avatar_id"`
 
 	*app.ModelsDTO
+}
+
+// modelsInfo
+type modelInfo struct {
+	AvatarId string `json:"avatar_id"`
+
+	*repository.ModelSummary
+}
+
+// modelsInfo
+type modelsInfo struct {
+	Total  int         `json:"total"`
+	Models []modelInfo `json:"models"`
 }

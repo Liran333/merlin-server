@@ -104,7 +104,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Model"
+                    "ModelWeb"
                 ],
                 "summary": "ListGlobal",
                 "parameters": [
@@ -167,7 +167,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.ModelsDTO"
+                            "$ref": "#/definitions/controller.modelsInfo"
                         }
                     }
                 }
@@ -271,7 +271,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Model"
+                    "ModelWeb"
                 ],
                 "summary": "List",
                 "parameters": [
@@ -317,7 +317,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.modelsInfo"
+                            "$ref": "#/definitions/controller.userModelsInfo"
                         }
                     }
                 }
@@ -330,7 +330,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Model"
+                    "ModelWeb"
                 ],
                 "summary": "Get",
                 "parameters": [
@@ -1252,6 +1252,125 @@
                     }
                 }
             }
+        },
+        "/v2/model": {
+            "get": {
+                "description": "list global public model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelRestful"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of model",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "task label",
+                        "name": "task",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner of model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "other labels, separate multiple each ones with commas",
+                        "name": "others",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "license label",
+                        "name": "license",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "framework labels, separate multiple each ones with commas",
+                        "name": "frameworks",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "whether to calculate the total",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page num which starts from 1",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "count per page",
+                        "name": "count_per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.ModelsDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/model/{owner}/{name}": {
+            "get": {
+                "description": "get model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelRestful"
+                ],
+                "summary": "Get",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of model",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.ModelDTO"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1291,6 +1410,44 @@
                     "type": "string"
                 },
                 "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.ModelDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "visibility": {
                     "type": "string"
                 }
             }
@@ -1516,20 +1673,49 @@
                 }
             }
         },
-        "controller.modelsInfo": {
+        "controller.modelInfo": {
             "type": "object",
             "properties": {
                 "avatar_id": {
                     "type": "string"
                 },
-                "models": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/repository.ModelSummary"
-                    }
+                "desc": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "owner": {
                     "type": "string"
+                },
+                "task": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controller.modelsInfo": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.modelInfo"
+                    }
                 },
                 "total": {
                     "type": "integer"
@@ -1606,6 +1792,9 @@
                 },
                 "fullname": {
                     "type": "string"
+                },
+                "init_readme": {
+                    "type": "boolean"
                 },
                 "license": {
                     "type": "string"
@@ -1693,6 +1882,26 @@
                 },
                 "id": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.userModelsInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.ModelSummary"
+                    }
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

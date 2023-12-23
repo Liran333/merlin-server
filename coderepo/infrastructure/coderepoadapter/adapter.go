@@ -14,13 +14,19 @@ func NewRepoAdapter(c *gitea.Client) *codeRepoAdapter {
 	return &codeRepoAdapter{client: c}
 }
 
-func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo) error {
+func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) error {
+	readme := ""
+	if initReadme {
+		readme = repo.Name.MSDName()
+	}
+
 	obj, _, err := adapter.client.AdminCreateRepo(
 		repo.Owner.Account(),
 		gitea.CreateRepoOption{
 			Name:    repo.Name.MSDName(),
 			License: repo.License.License(),
 			Private: repo.Visibility.IsPrivate(),
+			Readme:  readme,
 		},
 	)
 	if err == nil {
