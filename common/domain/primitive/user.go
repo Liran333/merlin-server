@@ -6,8 +6,12 @@ import (
 	"strings"
 )
 
+type AccountType int
+
 var (
-	regUserName = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	regUserName             = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	UserType    AccountType = 1
+	OrgType     AccountType = 2
 )
 
 // Account

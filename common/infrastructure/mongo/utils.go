@@ -3,6 +3,7 @@ package Mongo
 import (
 	"encoding/json"
 
+	common "github.com/openmerlin/merlin-server/common/domain/primitive"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -22,6 +23,7 @@ const (
 
 	fieldName  = "name"
 	fieldEmail = "email"
+	fieldType  = "type"
 )
 
 func ObjectIdFilter(s string) (bson.M, error) {
@@ -51,6 +53,20 @@ func UserDocFilter(account, email string) bson.M {
 func UserDocFilterByAccount(account string) bson.M {
 	return bson.M{
 		fieldName: account,
+		fieldType: int(common.UserType),
+	}
+}
+
+func DocFilterByAccount(account string) bson.M {
+	return bson.M{
+		fieldName: account,
+	}
+}
+
+func OrgDocFilterByAccount(account string) bson.M {
+	return bson.M{
+		fieldName: account,
+		fieldType: int(common.OrgType),
 	}
 }
 

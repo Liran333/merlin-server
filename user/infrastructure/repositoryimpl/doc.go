@@ -31,6 +31,7 @@ type DUser struct {
 	AvatarId  string `bson:"avatar_id"  json:"avatar_id"`
 	Fullname  string `bson:"fullname"   json:"fullname"`
 	CreatedAt int64  `bson:"created_at" json:"created_at"`
+	Type      int    `bson:"type"       json:"type"` // 0: user, 1: org
 
 	PlatformUserId          string `bson:"uid"        json:"uid"`
 	PlatformUserNamespaceId string `bson:"nid"        json:"nid"`

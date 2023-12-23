@@ -24,6 +24,7 @@ func toOrgDoc(o domain.Organization) Organization {
 		ReadTeamId:        o.ReadTeamId,
 		ContributorTeamId: o.ContributorTeamId,
 		Approves:          approves,
+		Type:              int(primitive.OrgType),
 	}
 }
 
@@ -45,6 +46,7 @@ func toOrganization(doc Organization, u *domain.Organization) (err error) {
 	u.ReadTeamId = doc.ReadTeamId
 	u.WriteTeamId = doc.WriteTeamId
 	u.Owner = primitive.CreateAccount(doc.Owner)
+	u.Type = doc.Type
 
 	u.Approves = make([]domain.Approve, len(doc.Approves))
 	for i := range doc.Approves {

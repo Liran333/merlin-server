@@ -232,6 +232,7 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Summary		Get all organization of the user
 // @Description	get organization info
 // @Tags			Organization
+// @Param    invitee            query  string  false  "the user who was invited by the orgs"
 // @Accept			json
 // @Success		200	{object}			[]orgapp.OrganizationDTO
 // @Failure		400	bad_request_param	account	is		invalid
@@ -245,10 +246,23 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 		return
 	}
 
-	// get org info
-	if os, err := ctl.org.GetByUser(pl.DomainAccount()); err != nil {
-		logrus.Error(err)
+	var req orgListRequest
+	if err := ctx.BindQuery(&req); err != nil {
+		controller.SendBadRequestParam(ctx, err)
 
+		return
+	}
+
+	var os []orgapp.OrganizationDTO
+	var err error
+	if req.Invitee != "" {
+		os, err = ctl.org.ListInvitationByUser(pl.DomainAccount())
+	} else {
+		os, err = ctl.org.GetByUser(pl.DomainAccount())
+	}
+
+	// get org info
+	if err != nil {
 		controller.SendError(ctx, err)
 	} else {
 		controller.SendRespOfGet(ctx, os)
@@ -723,6 +737,7 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 // @Description List invitation of the organization
 // @Tags			Organization
 // @Param			name	path	string	true	"organization name"
+// @Param			username	query	string	true	" name"
 // @Accept			json
 // @Success		200 {object} []orgapp.ApproveDTO
 // @Failure		400	bad_request_param	account	is	invalid

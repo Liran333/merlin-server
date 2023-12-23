@@ -86,7 +86,7 @@ type allServices struct {
 	codeRepoApp      coderepoapp.CodeRepoAppService
 	userMiddleWare   middleware.UserMiddleWare
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
-	codeRepoFileApp coderepoapp.CodeRepoFileAppService
+	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -163,7 +163,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 	collections := &cfg.Mongodb.Collections
 
 	org := orgrepoimpl.NewOrgRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
+		mongodb.NewCollection(cfg.Mongodb.Collections.User),
 	)
 	sessrepo := sessionrepo.NewSessionRepository(
 		sessionrepo.NewSessionStore(
@@ -175,9 +175,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 
 	authingUser := oidcimpl.NewAuthingUser()
 
-	var orgAppService orgapp.OrgService
-
-	orgAppService = orgapp.NewOrgService(
+	orgAppService := orgapp.NewOrgService(
 		services.userApp, org, services.orgMember,
 		services.permission, cfg.Org.InviteExpiry,
 	)

@@ -45,6 +45,12 @@ func (req *orgBasicInfoUpdateRequest) toCmd() (
 	return
 }
 
+type orgListRequest struct {
+	Page     int    `form:"page"`
+	PageSize int    `form:"page_size"`
+	Invitee  string `form:"invitee"`
+}
+
 type orgCreateRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Website     string `json:"website"`

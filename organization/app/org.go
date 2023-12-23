@@ -692,15 +692,8 @@ func (org *orgService) CheckName(name primitive.Account) bool {
 		logrus.Error("name is nil")
 		return false
 	}
-	_, err1 := org.repo.GetByName(name)
 
-	_, err2 := org.user.GetByAccount(name, false)
-
-	if commonrepo.IsErrorResourceNotExists(err1) && allerror.IsNotFound(err2) {
-		return true
-	}
-
-	return false
+	return org.repo.CheckName(name)
 }
 
 func (org *orgService) GetMemberByUserAndOrg(u primitive.Account, o primitive.Account) (member MemberDTO, err error) {

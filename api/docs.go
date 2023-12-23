@@ -462,6 +462,14 @@ const docTemplate = `{
                     "Organization"
                 ],
                 "summary": "Get all organization of the user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user who was invited by the orgs",
+                        "name": "invitee",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -744,6 +752,13 @@ const docTemplate = `{
                         "description": "organization name",
                         "name": "name",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": " name",
+                        "name": "username",
+                        "in": "query",
                         "required": true
                     }
                 ],

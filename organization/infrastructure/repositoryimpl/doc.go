@@ -34,6 +34,7 @@ type Organization struct {
 	FullName    string    `bson:"full_name"        json:"full_name"`
 	Owner       string    `bson:"owner"        json:"owner"`
 	Approves    []Approve `bson:"approves"        json:"approves"`
+	Type        int       `bson:"type"        json:"type"`
 
 	OwnerTeamId       int64 `bson:"owner_team_id"        json:"owner_team_id"`
 	ReadTeamId        int64 `bson:"read_team_id"        json:"read_team_id"`

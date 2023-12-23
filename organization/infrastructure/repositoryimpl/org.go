@@ -123,13 +123,37 @@ func (impl *orgRepoImpl) insert(o *domain.Organization) (id string, err error) {
 	return
 }
 
+func (impl *orgRepoImpl) CheckName(name primitive.Account) (
+	ok bool,
+) {
+	var v Organization
+	f := func(ctx context.Context) error {
+		return impl.cli.GetDoc(
+			ctx, mongo.DocFilterByAccount(name.Account()),
+			bson.M{}, &v,
+		)
+	}
+
+	if err := primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			ok = true
+		}
+
+		return
+	}
+
+	ok = false
+
+	return
+}
+
 func (impl *orgRepoImpl) GetByName(orgName primitive.Account) (
 	o domain.Organization, err error,
 ) {
 	var v Organization
 	f := func(ctx context.Context) error {
 		return impl.cli.GetDoc(
-			ctx, mongo.UserDocFilterByAccount(orgName.Account()),
+			ctx, mongo.OrgDocFilterByAccount(orgName.Account()),
 			bson.M{}, &v,
 		)
 	}
@@ -149,13 +173,36 @@ func (impl *orgRepoImpl) GetByName(orgName primitive.Account) (
 
 func inviteDocFilterByUser(account string) bson.M {
 	return bson.M{
-		fieldOwner: account,
+		"approves.user_name": account,
 	}
 }
 
 func (impl *orgRepoImpl) GetInviteByUser(acc primitive.Account) (
 	os []domain.Organization, err error,
 ) {
+	var v []Organization
+	f := func(ctx context.Context) error {
+		return impl.cli.GetDocs(
+			ctx, inviteDocFilterByUser(acc.Account()),
+			bson.M{}, &v,
+		)
+	}
+
+	if err = primitive.WithContext(f); err != nil {
+		if impl.cli.IsDocNotExists(err) {
+			err = commonrepo.NewErrorResourceNotExists(err)
+		}
+
+		return
+	}
+
+	os = make([]domain.Organization, len(v))
+	for i := range v {
+		item := &v[i]
+		if err := toOrganization(*item, &os[i]); err != nil {
+			return nil, err
+		}
+	}
 
 	return
 }

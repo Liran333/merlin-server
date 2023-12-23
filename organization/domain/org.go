@@ -24,6 +24,7 @@ type Organization struct {
 	OwnerTeamId       int64             `json:"owner_team_id"`
 	ContributorTeamId int64             `json:"contributor_team_id"`
 	Approves          []Approve         `json:"approves"`
+	Type              int               `json:"type"`
 
 	Version int
 }

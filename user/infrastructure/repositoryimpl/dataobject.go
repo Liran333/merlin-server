@@ -21,6 +21,7 @@ func toUserDoc(u domain.User, doc *DUser) error {
 		PlatformPwd: u.PlatformPwd,
 		Fullname:    u.Fullname,
 		CreatedAt:   u.CreatedAt,
+		Type:        int(primitive.UserType),
 	}
 
 	if u.Bio != nil {

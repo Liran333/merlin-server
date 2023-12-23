@@ -24,7 +24,7 @@ var orgAppService orgapp.OrgService
 
 func Init() {
 	org := orgrepoimpl.NewOrgRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Organization),
+		mongodb.NewCollection(cfg.Mongodb.Collections.User),
 	)
 
 	member := orgrepoimpl.NewMemberRepo(
@@ -207,22 +207,37 @@ var inviteListCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
+		user, _ := primitive.NewAccount(viper.GetString("invite.list.user"))
 
-		members, err := orgAppService.ListInvitation(&domain.OrgNormalCmd{
-			Actor: primitive.CreateAccount(actor),
-			Org:   orgName,
-		})
-		if err != nil {
-			logrus.Fatalf("list member failed :%s", err.Error())
+		if user == nil {
+			members, err := orgAppService.ListInvitation(&domain.OrgNormalCmd{
+				Actor: primitive.CreateAccount(actor),
+				Org:   orgName,
+			})
+			if err != nil {
+				logrus.Fatalf("list member failed :%s", err.Error())
+			} else {
+				fmt.Print("Member Info:")
+				for _, m := range members {
+					fmt.Printf("Member org: %s\n", m.OrgName)
+					fmt.Printf("Member user: %s\n", m.UserName)
+					fmt.Printf("Member role: %s\n", m.Role)
+					fmt.Printf("Member expire: %d\n", m.ExpiresAt)
+					fmt.Printf("Member fullname: %s\n", m.Fullname)
+					fmt.Printf("Member inviter: %s\n", m.Inviter)
+				}
+			}
 		} else {
-			fmt.Print("Member Info:")
-			for _, m := range members {
-				fmt.Printf("Member org: %s\n", m.OrgName)
-				fmt.Printf("Member user: %s\n", m.UserName)
-				fmt.Printf("Member role: %s\n", m.Role)
-				fmt.Printf("Member expire: %d\n", m.ExpiresAt)
-				fmt.Printf("Member fullname: %s\n", m.Fullname)
-				fmt.Printf("Member inviter: %s\n", m.Inviter)
+			orgs, err := orgAppService.ListInvitationByUser(user)
+			if err != nil {
+				logrus.Fatalf("list member failed :%s", err.Error())
+			} else {
+				for _, o := range orgs {
+					fmt.Printf("Org: %s\n", o.Name)
+					fmt.Printf("Role: %s\n", o.Website)
+					fmt.Printf("Fullname: %s\n", o.FullName)
+					fmt.Printf("Inviter: %s\n", o.Owner)
+				}
 			}
 		}
 	},
@@ -545,10 +560,14 @@ func init() {
 	}
 
 	inviteListCmd.Flags().StringP("name", "n", "", "org name")
+	inviteListCmd.Flags().StringP("user", "u", "", "user name")
 	if err := inviteListCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("invite.list.org", inviteListCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("invite.list.user", inviteListCmd.Flags().Lookup("user")); err != nil {
 		logrus.Fatal(err)
 	}
 

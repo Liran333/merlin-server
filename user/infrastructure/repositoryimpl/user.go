@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
@@ -121,7 +120,7 @@ func (impl *userRepoImpl) insert(u *domain.User) (id string, err error) {
 
 	f := func(ctx context.Context) error {
 		v, err := impl.cli.NewDocIfNotExist(
-			ctx, mongo.UserDocFilterByAccount(u.Account.Account()), doc,
+			ctx, mongo.DocFilterByAccount(u.Account.Account()), doc,
 		)
 
 		id = v
@@ -202,54 +201,13 @@ func (impl *userRepoImpl) GetByFollower(owner, follower domain.Account) (
 	return
 }
 
-func (impl *userRepoImpl) FindUsersInfo(accounts []domain.Account) (r []domain.UserInfo, err error) {
-	var v []DUser
-
-	f := func(ctx context.Context) error {
-		filter := bson.M{
-			fieldName: bson.M{
-				"$in": accounts,
-			},
-		}
-
-		return impl.cli.GetDocs(
-			ctx, filter,
-			bson.M{
-				fieldName:     1,
-				fieldAvatarId: 1,
-			}, &v,
-		)
-	}
-
-	if err := primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
-		return nil, err
-	}
-
-	if len(v) == 0 {
-		return nil, nil
-	}
-
-	r = make([]domain.UserInfo, len(v))
-	for i := range v {
-		if err := toUserInfo(v[i], &r[i]); err != nil {
-			return nil, err
-		}
-	}
-
-	return r, nil
-}
-
 func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
 
 	var v DUser
 
 	f := func(ctx context.Context) error {
 		return impl.cli.GetDoc(
-			ctx, bson.M{fieldName: account},
+			ctx, mongo.DocFilterByAccount(account.Account()),
 			bson.M{fieldFullname: 1}, &v,
 		)
 	}
@@ -311,7 +269,7 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.Ava
 
 	f := func(ctx context.Context) error {
 		return impl.cli.GetDoc(
-			ctx, bson.M{fieldName: account},
+			ctx, mongo.DocFilterByAccount(account.Account()),
 			bson.M{fieldAvatarId: 1}, &v,
 		)
 	}
@@ -327,90 +285,6 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.Ava
 	if id, err = domain.NewAvatarId(v.AvatarId); err != nil {
 		return
 	}
-
-	return
-}
-
-func (impl *userRepoImpl) Search(opt *repository.UserSearchOption) (
-	r repository.UserSearchResult, err error,
-) {
-	key := "$" + fieldFollower
-	fields := bson.M{fieldCount: bson.M{
-		"$cond": bson.M{
-			"if":   bson.M{"$isArray": key},
-			"then": bson.M{"$size": key},
-			"else": 0,
-		},
-	}}
-
-	pipeline := bson.A{
-		bson.M{mongo.MongoCmdMatch: bson.M{
-			"$expr": bson.M{
-				"$regexMatch": bson.M{
-					"input":   "$" + fieldName,
-					"regex":   opt.Name,
-					"options": "i",
-				},
-			},
-		}},
-		bson.M{"$addFields": fields},
-		bson.M{"$project": bson.M{
-			fieldName:  1,
-			fieldCount: 1,
-		}},
-	}
-
-	var v []userInfo
-
-	f := func(ctx context.Context) error {
-		col := impl.cli.Collection()
-		cursor, err := col.Aggregate(ctx, pipeline)
-		if err != nil {
-			return err
-		}
-
-		return cursor.All(ctx, &v)
-	}
-
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
-		return
-	}
-
-	if len(v) == 0 {
-		err = commonrepo.NewErrorResourceNotExists(err)
-
-		return
-	}
-
-	total := len(v)
-
-	items := make([]*userInfo, total)
-	for i := range v {
-		items[i] = &v[i]
-	}
-
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].Count >= items[j].Count
-	})
-
-	n := opt.TopNum
-	if total < n {
-		n = total
-	}
-
-	top := make([]domain.Account, n)
-	for i := range top {
-		if top[i], err = primitive.NewAccount(items[i].Name); err != nil {
-			return
-		}
-	}
-
-	r.Top = top
-	r.Total = n
 
 	return
 }
