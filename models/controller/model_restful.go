@@ -59,7 +59,7 @@ func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 // @Tags     ModelRestful
 // @Param    name            query  string  false  "name of model"
 // @Param    task            query  string  false  "task label"
-// @Param    owner           path   string  true   "owner of model"
+// @Param    owner           query  string  true   "owner of model"
 // @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
 // @Param    license         query  string  false  "license label"
 // @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"

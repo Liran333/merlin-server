@@ -176,7 +176,7 @@ func toStringsSets(v string) sets.Set[string] {
 
 // restfulReqToListModels
 type restfulReqToListModels struct {
-	owner string `form:"owner"`
+	Owner string `form:"owner"`
 
 	reqToListGlobalModels
 }
@@ -187,9 +187,13 @@ func (req *restfulReqToListModels) toCmd() (app.CmdToListModels, error) {
 		return cmd, err
 	}
 
-	cmd.Owner, err = primitive.NewAccount(req.owner)
+	if req.Owner != "" {
+		if cmd.Owner, err = primitive.NewAccount(req.Owner); err != nil {
+			return cmd, err
+		}
+	}
 
-	return cmd, err
+	return cmd, nil
 }
 
 // modelDetail
