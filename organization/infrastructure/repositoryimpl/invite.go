@@ -152,3 +152,22 @@ func (impl *inviteRepoImpl) insert(o *domain.Approve) (id string, err error) {
 
 	return
 }
+
+func (impl *inviteRepoImpl) DeleteByOrg(acc primitive.Account) (err error) {
+	if acc == nil {
+		return fmt.Errorf("invalid org name when deleting invitation")
+	}
+
+	filter := bson.M{}
+	filter[fieldOrg] = acc.Account()
+
+	f := func(ctx context.Context) error {
+		return impl.cli.DeleteMany(ctx, filter)
+	}
+
+	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
+		err = nil
+	}
+
+	return
+}

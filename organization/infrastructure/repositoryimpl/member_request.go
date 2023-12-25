@@ -149,3 +149,22 @@ func (impl *requestRepoImpl) insert(o *domain.MemberRequest) (id string, err err
 
 	return
 }
+
+func (impl *requestRepoImpl) DeleteByOrg(acc primitive.Account) (err error) {
+	if acc == nil {
+		return fmt.Errorf("invalid org name when deleting member requests")
+	}
+
+	filter := bson.M{}
+	filter[fieldOrg] = acc.Account()
+
+	f := func(ctx context.Context) error {
+		return impl.cli.DeleteMany(ctx, filter)
+	}
+
+	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
+		err = nil
+	}
+
+	return
+}

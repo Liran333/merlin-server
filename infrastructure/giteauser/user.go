@@ -17,7 +17,7 @@ type UserCreateCmd struct {
 
 func genPasswd() string {
 	var container string
-	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'-!\"#$%&()*,./:;?@[]^_`{|}~+<=>"
+	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!#$%&()*,./:;?@[]^_`{|}~+<=>"
 	b := bytes.NewBufferString(str)
 	length := b.Len()
 	bigInt := big.NewInt(int64(length))
