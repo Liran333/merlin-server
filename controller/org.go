@@ -239,7 +239,8 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Summary		Get all organization of the user
 // @Description	get organization info
 // @Tags			Organization
-// @Param    invitee            query  string  false  "the user who was invited by the orgs"
+// @Param			owner		query	string	false	"filter by owner "
+// @Param			username	query	string	false	"filter by username"
 // @Accept			json
 // @Success		200	{object}			[]orgapp.OrganizationDTO
 // @Failure		400	bad_request_param	account	is		invalid
@@ -260,7 +261,28 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 		return
 	}
 
-	os, err := ctl.org.GetByUser(pl.DomainAccount(), pl.DomainAccount())
+	var os []orgapp.OrganizationDTO
+	var user primitive.Account
+	var err error
+	if req.Owner != "" {
+		user, err = primitive.NewAccount(req.Owner)
+		if err != nil {
+			controller.SendBadRequestParam(ctx, err)
+
+			return
+		}
+		os, err = ctl.org.GetByOwner(pl.DomainAccount(), user)
+	} else if req.Username != "" {
+		user, err = primitive.NewAccount(req.Username)
+		if err != nil {
+			controller.SendBadRequestParam(ctx, err)
+
+			return
+		}
+		os, err = ctl.org.GetByUser(pl.DomainAccount(), user)
+	} else {
+		os, err = ctl.org.GetByUser(pl.DomainAccount(), pl.DomainAccount())
+	}
 
 	// get org info
 	if err != nil {

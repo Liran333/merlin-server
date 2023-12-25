@@ -955,9 +955,13 @@ paths:
       - application/json
       description: get organization info
       parameters:
-      - description: the user who was invited by the orgs
+      - description: 'filter by owner '
         in: query
-        name: invitee
+        name: owner
+        type: string
+      - description: filter by username
+        in: query
+        name: username
         type: string
       responses:
         "200":
@@ -1479,7 +1483,7 @@ paths:
         name: task
         type: string
       - description: owner of model
-        in: path
+        in: query
         name: owner
         required: true
         type: string

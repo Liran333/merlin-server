@@ -131,6 +131,7 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 
 	return
 }
+
 func (cmd OrgCreatedCmd) Validate() error {
 	if _, err := primitive.NewAccount(cmd.Name); err != nil {
 		return allerror.NewInvalidParam("org name is invalid")
@@ -161,6 +162,11 @@ func (cmd *OrgCreatedCmd) ToOrg() *Organization {
 		Owner:       primitive.CreateAccount(cmd.Owner),
 		AvatarId:    user.CreateAvatarId(cmd.AvatarId),
 	}
+}
+
+type OrgListOptions struct {
+	Username string // filter by member user name
+	Owner    string // filter by owner name
 }
 
 func ToApprove(member OrgMember, expiry int64, inviter string) Approve {

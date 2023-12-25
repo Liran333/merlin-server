@@ -231,11 +231,6 @@ func (org *orgService) GetByOwner(actor, acc primitive.Account) (orgs []Organiza
 		return
 	}
 
-	if acc.Account() != actor.Account() {
-		err = fmt.Errorf("can't list organizations for other users")
-		return
-	}
-
 	orgs, err = org.List(&OrgListOptions{
 		Owner: acc,
 	})
@@ -251,11 +246,6 @@ func (org *orgService) GetByOwner(actor, acc primitive.Account) (orgs []Organiza
 func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []OrganizationDTO, err error) {
 	if acc == nil {
 		err = fmt.Errorf("account is nil")
-		return
-	}
-
-	if acc.Account() != actor.Account() {
-		err = fmt.Errorf("can't list organizations for other users")
 		return
 	}
 

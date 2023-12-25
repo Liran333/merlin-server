@@ -734,8 +734,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the user who was invited by the orgs",
-                        "name": "invitee",
+                        "description": "filter by owner ",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by username",
+                        "name": "username",
                         "in": "query"
                     }
                 ],
@@ -1529,7 +1535,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "owner of model",
                         "name": "owner",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {

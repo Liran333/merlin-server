@@ -120,6 +120,7 @@ type OrgListOptions struct {
 	Page     int
 	PageSize int
 	Owner    primitive.Account
+	Member   primitive.Account
 }
 
 func ToDTO(org *domain.Organization, role domain.OrgRole) OrganizationDTO {
