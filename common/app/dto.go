@@ -13,30 +13,34 @@ const (
 )
 
 type UserDTO struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	FullName    string `json:"full_name"`
-	AvatarId    string `json:"avatar_id"`
-	Email       string `json:"email"`
-	Description string `json:"description"`
-	CreatedAt   int64  `json:"created_at"`
-	Website     string `json:"website"`
-	Owner       string `json:"owner"`
-	Type        int    `json:"type"`
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	FullName     string `json:"full_name"`
+	AvatarId     string `json:"avatar_id"`
+	Email        string `json:"email,omitempty"`
+	Description  string `json:"description"`
+	CreatedAt    int64  `json:"created_at"`
+	Website      string `json:"website,omitempty"`
+	Owner        string `json:"owner,omitempty"`
+	Type         int    `json:"type"`
+	AllowRequest bool   `json:"allow_request,omitempty"`
+	DefaultRole  string `json:"default_role,omitempty"`
 }
 
 func FromOrgDTO(o orgapp.OrganizationDTO) UserDTO {
 	return UserDTO{
-		Id:          o.Id,
-		Name:        o.Name,
-		FullName:    o.FullName,
-		AvatarId:    o.AvatarId,
-		Email:       "",
-		Description: o.Description,
-		CreatedAt:   o.CreatedAt,
-		Website:     o.Website,
-		Owner:       o.Owner,
-		Type:        int(userTypeOrganization),
+		Id:           o.Id,
+		Name:         o.Name,
+		FullName:     o.FullName,
+		AvatarId:     o.AvatarId,
+		Email:        "",
+		Description:  o.Description,
+		CreatedAt:    o.CreatedAt,
+		Website:      o.Website,
+		Owner:        o.Owner,
+		Type:         int(userTypeOrganization),
+		AllowRequest: o.AllowRequest,
+		DefaultRole:  o.DefaultRole,
 	}
 }
 

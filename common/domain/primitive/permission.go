@@ -20,3 +20,17 @@ const (
 	ActionDelete
 	ActionCreate
 )
+
+func (a Action) String() string {
+	switch a {
+	case ActionRead:
+		return "read"
+	case ActionWrite:
+		return "write"
+	case ActionDelete:
+		return "delete"
+	case ActionCreate:
+		return "create"
+	}
+	return ""
+}

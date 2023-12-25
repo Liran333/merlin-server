@@ -87,7 +87,7 @@ func (impl *orgRepoImpl) update(o *domain.Organization) (err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocNotExists(err) {
-		err = fmt.Errorf("concurrent updating: %w", err)
+		err = commonrepo.NewErrorConcurrentUpdating(err)
 	}
 
 	return
@@ -117,7 +117,7 @@ func (impl *orgRepoImpl) insert(o *domain.Organization) (id string, err error) {
 	}
 
 	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = commonrepo.NewErrorResourceNotExists(err)
+		err = commonrepo.NewErrorDuplicateCreating(err)
 	}
 
 	return

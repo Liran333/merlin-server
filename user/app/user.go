@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/platform"
@@ -33,6 +34,7 @@ type UserService interface {
 	GetUserAvatarId(domain.Account) (AvatarDTO, error)
 	GetUserFullname(domain.Account) (string, error)
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
+	HasUser(primitive.Account) bool
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
 
@@ -114,6 +116,21 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 		usernew.Account,
 		usernew.Password,
 	)
+}
+
+func (s userService) HasUser(acc primitive.Account) bool {
+	if acc == nil {
+		logrus.Errorf("username invalid")
+		return false
+	}
+
+	_, err := s.repo.GetByAccount(acc)
+	if err != nil {
+		logrus.Errorf("user %s not found", acc.Account())
+		return false
+	}
+
+	return true
 }
 
 func (s userService) Delete(account domain.Account) (err error) {

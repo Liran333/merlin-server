@@ -18,6 +18,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 var orgAppService orgapp.OrgService
@@ -25,6 +26,14 @@ var orgAppService orgapp.OrgService
 func Init() {
 	org := orgrepoimpl.NewOrgRepo(
 		mongodb.NewCollection(cfg.Mongodb.Collections.User),
+	)
+
+	invite := orgrepoimpl.NewInviteRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Invitation),
+	)
+
+	request := orgrepoimpl.NewMemberRequestRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.MemberRequest),
 	)
 
 	member := orgrepoimpl.NewMemberRepo(
@@ -44,7 +53,7 @@ func Init() {
 		user, git, t)
 
 	orgAppService = orgapp.NewOrgService(
-		userAppService, org, member, p, 1209600)
+		userAppService, org, member, invite, request, p, &cfg.Org)
 }
 
 var orgCmd = &cobra.Command{
@@ -90,26 +99,54 @@ var orgAddCmd = &cobra.Command{
 }
 
 var memberAddCmd = &cobra.Command{
-	Use: "addmem",
+	Use: "approve",
 	Run: func(cmd *cobra.Command, args []string) {
-		orgName, err := primitive.NewAccount(viper.GetString("member.add.org"))
+		orgName, err := primitive.NewAccount(viper.GetString("member.approve.org"))
 		if err != nil {
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
-		userName, err := primitive.NewAccount(viper.GetString("member.add.user"))
+		userName, err := primitive.NewAccount(viper.GetString("member.approve.user"))
 		if err != nil {
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
 
-		err = orgAppService.AddMember(&domain.OrgAddMemberCmd{
-			Actor:   primitive.CreateAccount(actor),
-			Account: userName,
-			Org:     orgName,
-		})
+		req := &domain.OrgApproveRequestMemberCmd{}
+		req.Actor = primitive.CreateAccount(actor)
+		req.Org = orgName
+		req.Requester = userName
+		_, err = orgAppService.ApproveRequest(req)
 		if err != nil {
 			logrus.Fatalf("add member failed :%s", err.Error())
 		} else {
 			logrus.Info("add member successfully")
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		Init()
+
+	},
+}
+
+var memberAcceptCmd = &cobra.Command{
+	Use: "accept",
+	Run: func(cmd *cobra.Command, args []string) {
+		orgName, err := primitive.NewAccount(viper.GetString("member.accept.org"))
+		if err != nil {
+			logrus.Fatalf("invalid org name :%s", err.Error())
+		}
+		msg := viper.GetString("member.accept.msg")
+
+		req := &domain.OrgAcceptInviteCmd{}
+		req.Actor = primitive.CreateAccount(actor)
+		req.Org = orgName
+		req.Msg = msg
+		req.Account = primitive.CreateAccount(actor)
+		_, err = orgAppService.AcceptInvite(req)
+		if err != nil {
+			logrus.Fatalf("accept approve failed :%s", err.Error())
+		} else {
+			logrus.Info("accept approve successfully")
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -200,44 +237,108 @@ var inviteSendCmd = &cobra.Command{
 	},
 }
 
-var inviteListCmd = &cobra.Command{
-	Use: "listinv",
+var requestCmd = &cobra.Command{
+	Use: "request",
 	Run: func(cmd *cobra.Command, args []string) {
-		orgName, err := primitive.NewAccount(viper.GetString("invite.list.org"))
+		orgName, err := primitive.NewAccount(viper.GetString("req.add.org"))
 		if err != nil {
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
-		user, _ := primitive.NewAccount(viper.GetString("invite.list.user"))
 
-		if user == nil {
-			members, err := orgAppService.ListInvitation(&domain.OrgNormalCmd{
-				Actor: primitive.CreateAccount(actor),
-				Org:   orgName,
-			})
-			if err != nil {
-				logrus.Fatalf("list member failed :%s", err.Error())
-			} else {
-				fmt.Print("Member Info:")
-				for _, m := range members {
-					fmt.Printf("Member org: %s\n", m.OrgName)
-					fmt.Printf("Member user: %s\n", m.UserName)
-					fmt.Printf("Member role: %s\n", m.Role)
-					fmt.Printf("Member expire: %d\n", m.ExpiresAt)
-					fmt.Printf("Member fullname: %s\n", m.Fullname)
-					fmt.Printf("Member inviter: %s\n", m.Inviter)
-				}
-			}
+		req := &domain.OrgRequestMemberCmd{}
+		req.Actor = primitive.CreateAccount(actor)
+		req.Org = orgName
+		req.Msg = viper.GetString("req.add.msg")
+		_, err = orgAppService.RequestMember(req)
+		if err != nil {
+			logrus.Fatalf("add member request failed :%s", err.Error())
 		} else {
-			orgs, err := orgAppService.ListInvitationByUser(user)
-			if err != nil {
-				logrus.Fatalf("list member failed :%s", err.Error())
-			} else {
-				for _, o := range orgs {
-					fmt.Printf("Org: %s\n", o.Name)
-					fmt.Printf("Role: %s\n", o.Website)
-					fmt.Printf("Fullname: %s\n", o.FullName)
-					fmt.Printf("Inviter: %s\n", o.Owner)
-				}
+			logrus.Info("add member request successfully")
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		Init()
+	},
+}
+
+var reqListCmd = &cobra.Command{
+	Use: "listreq",
+	Run: func(cmd *cobra.Command, args []string) {
+		orgName, _ := primitive.NewAccount(viper.GetString("req.list.org"))
+
+		user, _ := primitive.NewAccount(viper.GetString("req.list.requester"))
+
+		req := &domain.OrgMemberReqListCmd{}
+		req.Actor = primitive.CreateAccount(actor)
+		req.Org = orgName
+		req.Requester = user
+		req.Status = domain.ApproveStatus(viper.GetString("req.list.status"))
+
+		reqs, err := orgAppService.ListMemberReq(req)
+		if err != nil {
+			logrus.Fatalf("list requests failed :%s", err.Error())
+		} else {
+			for _, o := range reqs {
+				fmt.Printf("\nOrg: %s\n", o.OrgName)
+				fmt.Printf("Role: %s\n", o.Role)
+				fmt.Printf("Fullname: %s\n", o.Fullname)
+				fmt.Printf("Requester: %s\n", o.Username)
+				fmt.Printf("Status: %s\n", o.Status)
+				fmt.Printf("Msg: %s\n", o.Msg)
+				fmt.Printf("By: %s\n", o.By)
+				_, create := utils.DateAndTime(o.CreatedAt)
+				fmt.Printf("Created at: %s\n", create)
+				_, update := utils.DateAndTime(o.UpdatedAt)
+				fmt.Printf("Updated at: %s\n", update)
+			}
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		Init()
+
+	},
+}
+
+var inviteListCmd = &cobra.Command{
+	Use: "listinv",
+	Run: func(cmd *cobra.Command, args []string) {
+		orgName, _ := primitive.NewAccount(viper.GetString("invite.list.org"))
+
+		inviter, _ := primitive.NewAccount(viper.GetString("invite.list.inviter"))
+		invitee, _ := primitive.NewAccount(viper.GetString("invite.list.invitee"))
+
+		var err error
+		var invites []orgapp.ApproveDTO
+
+		req := &domain.OrgInvitationListCmd{}
+		req.Invitee = invitee
+		req.Org = orgName
+		req.Actor = primitive.CreateAccount(actor)
+		req.Status = domain.ApproveStatus(viper.GetString("invite.list.status"))
+		req.Inviter = inviter
+
+		invites, err = orgAppService.ListInvitation(req)
+
+		if err != nil {
+			logrus.Fatalf("list invites failed :%s", err.Error())
+		} else {
+			for _, o := range invites {
+				fmt.Printf("\nOrg: %s\n", o.OrgName)
+				fmt.Printf("Role: %s\n", o.Role)
+				fmt.Printf("Fullname: %s\n", o.Fullname)
+				fmt.Printf("Inviter: %s\n", o.Inviter)
+				fmt.Printf("Invitee: %s\n", o.UserName)
+				fmt.Printf("Status: %s\n", o.Status)
+				_, exp := utils.DateAndTime(o.ExpiresAt)
+				fmt.Printf("Expire: %s\n", exp)
+				fmt.Printf("Msg: %s\n", o.Msg)
+				fmt.Printf("By: %s\n", o.By)
+				_, create := utils.DateAndTime(o.CreatedAt)
+				fmt.Printf("Created at: %s\n", create)
+				_, update := utils.DateAndTime(o.UpdatedAt)
+				fmt.Printf("Updated at: %s\n", update)
 			}
 		}
 	},
@@ -257,17 +358,52 @@ var removeInviteCmd = &cobra.Command{
 		}
 		userName, err := primitive.NewAccount(viper.GetString("invite.del.user"))
 		if err != nil {
-			logrus.Fatalf("invalid user name :%s", err.Error())
+			userName = primitive.CreateAccount(actor)
 		}
 
 		_, err = orgAppService.RevokeInvite(&domain.OrgRemoveInviteCmd{
+			Actor:   primitive.CreateAccount(actor),
 			Org:     orgName,
 			Account: userName,
+			Msg:     viper.GetString("invite.del.msg"),
 		})
 		if err != nil {
 			logrus.Fatalf("revoke invite failed :%s", err.Error())
 		} else {
 			logrus.Fatalf("revoke invite successfully")
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		Init()
+
+	},
+}
+
+var removeReqCmd = &cobra.Command{
+	Use: "rmreq",
+	Run: func(cmd *cobra.Command, args []string) {
+		orgName, err := primitive.NewAccount(viper.GetString("req.del.org"))
+		if err != nil {
+			logrus.Fatalf("invalid org name :%s", err.Error())
+		}
+		userName, err := primitive.NewAccount(viper.GetString("req.del.requester"))
+		if err != nil {
+			userName = primitive.CreateAccount(actor)
+		}
+
+		req := domain.OrgCancelRequestMemberCmd{
+			Actor:     primitive.CreateAccount(actor),
+			Org:       orgName,
+			Requester: userName,
+			Msg:       viper.GetString("req.del.msg"),
+		}
+
+		_, err = orgAppService.CancelReqMember(&req)
+		if err != nil {
+			logrus.Fatalf("revoke member request failed :%s", err.Error())
+		} else {
+			logrus.Fatalf("revoke member request successfully")
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -291,6 +427,7 @@ var memberEditCmd = &cobra.Command{
 		role := viper.GetString("member.edit.role")
 
 		_, err = orgAppService.EditMember(&domain.OrgEditMemberCmd{
+			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Org:     orgName,
 			Role:    role,
@@ -358,9 +495,11 @@ var orgGetCmd = &cobra.Command{
 				fmt.Printf("Id: %s\n", u.Id)
 				fmt.Printf("Description: %s\n", u.Description)
 				fmt.Printf("Owner: %s\n", u.Owner)
+				fmt.Printf("Default role: %s\n", u.DefaultRole)
+				fmt.Printf("Allow request: %t\n", u.AllowRequest)
 			}
 		} else if owner != nil {
-			orgs, err := orgAppService.GetByOwner(owner)
+			orgs, err := orgAppService.GetByOwner(primitive.CreateAccount(actor), owner)
 			if err != nil {
 				logrus.Fatalf("get org by owner failed :%s", err.Error())
 			} else {
@@ -376,7 +515,7 @@ var orgGetCmd = &cobra.Command{
 				}
 			}
 		} else if u != nil {
-			orgs, err := orgAppService.GetByUser(u)
+			orgs, err := orgAppService.GetByUser(primitive.CreateAccount(actor), u)
 			if err != nil {
 				logrus.Fatalf("get org by user failed :%s", err.Error())
 			} else {
@@ -450,6 +589,8 @@ var orgEditCmd = &cobra.Command{
 		if desc != "" {
 			updateCmd.Description = desc
 		}
+		*updateCmd.AllowRequest = viper.GetBool("org.edit.allowrequest")
+		updateCmd.DefaultRole = viper.GetString("org.edit.defaultrole")
 		updateCmd.Actor = primitive.CreateAccount(actor)
 		updateCmd.OrgName = acc
 		_, err = orgAppService.UpdateBasicInfo(&updateCmd)
@@ -471,14 +612,18 @@ func init() {
 	orgCmd.AddCommand(orgDelCmd)
 	orgCmd.AddCommand(orgGetCmd)
 	orgCmd.AddCommand(orgEditCmd)
+	orgCmd.AddCommand(reqListCmd)
 	orgCmd.AddCommand(memberAddCmd)
 	orgCmd.AddCommand(memberListCmd)
 	orgCmd.AddCommand(memberRemoveCmd)
 	orgCmd.AddCommand(memberEditCmd)
 	orgCmd.AddCommand(removeInviteCmd)
+	orgCmd.AddCommand(removeReqCmd)
 	orgCmd.AddCommand(inviteListCmd)
 	orgCmd.AddCommand(inviteSendCmd)
 	orgCmd.AddCommand(orgCheckCmd)
+	orgCmd.AddCommand(memberAcceptCmd)
+	orgCmd.AddCommand(requestCmd)
 	// 添加命令行参数
 
 	orgAddCmd.Flags().StringP("name", "n", "", "org name")
@@ -559,51 +704,100 @@ func init() {
 		logrus.Fatal(err)
 	}
 
-	inviteListCmd.Flags().StringP("name", "n", "", "org name")
-	inviteListCmd.Flags().StringP("user", "u", "", "user name")
-	if err := inviteListCmd.MarkFlagRequired("name"); err != nil {
+	requestCmd.Flags().StringP("name", "n", "", "org name")
+	requestCmd.Flags().StringP("msg", "m", "", "req msg")
+	if err := requestCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
+
+	if err := viper.BindPFlag("req.add.org", requestCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("req.add.msg", requestCmd.Flags().Lookup("msg")); err != nil {
+		logrus.Fatal(err)
+	}
+
+	removeReqCmd.Flags().StringP("name", "n", "", "org name")
+	removeReqCmd.Flags().StringP("requester", "r", "", "requester")
+	removeReqCmd.Flags().StringP("msg", "m", "", "msg")
+
+	if err := removeReqCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := viper.BindPFlag("req.del.org", removeReqCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("req.del.requester", removeReqCmd.Flags().Lookup("requester")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("req.del.msg", removeReqCmd.Flags().Lookup("msg")); err != nil {
+		logrus.Fatal(err)
+	}
+
+	inviteListCmd.Flags().StringP("name", "n", "", "org name")
+	inviteListCmd.Flags().StringP("inviter", "r", "", "inviter name")
+	inviteListCmd.Flags().StringP("invitee", "e", "", "invitee name")
+	inviteListCmd.Flags().StringP("status", "s", "", "invitee name")
+
+	inviteListCmd.MarkFlagsOneRequired("name", "invitee", "inviter")
 	if err := viper.BindPFlag("invite.list.org", inviteListCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := viper.BindPFlag("invite.list.user", inviteListCmd.Flags().Lookup("user")); err != nil {
+	if err := viper.BindPFlag("invite.list.invitee", inviteListCmd.Flags().Lookup("invitee")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("invite.list.inviter", inviteListCmd.Flags().Lookup("inviter")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("invite.list.status", inviteListCmd.Flags().Lookup("status")); err != nil {
+		logrus.Fatal(err)
+	}
+
+	reqListCmd.Flags().StringP("name", "n", "", "org name")
+	reqListCmd.Flags().StringP("requester", "r", "", "requester name")
+	reqListCmd.Flags().StringP("status", "s", "", "request status")
+	reqListCmd.MarkFlagsOneRequired("name", "requester")
+	if err := viper.BindPFlag("req.list.org", reqListCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("req.list.requester", reqListCmd.Flags().Lookup("requester")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("req.list.status", reqListCmd.Flags().Lookup("status")); err != nil {
 		logrus.Fatal(err)
 	}
 
 	removeInviteCmd.Flags().StringP("name", "n", "", "org name")
 	removeInviteCmd.Flags().StringP("user", "u", "", "member name")
-	removeInviteCmd.Flags().StringP("role", "r", "", "member role")
+	removeInviteCmd.Flags().StringP("msg", "m", "", "msg")
+
 	if err := removeInviteCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := removeInviteCmd.MarkFlagRequired("user"); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := removeInviteCmd.MarkFlagRequired("role"); err != nil {
-		logrus.Fatal(err)
-	}
+
 	if err := viper.BindPFlag("invite.del.org", removeInviteCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("invite.del.user", removeInviteCmd.Flags().Lookup("user")); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := viper.BindPFlag("invite.del.role", removeInviteCmd.Flags().Lookup("role")); err != nil {
+	if err := viper.BindPFlag("invite.del.msg", removeInviteCmd.Flags().Lookup("msg")); err != nil {
 		logrus.Fatal(err)
 	}
-
 	orgEditCmd.Flags().StringP("name", "n", "", "org name")
 	orgEditCmd.Flags().StringP("website", "w", "", "org website")
 	orgEditCmd.Flags().StringP("fullname", "f", "", "org fullname")
 	orgEditCmd.Flags().StringP("avatar", "a", "", "org avatar")
 	orgEditCmd.Flags().StringP("desc", "d", "", "org description")
+	orgEditCmd.Flags().Bool("allowrequest", false, "whether allow request member")
+	orgEditCmd.Flags().StringP("default_role", "r", "", "default role when request member")
 
 	if err := orgEditCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
 
-	orgEditCmd.MarkFlagsOneRequired("avatar", "fullname", "website", "desc")
+	orgEditCmd.MarkFlagsOneRequired("avatar", "fullname", "website", "desc", "allowrequest", "default_role")
 	if err := viper.BindPFlag("org.edit.name", orgEditCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
@@ -619,9 +813,16 @@ func init() {
 	if err := viper.BindPFlag("org.edit.desc", orgEditCmd.Flags().Lookup("desc")); err != nil {
 		logrus.Fatal(err)
 	}
+	if err := viper.BindPFlag("org.edit.allowrequest", orgEditCmd.Flags().Lookup("allowrequest")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("org.edit.defaultrole", orgEditCmd.Flags().Lookup("default_role")); err != nil {
+		logrus.Fatal(err)
+	}
 
 	memberAddCmd.Flags().StringP("name", "n", "", "org name")
 	memberAddCmd.Flags().StringP("user", "u", "", "member name")
+	memberAddCmd.Flags().StringP("msg", "m", "", "msg")
 	if err := memberAddCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
@@ -629,10 +830,25 @@ func init() {
 		logrus.Fatal(err)
 	}
 
-	if err := viper.BindPFlag("member.add.org", memberAddCmd.Flags().Lookup("name")); err != nil {
+	if err := viper.BindPFlag("member.approve.org", memberAddCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := viper.BindPFlag("member.add.user", memberAddCmd.Flags().Lookup("user")); err != nil {
+	if err := viper.BindPFlag("member.approve.user", memberAddCmd.Flags().Lookup("user")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("member.approve.msg", memberAddCmd.Flags().Lookup("msg")); err != nil {
+		logrus.Fatal(err)
+	}
+	memberAcceptCmd.Flags().StringP("name", "n", "", "org name")
+	memberAcceptCmd.Flags().StringP("msg", "m", "", "msg")
+	if err := memberAcceptCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := viper.BindPFlag("member.accept.org", memberAcceptCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("member.accept.msg", memberAcceptCmd.Flags().Lookup("msg")); err != nil {
 		logrus.Fatal(err)
 	}
 

@@ -168,6 +168,15 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 	org := orgrepoimpl.NewOrgRepo(
 		mongodb.NewCollection(cfg.Mongodb.Collections.User),
 	)
+
+	invitation := orgrepoimpl.NewInviteRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.Invitation),
+	)
+
+	request := orgrepoimpl.NewMemberRequestRepo(
+		mongodb.NewCollection(cfg.Mongodb.Collections.MemberRequest),
+	)
+
 	sessrepo := sessionrepo.NewSessionRepository(
 		sessionrepo.NewSessionStore(
 			mongodb.NewCollection(collections.Session),
@@ -180,7 +189,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 
 	orgAppService := orgapp.NewOrgService(
 		services.userApp, org, services.orgMember,
-		services.permission, cfg.Org.InviteExpiry,
+		invitation, request, services.permission, &cfg.Org,
 	)
 
 	controller.AddRouterForUserController(

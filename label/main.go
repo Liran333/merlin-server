@@ -35,7 +35,11 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	o.service.AddFlags(fs)
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		fs.PrintDefaults()
+
+		logrus.Fatalf("failed to parse cmdline %s", err)
+	}
 
 	return o
 }

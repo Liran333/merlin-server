@@ -1,5 +1,6 @@
 package domain
 
 type Config struct {
-	InviteExpiry int64 `json:"invite_expiry"`
+	InviteExpiry int64  `json:"invite_expiry"`
+	DefaultRole  string `json:"default_role"`
 }

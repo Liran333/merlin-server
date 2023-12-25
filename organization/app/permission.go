@@ -121,7 +121,7 @@ func (p *permService) Check(user primitive.Account, obj primitive.Account, objTy
 
 	logrus.Debugf("user %s (role %s) %s do %d on %s:%s", user.Account(), m.Role, res, op, obj.Account(), objType)
 	if !ok {
-		return allerror.NewNoPermission(fmt.Sprintf("%s %d %s permission denied", user.Account(), op, string(objType)))
+		return allerror.NewNoPermission(fmt.Sprintf("%s %s %s permission denied", user.Account(), op.String(), string(objType)))
 	}
 	return nil
 }

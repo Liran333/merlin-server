@@ -110,11 +110,13 @@ type Mongodb struct {
 }
 
 type MongodbCollections struct {
-	User         string `json:"user"                   required:"true"`
-	Session      string `json:"session"                required:"true"`
-	Organization string `json:"organization"           required:"true"`
-	Member       string `json:"member"                 required:"true"`
-	Token        string `json:"token"                  required:"true"`
+	User          string `json:"user"                   required:"true"`
+	Session       string `json:"session"                required:"true"`
+	Organization  string `json:"organization"           required:"true"`
+	Member        string `json:"member"                 required:"true"`
+	Token         string `json:"token"                  required:"true"`
+	Invitation    string `json:"invitation"             required:"true"`
+	MemberRequest string `json:"member_request"         required:"true"`
 }
 
 // modelConfig

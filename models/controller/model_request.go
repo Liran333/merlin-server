@@ -7,6 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
@@ -95,11 +96,8 @@ func (p *reqToUpdateModel) toCmd() (cmd app.CmdToUpdateModel, err error) {
 
 // reqToListUserModels
 type reqToListUserModels struct {
-	Name         string `form:"name"`
-	SortBy       string `form:"sort_by"`
-	Count        bool   `form:"count"`
-	PageNum      int    `form:"page_num"`
-	CountPerPage int    `form:"count_per_page"`
+	Name string `form:"name"`
+	controller.CommonListRequest
 }
 
 func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
