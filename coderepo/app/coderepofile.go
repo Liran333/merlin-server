@@ -6,7 +6,7 @@ import (
 )
 
 type CodeRepoFileAppService interface {
-	List(cmd *CmdToFile) ([]domain.ListFileInfo, error)
+	List(cmd *CmdToFile) (*domain.ListFileInfo, error)
 	Get(cmd *CmdToFile) (*domain.DetailFileInfo, error)
 	Download(cmd *CmdToFile) (*domain.DownLoadFileInfo, error)
 }
@@ -19,7 +19,7 @@ type codeRepoFileAppService struct {
 	repoFileAdapter repofileadapter.CodeRepoFileAdapter
 }
 
-func (s *codeRepoFileAppService) List(cmd *CmdToFile) ([]domain.ListFileInfo, error) {
+func (s *codeRepoFileAppService) List(cmd *CmdToFile) (*domain.ListFileInfo, error) {
 	codeRepoFile := cmd.toCodeRepoFile()
 	listFileInfo, err := s.repoFileAdapter.List(&codeRepoFile)
 	if err != nil {

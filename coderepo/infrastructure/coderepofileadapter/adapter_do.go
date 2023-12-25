@@ -13,6 +13,7 @@ import (
 const (
 	gitAttributesFile = ".gitattributes"
 	fileType          = "file"
+	dirType           = "dir"
 )
 
 func parseGitAttributesFile(gitAttributeContent string) []string {

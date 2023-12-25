@@ -5,7 +5,7 @@ import (
 )
 
 type CodeRepoFileAdapter interface {
-	List(*domain.CodeRepoFile) ([]domain.ListFileInfo, error)
+	List(*domain.CodeRepoFile) (*domain.ListFileInfo, error)
 
 	Get(*domain.CodeRepoFile) (*domain.DetailFileInfo, error)
 
