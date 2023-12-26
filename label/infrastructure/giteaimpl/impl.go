@@ -2,6 +2,8 @@ package giteaimpl
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/yuin/goldmark"
@@ -38,6 +40,8 @@ func (impl *giteaImpl) GetLabels(option *localgitea.Option) (label domain.ModelL
 
 	meta, err := impl.parseTags(content)
 	if err != nil {
+		err = fmt.Errorf("parse tags of [%s %s] err: %s", option.Org, option.Repo, err.Error())
+
 		return
 	}
 
@@ -55,6 +59,12 @@ type MetaData struct {
 }
 
 func (impl *giteaImpl) parseTags(content []byte) (meta MetaData, err error) {
+	if len(content) == 0 {
+		err = errors.New("README.md is empty")
+
+		return
+	}
+
 	md := goldmark.New(
 		goldmark.WithExtensions(&frontmatter.Extender{}),
 	)
@@ -65,7 +75,14 @@ func (impl *giteaImpl) parseTags(content []byte) (meta MetaData, err error) {
 		return
 	}
 
-	if err = frontmatter.Get(ctx).Decode(&meta); err != nil {
+	data := frontmatter.Get(ctx)
+	if data == nil {
+		err = errors.New("frontmatter is empty")
+
+		return
+	}
+
+	if err = data.Decode(&meta); err != nil {
 		return
 	}
 
