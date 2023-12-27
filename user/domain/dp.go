@@ -137,7 +137,7 @@ func NewAvatarId(v string) (AvatarId, error) {
 		return nil, errors.New("invalid avatar")
 	}
 
-	return dpAvatarId(DefaultAvatarURL()), nil
+	return dpAvatarId(""), nil
 }
 
 func CreateAvatarId(v string) AvatarId {
