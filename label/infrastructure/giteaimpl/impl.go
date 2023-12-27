@@ -53,9 +53,9 @@ func (impl *giteaImpl) GetLabels(option *localgitea.Option) (label domain.ModelL
 }
 
 type MetaData struct {
-	Task       string   `yaml:"task"`
+	Task       string   `yaml:"pipeline_tag"`
 	Tags       []string `yaml:"tags"`
-	Frameworks []string `yaml:"frameworks"`
+	Frameworks []string `yaml:"framework"`
 }
 
 func (impl *giteaImpl) parseTags(content []byte) (meta MetaData, err error) {
