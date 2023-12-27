@@ -1,11 +1,14 @@
 package coderepofileadapter
 
 import (
-	"code.gitea.io/sdk/gitea"
 	"errors"
-	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"net/http"
 	"sort"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/openmerlin/go-sdk/gitea"
+	"github.com/openmerlin/merlin-server/coderepo/domain"
 )
 
 type codeRepoFileAdapter struct {
@@ -82,7 +85,7 @@ func (adapter *codeRepoFileAdapter) getLastCommit(codeRepoFile *domain.CodeRepoF
 }
 
 func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*domain.ListFileInfo, error) {
-	crl, resp, err := adapter.client.ListContents(
+	crl, resp, err := adapter.client.ListCommitContents(
 		codeRepoFile.Owner.Account(),
 		codeRepoFile.Name.MSDName(),
 		codeRepoFile.Ref.FileRef(),
@@ -90,17 +93,33 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 	)
 
 	if err != nil {
+		logrus.Errorf("ListCommitContents failed :%s", err.Error())
+
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		logrus.Errorf("ListCommitContents return invalid code : %d", resp.StatusCode)
+
 		return nil, errors.New(resp.Status)
 	}
 
 	lastCommit, err := adapter.getLastCommit(codeRepoFile)
 
 	if err != nil {
+		logrus.Errorf("ListCommitContents getLastCommit failed :%s", err.Error())
+
 		return nil, err
+	}
+
+	// if fork others directly, the Author will be nil
+	fileAuthor := domain.FileAuthor{}
+	if lastCommit.Author == nil {
+		fileAuthor.Name = lastCommit.RepoCommit.Author.Name
+		fileAuthor.AvatarURL = ``
+	} else {
+		fileAuthor.Name = lastCommit.Author.UserName
+		fileAuthor.AvatarURL = lastCommit.Author.AvatarURL
 	}
 
 	listFileInfo := &domain.ListFileInfo{LastCommitInfo: domain.LastCommitInfo{
@@ -108,13 +127,8 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 			Message: lastCommit.RepoCommit.Message,
 			Create:  lastCommit.Created,
 		},
-		FileAuthor: domain.FileAuthor{
-			Name:      lastCommit.Author.UserName,
-			AvatarURL: lastCommit.Author.AvatarURL,
-		},
+		FileAuthor: fileAuthor,
 	}}
-
-	matchStr, content, IsErrGetAttr := adapter.getGitAttribute(codeRepoFile)
 
 	FileInfos := make([]domain.FileInfo, 0, len(crl))
 	DirInfos := make([]domain.FileInfo, 0, len(crl))
@@ -125,15 +139,17 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 			Path:  c.Path,
 			Type:  c.Type,
 			Size:  c.Size,
-			IsLfs: false,
+			IsLfs: c.IsLFS,
+			FileCommit: domain.FileCommit{
+				Message: c.LastCommitMessage,
+				Create:  c.LastCommitCreate,
+			},
 		}
 
-		if c.Type == fileType && IsErrGetAttr == nil {
-			fileInfo.IsLfs = checkLfs(matchStr, *content, c.Path)
-		}
+		if c.Type == fileType && c.DownloadURL != nil {
 
-		if c.Type == fileType {
 			fileInfo.URL = *c.DownloadURL
+
 		}
 
 		curRepoFile, IsErrParsePath := codeRepoFile.NewCodeRepoFileByUpdatePath(codeRepoFile, c.Path)
@@ -145,15 +161,6 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 				fileInfo.URL = lfsUrl
 			}
 
-		}
-
-		curLastCommit, err := adapter.getLastCommit(curRepoFile)
-
-		if err == nil {
-			fileInfo.FileCommit = domain.FileCommit{
-				Create:  curLastCommit.Created,
-				Message: curLastCommit.RepoCommit.Message,
-			}
 		}
 
 		if c.Type == dirType {
@@ -182,7 +189,7 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 }
 
 func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*domain.DetailFileInfo, error) {
-	crl, resp, err := adapter.client.GetContents(
+	crl, resp, err := adapter.client.GetCommitContents(
 		codeRepoFile.Owner.Account(),
 		codeRepoFile.Name.MSDName(),
 		codeRepoFile.Ref.FileRef(),
@@ -190,10 +197,14 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 	)
 
 	if err != nil {
+		logrus.Errorf("GetContents failed :%s", err.Error())
+
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		logrus.Errorf("GetContents return invalid code : %d", resp.StatusCode)
+
 		return nil, errors.New(resp.Status)
 	}
 
@@ -202,16 +213,10 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 		Path:  crl.Path,
 		Type:  crl.Type,
 		Size:  crl.Size,
-		IsLfs: false,
+		IsLfs: crl.IsLFS,
 	}
 
-	matchStr, content, IsErrGetAttr := adapter.getGitAttribute(codeRepoFile)
-
-	if crl.Type == fileType && IsErrGetAttr == nil {
-		fileInfo.IsLfs = checkLfs(matchStr, *content, crl.Path)
-	}
-
-	if crl.Type == fileType {
+	if crl.Type == fileType && crl.DownloadURL != nil {
 		fileInfo.URL = *crl.DownloadURL
 	}
 
@@ -226,6 +231,8 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 	lastCommit, err := adapter.getLastCommit(codeRepoFile)
 
 	if err != nil {
+		logrus.Errorf("getLastCommit failed :%s", err.Error())
+
 		return nil, err
 	}
 
@@ -234,10 +241,17 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 		Message: lastCommit.RepoCommit.Message,
 	}
 
-	fileInfo.FileAuthor = domain.FileAuthor{
-		Name:      lastCommit.Author.UserName,
-		AvatarURL: lastCommit.Author.AvatarURL,
+	// if fork others directly, the Author will be nil
+	fileAuthor := domain.FileAuthor{}
+	if lastCommit.Author == nil {
+		fileAuthor.Name = lastCommit.RepoCommit.Author.Name
+		fileAuthor.AvatarURL = ``
+	} else {
+		fileAuthor.Name = lastCommit.Author.UserName
+		fileAuthor.AvatarURL = lastCommit.Author.AvatarURL
 	}
+
+	fileInfo.FileAuthor = fileAuthor
 
 	return &fileInfo, nil
 
@@ -247,6 +261,8 @@ func (adapter *codeRepoFileAdapter) Download(codeRepoFile *domain.CodeRepoFile) 
 	fileInfo, err := adapter.Get(codeRepoFile)
 
 	if err != nil {
+		logrus.Errorf("Get failed :%s", err.Error())
+
 		return nil, err
 	}
 
@@ -260,6 +276,8 @@ func (adapter *codeRepoFileAdapter) Download(codeRepoFile *domain.CodeRepoFile) 
 		stream, err := adapter.getContent(codeRepoFile)
 
 		if err != nil {
+			logrus.Errorf("getContent failed :%s", err.Error())
+
 			return nil, err
 		}
 

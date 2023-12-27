@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"code.gitea.io/sdk/gitea"
+	"github.com/openmerlin/go-sdk/gitea"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 )

@@ -1,6 +1,6 @@
 package gitea
 
-import "code.gitea.io/sdk/gitea"
+import "github.com/openmerlin/go-sdk/gitea"
 
 var (
 	cli      *gitea.Client

@@ -3,7 +3,7 @@ package git
 import (
 	"fmt"
 
-	"code.gitea.io/sdk/gitea"
+	"github.com/openmerlin/go-sdk/gitea"
 
 	common "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	org "github.com/openmerlin/merlin-server/organization/domain"

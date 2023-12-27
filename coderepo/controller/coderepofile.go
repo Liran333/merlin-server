@@ -35,7 +35,7 @@ func (ctl *CodeRepoFileController) List(ctx *gin.Context) {
 	}
 	data, err := ctl.codeRepoFile.List(codeRepoFile)
 	if err != nil {
-		commonctl.SendError(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, data)
 	}
@@ -49,7 +49,7 @@ func (ctl *CodeRepoFileController) Get(ctx *gin.Context) {
 
 	data, err := ctl.codeRepoFile.Get(codeRepoFile)
 	if err != nil {
-		commonctl.SendError(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, data)
 	}
@@ -64,7 +64,7 @@ func (ctl *CodeRepoFileController) Download(ctx *gin.Context) {
 
 	data, err := ctl.codeRepoFile.Download(codeRepoFile)
 	if err != nil {
-		commonctl.SendError(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, data)
 	}

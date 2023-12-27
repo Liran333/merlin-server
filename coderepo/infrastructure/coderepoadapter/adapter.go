@@ -1,7 +1,7 @@
 package coderepoadapter
 
 import (
-	"code.gitea.io/sdk/gitea"
+	"github.com/openmerlin/go-sdk/gitea"
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
@@ -15,22 +15,21 @@ func NewRepoAdapter(c *gitea.Client) *codeRepoAdapter {
 }
 
 func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) error {
-	readme := ""
-	if initReadme {
-		readme = repo.Name.MSDName()
+	defaultRef := primitive.InitCodeFileRef().FileRef()
+
+	opt := gitea.CreateRepoOption{
+		Name:          repo.Name.MSDName(),
+		License:       repo.License.License(),
+		Private:       repo.Visibility.IsPrivate(),
+		DefaultBranch: defaultRef,
 	}
 
-	defaultRef := primitive.InitCodeFileRef().FileRef()
-	obj, _, err := adapter.client.AdminCreateRepo(
-		repo.Owner.Account(),
-		gitea.CreateRepoOption{
-			Name:          repo.Name.MSDName(),
-			Readme:        readme,
-			License:       repo.License.License(),
-			Private:       repo.Visibility.IsPrivate(),
-			DefaultBranch: defaultRef,
-		},
-	)
+	if initReadme {
+		opt.Readme = "Default"
+		opt.AutoInit = true
+	}
+
+	obj, _, err := adapter.client.AdminCreateRepo(repo.Owner.Account(), opt)
 	if err == nil {
 		repo.Id = primitive.CreateIdentity(obj.ID)
 	}

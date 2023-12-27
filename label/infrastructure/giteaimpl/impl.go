@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"code.gitea.io/sdk/gitea"
+	"github.com/openmerlin/go-sdk/gitea"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/parser"
 	"go.abhg.dev/goldmark/frontmatter"
