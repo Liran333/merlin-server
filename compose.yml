@@ -3,59 +3,70 @@ services:
     image: redis
     entrypoint:
     - "/usr/local/bin/redis-server"
-    - --requirepass merlin
-    ports:
-      - "6379:6379"
+    - --requirepass ${REDIS_PASS}
+    env_file:
+      deploy/.env
   pg:
     image: postgres:16
     environment:
-      POSTGRES_PASSWORD: gitea
-      POSTGRES_USER: gitea
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_USER: ${PG_USER}
+    env_file:
+      deploy/.env
   db:
     image: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: merlin
-      MONGO_INITDB_ROOT_PASSWORD: merlin
-      MONGO_INITDB_DATABASE: merlin
-    ports:
-      - "27017:27017"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    env_file:
+      deploy/.env
   gitea:
     build:
       context: https://github.com/openmerlin/gitea.git
       dockerfile: Dockerfile.rootless_cdn
       args:
         GITEA_VERSION: 1.21.1
-
     environment:
       - USER_UID=1000
       - USER_GID=1000
     restart: always
     volumes:
-      - gitea:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "3000:3000"
+      - ./deploy/app.ini:/etc/gitea/app.ini
+    env_file:
+      deploy/.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   server:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     depends_on:
     - redis
     - db
     - gitea
-    entrypoint:
-      - /home/openmerlin/merlin-server
+    command:
       - --config-file
-      - /home/openmerlin/config.yml
+      - /home/modelfoundry/config.yml
       - --enable_debug
       - "true"
       - --rm-cfg
       - "false"
+      - --port
+      - ${SERVER_PORT}
     volumes:
-      - ./compose-config.yml:/home/openmerlin/config.yml:ro
+      - ./deploy/config.yml:/home/modelfoundry/config.yml:ro
     ports:
-    - "8888:8888"
-
-volumes:
-  gitea:
+    - "${SERVER_PORT}:${SERVER_PORT}"
+    env_file:
+      deploy/.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${SERVER_PORT}/api/swagger/index.html"]
+      interval: 30s
+      timeout: 5s
+      retries: 5

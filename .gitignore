@@ -5,4 +5,7 @@ cmd/config.yaml
 *.b
 */back
 compose-config.yml
+config.yml
 .idea
+app.ini
+deploy/

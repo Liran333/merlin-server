@@ -1,0 +1,8 @@
+# exclude all
+*
+# just include all the go source files
+# and dockerfile
+!**/*.go
+!Dockerfile
+!go.mod
+!go.sum

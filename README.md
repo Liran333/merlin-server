@@ -1,12 +1,15 @@
-# merlin-server
+# modelfoundry-server
 
 ## local-dev
-you can start a local `docker compose` dev env by:
-```bash
-docker compose up -d
-```
+Before starting, [install docker compose](https://docs.docker.com/compose/install/linux/) and [openssl](https://www.openssl.org/)
 
-# update swagger docs
+Then you can start a local dev environment by:
+```bash
+bash scripts/init-env.sh
+```
+This command will launch a server listen on 127.0.0.1:8888
+
+## update swagger docs
 switch into root dir of the project
 ```
 swag init -o api
