@@ -37,7 +37,7 @@ func toTokenDoc(t domain.PlatformToken, doc *DToken) error {
 		Expire:     t.Expire,
 		CreatedAt:  t.CreatedAt,
 		Account:    t.Account.Account(),
-		Permission: string(t.Permission),
+		Permission: t.Permission.TokenPerm(),
 		Salt:       t.Salt,
 		Token:      t.Token,
 		LastEight:  t.LastEight,
@@ -82,7 +82,7 @@ func toToken(doc DToken, t *domain.PlatformToken) {
 	t.Salt = doc.Salt
 	t.Token = doc.Token
 	t.LastEight = doc.LastEight
-	t.Permission = domain.TokenPerm(doc.Permission)
+	t.Permission = primitive.CreateTokenPerm(doc.Permission)
 }
 
 func toUserInfo(doc DUser, info *domain.UserInfo) (err error) {

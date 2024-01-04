@@ -37,3 +37,7 @@ func Init(cfg *Config) error {
 func DB() *gorm.DB {
 	return db
 }
+
+func AutoMigrate(table interface{}) error {
+	return db.AutoMigrate(table)
+}

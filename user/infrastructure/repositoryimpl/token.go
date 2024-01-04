@@ -115,7 +115,7 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 
 	if err = primitive.WithContext(f); err != nil {
 		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
+			err = nil
 		}
 
 		return

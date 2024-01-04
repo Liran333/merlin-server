@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 
 	basegitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
-	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/user/domain"
+	redisdb "github.com/opensourceways/redis-lib"
 )
 
 var configFile string
@@ -53,7 +53,7 @@ func initServer(configFile string) {
 	}
 
 	//redis
-	if err := redis.Init(&cfg.Redis, false); err != nil {
+	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Fatalf("init redis failed, err:%s", err.Error())
 	}
 

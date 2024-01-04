@@ -118,7 +118,7 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx)
+		commonctl.SendRespOfPut(ctx, nil)
 	}
 }
 

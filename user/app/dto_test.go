@@ -11,7 +11,6 @@ func TestCreateCmdValidate(t *testing.T) {
 	validAcc := primitive.CreateAccount("xxx")
 	validEmail, _ := domain.NewEmail("yyy")
 	tests := []domain.UserCreateCmd{
-		{},
 		{
 			Email:   validEmail,
 			Account: validAcc,

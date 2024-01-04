@@ -27,11 +27,12 @@ type ModelAppService interface {
 }
 
 func NewModelAppService(
+	permission Permission,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
-	permission Permission,
 ) ModelAppService {
 	return &modelAppService{
+		permission:  permission,
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
 	}
@@ -44,7 +45,6 @@ type modelAppService struct {
 }
 
 func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) (string, error) {
-	/* revert when ready
 	if user != cmd.Owner {
 		err := s.permission.Check(
 			user, cmd.Owner, primitive.ObjTypeModel, primitive.ActionCreate,
@@ -53,7 +53,6 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 			return "", err
 		}
 	}
-	*/
 
 	coderepo, err := s.codeRepoApp.Create(&cmd.CmdToCreateRepo)
 	if err != nil {
@@ -86,11 +85,9 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return err
 	}
 
-	/* revert when ready
 	if err := s.hasPermission(user, &model, primitive.ActionDelete); err != nil {
 		return err
 	}
-	*/
 
 	if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
 		return err
@@ -117,11 +114,9 @@ func (s *modelAppService) Update(
 		return err
 	}
 
-	/* revert when ready
 	if err := s.hasPermission(user, &model, primitive.ActionWrite); err != nil {
 		return err
 	}
-	*/
 
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
@@ -159,11 +154,9 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 		return dto, errorModelNotFound
 	}
 
-	/* revert when ready
 	if err := s.hasPermission(user, &model, primitive.ActionRead); err != nil {
 		return dto, err
 	}
-	*/
 
 	return toModelDTO(&model), nil
 }
@@ -180,7 +173,6 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 			cmd.Visibility = primitive.VisibilityPublic
 		} else {
 			if user != cmd.Owner {
-				/* revert when ready
 				err := s.permission.Check(
 					user, cmd.Owner, primitive.ObjTypeModel,
 					primitive.ActionRead,
@@ -188,7 +180,6 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
 				}
-				*/
 			}
 		}
 	}

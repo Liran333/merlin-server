@@ -7,13 +7,11 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
-	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/controller"
-	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
-	modelctl "github.com/openmerlin/merlin-server/models/controller"
-	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
+	"github.com/openmerlin/merlin-server/session"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 	redislib "github.com/opensourceways/redis-lib"
@@ -40,35 +38,25 @@ type Config struct {
 	Git        gitea.Config         `json:"gitea"`
 	Org        orgdomain.Config     `json:"organization"`
 	User       userdomain.Config    `json:"user"`
-	Model      modelConfig          `json:"model"`
-	Redis      redis.Config         `json:"redis"`
+	Redis      redislib.Config      `json:"redis"`
+	Model      models.Config        `json:"model"`
+	Session    session.Config       `json:"session"`
 	Mongodb    Mongodb              `json:"mongodb"`
-	Authing    oidcimpl.Config      `json:"authing"`
 	Primitive  primitive.Config     `json:"primitive"`
 	Postgresql postgresql.Config    `json:"postgresql"`
 	Permission permission.Config    `json:"permission"`
 }
 
-func (cfg *Config) InitUserDomain() {
+func (cfg *Config) Init() {
 	userdomain.Init(&cfg.User)
-}
 
-func (cfg *Config) InitPrimitive() {
 	primitive.Init(&cfg.Primitive)
+
+	cfg.Model.Init()
 }
 
-func (cfg *Config) InitModel() {
-	cfg.Model.initModel()
-}
-
-func (cfg *Config) GetRedisConfig() redislib.Config {
-	return redislib.Config{
-		DB:       cfg.Redis.DB,
-		DBCert:   cfg.Redis.DBCert,
-		Timeout:  cfg.Redis.Timeout,
-		Address:  cfg.Redis.Address,
-		Password: cfg.Redis.Password,
-	}
+func (cfg *Config) InitSession() error {
+	return cfg.Session.Init()
 }
 
 func (cfg *Config) ConfigItems() []interface{} {
@@ -77,10 +65,10 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Git,
 		&cfg.Org,
 		&cfg.User,
-		&cfg.Model,
 		&cfg.Redis,
+		&cfg.Model,
+		&cfg.Session,
 		&cfg.Mongodb,
-		&cfg.Authing,
 		&cfg.Primitive,
 		&cfg.Postgresql,
 	}
@@ -117,21 +105,4 @@ type MongodbCollections struct {
 	Token         string `json:"token"                  required:"true"`
 	Invitation    string `json:"invitation"             required:"true"`
 	MemberRequest string `json:"member_request"         required:"true"`
-}
-
-// modelConfig
-type modelConfig struct {
-	Tables     modelrepositoryadapter.Tables `json:"tables"`
-	Controller modelctl.Config               `json:"controller"`
-}
-
-func (cfg *modelConfig) ConfigItems() []interface{} {
-	return []interface{}{
-		&cfg.Tables,
-		&cfg.Controller,
-	}
-}
-
-func (cfg *modelConfig) initModel() {
-	modelctl.Init(&cfg.Controller)
 }

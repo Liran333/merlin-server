@@ -41,7 +41,7 @@ type UserService interface {
 	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
 	DeleteToken(*domain.TokenDeletedCmd, platform.BaseAuthClient) error
 	ListTokens(domain.Account) ([]TokenDTO, error)
-	VerifyToken(string) (TokenDTO, bool)
+	VerifyToken(string, primitive.TokenPerm) (TokenDTO, error)
 }
 
 // ps: platform user service
@@ -330,16 +330,26 @@ func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error)
 	return
 }
 
-func (s userService) VerifyToken(token string) (dto TokenDTO, b bool) {
+func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto TokenDTO, err error) {
+	if token == "" {
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "invalid token")
+		return
+	}
+
 	tokens, err := s.token.GetByLastEight(token[len(token)-8:])
 	if err != nil {
-		logrus.Errorf("get token by last eight failed: %s", err)
+		logrus.Errorf("failed to find token: %s", err)
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "failed to find token")
+		return
+	}
+
+	if len(tokens) == 0 {
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "token not found")
 		return
 	}
 
 	for t := range tokens {
-		if tokens[t].Compare(token) && tokens[t].Expire > utils.Now() {
-			b = true
+		if err = tokens[t].Check(token, perm); err == nil {
 			dto = newTokenDTO(&tokens[t])
 			return
 		}

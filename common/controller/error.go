@@ -50,6 +50,24 @@ func httpError(err error) (int, string) {
 			case allerror.ErrorCodeAccessTokenInvalid:
 				sc = http.StatusUnauthorized
 
+			case allerror.ErrorCodeLoginIdMissing:
+				sc = http.StatusUnauthorized
+
+			case allerror.ErrorCodeLoginIdInvalid:
+				sc = http.StatusUnauthorized
+
+			case allerror.ErrorCodeLoginIdNotFound:
+				sc = http.StatusUnauthorized
+
+			case allerror.ErrorCodeCSRFTokenMissing:
+				sc = http.StatusUnauthorized
+
+			case allerror.ErrorCodeCSRFTokenInvalid:
+				sc = http.StatusUnauthorized
+
+			case allerror.ErrorCodeCSRFTokenNotFound:
+				sc = http.StatusUnauthorized
+
 			default:
 				sc = http.StatusBadRequest
 			}

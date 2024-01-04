@@ -6,6 +6,8 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
+type CmdToCreateUser = domain.UserCreateCmd
+
 type UserInfoDTO struct {
 	Points int `json:"points"`
 
@@ -38,7 +40,7 @@ func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 	dto.Expire = t.Expire
 	dto.Account = t.Account.Account()
 	dto.Name = t.Name
-	dto.Permission = string(t.Permission)
+	dto.Permission = t.Permission.TokenPerm()
 	dto.Token = t.Token
 
 	return

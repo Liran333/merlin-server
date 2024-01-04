@@ -55,8 +55,12 @@ func SendBadRequestParam(ctx *gin.Context, err error) {
 	}
 }
 
-func SendRespOfPut(ctx *gin.Context) {
-	ctx.JSON(http.StatusAccepted, newResponseCodeMsg("", "success"))
+func SendRespOfPut(ctx *gin.Context, data interface{}) {
+	if data == nil {
+		ctx.JSON(http.StatusAccepted, newResponseCodeMsg("", "success"))
+	} else {
+		ctx.JSON(http.StatusAccepted, newResponseData(data))
+	}
 }
 
 func SendRespOfGet(ctx *gin.Context, data interface{}) {

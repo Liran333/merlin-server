@@ -9,3 +9,4 @@ config.yml
 .idea
 app.ini
 deploy/
+label/label

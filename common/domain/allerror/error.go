@@ -11,7 +11,15 @@ const (
 
 	ErrorCodeOrganizationNotFound = "organization_not_found"
 
+	// This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
+
+	ErrorCodeLoginIdInvalid    = "login_id_invalid"
+	ErrorCodeLoginIdMissing    = "login_id_missing"
+	ErrorCodeLoginIdNotFound   = "login_id_not_found"
+	ErrorCodeCSRFTokenMissing  = "csrf_token_missing"   // #nosec G101
+	ErrorCodeCSRFTokenInvalid  = "csrf_token_invalid"   // #nosec G101
+	ErrorCodeCSRFTokenNotFound = "csrf_token_not_found" // #nosec G101
 
 	errorCodeInvalidParam = "invalid_param"
 )

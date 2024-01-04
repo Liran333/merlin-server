@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensourceways/community-robot-lib/interrupts"
+	redisdb "github.com/opensourceways/redis-lib"
 	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -20,11 +21,9 @@ import (
 	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
-	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
-	session "github.com/openmerlin/merlin-server/session/app"
-	sessionrepo "github.com/openmerlin/merlin-server/session/infrastructure"
 
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	userctl "github.com/openmerlin/merlin-server/user/controller"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
@@ -37,6 +36,12 @@ import (
 	modelctl "github.com/openmerlin/merlin-server/models/controller"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+
+	sessionapp "github.com/openmerlin/merlin-server/session/app"
+	sessionctl "github.com/openmerlin/merlin-server/session/controller"
+	"github.com/openmerlin/merlin-server/session/infrastructure/csrftokenrepositoryadapter"
+	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
+	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	coderepoctl "github.com/openmerlin/merlin-server/coderepo/controller"
@@ -82,10 +87,11 @@ type allServices struct {
 	userApp          userapp.UserService
 	userRepo         userrepo.User
 	orgMember        orgrepo.OrgMember
+	sessionApp       sessionapp.SessionAppService
 	permission       orgapp.Permission
 	codeRepoApp      coderepoapp.CodeRepoAppService
-	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 	userMiddleWare   middleware.UserMiddleWare
+	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
 }
 
@@ -95,31 +101,48 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	services.codeRepoApp = coderepoapp.NewCodeRepoAppService(
-		coderepoadapter.NewRepoAdapter(gitea.Client()),
-	)
-
-	services.modelRepoAdapter = modelrepositoryadapter.ModelAdapter()
-
 	collections := &cfg.Mongodb.Collections
-
-	services.orgMember = orgrepoimpl.NewMemberRepo(
-		mongodb.NewCollection(collections.Member),
-	)
-
-	services.permission = orgapp.NewPermService(&cfg.Permission, services.orgMember)
-
-	services.userRepo = userrepoimpl.NewUserRepo(mongodb.NewCollection(collections.User))
 
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 	token := userrepoimpl.NewTokenRepo(mongodb.NewCollection(collections.Token))
 
-	services.userApp = userapp.NewUserService(services.userRepo, git, token)
+	userRepo := userrepoimpl.NewUserRepo(mongodb.NewCollection(collections.User))
+
+	services.userApp = userapp.NewUserService(userRepo, git, token)
+
+	services.userRepo = userRepo
+
+	services.orgMember = orgrepoimpl.NewMemberRepo(mongodb.NewCollection(collections.Member))
+
+	services.sessionApp = sessionAppService(cfg, services.userApp)
+
+	services.permission = orgapp.NewPermService(&cfg.Permission, services.orgMember)
+
+	services.codeRepoApp = coderepoapp.NewCodeRepoAppService(
+		coderepoadapter.NewRepoAdapter(gitea.Client()),
+	)
 
 	services.codeRepoFileApp = codeRepoFileAppService(cfg)
 
+	services.modelRepoAdapter = modelrepositoryadapter.ModelAdapter()
+
 	return
+}
+
+func codeRepoFileAppService(cfg *config.Config) coderepoapp.CodeRepoFileAppService {
+	return coderepoapp.NewCodeRepoFileAppService(
+		coderepofileadapter.NewCodeRepoFileAdapter(gitea.Client()))
+}
+
+func sessionAppService(cfg *config.Config, userApp userapp.UserService) sessionapp.SessionAppService {
+	return sessionapp.NewSessionAppService(
+		oidcimpl.NewAuthingUser(),
+		userApp,
+		cfg.Session.Domain.MaxSessionNum,
+		loginrepositoryadapter.LoginAdapter(),
+		csrftokenrepositoryadapter.NewCSRFTokenAdapter(redisdb.DAO()),
+	)
 }
 
 // setRouter init router
@@ -130,9 +153,11 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
-	services.userMiddleWare = middleware.WebAPI()
+	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp)
 
 	// set routers
+	setRouterOfSession(rg, services)
+
 	setRouterOfModelWeb(rg, services)
 
 	setRouterOfUserAndOrg(rg, cfg, services)
@@ -150,7 +175,7 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
-	services.userMiddleWare = middleware.RestfulAPI()
+	services.userMiddleWare = userctl.RestfulAPI(services.userApp)
 
 	// set routers
 	setRouterOfModelRestful(rg, services)
@@ -162,9 +187,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }
 
+// user and org router
 func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
-	collections := &cfg.Mongodb.Collections
-
 	org := orgrepoimpl.NewOrgRepo(
 		mongodb.NewCollection(cfg.Mongodb.Collections.User),
 	)
@@ -177,15 +201,10 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 		mongodb.NewCollection(cfg.Mongodb.Collections.MemberRequest),
 	)
 
-	sessrepo := sessionrepo.NewSessionRepository(
-		sessionrepo.NewSessionStore(
-			mongodb.NewCollection(collections.Session),
-		),
-	)
+	/*
+		session := session.NewSessionAppService(nil)
 
-	session := session.NewSessionService(sessrepo)
-
-	authingUser := oidcimpl.NewAuthingUser()
+	*/
 
 	orgAppService := orgapp.NewOrgService(
 		services.userApp, org, services.orgMember,
@@ -193,34 +212,22 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 	)
 
 	controller.AddRouterForUserController(
-		v1, services.userApp, services.userRepo, authingUser,
+		v1, services.userApp, services.userRepo,
 	)
 
 	controller.AddRouterForOrgController(
 		v1, orgAppService, services.userApp,
 	)
+}
 
-	controller.AddRouterForLoginController(
-		v1, services.userApp, authingUser, session,
+// session router
+func setRouterOfSession(rg *gin.RouterGroup, services *allServices) {
+	sessionctl.AddRouterForSessionController(
+		rg, services.sessionApp, services.userMiddleWare,
 	)
 }
 
-func codeRepoFileAppService(cfg *config.Config) coderepoapp.CodeRepoFileAppService {
-	return coderepoapp.NewCodeRepoFileAppService(
-		coderepofileadapter.NewCodeRepoFileAdapter(gitea.Client()))
-}
-
-func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
-	modelctl.AddRouteForModelRestfulController(
-		rg,
-		modelapp.NewModelAppService(
-			services.codeRepoApp, services.modelRepoAdapter,
-			services.permission,
-		),
-		services.userMiddleWare,
-	)
-}
-
+// code repo router
 func setRouteOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
 	coderepoctl.AddRouterForCodeRepoFileController(
 		rg,
@@ -229,12 +236,26 @@ func setRouteOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
 	)
 }
 
+// model router
+func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
+	modelctl.AddRouteForModelRestfulController(
+		rg,
+		modelapp.NewModelAppService(
+			services.permission,
+			services.codeRepoApp,
+			services.modelRepoAdapter,
+		),
+		services.userMiddleWare,
+	)
+}
+
 func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 	modelctl.AddRouteForModelWebController(
 		rg,
 		modelapp.NewModelAppService(
-			services.codeRepoApp, services.modelRepoAdapter,
 			services.permission,
+			services.codeRepoApp,
+			services.modelRepoAdapter,
 		),
 		services.userMiddleWare,
 		services.userApp,

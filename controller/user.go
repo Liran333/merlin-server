@@ -8,7 +8,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	login "github.com/openmerlin/merlin-server/login/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 
@@ -20,10 +19,8 @@ func AddRouterForUserController(
 	rg *gin.RouterGroup,
 	us userapp.UserService,
 	repo userrepo.User,
-	auth login.User,
 ) {
 	ctl := UserController{
-		auth: auth,
 		repo: repo,
 		s:    us,
 	}
@@ -40,7 +37,6 @@ type UserController struct {
 	baseController
 
 	repo userrepo.User
-	auth login.User
 	s    userapp.UserService
 }
 
@@ -264,10 +260,17 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		return
 	}
 
+	perm, err := primitive.NewTokenPerm(r.Perm)
+	if err != nil {
+		logrus.Error(err)
+
+		controller.SendBadRequestParam(ctx, err)
+	}
+
 	cmd := domain.TokenCreatedCmd{
 		Account:    pl.DomainAccount(),
 		Name:       r.Name,
-		Permission: domain.TokenPerm(r.Perm),
+		Permission: perm,
 	}
 
 	usernew, err := ctl.s.GetByAccount(pl.DomainAccount(), true)

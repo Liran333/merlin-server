@@ -91,7 +91,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.User"
+                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_common_app.UserDTO"
                         }
                     },
                     "400": {
@@ -326,99 +326,6 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "type": "not_allowed"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/login": {
-            "get": {
-                "description": "callback of authentication by authing",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Login"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "authing code",
-                        "name": "code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "redirect uri",
-                        "name": "redirect_uri",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
-                    },
-                    "501": {
-                        "description": "Not Implemented",
-                        "schema": {
-                            "type": "duplicate_creating"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/logout": {
-            "get": {
-                "description": "get info of login",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Login"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "account",
-                        "name": "account",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/session.SessionDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
                         }
                     }
                 }
@@ -1297,6 +1204,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/session": {
+            "put": {
+                "description": "logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.logoutInfo"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "login",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "body of login",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_session_app.UserDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user": {
             "get": {
                 "description": "get user",
@@ -1980,40 +1936,10 @@ const docTemplate = `{
                 }
             }
         },
-        "controller.User": {
+        "controller.logoutInfo": {
             "type": "object",
             "properties": {
-                "allow_request": {
-                    "type": "boolean"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "website": {
+                "id_token": {
                     "type": "string"
                 }
             }
@@ -2194,6 +2120,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.reqToLogin": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "redirect_uri": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToUpdateModel": {
             "type": "object",
             "properties": {
@@ -2289,7 +2226,48 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_openmerlin_merlin-server_user_app.UserDTO": {
+        "github_com_openmerlin_merlin-server_common_app.UserDTO": {
+            "type": "object",
+            "properties": {
+                "allow_request": {
+                    "type": "boolean"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_openmerlin_merlin-server_session_app.UserDTO": {
             "type": "object",
             "properties": {
                 "account": {
@@ -2344,20 +2322,6 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "integer"
-                }
-            }
-        },
-        "session.SessionDTO": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "info": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         }

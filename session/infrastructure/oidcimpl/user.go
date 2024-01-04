@@ -6,12 +6,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/opensourceways/community-robot-lib/utils"
+	libutils "github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	login "github.com/openmerlin/merlin-server/login/domain"
+	"github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
-	serverUtils "github.com/openmerlin/merlin-server/utils"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 var userInstance *user
@@ -46,7 +46,7 @@ type user struct {
 	bindEmailURL       string
 }
 
-func (impl *user) GetByAccessToken(accessToken string) (userInfo login.UserInfo, err error) {
+func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.UserInfo, err error) {
 	if accessToken == "" {
 		err = errors.New("no access token")
 
@@ -83,7 +83,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo login.UserInfo,
 	return
 }
 
-func (impl *user) GetByCode(code, redirectURI string) (login login.Login, err error) {
+func (impl *user) GetByCode(code, redirectURI string) (login repository.Login, err error) {
 	var v struct {
 		AccessToken string `json:"access_token"`
 		IdToken     string `json:"id_token"`
@@ -92,7 +92,7 @@ func (impl *user) GetByCode(code, redirectURI string) (login login.Login, err er
 	if err = impl.getAccessTokenByCode(code, redirectURI, &v); err != nil {
 		return
 	}
-	defer serverUtils.ClearStringMemory(v.AccessToken)
+	defer utils.ClearStringMemory(v.AccessToken)
 
 	if v.IdToken == "" {
 		err = errors.New("no id token")
@@ -153,7 +153,7 @@ func sendHttpRequest(req *http.Request, result interface{}) error {
 	req.Header.Set("User-Agent", "merlin-server-authing")
 	req.Header.Add("content-type", "application/json")
 
-	hc := utils.NewHttpClient(3)
+	hc := libutils.NewHttpClient(3)
 
 	_, err := hc.ForwardTo(req, result)
 

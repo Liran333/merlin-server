@@ -1,13 +1,11 @@
-package login
+package repository
 
-import (
-	"github.com/openmerlin/merlin-server/user/domain"
-)
+import "github.com/openmerlin/merlin-server/user/domain"
 
 type UserInfo struct {
+	Bio      domain.Bio
 	Name     domain.Account
 	Email    domain.Email
-	Bio      domain.Bio
 	AvatarId domain.AvatarId
 	Fullname string
 	UserId   string
@@ -20,7 +18,6 @@ type Login struct {
 	AccessToken string
 }
 
-type User interface {
+type OIDCAdapter interface {
 	GetByCode(code, redirectURI string) (Login, error)
-	GetByAccessToken(accessToken string) (UserInfo, error)
 }

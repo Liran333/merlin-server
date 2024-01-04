@@ -57,10 +57,15 @@ var tokenAddCmd = &cobra.Command{
 
 		fmt.Println("create token", acc.Account(), tokenName)
 
+		perm, err := primitive.NewTokenPerm(tokenPerm)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
 		token, err := userAppService.CreateToken(&domain.TokenCreatedCmd{
 			Account:    acc,
 			Name:       tokenName,
-			Permission: domain.TokenPerm(tokenPerm),
+			Permission: perm,
 		}, platform)
 		if err != nil {
 			logrus.Fatalf("add user token failed :%s", err.Error())
@@ -165,7 +170,7 @@ var tokenVerifyCmd = &cobra.Command{
 		userAppService := userapp.NewUserService(
 			user, git, t)
 
-		_, b := userAppService.VerifyToken(token)
+		_, b := userAppService.VerifyToken(token, primitive.NewReadPerm())
 		logrus.Infof("verify user token result %t", b)
 
 	},

@@ -169,7 +169,7 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 // @Tags			Organization
 // @Param			name	path	string	true	"name"
 // @Accept			json
-// @Success		200	{object}			controller.User
+// @Success		200	{object}			commonapp.UserDTO
 // @Failure		400	bad_request_param	account	is		invalid
 // @Failure		401	resource_not_exists	user	does	not	exist
 // @Failure		500	system_error		system	error
@@ -491,7 +491,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 		return
 	}
 
-	controller.SendRespOfPut(ctx)
+	controller.SendRespOfPut(ctx, nil)
 }
 
 // @Summary			Remove organization members
@@ -900,7 +900,7 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 		return
 	}
 
-	controller.SendRespOfPut(ctx)
+	controller.SendRespOfPut(ctx, nil)
 }
 
 // @Summary			List requests of the organization
@@ -1060,5 +1060,5 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 		return
 	}
 
-	controller.SendRespOfPut(ctx)
+	controller.SendRespOfPut(ctx, nil)
 }

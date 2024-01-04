@@ -8,7 +8,15 @@ import (
 	"errors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/utils"
 	"golang.org/x/crypto/pbkdf2"
+)
+
+const (
+	tokenPermDenied = "token permission denied"
+	tokenInvalid    = "token invalid"
+	tokenExpired    = "token expired"
 )
 
 // user
@@ -35,13 +43,6 @@ type UserInfo struct {
 	AvatarId AvatarId
 }
 
-type TokenPerm string
-
-const (
-	TokenPermWrite TokenPerm = "write"
-	TokenPermRead  TokenPerm = "read"
-)
-
 type PlatformToken struct {
 	Id      string
 	Token   string
@@ -50,13 +51,33 @@ type PlatformToken struct {
 	// TODO: expire not honor by gitea
 	Expire     int64 // timeout in seconds
 	CreatedAt  int64
-	Permission TokenPerm
+	Permission primitive.TokenPerm
 	Salt       string
 	LastEight  string
 	Version    int
 }
 
-func (t PlatformToken) Compare(token string) bool {
+func (t PlatformToken) isExpired() bool {
+	return t.Expire != 0 && t.Expire < utils.Now()
+}
+
+func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
+	if t.isExpired() {
+		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenExpired)
+	}
+
+	if !t.Match(token) {
+		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenInvalid)
+	}
+
+	if !t.Permission.PermissionAllow(perm) {
+		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenPermDenied)
+	}
+
+	return nil
+}
+
+func (t PlatformToken) Match(token string) bool {
 	saltBtye, err := base64.RawStdEncoding.DecodeString(t.Salt)
 	if err != nil {
 		return false
@@ -86,11 +107,11 @@ func EncryptToken(token string) (enc, salt string, err error) {
 	return
 }
 
-func ToPerms(t TokenPerm) []string {
-	switch t {
-	case TokenPermWrite:
+func ToPerms(t primitive.TokenPerm) []string {
+	switch t.TokenPerm() {
+	case primitive.TokenPermWrite:
 		return []string{"write:organization", "write:repository", "write:user"}
-	case TokenPermRead:
+	case primitive.TokenPermRead:
 		return []string{"read:organization", "read:repository", "read:user"}
 	default:
 		return []string{}
@@ -110,19 +131,10 @@ type TokenCreatedCmd struct {
 	Account    Account // user name
 	Name       string  // name of the token
 	Expire     int64   // timeout in seconds
-	Permission TokenPerm
+	Permission primitive.TokenPerm
 }
 
 func (cmd TokenCreatedCmd) Validate() error {
-	if cmd.Permission == "" {
-		return allerror.NewInvalidParam("missing permission when creating token")
-	}
-
-	if cmd.Permission != TokenPermWrite &&
-		cmd.Permission != TokenPermRead {
-		return allerror.NewInvalidParam("invalid permission when creating token")
-	}
-
 	if cmd.Name == "" {
 		return allerror.NewInvalidParam("missing name when creating token")
 	}

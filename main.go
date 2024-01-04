@@ -6,16 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/opensourceways/community-robot-lib/logrusutil"
+	redisdb "github.com/opensourceways/redis-lib"
+	"github.com/opensourceways/server-common-lib/logrusutil"
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
-	"github.com/openmerlin/merlin-server/common/infrastructure/redis"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
-	"github.com/openmerlin/merlin-server/login/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/server"
 )
 
@@ -100,9 +99,6 @@ func main() {
 		return
 	}
 
-	// authing
-	oidcimpl.Init(&cfg.Authing)
-
 	// controller
 	api := &cfg.API
 
@@ -123,11 +119,13 @@ func main() {
 	defer mongodb.Close()
 
 	//redis
-	if err := redis.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
+	if err := redisdb.Init(&cfg.Redis, true); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
 
 		return
 	}
+
+	defer redisdb.Close()
 
 	// postgresql
 	if err := postgresql.Init(&cfg.Postgresql); err != nil {
@@ -144,9 +142,14 @@ func main() {
 	}
 
 	// init
-	cfg.InitUserDomain()
-	cfg.InitPrimitive()
-	cfg.InitModel()
+	cfg.Init()
+
+	// session
+	if err := cfg.InitSession(); err != nil {
+		logrus.Errorf("init session failed, err:%s", err.Error())
+
+		return
+	}
 
 	// run
 	server.StartWebServer(o.service.Port, o.service.GracePeriod, cfg)
