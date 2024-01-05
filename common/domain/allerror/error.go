@@ -7,6 +7,8 @@ const (
 
 	ErrorCodeModelNotFound = "model_not_found"
 
+	ErrorCodeSpaceNotFound = "space_not_found"
+
 	ErrorCodeUserNotFound = "user_not_found"
 
 	ErrorCodeOrganizationNotFound = "organization_not_found"

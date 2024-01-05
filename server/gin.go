@@ -37,6 +37,11 @@ import (
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
+	spacectl "github.com/openmerlin/merlin-server/space/controller"
+	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
+
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	sessionctl "github.com/openmerlin/merlin-server/session/controller"
 	"github.com/openmerlin/merlin-server/session/infrastructure/csrftokenrepositoryadapter"
@@ -93,10 +98,16 @@ type allServices struct {
 	userMiddleWare   middleware.UserMiddleWare
 	codeRepoFileApp  coderepoapp.CodeRepoFileAppService
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
+	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
 	err = modelrepositoryadapter.Init(postgresql.DB(), &cfg.Model.Tables)
+	if err != nil {
+		return
+	}
+
+	err = spacerepositoryadapter.Init(postgresql.DB(), &cfg.Space.Tables)
 	if err != nil {
 		return
 	}
@@ -126,6 +137,8 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	services.codeRepoFileApp = codeRepoFileAppService(cfg)
 
 	services.modelRepoAdapter = modelrepositoryadapter.ModelAdapter()
+
+	services.spaceRepoAdapter = spacerepositoryadapter.SpaceAdapter()
 
 	return
 }
@@ -160,6 +173,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfModelWeb(rg, services)
 
+	setRouterOfSpaceWeb(rg, services)
+
 	setRouterOfUserAndOrg(rg, cfg, services)
 
 	setRouteOfCodeRepoFile(rg, services)
@@ -179,6 +194,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	// set routers
 	setRouterOfModelRestful(rg, services)
+
+	setRouterOfSpaceRestful(rg, services)
 
 	setRouterOfUserAndOrg(rg, cfg, services)
 
@@ -249,6 +266,18 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 	)
 }
 
+func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
+	spacectl.AddRouteForSpaceRestfulController(
+		rg,
+		spaceapp.NewSpaceAppService(
+			services.permission,
+			services.codeRepoApp,
+			services.spaceRepoAdapter,
+		),
+		services.userMiddleWare,
+	)
+}
+
 func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 	modelctl.AddRouteForModelWebController(
 		rg,
@@ -256,6 +285,19 @@ func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 			services.permission,
 			services.codeRepoApp,
 			services.modelRepoAdapter,
+		),
+		services.userMiddleWare,
+		services.userApp,
+	)
+}
+
+func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
+	spacectl.AddRouteForSpaceWebController(
+		rg,
+		spaceapp.NewSpaceAppService(
+			services.permission,
+			services.codeRepoApp,
+			services.spaceRepoAdapter,
 		),
 		services.userMiddleWare,
 		services.userApp,

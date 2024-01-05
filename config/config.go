@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 
+	redislib "github.com/opensourceways/redis-lib"
+
 	common "github.com/openmerlin/merlin-server/common/config"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
@@ -12,9 +14,9 @@ import (
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/session"
+	"github.com/openmerlin/merlin-server/space"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
-	redislib "github.com/opensourceways/redis-lib"
 )
 
 func LoadConfig(path string, cfg *Config, remove bool) error {
@@ -40,6 +42,7 @@ type Config struct {
 	User       userdomain.Config    `json:"user"`
 	Redis      redislib.Config      `json:"redis"`
 	Model      models.Config        `json:"model"`
+	Space      space.Config         `json:"space"`
 	Session    session.Config       `json:"session"`
 	Mongodb    Mongodb              `json:"mongodb"`
 	Primitive  primitive.Config     `json:"primitive"`
@@ -53,6 +56,8 @@ func (cfg *Config) Init() {
 	primitive.Init(&cfg.Primitive)
 
 	cfg.Model.Init()
+
+	cfg.Space.Init()
 }
 
 func (cfg *Config) InitSession() error {
