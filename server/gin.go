@@ -18,7 +18,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
-	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 
@@ -29,6 +28,7 @@ import (
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
+	orgctl "github.com/openmerlin/merlin-server/organization/controller"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 
@@ -226,11 +226,11 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 		invitation, request, services.permission, &cfg.Org,
 	)
 
-	controller.AddRouterForUserController(
+	userctl.AddRouterForUserController(
 		v1, services.userApp, services.userRepo, services.userMiddleWare,
 	)
 
-	controller.AddRouterForOrgController(
+	orgctl.AddRouterForOrgController(
 		v1, orgAppService, services.userApp, services.userMiddleWare,
 	)
 }
@@ -310,14 +310,16 @@ func logRequest() gin.HandlerFunc {
 
 		endTime := time.Now()
 
-		l := controller.GetOperateLog(c)
 		logrus.Infof(
-			"| %d | %d | %s | %s | %s",
+			"| %d | %d | %s | %s",
 			c.Writer.Status(),
 			endTime.Sub(startTime),
 			c.Request.Method,
 			c.Request.RequestURI,
-			l,
 		)
+
+		for _, ginErr := range c.Errors {
+			logrus.Error(ginErr)
+		}
 	}
 }

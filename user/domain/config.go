@@ -14,7 +14,3 @@ func Init(cfg *Config) {
 func MaxBioLength() int {
 	return _config.MaxBioLength
 }
-
-func DefaultAvatarURL() string {
-	return _config.AvatarURL[0]
-}

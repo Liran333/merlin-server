@@ -2,17 +2,20 @@ organization:
   invite_expiry: 1209600
   default_role: write
 
-authing:
-  app_id: {{(ds "data").OIDC_APPID }}
-  secret: {{(ds "data").OIDC_SECRET }}
-  endpoint: {{(ds "data").OIDC_ENDPOINT }}
+session:
+  oidc:
+    app_id: {{(ds "data").OIDC_APPID }}
+    secret: {{(ds "data").OIDC_SECRET }}
+    endpoint: {{(ds "data").OIDC_ENDPOINT }}
+  login:
+    login: login
 
 gitea:
   url: http://{{(ds "data").GITEA_HOST }}:{{(ds "data").GITEA_PORT }}
   token: {{(ds "data").GITEA_ROOT_TOKEN }}
 
 mongodb:
-  db_conn: mongodb://{{(ds "data").MONGO_HOST  }}:{{(ds "data").MONGO_PORT }}/{{(ds "data").MONGO_DB }}
+  db_conn: mongodb://{{(ds "data").MONGO_USER  }}:{{(ds "data").MONGO_PASS  }}@{{(ds "data").MONGO_HOST  }}:{{(ds "data").MONGO_PORT }}/{{(ds "data").MONGO_DB }}?authSource=admin
   db_name: {{(ds "data").PG_DB }}
   db_cert: ""
   collections:
@@ -93,6 +96,10 @@ permission:
 model:
   tables:
     model: "model"
+
+space:
+  tables:
+    space: "space"
 
 redis:
   address: {{(ds "data").REDIS_HOST }}:{{(ds "data").REDIS_PORT }}

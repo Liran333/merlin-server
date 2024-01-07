@@ -6,6 +6,8 @@ services:
     - --requirepass ${REDIS_PASS}
     env_file:
       deploy/.env
+    ports:
+    - "${REDIS_PORT}:${REDIS_PORT}"
   pg:
     image: postgres:16
     environment:
@@ -13,6 +15,8 @@ services:
       POSTGRES_USER: ${PG_USER}
     env_file:
       deploy/.env
+    ports:
+    - "${PG_PORT}:${PG_PORT}"
   db:
     image: mongo
     environment:
@@ -21,6 +25,8 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DB}
     env_file:
       deploy/.env
+    ports:
+    - "${MONGO_PORT}:${MONGO_PORT}"
   gitea:
     build:
       context: https://github.com/openmerlin/gitea.git
@@ -42,6 +48,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    ports:
+    - "${GITEA_PORT}:${GITEA_PORT}"
   server:
     build: 
       context: .

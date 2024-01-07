@@ -9,7 +9,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
-	"github.com/openmerlin/merlin-server/controller"
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
@@ -36,18 +35,17 @@ func LoadConfig(path string, cfg *Config, remove bool) error {
 type Config struct {
 	ReadHeaderTimeout int `json:"read_header_timeout"`
 
-	API        controller.APIConfig `json:"api"`
-	Git        gitea.Config         `json:"gitea"`
-	Org        orgdomain.Config     `json:"organization"`
-	User       userdomain.Config    `json:"user"`
-	Redis      redislib.Config      `json:"redis"`
-	Model      models.Config        `json:"model"`
-	Space      space.Config         `json:"space"`
-	Session    session.Config       `json:"session"`
-	Mongodb    Mongodb              `json:"mongodb"`
-	Primitive  primitive.Config     `json:"primitive"`
-	Postgresql postgresql.Config    `json:"postgresql"`
-	Permission permission.Config    `json:"permission"`
+	Git        gitea.Config      `json:"gitea"`
+	Org        orgdomain.Config  `json:"organization"`
+	User       userdomain.Config `json:"user"`
+	Redis      redislib.Config   `json:"redis"`
+	Model      models.Config     `json:"model"`
+	Space      space.Config      `json:"space"`
+	Session    session.Config    `json:"session"`
+	Mongodb    Mongodb           `json:"mongodb"`
+	Primitive  primitive.Config  `json:"primitive"`
+	Postgresql postgresql.Config `json:"postgresql"`
+	Permission permission.Config `json:"permission"`
 }
 
 func (cfg *Config) Init() {
@@ -66,7 +64,6 @@ func (cfg *Config) InitSession() error {
 
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
-		&cfg.API,
 		&cfg.Git,
 		&cfg.Org,
 		&cfg.User,
