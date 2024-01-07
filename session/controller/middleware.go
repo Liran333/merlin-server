@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -14,6 +16,8 @@ const (
 	csrfTokenHeader = "CSRF-TOKEN" // #nosec G101
 )
 
+var noUserError = errors.New("no user")
+
 func WebAPIMiddleware(session app.SessionAppService) *webAPIMiddleware {
 	return &webAPIMiddleware{session}
 }
@@ -23,21 +27,22 @@ type webAPIMiddleware struct {
 }
 
 func (m *webAPIMiddleware) Write(ctx *gin.Context) {
-	if err := m.checkToken(ctx); err != nil {
-		commonctl.SendError(ctx, err)
+	m.must(ctx)
+}
 
-		ctx.Abort()
-	} else {
-		ctx.Next()
-	}
+func (m *webAPIMiddleware) Read(ctx *gin.Context) {
+	m.must(ctx)
 }
 
 func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 	if v := ctx.GetHeader(csrfTokenHeader); v == "" {
 		ctx.Next()
-		return
+	} else {
+		m.must(ctx)
 	}
+}
 
+func (m *webAPIMiddleware) must(ctx *gin.Context) {
 	if err := m.checkToken(ctx); err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -56,6 +61,16 @@ func (m *webAPIMiddleware) GetUser(ctx *gin.Context) primitive.Account {
 	if r, ok := v.(primitive.Account); ok {
 		return r
 	}
+
+	return nil
+}
+
+func (m *webAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account {
+	if v := m.GetUser(ctx); v != nil {
+		return v
+	}
+
+	commonctl.SendError(ctx, noUserError)
 
 	return nil
 }

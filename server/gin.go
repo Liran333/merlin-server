@@ -60,8 +60,6 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	engine.Use(logRequest())
 	engine.TrustedPlatform = "x-real-ip"
 
-	middleware.Init()
-
 	services, err := initServices(cfg)
 	if err != nil {
 		logrus.Error(err)
@@ -229,11 +227,11 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 	)
 
 	controller.AddRouterForUserController(
-		v1, services.userApp, services.userRepo,
+		v1, services.userApp, services.userRepo, services.userMiddleWare,
 	)
 
 	controller.AddRouterForOrgController(
-		v1, orgAppService, services.userApp,
+		v1, orgAppService, services.userApp, services.userMiddleWare,
 	)
 }
 

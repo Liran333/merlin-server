@@ -24,7 +24,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Revoke member request of the organization",
+                "summary": "RevokeMember",
                 "parameters": [
                     {
                         "description": "body of the member request",
@@ -52,18 +52,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/app.ApproveDTO"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             }
@@ -77,7 +65,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Get one organization or user info",
+                "summary": "GetUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -93,24 +81,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_openmerlin_merlin-server_common_app.UserDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "resource_not_exists"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
                     }
                 }
             }
@@ -124,7 +94,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "List invitation of the organization",
+                "summary": "ListInvitation",
                 "parameters": [
                     {
                         "type": "string",
@@ -172,18 +142,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/app.ApproveDTO"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             },
@@ -195,7 +153,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Accept invite of the organization",
+                "summary": "AcceptInvite",
                 "parameters": [
                     {
                         "description": "body of the invitation",
@@ -208,25 +166,13 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/app.ApproveDTO"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
                         }
                     }
                 }
@@ -239,7 +185,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Invite a user to be a member of the organization",
+                "summary": "InviteMember",
                 "parameters": [
                     {
                         "description": "body of the invitation",
@@ -264,18 +210,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.OrganizationDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             },
@@ -287,7 +221,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Revoke invitation of the organization",
+                "summary": "RevokeInvitation",
                 "parameters": [
                     {
                         "description": "body of the invitation",
@@ -307,26 +241,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.ApproveDTO"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -602,7 +518,7 @@ const docTemplate = `{
                 "tags": [
                     "Name"
                 ],
-                "summary": "Check the name is available",
+                "summary": "Check",
                 "parameters": [
                     {
                         "type": "string",
@@ -615,12 +531,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "type": "name"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
                         "schema": {
                             "type": "name"
                         }
@@ -637,11 +547,11 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Get all organization of the user",
+                "summary": "List",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "filter by owner ",
+                        "description": "filter by owner",
                         "name": "owner",
                         "in": "query"
                     },
@@ -661,24 +571,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/app.OrganizationDTO"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "resource_not_exists"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
                     }
                 }
             },
@@ -690,7 +582,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Create organization",
+                "summary": "Create",
                 "parameters": [
                     {
                         "description": "body of new organization",
@@ -708,24 +600,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.OrganizationDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "not_found"
-                        }
                     }
                 }
             }
@@ -739,7 +613,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Get one organization info",
+                "summary": "Get",
                 "parameters": [
                     {
                         "type": "string",
@@ -755,24 +629,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.OrganizationDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "resource_not_exists"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
                     }
                 }
             },
@@ -781,13 +637,10 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Update org basic info",
+                "summary": "Update",
                 "parameters": [
                     {
                         "type": "string",
@@ -812,36 +665,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.OrganizationDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "resource_not_exists"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
                     }
                 }
             },
             "post": {
-                "description": "delete a organization",
+                "description": "leave the organization",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Leave the organization",
+                "summary": "Leave",
                 "parameters": [
                     {
                         "type": "string",
@@ -854,24 +689,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "permission"
-                        }
                     }
                 }
             },
@@ -883,7 +700,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Delete organization",
+                "summary": "Delete",
                 "parameters": [
                     {
                         "type": "string",
@@ -896,24 +713,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "permission"
-                        }
                     }
                 }
             }
@@ -927,7 +726,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "List organization members",
+                "summary": "ListMember",
                 "parameters": [
                     {
                         "type": "string",
@@ -946,18 +745,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/app.MemberDTO"
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "permission"
-                        }
                     }
                 }
             },
@@ -969,7 +756,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Edit organization member",
+                "summary": "EditMember",
                 "parameters": [
                     {
                         "description": "body of new member",
@@ -994,18 +781,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.MemberDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             },
@@ -1017,7 +792,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Remove organization members",
+                "summary": "RemoveMember",
                 "parameters": [
                     {
                         "description": "body of the removed member",
@@ -1039,32 +814,20 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             }
         },
         "/v1/request": {
             "get": {
-                "description": "List invitation of the organization",
+                "description": "List requests of the organization",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Organization"
                 ],
-                "summary": "List requests of the organization",
+                "summary": "ListRequests",
                 "parameters": [
                     {
                         "type": "string",
@@ -1106,18 +869,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/app.MemberRequestDTO"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             },
@@ -1129,7 +880,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Approve a user's member request of the organization",
+                "summary": "ApproveRequest",
                 "parameters": [
                     {
                         "description": "body of the accept",
@@ -1147,18 +898,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/app.MemberRequestDTO"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
                     }
                 }
             },
@@ -1170,7 +909,7 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Request to be a member of the organization",
+                "summary": "RequestMember",
                 "parameters": [
                     {
                         "description": "body of the member request",
@@ -1187,18 +926,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/app.OrganizationDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
                         }
                     }
                 }
@@ -1524,7 +1251,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get a user info",
+                "summary": "Get",
                 "parameters": [
                     {
                         "type": "string",
@@ -1539,24 +1266,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/controller.userDetail"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "resource_not_exists"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "system_error"
-                        }
                     }
                 }
             },
@@ -1565,13 +1274,10 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "User"
                 ],
-                "summary": "Update user basic info",
+                "summary": "Update",
                 "parameters": [
                     {
                         "description": "body of updating user",
@@ -1583,26 +1289,11 @@ const docTemplate = `{
                         }
                     }
                 ],
-                "responses": {}
-            }
-        },
-        "/v1/user/check_email": {
-            "get": {
-                "description": "check user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
-                            "type": "no"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -1617,6 +1308,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
+                "summary": "GetTokenInfo",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1625,18 +1317,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/app.TokenDTO"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
                         }
                     }
                 }
@@ -1649,7 +1329,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Create a user token",
+                "summary": "CreatePlatformToken",
                 "parameters": [
                     {
                         "description": "body of create token",
@@ -1665,19 +1345,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "created"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
+                            "$ref": "#/definitions/app.TokenDTO"
                         }
                     }
                 }
@@ -1692,36 +1360,19 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Delete a user token",
+                "summary": "DeletePlatformToken",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
+                        "description": "token name",
                         "name": "name",
-                        "in": "query"
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "bad_request_param"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "not_allowed"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "not_found"
-                        }
                     }
                 }
             }

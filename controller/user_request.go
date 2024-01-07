@@ -82,6 +82,30 @@ type tokenCreateRequest struct {
 	Perm string `json:"perm" binding:"required"`
 }
 
+func (req *tokenCreateRequest) toCmd(user domain.Account) (cmd domain.TokenCreatedCmd, err error) {
+	if cmd.Permission, err = primitive.NewTokenPerm(req.Perm); err != nil {
+		return
+	}
+
+	cmd.Account = user
+	cmd.Name = req.Name
+
+	return
+}
+
 type userToken struct {
 	app.TokenDTO
+}
+
+// reqToGetUserInfo
+type reqToGetUserInfo struct {
+	Account string `form:"account"`
+}
+
+func (req *reqToGetUserInfo) toAccount() (domain.Account, error) {
+	if req.Account == "" {
+		return nil, nil
+	}
+
+	return primitive.NewAccount(req.Account)
 }

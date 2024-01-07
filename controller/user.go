@@ -1,167 +1,134 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/openmerlin/merlin-server/common/controller"
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	userapp "github.com/openmerlin/merlin-server/user/app"
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
-
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 	userinfra "github.com/openmerlin/merlin-server/user/infrastructure/git"
 )
 
 func AddRouterForUserController(
 	rg *gin.RouterGroup,
-	us userapp.UserService,
+	us app.UserService,
 	repo userrepo.User,
+	m middleware.UserMiddleWare,
 ) {
 	ctl := UserController{
 		repo: repo,
 		s:    us,
+		m:    m,
 	}
 
-	rg.PUT("/v1/user", ctl.Update)
-	rg.GET("/v1/user", ctl.Get)
+	rg.PUT("/v1/user", m.Write, ctl.Update)
+	rg.GET("/v1/user", m.Optional, ctl.Get)
 
-	rg.DELETE("/v1/user/token/:name", checkUserEmailMiddleware(&ctl.baseController), ctl.DeletePlatformToken)
-	rg.GET("/v1/user/token", checkUserEmailMiddleware(&ctl.baseController), ctl.GetTokenInfo)
-	rg.POST("/v1/user/token", checkUserEmailMiddleware(&ctl.baseController), ctl.CreatePlatformToken)
+	rg.POST("/v1/user/token", m.Write, ctl.CreatePlatformToken)
+	rg.DELETE("/v1/user/token/:name", m.Write, ctl.DeletePlatformToken)
+	rg.GET("/v1/user/token", m.Read, ctl.GetTokenInfo)
 }
 
 type UserController struct {
-	baseController
-
 	repo userrepo.User
-	s    userapp.UserService
+	s    app.UserService
+	m    middleware.UserMiddleWare
 }
 
-// @Summary		Update user basic info
-// @Description	update user basic info
-// @Tags			User
-// @Param			body	body	userBasicInfoUpdateRequest	true	"body of updating user"
-// @Accept			json
-// @Produce		json
-// @Router			/v1/user [put]
+// @Summary  Update
+// @Description  update user basic info
+// @Tags     User
+// @Param    body  body  userBasicInfoUpdateRequest  true  "body of updating user"
+// @Accept   json
+// @Success  202   {object}  commonctl.ResponseData
+// @Router   /v1/user [put]
 func (ctl *UserController) Update(ctx *gin.Context) {
-	m := userBasicInfoUpdateRequest{}
+	var req userBasicInfoUpdateRequest
 
-	if err := ctx.ShouldBindJSON(&m); err != nil {
-		ctx.JSON(http.StatusBadRequest, newResponseCodeMsg(
-			errorBadRequestBody,
-			"can't fetch request body",
-		))
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
 
 		return
 	}
 
-	cmd, err := m.toCmd()
+	cmd, err := req.toCmd()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, newResponseCodeError(
-			errorBadRequestParam, err,
-		))
+		commonctl.SendBadRequestParam(ctx, err)
 
 		return
 	}
 
-	pl, _, ok := ctl.checkUserApiToken(ctx, false)
-	if !ok {
-		return
+	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
+
+	user := ctl.m.GetUser(ctx)
+
+	if err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
 	}
-
-	prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
-
-	if err := ctl.s.UpdateBasicInfo(pl.DomainAccount(), cmd); err != nil {
-		controller.SendError(ctx, err)
-
-		return
-	}
-
-	controller.SendRespOfGet(ctx, nil)
 }
 
-// @Summary		Get a user info
-// @Description	get user
-// @Tags			User
-// @Param			account	query	string	false	"account"
-// @Accept			json
-// @Success		200	{object}			userDetail
-// @Failure		400	bad_request_param	account	is		invalid
-// @Failure		401	resource_not_exists	user	does	not	exist
-// @Failure		500	system_error		system	error
-// @Router			/v1/user [get]
+// @Summary  Get
+// @Description  get user
+// @Tags     User
+// @Param    account  query  string  false  "account"
+// @Accept   json
+// @Success  200  {object}      userDetail
+// @Router   /v1/user [get]
 func (ctl *UserController) Get(ctx *gin.Context) {
-	var target domain.Account
+	var req reqToGetUserInfo
+	if err := ctx.BindQuery(&req); err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
 
-	if account := ctl.getQueryParameter(ctx, "account"); account != "" {
-		v, err := primitive.NewAccount(account)
-		if err != nil {
-			logrus.Error(err)
-
-			ctx.JSON(http.StatusBadRequest, newResponseCodeError(
-				errorBadRequestParam, err,
-			))
-
-			return
-		}
-
-		target = v
-	}
-
-	pl, visitor, ok := ctl.checkUserApiToken(ctx, true)
-	if !ok {
-		logrus.Errorln("failed to get user info")
 		return
 	}
 
-	resp := func(u *userapp.UserDTO, points int, isFollower bool) {
-		ctx.JSON(http.StatusOK, newResponseData(
-			userDetail{
-				UserDTO: u,
-			}),
-		)
+	target, err := req.toAccount()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
 	}
 
-	if visitor {
-		if target == nil {
-			logrus.Error("got invalid user info")
-			// clear cookie if we got an invalid user info
-			ctl.cleanCookie(ctx)
+	resp := func(u *app.UserDTO, points int, isFollower bool) {
+		u.Password = ""
 
-			ctx.JSON(http.StatusOK, newResponseData(nil))
+		commonctl.SendRespOfGet(ctx, userDetail{
+			UserDTO: u,
+		})
+	}
+
+	user := ctl.m.GetUser(ctx)
+
+	if user == nil {
+		if target == nil {
+			resp(new(app.UserDTO), 0, false)
+
 			return
 		}
 
-		// get by visitor
 		if u, err := ctl.s.GetByAccount(target, false); err != nil {
-			logrus.Errorf("get by visitor err: %s", err)
-			controller.SendError(ctx, err)
-
-			return
+			commonctl.SendError(ctx, err)
 		} else {
 			u.Email = ""
-			u.Password = ""
+
 			resp(&u, 0, false)
 		}
 
 		return
 	}
 
-	if target != nil && pl.isNotMe(target) {
+	if target != nil && target != user {
 		// get by follower, and pl.Account is follower
-		if u, isFollower, err := ctl.s.GetByFollower(target, pl.DomainAccount()); err != nil {
-			logrus.Error(err)
-
-			controller.SendError(ctx, err)
-
-			return
+		if u, isFollower, err := ctl.s.GetByFollower(target, user); err != nil {
+			commonctl.SendError(ctx, err)
 		} else {
 			u.Email = ""
-			//u.Password = ""
+
 			resp(&u, 0, isFollower)
 		}
 
@@ -169,197 +136,106 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	}
 
 	// get user own info
-	if u, err := ctl.s.UserInfo(pl.DomainAccount()); err != nil {
+	if u, err := ctl.s.UserInfo(user); err != nil {
 		logrus.Error(err)
 
-		controller.SendError(ctx, err)
+		commonctl.SendError(ctx, err)
 	} else {
 		resp(&u.UserDTO, u.Points, true)
 	}
 }
 
-// @Title			CheckEmail
-// @Description	check user email
-// @Tags			User
-// @Accept			json
-// @Success		200
-// @Failure		400	no	email	this	api	need	email	of	user"
-// @Router			/v1/user/check_email [get]
-func (ctl *UserController) CheckEmail(ctx *gin.Context) {
-	ctl.sendRespOfGet(ctx, "")
-}
-
-// @Summary			Delete a user token
-// @Title			DeletePlatformToken
-// @Description	delete a new platform token of user
-// @Tags			User
-// @Param			name	query	string	false	"name"
-// @Accept			json
-// @Success		204
-// @Failure		400	bad_request_param	token	is	invalid
-// @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Failure		404	not_found			no such token
-// @Router			/v1/user/token/{name} [delete]
+// @Summary  DeletePlatformToken
+// @Description  delete a new platform token of user
+// @Tags     User
+// @Param    name  path  string  true  "token name"
+// @Accept   json
+// @Success  204
+// @Router   /v1/user/token/{name} [delete]
 func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
-	name := ctx.Param("name")
+	user := ctl.m.GetUser(ctx)
 
-	pl, _, ok := ctl.checkUserApiToken(ctx, false)
-	if !ok {
+	platform, err := ctl.s.GetPlatformUser(user)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+
 		return
 	}
 
-	platform, err := ctl.s.GetPlatformUser(pl.DomainAccount())
-	if err != nil {
-		logrus.Error(err)
-
-		controller.SendError(ctx, err)
-
-		return
-	}
-	err = ctl.s.DeleteToken(&domain.TokenDeletedCmd{
-		Account: pl.DomainAccount(),
-		Name:    name,
-	}, platform)
+	err = ctl.s.DeleteToken(
+		&domain.TokenDeletedCmd{
+			Account: user,
+			Name:    ctx.Param("name"),
+		},
+		platform,
+	)
 
 	if err != nil {
-		logrus.Error(err)
-
-		controller.SendError(ctx, err)
-
+		commonctl.SendError(ctx, err)
 	} else {
-		controller.SendRespOfDelete(ctx)
+		commonctl.SendRespOfDelete(ctx)
 	}
 }
 
-// @Summary			Create a user token
-// @Title			CreatePlatformToken
-// @Description	create a new platform token of user
-// @Tags			User
-// @Param			body	body	tokenCreateRequest	true	"body of create token"
-// @Accept			json
-// @Success		201 created userapp.TokenDTO
-// @Failure		400	bad_request_param	account	is	invalid
-// @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Router			/v1/user/token [post]
+// @Summary  CreatePlatformToken
+// @Description  create a new platform token of user
+// @Tags     User
+// @Param    body  body  tokenCreateRequest  true  "body of create token"
+// @Accept   json
+// @Success  201  {object}  app.TokenDTO
+// @Router   /v1/user/token [post]
 func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
-	r := tokenCreateRequest{}
+	var req tokenCreateRequest
 
-	if err := ctx.ShouldBindJSON(&r); err != nil {
-		logrus.Error(err)
-
-		ctx.JSON(http.StatusBadRequest, newResponseCodeMsg(
-			errorBadRequestBody,
-			"can't fetch request body",
-		))
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
 
 		return
 	}
 
-	pl, _, ok := ctl.checkUserApiToken(ctx, false)
-	if !ok {
+	user := ctl.m.GetUser(ctx)
+
+	cmd, err := req.toCmd(user)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
 		return
 	}
 
-	perm, err := primitive.NewTokenPerm(r.Perm)
+	info, err := ctl.s.GetByAccount(user, true)
 	if err != nil {
-		logrus.Error(err)
-
-		controller.SendBadRequestParam(ctx, err)
-	}
-
-	cmd := domain.TokenCreatedCmd{
-		Account:    pl.DomainAccount(),
-		Name:       r.Name,
-		Permission: perm,
-	}
-
-	usernew, err := ctl.s.GetByAccount(pl.DomainAccount(), true)
-	if err != nil {
-		logrus.Error(err)
-
-		controller.SendError(ctx, err)
+		commonctl.SendError(ctx, err)
 
 		return
 	}
 
 	platform, err := userinfra.NewBaseAuthClient(
-		usernew.Account,
-		usernew.Password,
+		info.Account,
+		info.Password,
 	)
 	if err != nil {
-		logrus.Error(err)
-
-		controller.SendError(ctx, err)
-
-		return
-	}
-	createdToken, err := ctl.s.CreateToken(&cmd, platform)
-	if err != nil {
-		logrus.Errorf("failed to create token %s", err)
-
-		controller.SendError(ctx, err)
-
-		return
-	}
-	// create new token
-	f := func() (token, csrftoken string) {
-
-		if err != nil {
-			logrus.Error(err)
-
-			return
-		}
-
-		payload := oldUserTokenPayload{
-			Account: usernew.Account,
-			Email:   usernew.Email,
-		}
-
-		token, csrftoken, err = ctl.newApiToken(ctx, payload)
-		if err != nil {
-			logrus.Error(err)
-
-			return
-		}
+		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	token, csrftoken := f()
-
-	if token != "" {
-		if err = ctl.setRespToken(ctx, token, csrftoken, usernew.Account); err != nil {
-			logrus.Error(err)
-
-			return
-		}
+	if v, err := ctl.s.CreateToken(&cmd, platform); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, v)
 	}
-
-	controller.SendRespOfPost(ctx, createdToken)
 }
 
-// @Title			ListUserTokens
-// @Description	list all platform tokens of user
-// @Tags			User
-// @Accept			json
-// @Success		200	{object}			[]userapp.TokenDTO
-// @Failure		400	bad_request_param	account	is	invalid
-// @Failure		401	not_allowed			can't	get	info	of	other	user
-// @Router			/v1/user/token [get]
+// @Summary  GetTokenInfo
+// @Description  list all platform tokens of user
+// @Tags     User
+// @Accept   json
+// @Success  200  {object}  []app.TokenDTO
+// @Router   /v1/user/token [get]
 func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
-	pl, _, ok := ctl.checkUserApiToken(ctx, false)
-	if !ok {
-		return
+	if v, err := ctl.s.ListTokens(ctl.m.GetUser(ctx)); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, v)
 	}
-
-	tokens, err := ctl.s.ListTokens(pl.DomainAccount())
-	if err != nil {
-		logrus.Error(err)
-
-		controller.SendError(ctx, err)
-
-		return
-	}
-
-	controller.SendRespOfGet(ctx, tokens)
 }

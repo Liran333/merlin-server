@@ -682,15 +682,7 @@ paths:
             items:
               $ref: '#/definitions/app.ApproveDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Revoke member request of the organization
+      summary: RevokeMember
       tags:
       - Organization
   /v1/account/{name}:
@@ -709,19 +701,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_openmerlin_merlin-server_common_app.UserDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: resource_not_exists
-        "500":
-          description: Internal Server Error
-          schema:
-            type: system_error
-      summary: Get one organization or user info
+      summary: GetUser
       tags:
       - Organization
   /v1/invite:
@@ -742,21 +722,9 @@ paths:
         required: true
         type: string
       responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/app.ApproveDTO'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Revoke invitation of the organization
+        "204":
+          description: No Content
+      summary: RevokeInvitation
       tags:
       - Organization
     get:
@@ -795,15 +763,7 @@ paths:
             items:
               $ref: '#/definitions/app.ApproveDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: List invitation of the organization
+      summary: ListInvitation
       tags:
       - Organization
     post:
@@ -827,15 +787,7 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/app.OrganizationDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Invite a user to be a member of the organization
+      summary: InviteMember
       tags:
       - Organization
     put:
@@ -850,21 +802,13 @@ paths:
         schema:
           $ref: '#/definitions/controller.OrgAcceptMemberRequest'
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           schema:
             items:
               $ref: '#/definitions/app.ApproveDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Accept invite of the organization
+      summary: AcceptInvite
       tags:
       - Organization
   /v1/model:
@@ -1058,11 +1002,7 @@ paths:
           description: OK
           schema:
             type: name
-        "409":
-          description: Conflict
-          schema:
-            type: name
-      summary: Check the name is available
+      summary: Check
       tags:
       - Name
   /v1/organization:
@@ -1071,7 +1011,7 @@ paths:
       - application/json
       description: get organization info
       parameters:
-      - description: 'filter by owner '
+      - description: filter by owner
         in: query
         name: owner
         type: string
@@ -1086,19 +1026,7 @@ paths:
             items:
               $ref: '#/definitions/app.OrganizationDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: resource_not_exists
-        "500":
-          description: Internal Server Error
-          schema:
-            type: system_error
-      summary: Get all organization of the user
+      summary: List
       tags:
       - Organization
     post:
@@ -1117,19 +1045,7 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/app.OrganizationDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-        "404":
-          description: Not Found
-          schema:
-            type: not_found
-      summary: Create organization
+      summary: Create
       tags:
       - Organization
   /v1/organization/{name}:
@@ -1146,19 +1062,7 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-        "403":
-          description: Forbidden
-          schema:
-            type: permission
-      summary: Delete organization
+      summary: Delete
       tags:
       - Organization
     get:
@@ -1176,25 +1080,13 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.OrganizationDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: resource_not_exists
-        "500":
-          description: Internal Server Error
-          schema:
-            type: system_error
-      summary: Get one organization info
+      summary: Get
       tags:
       - Organization
     post:
       consumes:
       - application/json
-      description: delete a organization
+      description: leave the organization
       parameters:
       - description: name
         in: path
@@ -1204,19 +1096,7 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-        "403":
-          description: Forbidden
-          schema:
-            type: permission
-      summary: Leave the organization
+      summary: Leave
       tags:
       - Organization
     put:
@@ -1235,26 +1115,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/controller.orgBasicInfoUpdateRequest'
-      produces:
-      - application/json
       responses:
         "202":
           description: Accepted
           schema:
             $ref: '#/definitions/app.OrganizationDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: resource_not_exists
-        "500":
-          description: Internal Server Error
-          schema:
-            type: system_error
-      summary: Update org basic info
+      summary: Update
       tags:
       - Organization
   /v1/organization/{name}/member:
@@ -1277,15 +1143,7 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Remove organization members
+      summary: RemoveMember
       tags:
       - Organization
     get:
@@ -1305,15 +1163,7 @@ paths:
             items:
               $ref: '#/definitions/app.MemberDTO'
             type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-        "403":
-          description: Forbidden
-          schema:
-            type: permission
-      summary: List organization members
+      summary: ListMember
       tags:
       - Organization
     put:
@@ -1337,22 +1187,14 @@ paths:
           description: Accepted
           schema:
             $ref: '#/definitions/app.MemberDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Edit organization member
+      summary: EditMember
       tags:
       - Organization
   /v1/request:
     get:
       consumes:
       - application/json
-      description: List invitation of the organization
+      description: List requests of the organization
       parameters:
       - description: organization name
         in: query
@@ -1381,15 +1223,7 @@ paths:
             items:
               $ref: '#/definitions/app.MemberRequestDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: List requests of the organization
+      summary: ListRequests
       tags:
       - Organization
     post:
@@ -1408,15 +1242,7 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/app.OrganizationDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Request to be a member of the organization
+      summary: RequestMember
       tags:
       - Organization
     put:
@@ -1435,15 +1261,7 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/app.MemberRequestDTO'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Approve a user's member request of the organization
+      summary: ApproveRequest
       tags:
       - Organization
   /v1/session:
@@ -1668,19 +1486,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/controller.userDetail'
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: resource_not_exists
-        "500":
-          description: Internal Server Error
-          schema:
-            type: system_error
-      summary: Get a user info
+      summary: Get
       tags:
       - User
     put:
@@ -1694,24 +1500,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/controller.userBasicInfoUpdateRequest'
-      produces:
-      - application/json
-      responses: {}
-      summary: Update user basic info
-      tags:
-      - User
-  /v1/user/check_email:
-    get:
-      consumes:
-      - application/json
-      description: check user email
       responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
+        "202":
+          description: Accepted
           schema:
-            type: "no"
+            $ref: '#/definitions/controller.ResponseData'
+      summary: Update
       tags:
       - User
   /v1/user/token:
@@ -1726,14 +1520,7 @@ paths:
             items:
               $ref: '#/definitions/app.TokenDTO'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
+      summary: GetTokenInfo
       tags:
       - User
     post:
@@ -1751,16 +1538,8 @@ paths:
         "201":
           description: Created
           schema:
-            type: created
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-      summary: Create a user token
+            $ref: '#/definitions/app.TokenDTO'
+      summary: CreatePlatformToken
       tags:
       - User
   /v1/user/token/{name}:
@@ -1769,26 +1548,15 @@ paths:
       - application/json
       description: delete a new platform token of user
       parameters:
-      - description: name
-        in: query
+      - description: token name
+        in: path
         name: name
+        required: true
         type: string
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: bad_request_param
-        "401":
-          description: Unauthorized
-          schema:
-            type: not_allowed
-        "404":
-          description: Not Found
-          schema:
-            type: not_found
-      summary: Delete a user token
+      summary: DeletePlatformToken
       tags:
       - User
   /v2/model:
