@@ -75,65 +75,11 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 // @Summary  Get
 // @Description  get user
 // @Tags     User
-// @Param    account  query  string  false  "account"
 // @Accept   json
 // @Success  200  {object}      userDetail
 // @Router   /v1/user [get]
 func (ctl *UserController) Get(ctx *gin.Context) {
-	var req reqToGetUserInfo
-	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	target, err := req.toAccount()
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	resp := func(u *app.UserDTO, points int, isFollower bool) {
-		u.Password = ""
-
-		commonctl.SendRespOfGet(ctx, userDetail{
-			UserDTO: u,
-		})
-	}
-
-	user := ctl.m.GetUser(ctx)
-
-	if user == nil {
-		if target == nil {
-			resp(new(app.UserDTO), 0, false)
-
-			return
-		}
-
-		if u, err := ctl.s.GetByAccount(target, false); err != nil {
-			commonctl.SendError(ctx, err)
-		} else {
-			u.Email = ""
-
-			resp(&u, 0, false)
-		}
-
-		return
-	}
-
-	if target != nil && target != user {
-		// get by follower, and pl.Account is follower
-		if u, isFollower, err := ctl.s.GetByFollower(target, user); err != nil {
-			commonctl.SendError(ctx, err)
-		} else {
-			u.Email = ""
-
-			resp(&u, 0, isFollower)
-		}
-
-		return
-	}
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
 
 	// get user own info
 	if u, err := ctl.s.UserInfo(user); err != nil {
@@ -141,7 +87,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 
 		commonctl.SendError(ctx, err)
 	} else {
-		resp(&u.UserDTO, u.Points, true)
+		commonctl.SendRespOfGet(ctx, u)
 	}
 }
 

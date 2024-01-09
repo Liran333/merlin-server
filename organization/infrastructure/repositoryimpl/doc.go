@@ -34,10 +34,11 @@ type Organization struct {
 	Website           string `bson:"website"    json:"website"`
 	PlatformId        string `bson:"platform_id"        json:"platform_id"`
 	Description       string `bson:"description"        json:"description"`
-	FullName          string `bson:"full_name"        json:"full_name"`
+	FullName          string `bson:"fullname"        json:"fullname"`
 	Owner             string `bson:"owner"        json:"owner"`
 	DefaultRole       string `bson:"default_role"        json:"default_role"`
 	Type              int    `bson:"type"        json:"type"`
+	CreatedAt         int64  `bson:"created_at"        json:"created_at"`
 	AllowRequest      bool   `bson:"allow_request"        json:"allow_request"`
 	OwnerTeamId       int64  `bson:"owner_team_id"        json:"owner_team_id"`
 	ReadTeamId        int64  `bson:"read_team_id"        json:"read_team_id"`

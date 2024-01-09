@@ -19,7 +19,7 @@ const (
 type Organization struct {
 	Id                string            `json:"id"`
 	Name              primitive.Account `json:"name"`
-	FullName          string            `json:"full_name"`
+	FullName          string            `json:"fullname"`
 	AvatarId          user.AvatarId     `json:"avatar_id"`
 	PlatformId        string            `json:"platform_id"`
 	Description       string            `json:"description"`
@@ -39,7 +39,7 @@ type Organization struct {
 
 type OrgCreatedCmd struct {
 	Name        string `json:"name"`
-	FullName    string `json:"full_name"`
+	FullName    string `json:"fullname"`
 	Description string `json:"description"`
 	Website     string `json:"website"`
 	AvatarId    string `json:"avatar_id"`

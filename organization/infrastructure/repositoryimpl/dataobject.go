@@ -12,6 +12,7 @@ func toOrgDoc(o domain.Organization) Organization {
 		AvatarId:          o.AvatarId.AvatarId(),
 		FullName:          o.FullName,
 		Website:           o.Website,
+		CreatedAt:         o.CreatedAt,
 		Description:       o.Description,
 		PlatformId:        o.PlatformId,
 		Owner:             o.Owner.Account(),
@@ -47,6 +48,7 @@ func toOrganization(doc Organization, u *domain.Organization) (err error) {
 	u.Type = doc.Type
 	u.DefaultRole = domain.OrgRole(doc.DefaultRole)
 	u.AllowRequest = doc.AllowRequest
+	u.CreatedAt = doc.CreatedAt
 
 	return
 }

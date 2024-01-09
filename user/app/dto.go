@@ -9,8 +9,6 @@ import (
 type CmdToCreateUser = domain.UserCreateCmd
 
 type UserInfoDTO struct {
-	Points int `json:"points"`
-
 	UserDTO
 }
 
@@ -19,7 +17,7 @@ type UserDTO struct {
 	Email   string `json:"email"`
 	Account string `json:"account"`
 
-	Bio       string `json:"bio"`
+	Bio       string `json:"description"`
 	Fullname  string `json:"fullname"`
 	AvatarId  string `json:"avatar_id"`
 	CreatedAt int64  `json:"created_at"`

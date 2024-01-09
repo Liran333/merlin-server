@@ -14,8 +14,8 @@ const (
 
 type UserDTO struct {
 	Id           string `json:"id"`
-	Name         string `json:"name"`
-	FullName     string `json:"full_name"`
+	Name         string `json:"account"`
+	FullName     string `json:"fullname"`
 	AvatarId     string `json:"avatar_id"`
 	Email        string `json:"email,omitempty"`
 	Description  string `json:"description"`

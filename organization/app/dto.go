@@ -10,10 +10,9 @@ import (
 
 type OrganizationDTO struct {
 	Id           string `json:"id"`
-	Name         string `json:"name"`
-	FullName     string `json:"full_name"`
+	Name         string `json:"account"`
+	FullName     string `json:"fullname"`
 	AvatarId     string `json:"avatar_id"`
-	PlatformId   string `json:"platform_id"`
 	Description  string `json:"description"`
 	CreatedAt    int64  `json:"created_at"`
 	Website      string `json:"website"`
@@ -111,7 +110,7 @@ func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) Membe
 
 type MemberDTO struct {
 	OrgName     string `json:"org_name"`
-	OrgFullName string `json:"org_full_name"`
+	OrgFullName string `json:"org_fullname"`
 	UserName    string `json:"user_name"`
 	Role        string `json:"role"`
 }

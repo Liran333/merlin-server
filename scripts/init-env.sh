@@ -5,7 +5,7 @@ set -o pipefail
 BASEDIR=$(dirname "$0")
 ROOTDIR=$(cd $BASEDIR/..; pwd)
 
-if [ -z $(which docker compose) ]
+if [ -z "$(docker compose)" ]
 then
 	echo "please install docker compose"
 	exit 1
@@ -24,8 +24,8 @@ function genConfig() {
 # cleanup
 mkdir -p $ROOTDIR/deploy
 cp $ROOTDIR/.env $ROOTDIR/deploy/.env
-touch $ROOTDIR/deploy/config.yml
-touch $ROOTDIR/deploy/app.ini
+touch $ROOTDIR/deploy/config.yml && chmod 666 $ROOTDIR/deploy/config.yml
+touch $ROOTDIR/deploy/app.ini && chmod 666 $ROOTDIR/deploy/app.ini
 docker compose rm -fsv
 # gen gitea config
 genConfig gitea.tpl $ROOTDIR/deploy/app.ini
@@ -50,3 +50,6 @@ sed -i "s|CSRF_KEY=.*|CSRF_KEY=$CSRF_KEY|" $ROOTDIR/deploy/.env
 docker exec -it merlin-server-pg-1 psql -U gitea -c 'create database merlin;'
 genConfig config.tpl $ROOTDIR/deploy/config.yml
 docker restart merlin-server-server-1
+# create user and token for server
+docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com
+docker exec -it merlin-server-server-1 ./cmd -c config.yml token add -n test1 -t test1 -p write

@@ -14,6 +14,10 @@ gitea:
   url: http://{{(ds "data").GITEA_HOST }}:{{(ds "data").GITEA_PORT }}
   token: {{(ds "data").GITEA_ROOT_TOKEN }}
 
+space:
+  tables:
+    space: "space"
+
 mongodb:
   db_conn: mongodb://{{(ds "data").MONGO_USER  }}:{{(ds "data").MONGO_PASS  }}@{{(ds "data").MONGO_HOST  }}:{{(ds "data").MONGO_PORT }}/{{(ds "data").MONGO_DB }}?authSource=admin
   db_name: {{(ds "data").PG_DB }}
@@ -97,10 +101,6 @@ model:
   tables:
     model: "model"
 
-space:
-  tables:
-    space: "space"
-
 redis:
   address: {{(ds "data").REDIS_HOST }}:{{(ds "data").REDIS_PORT }}
   password: {{(ds "data").REDIS_PASS }}
@@ -140,6 +140,7 @@ user:
   - "https://obs-xihe-beijing4.obs.cn-north-4.myhuaweicloud.com/xihe-img/default_avatar/woman-4.png"
 
 primitive:
+  min_name_length: 1
   licenses:
   - "apache-2.0"
   - "mit"

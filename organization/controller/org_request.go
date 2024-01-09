@@ -9,7 +9,7 @@ import (
 )
 
 type orgBasicInfoUpdateRequest struct {
-	FullName     string `json:"full_name"`
+	FullName     string `json:"fullname"`
 	Website      string `json:"website"`
 	AvatarId     string `json:"avatar_id"`
 	Description  string `json:"description"`
@@ -89,7 +89,7 @@ func (req *orgListRequest) toCmd() (owner, user primitive.Account, err error) {
 type orgCreateRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Website     string `json:"website"`
-	FullName    string `json:"full_name"`
+	FullName    string `json:"fullname"`
 	AvatarId    string `json:"avatar_id"`
 	Description string `json:"description"`
 }
