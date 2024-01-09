@@ -5,14 +5,17 @@ import (
 
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 )
 
 type Space struct {
 	coderepo.CodeRepo
 
+	SDK       spaceprimitive.SDK
 	Desc      primitive.MSDDesc
 	Labels    SpaceLabels
 	Fullname  primitive.MSDFullname
+	Hardware  spaceprimitive.Hardware
 	CreatedBy primitive.Account
 
 	Version       int
