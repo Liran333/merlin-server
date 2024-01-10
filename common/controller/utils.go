@@ -1,10 +1,7 @@
 package controller
 
 import (
-	"errors"
-	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,24 +10,16 @@ import (
 )
 
 const (
-	ipHeader  = "x-forwarded-for"
 	userAgent = "User-Agent"
 )
 
 func GetIp(ctx *gin.Context) (string, error) {
-	ips := ctx.GetHeader(ipHeader)
-
-	for _, item := range strings.Split(ips, ", ") {
-		if net.ParseIP(item) != nil {
-			return item, nil
-		}
-	}
-
-	return "", errors.New("can not fetch client ip")
+	return ctx.ClientIP(), nil
 }
 
 func GetUserAgent(ctx *gin.Context) (primitive.UserAgent, error) {
-	return primitive.NewUserAgent(ctx.GetHeader(userAgent))
+	return primitive.CreateUserAgent(""), nil
+	//return primitive.NewUserAgent(ctx.GetHeader(userAgent))
 }
 
 func SetCookie(ctx *gin.Context, key, val string, httpOnly bool, expiry *time.Time) {
