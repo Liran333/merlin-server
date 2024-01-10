@@ -10,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/app"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
@@ -19,16 +20,22 @@ const (
 )
 
 type reqToCreateSpace struct {
+	SDK        string `json:"sdk"        required:"true"`
 	Name       string `json:"name"       required:"true"`
 	Desc       string `json:"desc"`
 	Owner      string `json:"owner"      required:"true"`
 	License    string `json:"license"    required:"true"`
+	Hardware   string `json:"hardware"   required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
 	InitReadme bool   `json:"init_readme"`
 }
 
 func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
+	if cmd.SDK, err = spaceprimitive.NewSDK(req.SDK); err != nil {
+		return
+	}
+
 	if cmd.Name, err = primitive.NewMSDName(req.Name); err != nil {
 		return
 	}
@@ -42,6 +49,10 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 	}
 
 	if cmd.License, err = primitive.NewLicense(req.License); err != nil {
+		return
+	}
+
+	if cmd.Hardware, err = spaceprimitive.NewHardware(req.Hardware); err != nil {
 		return
 	}
 

@@ -3,12 +3,15 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 )
 
 type CmdToCreateRepo struct {
+	SDK        spaceprimitive.SDK
 	Name       primitive.MSDName
 	Owner      primitive.Account
 	License    primitive.License
+	Hardware   spaceprimitive.Hardware
 	Visibility primitive.Visibility
 	InitReadme bool
 }

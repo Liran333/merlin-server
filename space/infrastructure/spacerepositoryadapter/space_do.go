@@ -9,6 +9,7 @@ import (
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
@@ -32,10 +33,12 @@ var (
 func toSpaceDO(m *domain.Space) spaceDO {
 	return spaceDO{
 		Id:       m.Id.Integer(),
+		SDK:      m.SDK.SDK(),
 		Desc:     m.Desc.MSDDesc(),
 		Name:     m.Name.MSDName(),
 		Owner:    m.Owner.Account(),
 		License:  m.License.License(),
+		Hardware: m.Hardware.Hardware(),
 		Fullname: m.Fullname.MSDFullname(),
 		//CreatedBy:  m.CreatedBy.Account(),
 		Visibility: m.Visibility.Visibility(),
@@ -55,10 +58,12 @@ func toLabelsDO(labels *domain.SpaceLabels) spaceDO {
 
 type spaceDO struct {
 	Id         int64  `gorm:"column:id;"`
+	SDK        string `gorm:"column:sdk"`
 	Desc       string `gorm:"column:desc"`
 	Name       string `gorm:"column:name;index:space_index,unique,priority:2"`
 	Owner      string `gorm:"column:owner;index:space_index,unique,priority:1"`
 	License    string `gorm:"column:license"`
+	Hardware   string `gorm:"column:hardware"`
 	Fullname   string `gorm:"column:fullname"`
 	CreatedBy  string `gorm:"column:created_by"`
 	Visibility string `gorm:"column:visibility"`
@@ -85,9 +90,11 @@ func (do *spaceDO) toSpace() domain.Space {
 			License:    primitive.CreateLicense(do.License),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
+		SDK:      spaceprimitive.CreateSDK(do.SDK),
 		Desc:     primitive.CreateMSDDesc(do.Desc),
 		Fullname: primitive.CreateMSDFullname(do.Fullname),
 		//CreatedBy: primitive.CreateAccount(do.CreatedBy),
+		Hardware:  spaceprimitive.CreateHardware(do.Hardware),
 		CreatedAt: do.CreatedAt,
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,
