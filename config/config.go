@@ -69,6 +69,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.User,
 		&cfg.Redis,
 		&cfg.Model,
+		&cfg.Space,
 		&cfg.Session,
 		&cfg.Mongodb,
 		&cfg.Primitive,
