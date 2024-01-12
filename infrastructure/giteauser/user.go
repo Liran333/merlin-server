@@ -8,6 +8,7 @@ import (
 	"github.com/openmerlin/go-sdk/gitea"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/sirupsen/logrus"
 )
 
 type UserCreateCmd struct {
@@ -15,7 +16,7 @@ type UserCreateCmd struct {
 	Email    string `json:"email"`
 }
 
-func genPasswd() string {
+func genPasswd() (string, error) {
 	var container string
 	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!#$%&()*,./:;?@[]^_`{|}~+<=>"
 	b := bytes.NewBufferString(str)
@@ -23,10 +24,16 @@ func genPasswd() string {
 	bigInt := big.NewInt(int64(length))
 	// gen 32 bytes password
 	for i := 0; i < 32; i++ {
-		randomInt, _ := rand.Int(rand.Reader, bigInt)
+		randomInt, err := rand.Int(rand.Reader, bigInt)
+		if err != nil {
+			logrus.Errorf("internal error, rand.Int: %s", err.Error())
+
+			return "", err
+		}
+
 		container += string(str[randomInt.Int64()])
 	}
-	return container
+	return container, nil
 }
 
 func toUser(u *gitea.User) (user domain.User, err error) {
@@ -58,7 +65,11 @@ type UserClient struct {
 
 func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
 	changePwd := false
-	pwd := genPasswd()
+	pwd, err := genPasswd()
+	if err != nil {
+		return
+	}
+
 	o := gitea.CreateUserOption{
 		Username:           cmd.Username,
 		Email:              cmd.Email,
