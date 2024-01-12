@@ -1,6 +1,9 @@
 package postgresql
 
 import (
+	"errors"
+
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -39,5 +42,13 @@ func DB() *gorm.DB {
 }
 
 func AutoMigrate(table interface{}) error {
+	// pointer non-nil check
+	if db == nil {
+		err := errors.New("empty pointer of *gorm.DB")
+		logrus.Error(err.Error())
+
+		return err
+	}
+
 	return db.AutoMigrate(table)
 }
