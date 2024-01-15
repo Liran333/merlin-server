@@ -50,8 +50,11 @@ type UserDO struct {
 }
 
 func toUserDO(u *domain.User) (do UserDO) {
+	if u.Desc != nil {
+		do.Desc = u.Desc.MSDDesc()
+	}
+
 	do = UserDO{
-		Desc:        u.Desc.MSDDesc(),
 		Name:        u.Account.Account(),
 		Fullname:    u.Fullname.MSDFullname(),
 		Email:       u.Email.Email(),
