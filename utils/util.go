@@ -16,6 +16,8 @@ import (
 const (
 	layout     = "2006-01-02"
 	timeLayout = "2006-01-02 15:04:05"
+
+	maxAllowedAllocationLength = 64
 )
 
 func LoadFromYaml(path string, cfg interface{}) error {
@@ -83,6 +85,12 @@ func StrLen(s string) int {
 }
 
 func GenRandoms(max, total int) []int {
+	if total > maxAllowedAllocationLength {
+		logrus.Error("argument total out of allowed in GenRandoms")
+
+		return nil
+	}
+
 	i := 0
 	m := make(map[int]struct{})
 	r := make([]int, total)
