@@ -1,13 +1,19 @@
 package primitive
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/bwmarrin/snowflake"
+	"k8s.io/apimachinery/pkg/util/sets"
+)
 
 var (
 	msdConfig   MSDConfig
 	allLicenses map[string]bool
+	node        *snowflake.Node
 )
 
-func Init(cfg *Config) {
+func Init(cfg *Config) (err error) {
 	msdConfig = cfg.MSDConfig
 
 	m := map[string]bool{}
@@ -16,6 +22,15 @@ func Init(cfg *Config) {
 	}
 
 	allLicenses = m
+
+	// TODO: node id should be same with replica id
+	node, err = snowflake.NewNode(1)
+
+	if len(msdConfig.ReservedAccounts) > 0 {
+		msdConfig.reservedAccounts = sets.New[string]()
+		msdConfig.reservedAccounts.Insert(msdConfig.ReservedAccounts...)
+	}
+	return
 }
 
 // Config
@@ -27,10 +42,12 @@ type Config struct {
 
 // MSDConfig
 type MSDConfig struct {
-	MaxNameLength     int `json:"max_name_length"`
-	MinNameLength     int `json:"min_name_length"`
-	MaxDescLength     int `json:"max_desc_length"`
-	MaxFullnameLength int `json:"max_fullname_length"`
+	MaxNameLength     int      `json:"max_name_length"`
+	MinNameLength     int      `json:"min_name_length"`
+	MaxDescLength     int      `json:"max_desc_length"`
+	MaxFullnameLength int      `json:"max_fullname_length"`
+	ReservedAccounts  []string `json:"reserved_accounts" required:"true"`
+	reservedAccounts  sets.Set[string]
 }
 
 func (cfg *MSDConfig) SetDefault() {

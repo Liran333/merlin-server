@@ -10,7 +10,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/session/domain/repository"
-	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -69,16 +68,19 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		return
 	}
 
-	if userInfo.Email, err = domain.NewEmail(v.Email); err != nil {
+	if userInfo.Email, err = primitive.NewEmail(v.Email); err != nil {
 		return
 	}
 
-	if userInfo.AvatarId, err = domain.NewAvatarId(v.Picture); err != nil {
+	if userInfo.AvatarId, err = primitive.NewAvatarId(v.Picture); err != nil {
+		return
+	}
+
+	if userInfo.Fullname, err = primitive.NewMSDFullname(v.FullName); err != nil {
 		return
 	}
 
 	userInfo.UserId = v.Sub
-	userInfo.Fullname = v.FullName
 
 	return
 }

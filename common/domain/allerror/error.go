@@ -11,6 +11,8 @@ const (
 
 	ErrorCodeUserNotFound = "user_not_found"
 
+	ErrorCodeTokenNotFound = "token_not_found"
+
 	ErrorCodeOrganizationNotFound = "organization_not_found"
 
 	// This error code is for restful api

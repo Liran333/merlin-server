@@ -42,7 +42,7 @@ func toUser(u *gitea.User) (user domain.User, err error) {
 		return
 	}
 
-	user.Email, err = domain.NewEmail(u.Email)
+	user.Email, err = primitive.NewEmail(u.Email)
 	if err != nil {
 		return
 	}

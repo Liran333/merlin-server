@@ -14,11 +14,11 @@ import (
 
 const (
 	authHeader      = "Authorization"
-	authTokenPrefix = "token "
+	authTokenPrefix = "Bearer "
 	authTokenKey    = "user_id"
 )
 
-var noUserError = errors.New("no user")
+var errNoUserError = errors.New("no user")
 
 func RestfulAPI(app userapp.UserService) *restfulAPI {
 	return &restfulAPI{app}
@@ -87,7 +87,7 @@ func (m *restfulAPI) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account 
 		return v
 	}
 
-	commonctl.SendError(ctx, noUserError)
+	commonctl.SendError(ctx, errNoUserError)
 
 	return nil
 }

@@ -9,13 +9,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
-	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
-	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
-	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -27,6 +22,7 @@ var userCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -37,36 +33,29 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		email, err := domain.NewEmail(viper.GetString("user.create.email"))
+		email, err := primitive.NewEmail(viper.GetString("user.create.email"))
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		bio, err := domain.NewBio("")
+		fullname, err := primitive.NewMSDFullname(viper.GetString("user.create.fullname"))
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		ava, err := domain.NewAvatarId("")
+		desc, err := primitive.NewMSDDesc("")
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-
-		token := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, token)
+		ava, err := primitive.NewAvatarId("")
+		if err != nil {
+			logrus.Fatalf("create user failed :%s", err.Error())
+		}
 
 		_, err = userAppService.Create(&domain.UserCreateCmd{
 			Email:    email,
 			Account:  acc,
-			Bio:      bio,
+			Desc:     desc,
 			AvatarId: ava,
+			Fullname: fullname,
 		})
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
@@ -76,6 +65,7 @@ var userAddCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -86,17 +76,6 @@ var userGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		}
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		token := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, token)
 
 		u, err := userAppService.GetByAccount(acc, false)
 		if err != nil {
@@ -114,6 +93,7 @@ var userGetCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -130,17 +110,6 @@ var userGetAvaCmd = &cobra.Command{
 			}
 		}
 
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		token := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, token)
-
 		u, err := userAppService.GetUsersAvatarId(users)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
@@ -153,6 +122,7 @@ var userGetAvaCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -164,17 +134,6 @@ var userDelCmd = &cobra.Command{
 			logrus.Fatalf("delete user failed :%s with %s", err.Error(), viper.GetString("user.del.name"))
 		}
 
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		token := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, token)
-
 		err = userAppService.Delete(acc)
 		if err != nil {
 			logrus.Fatalf("delete user failed :%s", err.Error())
@@ -184,6 +143,7 @@ var userDelCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -195,34 +155,24 @@ var userEditCmd = &cobra.Command{
 			logrus.Fatalf("edit user failed :%s with %s", err.Error(), viper.GetString("user.edit.name"))
 		}
 		updateCmd := userapp.UpdateUserBasicInfoCmd{}
-		avatar, err := domain.NewAvatarId(viper.GetString("user.edit.avatar"))
+		avatar, err := primitive.NewAvatarId(viper.GetString("user.edit.avatar"))
 		if err == nil {
 			updateCmd.AvatarId = avatar
 		}
-		bio, err := domain.NewBio(viper.GetString("user.edit.bio"))
+		desc, err := primitive.NewMSDDesc(viper.GetString("user.edit.bio"))
 		if err == nil {
-			updateCmd.Bio = bio
+			updateCmd.Desc = desc
 		}
-		email, err := domain.NewEmail(viper.GetString("user.edit.email"))
+		email, err := primitive.NewEmail(viper.GetString("user.edit.email"))
 		if err == nil {
 			updateCmd.Email = email
 		}
-		fullname := viper.GetString("user.edit.fullname")
-		if fullname != "" {
+		fullname, err := primitive.NewMSDFullname(viper.GetString("user.edit.fullname"))
+		if err != nil {
 			updateCmd.Fullname = fullname
 		}
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		token := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
-		userAppService := userapp.NewUserService(
-			user, git, token)
-
-		err = userAppService.UpdateBasicInfo(acc, updateCmd)
+		_, err = userAppService.UpdateBasicInfo(acc, updateCmd)
 		if err != nil {
 			logrus.Fatalf("edit user failed :%s", err.Error())
 		} else {
@@ -231,6 +181,7 @@ var userEditCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -243,10 +194,24 @@ func init() {
 	// 添加命令行参数
 	userAddCmd.Flags().StringP("name", "n", "", "user name")
 	userAddCmd.Flags().StringP("email", "e", "", "user email")
+	userAddCmd.Flags().StringP("fullname", "f", "", "user fullname")
 	if err := userAddCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := userAddCmd.MarkFlagRequired("email"); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := userAddCmd.MarkFlagRequired("fullname"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := viper.BindPFlag("user.create.name", userAddCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.create.email", userAddCmd.Flags().Lookup("email")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.create.fullname", userAddCmd.Flags().Lookup("fullname")); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -279,12 +244,6 @@ func init() {
 
 	userEditCmd.MarkFlagsOneRequired("avatar", "bio", "email", "fullname")
 
-	if err := viper.BindPFlag("user.create.name", userAddCmd.Flags().Lookup("name")); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := viper.BindPFlag("user.create.email", userAddCmd.Flags().Lookup("email")); err != nil {
-		logrus.Fatal(err)
-	}
 	if err := viper.BindPFlag("user.del.name", userDelCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}

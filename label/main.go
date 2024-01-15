@@ -84,7 +84,11 @@ func main() {
 		return
 	}
 
-	cfg.InitPrimitive()
+	if err = cfg.InitPrimitive(); err != nil {
+		logrus.Errorf("init primitive failed, err:%s", err.Error())
+
+		return
+	}
 
 	// run
 	run(cfg)

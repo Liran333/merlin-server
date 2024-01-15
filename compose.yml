@@ -17,16 +17,6 @@ services:
       deploy/.env
     ports:
     - "${PG_PORT}:${PG_PORT}"
-  db:
-    image: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
-    env_file:
-      deploy/.env
-    ports:
-    - "${MONGO_PORT}:${MONGO_PORT}"
   gitea:
     build:
       context: https://github.com/openmerlin/gitea.git
@@ -51,12 +41,11 @@ services:
     ports:
     - "${GITEA_PORT}:${GITEA_PORT}"
   server:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     depends_on:
     - redis
-    - db
     - gitea
     command:
       - --config-file

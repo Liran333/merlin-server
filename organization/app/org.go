@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -49,10 +50,9 @@ type OrgService interface {
 // ps: platform user service
 func NewOrgService(
 	user userapp.UserService,
-	repo repository.Organization,
+	repo userrepo.User,
 	member repository.OrgMember,
 	invite repository.Approve,
-	request repository.MemberRequest,
 	perm Permission,
 	cfg *domain.Config,
 ) OrgService {
@@ -62,7 +62,6 @@ func NewOrgService(
 		member:       member,
 		perm:         perm,
 		invite:       invite,
-		request:      request,
 		defaultRole:  domain.OrgRole(cfg.DefaultRole),
 		inviteExpiry: cfg.InviteExpiry,
 	}
@@ -72,50 +71,62 @@ type orgService struct {
 	inviteExpiry int64
 	defaultRole  domain.OrgRole
 	user         userapp.UserService
-	repo         repository.Organization
+	repo         userrepo.User
 	member       repository.OrgMember
 	invite       repository.Approve
-	request      repository.MemberRequest
 	perm         Permission
 }
 
 func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o OrganizationDTO, err error) {
-	if err = cmd.Validate(); err != nil {
+	orgTemp, err := cmd.ToOrg()
+	if err != nil {
 		return
 	}
 
-	orgTemp := cmd.ToOrg()
+	if !org.repo.CheckName(cmd.Name) {
+		err = allerror.NewInvalidParam(fmt.Sprintf("name %s is already been taken", cmd.Name.Account()))
+		return
+	}
+
+	owner, err := org.repo.GetByAccount(cmd.Owner)
+	if err != nil {
+		logrus.Error(err)
+		err = allerror.NewInvalidParam("failed to get owner info")
+		return
+	}
 
 	pl, err := org.user.GetPlatformUser(orgTemp.Owner)
 	if err != nil {
-		err = fmt.Errorf("failed to get platform user, %w", err)
+		err = allerror.NewInvalidParam(fmt.Sprintf("failed to get platform user, %s", err))
 		return
 	}
 
 	err = pl.CreateOrg(orgTemp)
 	if err != nil {
-		err = fmt.Errorf("failed to create org, %w", err)
+		err = allerror.NewInvalidParam(fmt.Sprintf("failed to create org, %s", err))
 		return
 	}
 
-	orgTemp.CreatedAt = utils.Now()
 	orgTemp.DefaultRole = org.defaultRole
 	orgTemp.AllowRequest = false
+	orgTemp.OwnerId = owner.Id
 
-	_, err = org.repo.Save(orgTemp)
+	*orgTemp, err = org.repo.AddOrg(orgTemp)
 	if err != nil {
-		err = fmt.Errorf("failed to save org, %w", err)
+		err = allerror.NewInvalidParam(fmt.Sprintf("failed to create to org, %s", err))
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
 
-	_, err = org.member.Save(&domain.OrgMember{
+	_, err = org.member.Add(&domain.OrgMember{
 		OrgName:  cmd.Name,
+		OrgId:    orgTemp.Id,
 		Username: cmd.Owner,
+		UserId:   owner.Id,
 		Role:     domain.OrgRoleAdmin,
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to save org member, %w", err)
+		err = allerror.NewInvalidParam(fmt.Sprintf("failed to save org member, %s", err))
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
@@ -126,7 +137,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o OrganizationDTO, err
 }
 
 func (org *orgService) GetByAccount(acc primitive.Account) (dto OrganizationDTO, err error) {
-	o, err := org.repo.GetByName(acc)
+	o, err := org.repo.GetOrgByName(acc)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("org %s not found", acc.Account()))
@@ -143,7 +154,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	if err != nil {
 		return err
 	}
-	o, err := org.repo.GetByName(cmd.Name)
+	o, err := org.repo.GetOrgByName(cmd.Name)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -156,7 +167,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 		return fmt.Errorf("failed to get platform user, %w", err)
 	}
 
-	can, err := pl.CanDelete(cmd.Name.Account())
+	can, err := pl.CanDelete(cmd.Name)
 	if err != nil {
 		return fmt.Errorf("failed to check platform user, %w", err)
 	}
@@ -165,22 +176,22 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 		return fmt.Errorf("can't delte the organization, while some repos still existed")
 	}
 
-	err = org.repo.Delete(&o)
+	err = org.member.DeleteByOrg(o.Name)
 	if err != nil {
-		return fmt.Errorf("failed to delete org in repo, %w", err)
+		logrus.Errorf("failed to delete org member, %s", err)
 	}
 
-	err = org.member.DeleteByOrg(o.Name.Account())
+	err = org.invite.DeleteInviteAndReqByOrg(o.Name)
 	if err != nil {
-		return fmt.Errorf("failed to delete org member, %w", err)
+		logrus.Errorf("failed to delete org invite, %s", err)
 	}
 
-	err = pl.DeleteOrg(cmd.Name.Account())
+	err = pl.DeleteOrg(cmd.Name)
 	if err != nil {
-		err = fmt.Errorf("failed to delete git org, %w", err)
+		logrus.Errorf("failed to delete git org, %s", err)
 	}
 
-	return err
+	return org.repo.DeleteOrg(&o)
 }
 
 func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto OrganizationDTO, err error) {
@@ -198,7 +209,7 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 		return
 	}
 
-	o, err := org.repo.GetByName(cmd.OrgName)
+	o, err := org.repo.GetOrgByName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.OrgName.Account()))
@@ -213,7 +224,7 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 	}
 
 	if change {
-		o, err = org.repo.Save(&o)
+		o, err = org.repo.SaveOrg(&o)
 		if err != nil {
 			err = fmt.Errorf("failed to save org, %w", err)
 			return
@@ -259,7 +270,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []Organizat
 
 	orgs = make([]OrganizationDTO, len(members))
 	for i := range members {
-		o, e := org.repo.GetByName(primitive.CreateAccount(members[i].OrgName))
+		o, e := org.repo.GetOrgByName(members[i].OrgName)
 		if e != nil {
 			err = fmt.Errorf("failed to get org when get org by user, %w", e)
 			return
@@ -275,7 +286,7 @@ func (org *orgService) List(l *OrgListOptions) (orgs []OrganizationDTO, err erro
 		return nil, fmt.Errorf("list options is nil")
 	}
 
-	os, err := org.repo.GetByOwner(l.Owner)
+	os, err := org.repo.GetOrgByOwner(l.Owner)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -326,30 +337,32 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 		return allerror.NewInvalidParam(err.Error())
 	}
 
-	o, err := org.repo.GetByName(cmd.Org)
+	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org))
-		}
-		return err
+		logrus.Error(err)
+		return allerror.NewInvalidParam("failed to get org info")
+
 	}
 
 	m := cmd.ToMember()
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return fmt.Errorf("failed to get platform user for adding member, %w", err)
+		logrus.Error(err)
+		return allerror.NewInvalidParam("failed to get platform user for adding member")
 	}
 
 	err = pl.AddMember(&o, &m)
 	if err != nil {
-		return fmt.Errorf("failed to add git member:%s to org:%s, %w", m.Username, o.Name.Account(), err)
+		logrus.Error(err)
+		return allerror.NewInvalidParam(fmt.Sprintf("failed to add member:%s to org:%s", m.Username.Account(), o.Name.Account()))
 	}
 
-	_, err = org.member.Save(&m)
+	_, err = org.member.Add(&m)
 	if err != nil {
 		// TODO need rollback
-		return fmt.Errorf("failed to save member for adding member, %w", err)
+		logrus.Error(err)
+		return allerror.NewInvalidParam("failed to save member for adding member")
 	}
 
 	return nil
@@ -427,7 +440,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 			return err
 		}
 	}
-	o, err := org.repo.GetByName(cmd.Org)
+	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -471,7 +484,7 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 		return
 	}
 
-	o, err := org.repo.GetByName(cmd.Org)
+	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
@@ -527,23 +540,36 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 		return
 	}
 
-	_, err = org.user.GetByAccount(cmd.Account, false)
+	invitee, err := org.repo.GetByAccount(cmd.Account)
 	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("user %s not found", cmd.Account.Account()))
-		}
+		err = allerror.NewInvalidParam("failed to get invitee info")
+		return
+	}
+
+	inviter, err := org.repo.GetByAccount(cmd.Actor)
+	if err != nil {
+		err = allerror.NewInvalidParam("failed to get inviter info")
+		return
+	}
+
+	o, err := org.repo.GetOrgByName(cmd.Org)
+	if err != nil {
+		err = allerror.NewInvalidParam("failed to get org info")
 		return
 	}
 
 	invite := cmd.ToApprove(org.inviteExpiry)
+	invite.InviterId = inviter.Id
+	invite.UserId = invitee.Id
+	invite.OrgId = o.Id
 
-	newOrg, err := org.invite.Save(&invite)
+	*invite, err = org.invite.AddInvite(invite)
 	if err != nil {
 		err = fmt.Errorf("failed to save member, %w", err)
 		return
 	}
 
-	dto = ToApproveDTO(&newOrg, org.user)
+	dto = ToApproveDTO(invite, org.user)
 
 	return
 }
@@ -578,17 +604,18 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 		return
 	}
 
-	if !org.user.HasUser(cmd.Actor) {
-		err = allerror.NewInvalidParam(fmt.Sprintf("the user %s not found", cmd.Actor.Account()))
+	requester, err := org.repo.GetByAccount(cmd.Actor)
+	if err != nil {
+		logrus.Error(err)
+		err = allerror.NewInvalidParam("failed to get requester info")
 		return
 
 	}
 
-	o, err := org.repo.GetByName(cmd.Org)
+	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
-		}
+		logrus.Error(err)
+		err = allerror.NewInvalidParam("failed to get org info")
 		return
 	}
 
@@ -599,23 +626,20 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 
 	if o.DefaultRole == "" {
 		o.DefaultRole = org.defaultRole
-		_, _ = org.repo.Save(&o)
+		_, _ = org.repo.SaveOrg(&o)
 	}
 
-	d, err := org.request.Save(&domain.MemberRequest{
-		OrgName:   cmd.Org.Account(),
-		Username:  cmd.Actor.Account(),
-		Role:      o.DefaultRole,
-		Status:    domain.ApproveStatusPending,
-		CreatedAt: utils.Now(),
-		Msg:       cmd.Msg,
-	})
+	request := cmd.ToMemberRequest(o.DefaultRole)
+	request.OrgId = o.Id
+	request.UserId = requester.Id
+
+	_, err = org.invite.AddRequest(request)
 
 	if err != nil {
 		return
 	}
 
-	dto = ToMemberRequestDTO(&d, org.user)
+	dto = ToMemberRequestDTO(request, org.user)
 
 	return
 }
@@ -663,7 +687,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 
 	approve := o[0]
 
-	if cmd.Actor.Account() != approve.Username {
+	if cmd.Actor.Account() != approve.Username.Account() {
 		err = allerror.NewNoPermission("can't accept other's invitation")
 		return
 	}
@@ -676,19 +700,26 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 	approve.By = cmd.Actor.Account()
 	approve.Status = domain.ApproveStatusApproved
 	approve.Msg = cmd.Msg
-	approve.UpdatedAt = utils.Now()
 
-	_, err = org.invite.Save(&approve)
+	invite, err := org.invite.SaveInvite(&approve)
 	if err != nil {
 		return
 	}
 
 	err = org.AddMember(&domain.OrgAddMemberCmd{
-		Org:  cmd.Org,
-		User: cmd.Actor,
-		Role: approve.Role,
-		Type: domain.InviteTypeInvite,
+		Org:    cmd.Org,
+		OrgId:  approve.OrgId,
+		User:   cmd.Actor,
+		UserId: approve.UserId,
+		Role:   approve.Role,
+		Type:   domain.InviteTypeInvite,
 	})
+
+	if err != nil {
+		return
+	}
+
+	dto = ToApproveDTO(&invite, org.user)
 
 	return
 }
@@ -714,7 +745,7 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 		return
 	}
 
-	reqs, err := org.request.ListInvitation(cmd.ToListReqCmd())
+	reqs, err := org.invite.ListRequests(cmd.ToListReqCmd())
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("the %s's member request to org %s not found", cmd.Requester.Account(), cmd.Org.Account()))
@@ -737,18 +768,19 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 	request.By = cmd.Actor.Account()
 	request.Status = domain.ApproveStatusApproved
 	request.Msg = cmd.Msg
-	request.UpdatedAt = utils.Now()
 
-	_, err = org.request.Save(&request)
+	_, err = org.invite.SaveRequest(&request)
 	if err != nil {
 		return
 	}
 
 	err = org.AddMember(&domain.OrgAddMemberCmd{
-		Org:  cmd.Org,
-		User: cmd.Requester,
-		Type: domain.InviteTypeRequest,
-		Role: request.Role,
+		Org:    cmd.Org,
+		OrgId:  request.OrgId,
+		User:   cmd.Requester,
+		UserId: request.UserId,
+		Type:   domain.InviteTypeRequest,
+		Role:   request.Role,
 	})
 
 	return
@@ -772,7 +804,7 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 		}
 	}
 
-	o, err := org.request.ListInvitation(cmd.ToListReqCmd())
+	o, err := org.invite.ListRequests(cmd.ToListReqCmd())
 	if err != nil {
 		return
 	}
@@ -791,9 +823,8 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 	approve.By = cmd.Actor.Account()
 	approve.Status = domain.ApproveStatusRejected
 	approve.Msg = cmd.Msg
-	approve.UpdatedAt = utils.Now()
 
-	new, err := org.request.Save(&approve)
+	new, err := org.invite.SaveRequest(&approve)
 	if err != nil {
 		err = fmt.Errorf("failed to remove invite, %w", err)
 		return
@@ -826,7 +857,7 @@ func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []Me
 		return
 	}
 
-	reqs, err := org.request.ListInvitation(cmd)
+	reqs, err := org.invite.ListRequests(cmd)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -883,9 +914,8 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 	approve.By = cmd.Actor.Account()
 	approve.Status = domain.ApproveStatusRejected
 	approve.Msg = cmd.Msg
-	approve.UpdatedAt = utils.Now()
 
-	new, err := org.invite.Save(&approve)
+	new, err := org.invite.SaveInvite(&approve)
 	if err != nil {
 		err = fmt.Errorf("failed to remove invite, %w", err)
 		return
@@ -905,6 +935,16 @@ func (org *orgService) ListInvitation(cmd *domain.OrgInvitationListCmd) (dtos []
 	if err = cmd.Validate(); err != nil {
 		return
 	}
+
+	if cmd.Org != nil {
+		if _, err = org.repo.GetOrgByName(cmd.Org); err != nil {
+			if commonrepo.IsErrorResourceNotExists(err) {
+				err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+			}
+			return
+		}
+	}
+
 	// permission check
 	if cmd.Org != nil && cmd.Actor != nil {
 		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)

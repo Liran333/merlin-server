@@ -42,20 +42,23 @@ type Config struct {
 	Model      models.Config     `json:"model"`
 	Space      space.Config      `json:"space"`
 	Session    session.Config    `json:"session"`
-	Mongodb    Mongodb           `json:"mongodb"`
 	Primitive  primitive.Config  `json:"primitive"`
 	Postgresql postgresql.Config `json:"postgresql"`
 	Permission permission.Config `json:"permission"`
 }
 
-func (cfg *Config) Init() {
+func (cfg *Config) Init() error {
 	userdomain.Init(&cfg.User)
 
-	primitive.Init(&cfg.Primitive)
+	if err := primitive.Init(&cfg.Primitive); err != nil {
+		return err
+	}
 
 	cfg.Model.Init()
 
 	cfg.Space.Init()
+
+	return nil
 }
 
 func (cfg *Config) InitSession() error {
@@ -71,7 +74,6 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Model,
 		&cfg.Space,
 		&cfg.Session,
-		&cfg.Mongodb,
 		&cfg.Primitive,
 		&cfg.Postgresql,
 	}
@@ -91,21 +93,4 @@ func (cfg *Config) validate() error {
 	}
 
 	return common.Validate(cfg)
-}
-
-type Mongodb struct {
-	DBName      string             `json:"db_name"       required:"true"`
-	DBConn      string             `json:"db_conn"       required:"true"`
-	DBCert      string             `json:"db_cert"`
-	Collections MongodbCollections `json:"collections"`
-}
-
-type MongodbCollections struct {
-	User          string `json:"user"                   required:"true"`
-	Session       string `json:"session"                required:"true"`
-	Organization  string `json:"organization"           required:"true"`
-	Member        string `json:"member"                 required:"true"`
-	Token         string `json:"token"                  required:"true"`
-	Invitation    string `json:"invitation"             required:"true"`
-	MemberRequest string `json:"member_request"         required:"true"`
 }

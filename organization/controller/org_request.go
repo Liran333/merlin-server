@@ -95,17 +95,23 @@ type orgCreateRequest struct {
 }
 
 func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
-	if cmd.Name == "" {
-		err = fmt.Errorf("org name can't be empty")
+	if cmd.Name, err = primitive.NewAccount(req.Name); err != nil {
 		return
 	}
 
-	if cmd.FullName == "" {
-		err = fmt.Errorf("org full name can't be empty")
+	if cmd.FullName, err = primitive.NewMSDFullname(req.FullName); err != nil {
 		return
 	}
 
-	err = cmd.Validate()
+	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+		return
+	}
+
+	if cmd.Description, err = primitive.NewMSDDesc(req.Description); err != nil {
+		return
+	}
+
+	cmd.Website = req.Website
 
 	return
 }

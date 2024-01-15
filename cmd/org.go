@@ -10,8 +10,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
@@ -23,29 +23,21 @@ import (
 
 var orgAppService orgapp.OrgService
 
-func Init() {
-	org := orgrepoimpl.NewOrgRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.User),
-	)
-
+func initorg() {
 	invite := orgrepoimpl.NewInviteRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Invitation),
-	)
-
-	request := orgrepoimpl.NewMemberRequestRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.MemberRequest),
+		postgresql.DAO(cfg.Org.Tables.Invite),
 	)
 
 	member := orgrepoimpl.NewMemberRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Member),
+		postgresql.DAO(cfg.Org.Tables.Member),
 	)
 	p := orgapp.NewPermService(&cfg.Permission, member)
 
 	user := userrepoimpl.NewUserRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.User),
+		postgresql.DAO(cfg.User.Tables.User),
 	)
 	t := userrepoimpl.NewTokenRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Token),
+		postgresql.DAO(cfg.User.Tables.Token),
 	)
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
@@ -53,7 +45,7 @@ func Init() {
 		user, git, t)
 
 	orgAppService = orgapp.NewOrgService(
-		userAppService, org, member, invite, request, p, &cfg.Org)
+		userAppService, user, member, invite, p, &cfg.Org)
 }
 
 var orgCmd = &cobra.Command{
@@ -64,25 +56,42 @@ var orgCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 	},
 }
 
 var orgAddCmd = &cobra.Command{
 	Use: "add",
 	Run: func(cmd *cobra.Command, args []string) {
-		orgName := viper.GetString("org.create.name")
-		fullname := viper.GetString("org.create.fullname")
+		orgName, err := primitive.NewAccount(viper.GetString("org.create.name"))
+		if err != nil {
+			logrus.Fatalf("invalid org name :%s", err.Error())
+		}
+		fullname, err := primitive.NewMSDFullname(viper.GetString("org.create.fullname"))
+		if err != nil {
+			logrus.Fatalf("invalid fullname :%s", err.Error())
+		}
 		website := viper.GetString("org.create.website")
-		ava := viper.GetString("org.create.avatarid")
-		desc := viper.GetString("org.create.description")
+		ava, err := primitive.NewAvatarId(viper.GetString("org.create.avatarid"))
+		if err != nil {
+			logrus.Fatalf("invalid avatarid :%s", err.Error())
+		}
+		desc, err := primitive.NewMSDDesc(viper.GetString("org.create.description"))
+		if err != nil {
+			logrus.Fatalf("invalid description :%s", err.Error())
+		}
 
-		_, err := orgAppService.Create(&domain.OrgCreatedCmd{
+		owner, err := primitive.NewAccount(actor)
+		if err != nil {
+			logrus.Fatalf("invalid owner :%s", err.Error())
+		}
+
+		_, err = orgAppService.Create(&domain.OrgCreatedCmd{
 			Name:        orgName,
 			AvatarId:    ava,
 			FullName:    fullname,
 			Website:     website,
-			Owner:       actor,
+			Owner:       owner,
 			Description: desc,
 		})
 		if err != nil {
@@ -93,7 +102,7 @@ var orgAddCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -123,7 +132,7 @@ var memberAddCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -151,7 +160,7 @@ var memberAcceptCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -173,7 +182,7 @@ var orgCheckCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -201,7 +210,7 @@ var memberListCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -233,7 +242,7 @@ var inviteSendCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 	},
 }
 
@@ -258,7 +267,7 @@ var requestCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 	},
 }
 
@@ -296,7 +305,7 @@ var reqListCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -344,7 +353,7 @@ var inviteListCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -375,7 +384,7 @@ var removeInviteCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -408,7 +417,7 @@ var removeReqCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -440,7 +449,7 @@ var memberEditCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -470,7 +479,7 @@ var memberRemoveCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -534,7 +543,7 @@ var orgGetCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -559,7 +568,7 @@ var orgDelCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -602,7 +611,7 @@ var orgEditCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
-		Init()
+		initorg()
 
 	},
 }
@@ -634,7 +643,10 @@ func init() {
 	if err := orgAddCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
-	orgAddCmd.MarkFlagsOneRequired("avatar", "fullname", "website", "desc")
+	if err := orgAddCmd.MarkFlagRequired("fullname"); err != nil {
+		logrus.Fatal(err)
+	}
+
 	if err := viper.BindPFlag("org.create.website", orgAddCmd.Flags().Lookup("website")); err != nil {
 		logrus.Fatal(err)
 	}

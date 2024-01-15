@@ -10,13 +10,28 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
+
+var userAppService userapp.UserService
+
+func inittoken() {
+	user := userrepoimpl.NewUserRepo(
+		postgresql.DAO(cfg.User.Tables.User),
+	)
+
+	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
+	t := userrepoimpl.NewTokenRepo(
+		postgresql.DAO(cfg.User.Tables.Token),
+	)
+	userAppService = userapp.NewUserService(
+		user, git, t)
+}
 
 var tokenCmd = &cobra.Command{
 	Use:   "token",
@@ -26,6 +41,7 @@ var tokenCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -36,26 +52,16 @@ var tokenAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("add user token failed :%s with %s", err.Error(), viper.GetString("token.create.name"))
 		}
-		tokenName := viper.GetString("token.create.token_name")
+		tokenName, err := primitive.NewAccount(viper.GetString("token.create.token_name"))
+		if err != nil {
+			logrus.Fatalf("add user token failed :%s with  %s", err.Error(), viper.GetString("token.create.token_name"))
+		}
 		tokenPerm := viper.GetString("token.create.perm")
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
 			logrus.Fatalf("failed to get platform user %s", err)
 		}
-
-		fmt.Println("create token", acc.Account(), tokenName)
 
 		perm, err := primitive.NewTokenPerm(tokenPerm)
 		if err != nil {
@@ -70,11 +76,12 @@ var tokenAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("add user token failed :%s", err.Error())
 		} else {
-			logrus.Infof("add user %s token %s success, token is %s", acc.Account(), tokenName, token.Token)
+			fmt.Printf(token.Token)
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -86,18 +93,10 @@ var tokenDelCmd = &cobra.Command{
 			logrus.Fatalf("delete user token failed :%s with %s", err.Error(), viper.GetString("token.del.name"))
 		}
 
-		tokenName := viper.GetString("token.del.token_name")
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
+		tokenName, err := primitive.NewAccount(viper.GetString("token.del.token_name"))
+		if err != nil {
+			logrus.Fatalf(err.Error())
+		}
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
@@ -117,27 +116,17 @@ var tokenDelCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
-var tokenGetCmd = &cobra.Command{
-	Use: "get",
+var tokenListCmd = &cobra.Command{
+	Use: "list",
 	Run: func(cmd *cobra.Command, args []string) {
-		acc, err := primitive.NewAccount(viper.GetString("token.get.name"))
+		acc, err := primitive.NewAccount(viper.GetString("token.list.name"))
 		if err != nil {
 			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
 		}
-
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		userAppService := userapp.NewUserService(
-			user, git, t)
 
 		tokens, err := userAppService.ListTokens(acc)
 		if err != nil {
@@ -151,6 +140,32 @@ var tokenGetCmd = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
+	},
+}
+
+var tokenGetCmd = &cobra.Command{
+	Use: "get",
+	Run: func(cmd *cobra.Command, args []string) {
+		acc, err := primitive.NewAccount(viper.GetString("token.get.name"))
+		if err != nil {
+			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
+		}
+		name, err := primitive.NewAccount(viper.GetString("token.get.token_name"))
+		if err != nil {
+			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
+		}
+		token, err := userAppService.GetToken(acc, name)
+		if err != nil {
+			logrus.Fatalf("get user token failed :%s", err.Error())
+		} else {
+			fmt.Println("User tokens:")
+			fmt.Printf("%#v\n", token)
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		inittoken()
 	},
 }
 
@@ -159,28 +174,19 @@ var tokenVerifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		token := viper.GetString("token.verify.token")
 
-		user := userrepoimpl.NewUserRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.User),
-		)
-		t := userrepoimpl.NewTokenRepo(
-			mongodb.NewCollection(cfg.Mongodb.Collections.Token),
-		)
-		git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
-
-		userAppService := userapp.NewUserService(
-			user, git, t)
-
 		_, b := userAppService.VerifyToken(token, primitive.NewReadPerm())
 		logrus.Infof("verify user token result %t", b)
 
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initServer(configFile)
+		inittoken()
 	},
 }
 
 func init() {
 	tokenCmd.AddCommand(tokenGetCmd)
+	tokenCmd.AddCommand(tokenListCmd)
 	tokenCmd.AddCommand(tokenDelCmd)
 	tokenCmd.AddCommand(tokenAddCmd)
 	tokenCmd.AddCommand(tokenVerifyCmd)
@@ -217,8 +223,24 @@ func init() {
 		logrus.Fatal(err)
 	}
 
+	tokenListCmd.Flags().StringP("name", "n", "", "user name")
+	if err := tokenListCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+
 	tokenGetCmd.Flags().StringP("name", "n", "", "user name")
+	tokenGetCmd.Flags().StringP("token", "t", "", "token name")
 	if err := tokenGetCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := tokenGetCmd.MarkFlagRequired("token"); err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := viper.BindPFlag("token.get.name", tokenGetCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("token.get.token_name", tokenGetCmd.Flags().Lookup("token")); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -238,7 +260,7 @@ func init() {
 	if err := viper.BindPFlag("token.del.name", tokenDelCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := viper.BindPFlag("token.get.name", tokenGetCmd.Flags().Lookup("name")); err != nil {
+	if err := viper.BindPFlag("token.list.name", tokenListCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
 	}
 }

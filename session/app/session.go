@@ -105,7 +105,7 @@ func (s *sessionAppService) Logout(loginId primitive.UUID) (string, error) {
 
 func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error) {
 	return s.userApp.Create(&userapp.CmdToCreateUser{
-		Bio:      login.Bio,
+		Desc:     login.Desc,
 		Email:    login.Email,
 		Account:  login.Name,
 		AvatarId: login.AvatarId,

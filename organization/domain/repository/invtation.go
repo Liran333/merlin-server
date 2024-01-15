@@ -5,16 +5,15 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
 
-type MemberRequest interface {
-	Save(*domain.MemberRequest) (domain.MemberRequest, error)
-	DeleteByOrg(primitive.Account) error
-	ListInvitation(*domain.OrgMemberReqListCmd) ([]domain.MemberRequest, error)
-	//Search(*UserSearchOption) (UserSearchResult, error)
-}
-
 type Approve interface {
-	Save(*domain.Approve) (domain.Approve, error)
-	DeleteByOrg(primitive.Account) error
+	AddInvite(*domain.Approve) (domain.Approve, error)
+	SaveInvite(*domain.Approve) (domain.Approve, error)
+	AddRequest(*domain.MemberRequest) (domain.MemberRequest, error)
+	SaveRequest(*domain.MemberRequest) (domain.MemberRequest, error)
+	DeleteInviteAndReqByOrg(primitive.Account) error
+	//DeleteRequestByOrg(primitive.Account) error
 	ListInvitation(*domain.OrgInvitationListCmd) ([]domain.Approve, error)
+	ListRequests(*domain.OrgMemberReqListCmd) ([]domain.MemberRequest, error)
+
 	//Search(*UserSearchOption) (UserSearchResult, error)
 }

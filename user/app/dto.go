@@ -1,8 +1,7 @@
 package app
 
 import (
-	"fmt"
-
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
@@ -21,13 +20,17 @@ type UserDTO struct {
 	Fullname  string `json:"fullname"`
 	AvatarId  string `json:"avatar_id"`
 	CreatedAt int64  `json:"created_at"`
+	UpdatedAt int64  `json:"updated_at"`
 	Password  string `json:"-"`
 }
 
 type TokenDTO struct {
+	Id         string `json:"id"`
 	CreatedAt  int64  `json:"created_at"`
+	UpdatedAt  int64  `json:"updated_at"`
 	Expire     int64  `json:"expired"`
 	Account    string `json:"account"`
+	OwnerId    string `json:"owner_id"`
 	Name       string `json:"name"`
 	Permission string `json:"permission"`
 	Token      string `json:"token"`
@@ -35,11 +38,14 @@ type TokenDTO struct {
 
 func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 	dto.CreatedAt = t.CreatedAt
+	dto.UpdatedAt = t.UpdatedAt
 	dto.Expire = t.Expire
 	dto.Account = t.Account.Account()
-	dto.Name = t.Name
+	dto.Name = t.Name.Account()
 	dto.Permission = t.Permission.TokenPerm()
 	dto.Token = t.Token
+	dto.Id = t.Id.Identity()
+	dto.OwnerId = t.OwnerId.Identity()
 
 	return
 
@@ -62,40 +68,41 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 		dto.AvatarId = u.AvatarId.AvatarId()
 	}
 
-	if u.Bio != nil {
-		dto.Bio = u.Bio.Bio()
+	if u.Desc != nil {
+		dto.Bio = u.Desc.MSDDesc()
 	}
 
 	dto.Email = u.Email.Email()
-	dto.Id = fmt.Sprint(u.PlatformId)
 
 	dto.Password = u.PlatformPwd
-	dto.Fullname = u.Fullname
+	dto.Fullname = u.Fullname.MSDFullname()
 	dto.CreatedAt = u.CreatedAt
+	dto.UpdatedAt = u.UpdatedAt
+	dto.Id = u.Id.Identity()
 
 	return
 }
 
 type UpdateUserBasicInfoCmd struct {
-	Bio             domain.Bio
-	Email           domain.Email
-	AvatarId        domain.AvatarId
-	Fullname        string
-	bioChanged      bool
+	Desc            primitive.MSDDesc
+	Email           primitive.Email
+	AvatarId        primitive.AvatarId
+	Fullname        primitive.MSDFullname
+	descChanged     bool
 	avatarChanged   bool
 	emailChanged    bool
 	fullNameChanged bool
 }
 
 func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
-	if cmd.AvatarId != nil && !domain.IsSameDomainValue(cmd.AvatarId, u.AvatarId) {
+	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() != u.AvatarId.AvatarId() {
 		u.AvatarId = cmd.AvatarId
 		cmd.avatarChanged = true
 	}
 
-	if cmd.Bio != nil && !domain.IsSameDomainValue(cmd.Bio, u.Bio) {
-		u.Bio = cmd.Bio
-		cmd.bioChanged = true
+	if cmd.Desc != nil && cmd.Desc.MSDDesc() != u.Desc.MSDDesc() {
+		u.Desc = cmd.Desc
+		cmd.descChanged = true
 	}
 
 	if cmd.Email != nil && u.Email.Email() != cmd.Email.Email() {
@@ -103,12 +110,12 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 		cmd.emailChanged = true
 	}
 
-	if cmd.Fullname != "" && u.Fullname != cmd.Fullname {
+	if cmd.Fullname != nil && u.Fullname.MSDFullname() != cmd.Fullname.MSDFullname() {
 		u.Fullname = cmd.Fullname
 		cmd.fullNameChanged = true
 	}
 
-	changed = cmd.avatarChanged || cmd.bioChanged || cmd.emailChanged || cmd.fullNameChanged
+	changed = cmd.avatarChanged || cmd.descChanged || cmd.emailChanged || cmd.fullNameChanged
 
 	return
 }

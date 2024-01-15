@@ -10,7 +10,7 @@ import (
 
 type userBasicInfoUpdateRequest struct {
 	AvatarId *string `json:"avatar_id"`
-	Bio      *string `json:"bio"`
+	Desc     *string `json:"description"`
 	Email    *string `json:"email"`
 	Fullname *string `json:"fullname"`
 }
@@ -19,21 +19,34 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 	cmd app.UpdateUserBasicInfoCmd,
 	err error,
 ) {
-	if req.Bio != nil {
-		if cmd.Bio, err = domain.NewBio(*req.Bio); err != nil {
+	if req.Desc != nil {
+		if cmd.Desc, err = primitive.NewMSDDesc(*req.Desc); err != nil {
 			return
 		}
 	}
 
 	if req.AvatarId != nil {
-		cmd.AvatarId, err = domain.NewAvatarId(*req.AvatarId)
+		if cmd.AvatarId, err = primitive.NewAvatarId(*req.AvatarId); err != nil {
+			return
+		}
 	}
 
 	if req.Email != nil {
-		cmd.Email, err = domain.NewEmail(*req.Email)
+		if cmd.Email, err = primitive.NewEmail(*req.Email); err != nil {
+			return
+		}
 	}
 
-	cmd.Fullname = *req.Fullname
+	if req.Fullname != nil {
+		if cmd.Fullname, err = primitive.NewMSDFullname(*req.Fullname); err != nil {
+			return
+		}
+	}
+
+	if req.AvatarId == nil && req.Desc == nil && req.Email == nil && req.Fullname == nil {
+		err = fmt.Errorf("all param are empty")
+		return
+	}
 
 	return
 }
@@ -51,20 +64,19 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 		return
 	}
 
-	if cmd.Email, err = domain.NewEmail(req.Email); err != nil {
+	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
 		return
 	}
 
-	if cmd.Bio, err = domain.NewBio(req.Bio); err != nil {
+	if cmd.Desc, err = primitive.NewMSDDesc(req.Bio); err != nil {
 		return
 	}
 
-	if cmd.AvatarId, err = domain.NewAvatarId(req.AvatarId); err != nil {
+	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
 		return
 	}
 
-	if req.Fullname == "" {
-		err = fmt.Errorf("org full name can't be empty")
+	if cmd.Fullname, err = primitive.NewMSDFullname(req.Fullname); err != nil {
 		return
 	}
 
@@ -87,8 +99,11 @@ func (req *tokenCreateRequest) toCmd(user domain.Account) (cmd domain.TokenCreat
 		return
 	}
 
+	if cmd.Name, err = primitive.NewAccount(req.Name); err != nil {
+		return
+	}
+
 	cmd.Account = user
-	cmd.Name = req.Name
 
 	return
 }
@@ -102,7 +117,7 @@ type reqToGetUserInfo struct {
 	Account string `form:"account"`
 }
 
-func (req *reqToGetUserInfo) toAccount() (domain.Account, error) {
+func (req *reqToGetUserInfo) toAccount() (primitive.Account, error) {
 	if req.Account == "" {
 		return nil, nil
 	}

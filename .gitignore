@@ -10,3 +10,5 @@ config.yml
 app.ini
 deploy/
 label/label
+tests/e2e/client
+tests/e2e/token

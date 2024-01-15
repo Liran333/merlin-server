@@ -12,17 +12,21 @@ import (
 type stubOrg struct{}
 
 var stubMember = &orgdomain.OrgMember{
-	Id:       "id",
-	OrgName:  "org",
-	Username: "XXXX",
+	Id:       primitive.CreateIdentity(1),
+	OrgName:  primitive.CreateAccount("org"),
+	Username: primitive.CreateAccount("XXXX"),
 	Role:     orgdomain.OrgRoleAdmin,
 }
 
 var stub1Member = &orgdomain.OrgMember{
-	Id:       "id",
-	OrgName:  "member",
-	Username: "ffff",
+	Id:       primitive.CreateIdentity(1),
+	OrgName:  primitive.CreateAccount("member"),
+	Username: primitive.CreateAccount("ffff"),
 	Role:     orgdomain.OrgRoleWriter,
+}
+
+func (s *stubOrg) Add(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
+	return *o, nil
 }
 
 func (s *stubOrg) Save(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
@@ -33,7 +37,7 @@ func (s *stubOrg) Delete(*orgdomain.OrgMember) error {
 	return nil
 }
 
-func (s *stubOrg) DeleteByOrg(string) error {
+func (s *stubOrg) DeleteByOrg(primitive.Account) error {
 	return nil
 }
 

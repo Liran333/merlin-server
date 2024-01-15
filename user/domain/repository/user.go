@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
@@ -30,12 +32,18 @@ type UserSearchResult struct {
 }
 
 type User interface {
-	Save(*domain.User) (domain.User, error)
-	Delete(*domain.User) error
+	AddUser(*domain.User) (domain.User, error)
+	SaveUser(*domain.User) (domain.User, error)
+	DeleteUser(*domain.User) error
 	GetByAccount(domain.Account) (domain.User, error)
-	GetByFollower(owner, follower domain.Account) (domain.User, bool, error)
-
-	GetUserAvatarId(domain.Account) (domain.AvatarId, error)
+	GetUserAvatarId(domain.Account) (primitive.AvatarId, error)
 	GetUsersAvatarId([]string) ([]domain.User, error)
 	GetUserFullname(domain.Account) (string, error)
+	// org
+	AddOrg(*org.Organization) (org.Organization, error)
+	SaveOrg(*org.Organization) (org.Organization, error)
+	DeleteOrg(*org.Organization) error
+	CheckName(primitive.Account) bool
+	GetOrgByName(primitive.Account) (org.Organization, error)
+	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
 }

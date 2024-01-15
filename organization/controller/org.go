@@ -63,7 +63,8 @@ type OrgController struct {
 // @Param    name  path  string                     true  "name"
 // @Param    body  body  orgBasicInfoUpdateRequest  true  "body of new organization"
 // @Accept   json
-// @Success  202  {object}  orgapp.OrganizationDTO
+// @Security Bearer
+// @Success  202  {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name} [put]
 func (ctl *OrgController) Update(ctx *gin.Context) {
 	var req orgBasicInfoUpdateRequest
@@ -100,7 +101,7 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    name  path  string  true  "name"
 // @Accept   json
-// @Success  200  {object}  orgapp.OrganizationDTO
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name} [get]
 func (ctl *OrgController) Get(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
@@ -117,12 +118,14 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 	}
 }
 
-// @Summary  GetUser
+// @Summary   User or organization info
 // @Description  get organization or user info
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name of the user of organization"
 // @Accept   json
-// @Success  200  {object}  commonapp.UserDTO
+// @Success  200  {object}  commonctl.ResponseData
+// @Failure  404  "user not found"
+// @Failure  400  {object}  commonctl.ResponseData
 // @Router   /v1/account/{name} [get]
 func (ctl *OrgController) GetUser(ctx *gin.Context) {
 	name, err := primitive.NewAccount(ctx.Param("name"))
@@ -146,9 +149,11 @@ func (ctl *OrgController) GetUser(ctx *gin.Context) {
 // @Summary  Check
 // @Description  Check the name is available
 // @Tags     Name
-// @Param    name  query  string  true  "name"
+// @Param    name  query  string  true  "the name to be check whether it's usable"
 // @Accept   json
-// @Success  200  name is valid
+// @Security Bearer
+// @Success  200  "name is valid"
+// @Failure  409  "name is invalid"
 // @Router   /v1/name [head]
 func (ctl *OrgController) Check(ctx *gin.Context) {
 	// TODO why head method
@@ -181,7 +186,9 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Param    owner     query  string  false  "filter by owner"
 // @Param    username  query  string  false  "filter by username"
 // @Accept   json
-// @Success  200  {object}  []orgapp.OrganizationDTO
+// @Security Bearer
+// @Success  200  {object}  commonctl.ResponseData
+// @Failure  400  {object}  commonctl.ResponseData
 // @Router   /v1/organization [get]
 func (ctl *OrgController) List(ctx *gin.Context) {
 	var req orgListRequest
@@ -230,7 +237,8 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    body  body  orgCreateRequest  true  "body of new organization"
 // @Accept   json
-// @Success  201 {object} orgapp.OrganizationDTO
+// @Security Bearer
+// @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/organization [post]
 func (ctl *OrgController) Create(ctx *gin.Context) {
 	var req orgCreateRequest
@@ -245,16 +253,17 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 	if user == nil {
 		return
 	}
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "create org")
 
-	o, err := ctl.org.Create(&domain.OrgCreatedCmd{
-		Name:        req.Name,
-		Owner:       user.Account(),
-		Website:     req.Website,
-		AvatarId:    req.AvatarId,
-		Description: req.Description,
-		FullName:    req.FullName,
-	})
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	cmd.Owner = user
+
+	o, err := ctl.org.Create(&cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -267,6 +276,7 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    name  path  string  true  "name"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/organization/{name} [delete]
 func (ctl *OrgController) Delete(ctx *gin.Context) {
@@ -300,7 +310,8 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    name  path  string  true  "name"
 // @Accept   json
-// @Success  200 {object} []orgapp.MemberDTO
+// @Security Bearer
+// @Success  200 {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name}/member [get]
 func (ctl *OrgController) ListMember(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
@@ -323,7 +334,8 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 // @Param    body  body  OrgMemberEditRequest  true  "body of new member"
 // @Param    name  path  string  true  "name"
 // @Accept   json
-// @Success  202 {object} app.MemberDTO
+// @Security Bearer
+// @Success  202 {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name}/member [put]
 func (ctl *OrgController) EditMember(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -361,6 +373,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 // @Param    body  body  orgMemberRemoveRequest  true  "body of the removed member"
 // @Param    name  path  string  true  "name"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/organization/{name}/member [delete]
 func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
@@ -398,6 +411,7 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    name  path  string  true  "name"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/organization/{name} [post]
 func (ctl *OrgController) Leave(ctx *gin.Context) {
@@ -431,9 +445,9 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 // @Description Send invitation to a user to join the organization
 // @Tags     Organization
 // @Param    body  body  OrgInviteMemberRequest  true  "body of the invitation"
-// @Param    name  path  string                  true  "name"
 // @Accept   json
-// @Success  201 {object} orgapp.OrganizationDTO
+// @Security Bearer
+// @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/invite [post]
 func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -468,14 +482,15 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 // @Summary  ListInvitation
 // @Description List invitation of the organization
 // @Tags     Organization
-// @Param    org        query  string  false  "organization name"
+// @Param    org_name   query  string  false  "organization name"
 // @Param    invitee    query  string  false  "invitee name"
 // @Param    inviter    query  string  false  "inviter name"
 // @Param    status     query  string  false  "invitation status, can be: pending/approved/rejected"
 // @Param    page_size  query  int     false  "page size"
 // @Param    page       query  int     false  "page index"
 // @Accept   json
-// @Success  200  {object}  []orgapp.ApproveDTO
+// @Security Bearer
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/invite [get]
 func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -504,10 +519,10 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 // @Description Revoke member request of the organization
 // @Tags     Organization
 // @Param    body  body  OrgRevokeMemberReqRequest  true  "body of the member request"
-// @Param    name  path  string                     true  "organization name"
 // @Accept   json
-// @Success  200 {object} []orgapp.ApproveDTO
-// @Router   /v1//request [delete]
+// @Security Bearer
+// @Success  200 {object}  commonctl.ResponseData
+// @Router   /v1/request [delete]
 func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -543,7 +558,8 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    body  body  OrgReqMemberRequest  true  "body of the member request"
 // @Accept   json
-// @Success  201 {object} orgapp.OrganizationDTO
+// @Security Bearer
+// @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/request [post]
 func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -580,7 +596,8 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    body  body  OrgApproveMemberRequest  true  "body of the accept"
 // @Accept   json
-// @Success  201 {object} orgapp.MemberRequestDTO
+// @Security Bearer
+// @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/request [put]
 func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -621,7 +638,8 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 // @Param    page_size  query  int     false  "page size"
 // @Param    page       query  int     false  "page index"
 // @Accept   json
-// @Success  200 {object} []orgapp.MemberRequestDTO
+// @Security Bearer
+// @Success  200 {object}  commonctl.ResponseData
 // @Router   /v1/request [get]
 func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -656,8 +674,8 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 // @Description Revoke invitation of the organization
 // @Tags     Organization
 // @Param    body  body  OrgRevokeInviteRequest  true  "body of the invitation"
-// @Param    name  path  string  true  "organization name"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/invite [delete]
 func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
@@ -695,7 +713,8 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    body  body  OrgAcceptMemberRequest  true  "body of the invitation"
 // @Accept   json
-// @Success  202 {object} []orgapp.ApproveDTO
+// @Security Bearer
+// @Success  202 {object}  commonctl.ResponseData
 // @Router   /v1/invite [put]
 func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -720,9 +739,9 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "accept a invitation of organization")
 
-	if _, err := ctl.org.AcceptInvite(&cmd); err != nil {
+	if a, err := ctl.org.AcceptInvite(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx, nil)
+		commonctl.SendRespOfPut(ctx, a)
 	}
 }

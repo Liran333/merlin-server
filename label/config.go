@@ -90,6 +90,6 @@ func (cfg *Config) Validate() error {
 	return nil
 }
 
-func (cfg *Config) InitPrimitive() {
-	primitive.Init(&cfg.Primitive)
+func (cfg *Config) InitPrimitive() error {
+	return primitive.Init(&cfg.Primitive)
 }

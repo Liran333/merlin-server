@@ -21,36 +21,34 @@ const (
 
 // user
 type User struct {
-	Id string
-
-	Email    Email
-	Account  Account
-	Fullname string
-
+	Id          primitive.Identity
+	Email       primitive.Email
+	Account     Account
+	Fullname    primitive.MSDFullname
 	PlatformPwd string //password for git user
 	PlatformId  int64  // id in gitea
-
-	CreatedAt int64
-
-	Bio      Bio
-	AvatarId AvatarId
-
-	Version int
+	CreatedAt   int64
+	UpdatedAt   int64
+	Desc        primitive.MSDDesc
+	AvatarId    primitive.AvatarId
+	Version     int
 }
 
 type UserInfo struct {
 	Account  Account
-	AvatarId AvatarId
+	AvatarId primitive.AvatarId
 }
 
 type PlatformToken struct {
-	Id      string
+	Id      primitive.Identity
 	Token   string
-	Name    string
-	Account Account
+	Name    primitive.Account
+	Account Account            // owner name
+	OwnerId primitive.Identity // owner id
 	// TODO: expire not honor by gitea
 	Expire     int64 // timeout in seconds
 	CreatedAt  int64
+	UpdatedAt  int64
 	Permission primitive.TokenPerm
 	Salt       string
 	LastEight  string
@@ -63,15 +61,15 @@ func (t PlatformToken) isExpired() bool {
 
 func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
 	if t.isExpired() {
-		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenExpired)
+		return allerror.NewNoPermission(tokenExpired)
 	}
 
 	if !t.Match(token) {
-		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenInvalid)
+		return allerror.NewNoPermission(tokenInvalid)
 	}
 
 	if !t.Permission.PermissionAllow(perm) {
-		return allerror.New(allerror.ErrorCodeAccessTokenInvalid, tokenPermDenied)
+		return allerror.NewNoPermission(tokenPermDenied)
 	}
 
 	return nil
@@ -120,41 +118,44 @@ func ToPerms(t primitive.TokenPerm) []string {
 
 // user
 type UserCreateCmd struct {
-	Email    Email
+	Email    primitive.Email
 	Account  Account
-	Bio      Bio
-	AvatarId AvatarId
-	Fullname string
+	Desc     primitive.MSDDesc
+	AvatarId primitive.AvatarId
+	Fullname primitive.MSDFullname
 }
 
 type TokenCreatedCmd struct {
-	Account    Account // user name
-	Name       string  // name of the token
-	Expire     int64   // timeout in seconds
+	Account    Account           // user name
+	Name       primitive.Account // name of the token
+	Expire     int64             // timeout in seconds
 	Permission primitive.TokenPerm
 }
 
 func (cmd TokenCreatedCmd) Validate() error {
-	if cmd.Name == "" {
+	if cmd.Name == nil {
 		return allerror.NewInvalidParam("missing name when creating token")
+	}
+
+	if cmd.Account == nil {
+		return allerror.NewInvalidParam("missing account when creating token")
 	}
 
 	return nil
 }
 
 type TokenDeletedCmd struct {
-	Actor   Account
-	Account Account // user name
-	Name    string  // name of the token
+	Account Account // actor user name
+	Name    Account // name of the token
 }
 
 func (cmd TokenDeletedCmd) Validate() error {
 	if cmd.Account == nil {
-		return allerror.NewInvalidParam("missing account when creating token")
+		return allerror.NewInvalidParam("missing account when delete token")
 	}
 
-	if cmd.Name == "" {
-		return allerror.NewInvalidParam("missing name when creating token")
+	if cmd.Name == nil {
+		return allerror.NewInvalidParam("missing name when delete token")
 	}
 
 	return nil
@@ -167,14 +168,15 @@ type FollowerInfo struct {
 
 type FollowerUserInfo struct {
 	Account    Account
-	AvatarId   AvatarId
-	Bio        Bio
+	AvatarId   primitive.AvatarId
+	Desc       primitive.MSDDesc
 	IsFollower bool
 }
 
 func (cmd *UserCreateCmd) Validate() error {
 	b := cmd.Email != nil &&
-		cmd.Account != nil
+		cmd.Account != nil &&
+		cmd.Fullname != nil
 
 	if !b {
 		return errors.New("invalid cmd of creating user")
@@ -185,10 +187,9 @@ func (cmd *UserCreateCmd) Validate() error {
 
 func (cmd *UserCreateCmd) ToUser() User {
 	return User{
-		Email:   cmd.Email,
-		Account: cmd.Account,
-
-		Bio:      cmd.Bio,
+		Email:    cmd.Email,
+		Account:  cmd.Account,
+		Desc:     cmd.Desc,
 		AvatarId: cmd.AvatarId,
 		Fullname: cmd.Fullname,
 	}

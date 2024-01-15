@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 
 	basegitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/user/domain"
 	redisdb "github.com/opensourceways/redis-lib"
 )
@@ -46,12 +46,6 @@ func initServer(configFile string) {
 		logrus.Fatalf("load config, err:%s", err.Error())
 	}
 
-	// mongo
-	m := &cfg.Mongodb
-	if err := mongodb.Initialize(m.DBConn, m.DBName, m.DBCert, false); err != nil {
-		logrus.Fatalf("initialize mongodb failed, err:%s", err.Error())
-	}
-
 	//redis
 	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Fatalf("init redis failed, err:%s", err.Error())
@@ -59,6 +53,18 @@ func initServer(configFile string) {
 
 	// user
 	domain.Init(&cfg.User)
+
+	// postgresql
+	if err := postgresql.Init(&cfg.Postgresql); err != nil {
+		logrus.Errorf("init postgresql failed, err:%s", err.Error())
+
+		return
+	}
+
+	// init
+	if err := cfg.Init(); err != nil {
+		logrus.Errorf("init cfg failed, err:%s", err.Error())
+	}
 
 	// gitea
 	if err := basegitea.Init(&cfg.Git); err != nil {

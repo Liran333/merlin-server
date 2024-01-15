@@ -2,11 +2,11 @@ package primitive
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
-	"strings"
 )
 
-type AccountType int
+type AccountType = int
 
 var (
 	regUserName             = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
@@ -20,11 +20,18 @@ type Account interface {
 }
 
 func NewAccount(v string) (Account, error) {
-	if v == "" || strings.ToLower(v) == "root" {
+	if v == "" {
 		return nil, errors.New("invalid user name")
 	}
 
-	// TODO missing to validate length
+	if msdConfig.reservedAccounts.Has(v) {
+		return nil, errors.New("name is reserved")
+	}
+
+	n := len(v)
+	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
+		return nil, fmt.Errorf("invalid name length, should between %d and %d", msdConfig.MinNameLength, msdConfig.MaxNameLength)
+	}
 
 	if !regUserName.MatchString(v) {
 		return nil, errors.New("invalid user name")

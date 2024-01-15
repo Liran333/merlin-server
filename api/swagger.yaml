@@ -1,61 +1,4 @@
 definitions:
-  app.ApproveDTO:
-    properties:
-      by:
-        type: string
-      created_at:
-        type: integer
-      expires_at:
-        type: integer
-      fullname:
-        type: string
-      inviter:
-        type: string
-      msg:
-        type: string
-      org_name:
-        type: string
-      role:
-        type: string
-      status:
-        type: string
-      updated_at:
-        type: integer
-      user_name:
-        type: string
-    type: object
-  app.MemberDTO:
-    properties:
-      org_full_name:
-        type: string
-      org_name:
-        type: string
-      role:
-        type: string
-      user_name:
-        type: string
-    type: object
-  app.MemberRequestDTO:
-    properties:
-      by:
-        type: string
-      created_at:
-        type: integer
-      fullname:
-        type: string
-      msg:
-        type: string
-      org_name:
-        type: string
-      role:
-        type: string
-      status:
-        type: string
-      updated_at:
-        type: integer
-      username:
-        type: string
-    type: object
   app.ModelDTO:
     properties:
       created_at:
@@ -105,31 +48,6 @@ definitions:
       total:
         type: integer
     type: object
-  app.OrganizationDTO:
-    properties:
-      allow_request:
-        type: boolean
-      avatar_id:
-        type: string
-      created_at:
-        type: integer
-      default_role:
-        type: string
-      description:
-        type: string
-      full_name:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      platform_id:
-        type: string
-      website:
-        type: string
-    type: object
   app.SpaceDTO:
     properties:
       created_at:
@@ -178,21 +96,6 @@ definitions:
         type: array
       total:
         type: integer
-    type: object
-  app.TokenDTO:
-    properties:
-      account:
-        type: string
-      created_at:
-        type: integer
-      expired:
-        type: integer
-      name:
-        type: string
-      permission:
-        type: string
-      token:
-        type: string
     type: object
   controller.OrgAcceptMemberRequest:
     properties:
@@ -354,7 +257,7 @@ definitions:
         type: string
       description:
         type: string
-      full_name:
+      fullname:
         type: string
       website:
         type: string
@@ -365,7 +268,7 @@ definitions:
         type: string
       description:
         type: string
-      full_name:
+      fullname:
         type: string
       name:
         type: string
@@ -519,28 +422,11 @@ definitions:
     properties:
       avatar_id:
         type: string
-      bio:
+      description:
         type: string
       email:
         type: string
       fullname:
-        type: string
-    type: object
-  controller.userDetail:
-    properties:
-      account:
-        type: string
-      avatar_id:
-        type: string
-      bio:
-        type: string
-      created_at:
-        type: integer
-      email:
-        type: string
-      fullname:
-        type: string
-      id:
         type: string
     type: object
   controller.userModelsInfo:
@@ -569,49 +455,24 @@ definitions:
       total:
         type: integer
     type: object
-  github_com_openmerlin_merlin-server_common_app.UserDTO:
-    properties:
-      allow_request:
-        type: boolean
-      avatar_id:
-        type: string
-      created_at:
-        type: integer
-      default_role:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      full_name:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      type:
-        type: integer
-      website:
-        type: string
-    type: object
   github_com_openmerlin_merlin-server_session_app.UserDTO:
     properties:
       account:
         type: string
       avatar_id:
         type: string
-      bio:
-        type: string
       created_at:
         type: integer
+      description:
+        type: string
       email:
         type: string
       fullname:
         type: string
       id:
         type: string
+      updated_at:
+        type: integer
     type: object
   repository.ModelSummary:
     properties:
@@ -658,40 +519,13 @@ definitions:
 info:
   contact: {}
 paths:
-  /v1//request:
-    delete:
-      consumes:
-      - application/json
-      description: Revoke member request of the organization
-      parameters:
-      - description: body of the member request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.OrgRevokeMemberReqRequest'
-      - description: organization name
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/app.ApproveDTO'
-            type: array
-      summary: RevokeMember
-      tags:
-      - Organization
   /v1/account/{name}:
     get:
       consumes:
       - application/json
       description: get organization or user info
       parameters:
-      - description: name
+      - description: name of the user of organization
         in: path
         name: name
         required: true
@@ -700,8 +534,14 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_openmerlin_merlin-server_common_app.UserDTO'
-      summary: GetUser
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "404":
+          description: user not found
+      summary: User or organization info
       tags:
       - Organization
   /v1/invite:
@@ -716,14 +556,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/controller.OrgRevokeInviteRequest'
-      - description: organization name
-        in: path
-        name: name
-        required: true
-        type: string
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: RevokeInvitation
       tags:
       - Organization
@@ -734,7 +571,7 @@ paths:
       parameters:
       - description: organization name
         in: query
-        name: org
+        name: org_name
         type: string
       - description: invitee name
         in: query
@@ -760,9 +597,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.ApproveDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: ListInvitation
       tags:
       - Organization
@@ -777,16 +614,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/controller.OrgInviteMemberRequest'
-      - description: name
-        in: path
-        name: name
-        required: true
-        type: string
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.OrganizationDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: InviteMember
       tags:
       - Organization
@@ -805,9 +639,9 @@ paths:
         "202":
           description: Accepted
           schema:
-            items:
-              $ref: '#/definitions/app.ApproveDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: AcceptInvite
       tags:
       - Organization
@@ -992,16 +826,18 @@ paths:
       - application/json
       description: Check the name is available
       parameters:
-      - description: name
+      - description: the name to be check whether it's usable
         in: query
         name: name
         required: true
         type: string
       responses:
         "200":
-          description: OK
-          schema:
-            type: name
+          description: name is valid
+        "409":
+          description: name is invalid
+      security:
+      - Bearer: []
       summary: Check
       tags:
       - Name
@@ -1023,9 +859,13 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.OrganizationDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: List
       tags:
       - Organization
@@ -1044,7 +884,9 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.OrganizationDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Create
       tags:
       - Organization
@@ -1062,6 +904,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: Delete
       tags:
       - Organization
@@ -1079,7 +923,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.OrganizationDTO'
+            $ref: '#/definitions/controller.ResponseData'
       summary: Get
       tags:
       - Organization
@@ -1096,6 +940,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: Leave
       tags:
       - Organization
@@ -1119,7 +965,9 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/app.OrganizationDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Update
       tags:
       - Organization
@@ -1143,6 +991,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: RemoveMember
       tags:
       - Organization
@@ -1160,9 +1010,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.MemberDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: ListMember
       tags:
       - Organization
@@ -1186,11 +1036,34 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/app.MemberDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: EditMember
       tags:
       - Organization
   /v1/request:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke member request of the organization
+      parameters:
+      - description: body of the member request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgRevokeMemberReqRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: RevokeMember
+      tags:
+      - Organization
     get:
       consumes:
       - application/json
@@ -1220,9 +1093,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.MemberRequestDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: ListRequests
       tags:
       - Organization
@@ -1241,7 +1114,9 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.OrganizationDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: RequestMember
       tags:
       - Organization
@@ -1260,7 +1135,9 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.MemberRequestDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: ApproveRequest
       tags:
       - Organization
@@ -1475,18 +1352,15 @@ paths:
     get:
       consumes:
       - application/json
-      description: get user
-      parameters:
-      - description: account
-        in: query
-        name: account
-        type: string
+      description: get user info
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.userDetail'
-      summary: Get
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Get user info
       tags:
       - User
     put:
@@ -1505,6 +1379,8 @@ paths:
           description: Accepted
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Update
       tags:
       - User
@@ -1517,9 +1393,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.TokenDTO'
-            type: array
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: GetTokenInfo
       tags:
       - User
@@ -1538,7 +1414,9 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.TokenDTO'
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: CreatePlatformToken
       tags:
       - User
@@ -1556,6 +1434,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: DeletePlatformToken
       tags:
       - User
@@ -1719,4 +1599,10 @@ paths:
       summary: Get
       tags:
       - SpaceRestful
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and api Bearer.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

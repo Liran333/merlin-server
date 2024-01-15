@@ -81,6 +81,6 @@ func SendRespOfDelete(ctx *gin.Context) {
 
 func SendError(ctx *gin.Context, err error) {
 	sc, code := httpError(err)
-
+	ctx.AbortWithError(sc, err)
 	ctx.JSON(sc, newResponseCodeMsg(code, err.Error()))
 }

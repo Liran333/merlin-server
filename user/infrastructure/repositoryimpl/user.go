@@ -1,289 +1,234 @@
 package repositoryimpl
 
 import (
-	"context"
 	"errors"
-	"fmt"
 
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"gorm.io/gorm/clause"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
-func NewUserRepo(m mongodbClient) repository.User {
-	return &userRepoImpl{m}
+func NewUserRepo(db postgresql.Impl) repository.User {
+	userTableName = db.TableName()
+
+	if err := postgresql.DB().AutoMigrate(&UserDO{}); err != nil {
+		return nil
+	}
+
+	return &userRepoImpl{db}
 }
 
 type userRepoImpl struct {
-	cli mongodbClient
+	postgresql.Impl
 }
 
-func (impl *userRepoImpl) Save(u *domain.User) (r domain.User, err error) {
-	if u.Id != "" {
-		if err = impl.update(u); err != nil {
-			err = fmt.Errorf("failed to update user: %w", err)
-		} else {
-			r = *u
-			r.Version += 1
-		}
+func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err error) {
+	o.Id = primitive.CreateIdentity(primitive.GetId())
+	do := toOrgDO(o)
 
+	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
+	if err != nil {
 		return
 	}
 
-	v, err := impl.insert(u)
-	if err != nil {
-		err = fmt.Errorf("failed to add user info %w", err)
-	} else {
-		r = *u
-		r.Id = v
-	}
+	new = do.toOrg()
 
 	return
 }
 
-func (impl *userRepoImpl) Delete(u *domain.User) (err error) {
-	filter, err := mongo.ObjectIdFilter(u.Id)
-	if err != nil {
+func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, err error) {
+	do := toOrgDO(o)
+	do.Version += 1
+
+	tmpDo := &UserDO{}
+	tmpDo.ID = o.Id.Integer()
+	v := impl.DB().Model(
+		tmpDo,
+	).Clauses(clause.Returning{}).Where(
+		impl.EqualQuery(fieldVersion), o.Version,
+	).Select(`*`).Omit("created_at").Updates(&do) // should not update created_at
+
+	if v.Error != nil {
+		err = v.Error
 		return
 	}
 
-	f := func(ctx context.Context) error {
-		return impl.cli.DeleteOne(
-			ctx, filter,
+	if v.RowsAffected == 0 {
+		err = commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
 		)
+		return
 	}
 
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-	}
+	new = tmpDo.toOrg()
+
 	return
+}
+
+func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
+	tmpDo := &UserDO{}
+	tmpDo.ID = o.Id.Integer()
+
+	return impl.DeleteByPrimaryKey(
+		tmpDo,
+	)
+}
+
+// check if the name is available
+// return true mean the name is available
+// return false mean the name is not available
+func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
+	var count int64
+	err := impl.DB().Where(impl.EqualQuery(fieldName), name.Account()).Count(&count).Error
+
+	if err == nil && count == 0 {
+		return true
+	}
+
+	return false
+}
+
+func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organization, err error) {
+	tmpDo := &UserDO{}
+	tmpDo.Name = account.Account()
+
+	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+		return
+	}
+
+	r = tmpDo.toOrg()
+
+	return
+}
+
+func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Organization, err error) {
+	query := impl.DB().Where(
+		impl.EqualQuery(fieldOwner), account.Account(),
+	)
+
+	var dos []UserDO
+
+	err = query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, err
+	}
+
+	os = make([]org.Organization, len(dos))
+	for i := range dos {
+		os[i] = dos[i].toOrg()
+	}
+
+	return
+}
+
+func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
+	u.Id = primitive.CreateIdentity(primitive.GetId())
+	do := toUserDO(u)
+
+	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
+
+	if err != nil {
+		return
+	}
+
+	new = do.toUser()
+
+	return
+}
+
+func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) {
+	do := toUserDO(u)
+	do.Version += 1
+
+	tmpDo := &UserDO{}
+	tmpDo.ID = u.Id.Integer()
+	v := impl.DB().Model(
+		tmpDo,
+	).Clauses(clause.Returning{}).Where(
+		impl.EqualQuery(fieldVersion), u.Version,
+	).Select(`*`).Omit("created_at").Updates(&do) // should not update created_at
+
+	if v.Error != nil {
+		err = v.Error
+		return
+	}
+
+	if v.RowsAffected == 0 {
+		err = commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
+		return
+	}
+
+	new = tmpDo.toUser()
+
+	return
+}
+
+func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
+	tmpDo := &UserDO{}
+	tmpDo.ID = u.Id.Integer()
+
+	return impl.DeleteByPrimaryKey(
+		tmpDo,
+	)
 }
 
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
-	if r, _, err = impl.GetByFollower(account, nil); err != nil {
+	tmpDo := &UserDO{}
+	tmpDo.Name = account.Account()
+
+	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
 		return
 	}
 
-	return
-}
-
-func (impl *userRepoImpl) update(u *domain.User) (err error) {
-	var user DUser
-	err = toUserDoc(*u, &user)
-	if err != nil {
-		return
-	}
-	doc, err := mongo.GenDoc(user)
-	if err != nil {
-		return
-	}
-
-	filter, err := mongo.ObjectIdFilter(u.Id)
-	if err != nil {
-		return
-	}
-
-	f := func(ctx context.Context) error {
-		return impl.cli.UpdateDoc(
-			ctx, filter, doc, mongoCmdSet, u.Version,
-		)
-	}
-
-	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocNotExists(err) {
-		err = fmt.Errorf("concurrent updating: %w", err)
-	}
-
-	return
-}
-
-func (impl *userRepoImpl) insert(u *domain.User) (id string, err error) {
-	var user DUser
-	err = toUserDoc(*u, &user)
-	if err != nil {
-		return
-	}
-
-	doc, err := mongo.GenDoc(user)
-	if err != nil {
-		return
-	}
-
-	doc[fieldVersion] = 0
-	doc[fieldFollower] = bson.A{}
-	doc[fieldFollowing] = bson.A{}
-
-	f := func(ctx context.Context) error {
-		v, err := impl.cli.NewDocIfNotExist(
-			ctx, mongo.DocFilterByAccount(u.Account.Account()), doc,
-		)
-
-		id = v
-
-		return err
-	}
-
-	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = commonrepo.NewErrorDuplicateCreating(err)
-	}
-
-	return
-}
-
-func (impl *userRepoImpl) GetByFollower(owner, follower domain.Account) (
-	u domain.User, isFollower bool, err error,
-) {
-	var v []struct {
-		DUser `bson:",inline"`
-
-		IsFollower     bool `bson:"is_follower"`
-		FollowerCount  int  `bson:"follower_count"`
-		FollowingCount int  `bson:"following_count"`
-	}
-
-	f := func(ctx context.Context) error {
-		fields := bson.M{
-			fieldFollowerCount:  bson.M{"$size": "$" + fieldFollower},
-			fieldFollowingCount: bson.M{"$size": "$" + fieldFollowing},
-		}
-
-		if follower != nil {
-			fields[fieldIsFollower] = bson.M{
-				"$in": bson.A{follower.Account(), "$" + fieldFollower},
-			}
-		}
-
-		pipeline := bson.A{
-			bson.M{"$match": mongo.UserDocFilterByAccount(owner.Account())},
-			bson.M{"$addFields": fields},
-			bson.M{"$project": bson.M{
-				fieldFollowing: 0,
-				fieldFollower:  0,
-			}},
-		}
-
-		cursor, err := impl.cli.Collection().Aggregate(ctx, pipeline)
-		if err != nil {
-			return err
-		}
-
-		return cursor.All(ctx, &v)
-	}
-
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
-		return
-	}
-
-	if len(v) == 0 {
-		err = commonrepo.NewErrorResourceNotExists(errors.New("no user"))
-
-		return
-	}
-
-	item := &v[0]
-	if err = toUser(item.DUser, &u); err != nil {
-		return
-	}
-
-	if follower != nil {
-		isFollower = item.IsFollower
-	}
+	r = tmpDo.toUser()
 
 	return
 }
 
 func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
+	tmpDo := &UserDO{}
+	tmpDo.Name = account.Account()
 
-	var v DUser
-
-	f := func(ctx context.Context) error {
-		return impl.cli.GetDoc(
-			ctx, mongo.DocFilterByAccount(account.Account()),
-			bson.M{fieldFullname: 1}, &v,
-		)
+	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+		return
 	}
 
-	if err := primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
+	return tmpDo.Fullname, nil
+}
 
-		return "", err
+func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id primitive.AvatarId, err error) {
+	tmpDo := &UserDO{}
+	tmpDo.Name = account.Account()
+
+	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+		return
 	}
 
-	return v.Fullname, nil
+	return primitive.CreateAvatarId(tmpDo.AvatarId), nil
 }
 
 func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User, err error) {
-	var v []DUser
+	query := impl.DB().Where(
+		impl.InFilter(fieldName), names,
+	)
 
-	if len(names) == 0 {
-		err = commonrepo.NewErrorResourceNotExists(err)
+	var dos []UserDO
 
-		return
-	}
-
-	filter := bson.M{}
-	filter[fieldName] = bson.M{
-		"$in": names,
-	}
-
-	f := func(ctx context.Context) error {
-		return impl.cli.GetDocs(
-			ctx, filter,
-			bson.M{fieldAvatarId: 1, fieldName: 1}, &v,
-		)
-	}
-
-	if err := primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
+	err = query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
 		return nil, err
 	}
 
-	users = make([]domain.User, len(v))
-	for i := range v {
-		users[i] = domain.User{
-			Account:  primitive.CreateAccount(v[i].Name),
-			AvatarId: domain.CreateAvatarId(v[i].AvatarId),
-		}
-	}
-
-	return
-}
-
-func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id domain.AvatarId, err error) {
-
-	var v DUser
-
-	f := func(ctx context.Context) error {
-		return impl.cli.GetDoc(
-			ctx, mongo.DocFilterByAccount(account.Account()),
-			bson.M{fieldAvatarId: 1}, &v,
-		)
-	}
-
-	if err := primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
-		return nil, err
-	}
-
-	if id, err = domain.NewAvatarId(v.AvatarId); err != nil {
-		return
+	users = make([]domain.User, len(dos))
+	for i := range dos {
+		users[i] = dos[i].toUser()
 	}
 
 	return

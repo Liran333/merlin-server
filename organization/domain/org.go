@@ -5,11 +5,10 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-type InviteType string
+type InviteType = string
 
 const (
 	InviteTypeInvite  InviteType = "invite"
@@ -17,33 +16,35 @@ const (
 )
 
 type Organization struct {
-	Id                string            `json:"id"`
-	Name              primitive.Account `json:"name"`
-	FullName          string            `json:"fullname"`
-	AvatarId          user.AvatarId     `json:"avatar_id"`
-	PlatformId        string            `json:"platform_id"`
-	Description       string            `json:"description"`
-	CreatedAt         int64             `json:"created_at"`
-	Website           string            `json:"website"`
-	Owner             primitive.Account `json:"owner"`
-	WriteTeamId       int64             `json:"write_team_id"`
-	ReadTeamId        int64             `json:"read_team_id"`
-	OwnerTeamId       int64             `json:"owner_team_id"`
-	ContributorTeamId int64             `json:"contributor_team_id"`
-	Type              int               `json:"type"`
-	DefaultRole       OrgRole           `json:"default_role"`
-	AllowRequest      bool              `json:"allow_request"`
+	Id                primitive.Identity    `json:"id"`
+	Name              primitive.Account     `json:"name"`
+	Fullname          primitive.MSDFullname `json:"fullname"`
+	AvatarId          primitive.AvatarId    `json:"avatar_id"`
+	PlatformId        int64                 `json:"platform_id"`
+	Description       primitive.MSDDesc     `json:"description"`
+	CreatedAt         int64                 `json:"created_at"`
+	UpdatedAt         int64                 `json:"updated_at"`
+	Website           string                `json:"website"`
+	Owner             primitive.Account     `json:"owner"`
+	OwnerId           primitive.Identity    `json:"owner_id"`
+	WriteTeamId       int64                 `json:"write_team_id"`
+	ReadTeamId        int64                 `json:"read_team_id"`
+	OwnerTeamId       int64                 `json:"owner_team_id"`
+	ContributorTeamId int64                 `json:"contributor_team_id"`
+	Type              int                   `json:"type"`
+	DefaultRole       OrgRole               `json:"default_role"`
+	AllowRequest      bool                  `json:"allow_request"`
 
 	Version int
 }
 
 type OrgCreatedCmd struct {
-	Name        string `json:"name"`
-	FullName    string `json:"fullname"`
-	Description string `json:"description"`
-	Website     string `json:"website"`
-	AvatarId    string `json:"avatar_id"`
-	Owner       string `json:"owner"`
+	Name        primitive.Account     `json:"name"`
+	FullName    primitive.MSDFullname `json:"fullname"`
+	Description primitive.MSDDesc     `json:"description"`
+	Website     string                `json:"website"`
+	AvatarId    primitive.AvatarId    `json:"avatar_id"`
+	Owner       primitive.Account     `json:"owner"`
 }
 
 type OrgDeletedCmd struct {
@@ -96,7 +97,7 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 
 func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error) {
 	if cmd.AvatarId != o.AvatarId.AvatarId() {
-		o.AvatarId, err = user.NewAvatarId(cmd.AvatarId)
+		o.AvatarId, err = primitive.NewAvatarId(cmd.AvatarId)
 		if err != nil {
 			err = allerror.NewInvalidParam(fmt.Sprintf("failed to create avatar id, %s", err))
 			return
@@ -109,13 +110,13 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 		change = true
 	}
 
-	if cmd.Description != o.Description && cmd.Description != "" {
-		o.Description = cmd.Description
+	if cmd.Description != o.Description.MSDDesc() && cmd.Description != "" {
+		o.Description = primitive.CreateMSDDesc(cmd.Description)
 		change = true
 	}
 
-	if cmd.FullName != o.FullName && cmd.FullName != "" {
-		o.FullName = cmd.FullName
+	if cmd.FullName != o.Fullname.MSDFullname() && cmd.FullName != "" {
+		o.Fullname = primitive.CreateMSDFullname(cmd.FullName)
 		change = true
 	}
 
@@ -132,36 +133,17 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 	return
 }
 
-func (cmd OrgCreatedCmd) Validate() error {
-	if _, err := primitive.NewAccount(cmd.Name); err != nil {
-		return allerror.NewInvalidParam("org name is invalid")
-	}
-
-	if _, err := user.NewAvatarId(cmd.AvatarId); err != nil {
-		return allerror.NewInvalidParam(err.Error())
-	}
-
-	if _, err := primitive.NewAccount(cmd.Owner); err != nil {
-		return allerror.NewInvalidParam("owner name is invalid")
-	}
-
-	if cmd.Website != "" && !utils.IsUrl(cmd.Website) {
-		return allerror.NewInvalidParam("invalid website")
-	}
-
-	return nil
-}
-
-func (cmd *OrgCreatedCmd) ToOrg() *Organization {
-	return &Organization{
-		Name:        primitive.CreateAccount(cmd.Name),
-		FullName:    cmd.FullName,
+func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
+	o = &Organization{
+		Name:        cmd.Name,
+		Fullname:    cmd.FullName,
 		Description: cmd.Description,
 		Website:     cmd.Website,
-		CreatedAt:   utils.Now(),
-		Owner:       primitive.CreateAccount(cmd.Owner),
-		AvatarId:    user.CreateAvatarId(cmd.AvatarId),
+		Owner:       cmd.Owner,
+		AvatarId:    cmd.AvatarId,
 	}
+
+	return
 }
 
 type OrgListOptions struct {
@@ -169,7 +151,7 @@ type OrgListOptions struct {
 	Owner    string // filter by owner name
 }
 
-func ToApprove(member OrgMember, expiry int64, inviter string) Approve {
+func ToApprove(member OrgMember, expiry int64, inviter primitive.Account) Approve {
 	return Approve{
 		OrgName:  member.OrgName,
 		Username: member.Username,
@@ -179,7 +161,7 @@ func ToApprove(member OrgMember, expiry int64, inviter string) Approve {
 	}
 }
 
-type OrgRole string
+type OrgRole = string
 
 const (
 	OrgRoleContributor OrgRole = "contributor" // in contributor team
@@ -188,7 +170,7 @@ const (
 	OrgRoleAdmin       OrgRole = "admin"       // in owner team
 )
 
-type ApproveStatus string
+type ApproveStatus = string
 
 const (
 	ApproveStatusPending  ApproveStatus = "pending"
@@ -197,49 +179,59 @@ const (
 )
 
 type OrgMember struct {
-	Id       string     `json:"id"`
-	Username string     `json:"user_name"`
-	OrgName  string     `json:"org_name"`
-	Role     OrgRole    `json:"role"`
-	Type     InviteType `json:"type"`
-
-	Version int
+	Id        primitive.Identity `json:"id"`
+	Username  primitive.Account  `json:"user_name"`
+	UserId    primitive.Identity `json:"user_id"`
+	OrgName   primitive.Account  `json:"org_name"`
+	OrgId     primitive.Identity `json:"org_id"`
+	Role      OrgRole            `json:"role"`
+	Type      InviteType         `json:"type"`
+	CreatedAt int64              `json:"created_at"`
+	UpdatedAt int64              `json:"updated_at"`
+	Version   int
 }
 
 type MemberRequest struct {
-	Id string `json:"id"`
+	Id primitive.Identity `json:"id"`
 
-	Username  string        `json:"user_name"`
-	OrgName   string        `json:"org_name"`
-	Role      OrgRole       `json:"role"`
-	Status    ApproveStatus `json:"status"`
-	By        string        `json:"by"`
-	Msg       string        `json:"msg"`
-	CreatedAt int64         `json:"created_at"`
-	UpdatedAt int64         `json:"updated_at"`
+	Username  primitive.Account  `json:"user_name"`
+	UserId    primitive.Identity `json:"user_id"`
+	OrgName   primitive.Account  `json:"org_name"`
+	OrgId     primitive.Identity `json:"org_id"`
+	Role      OrgRole            `json:"role"`
+	Status    ApproveStatus      `json:"status"`
+	By        string             `json:"by"`
+	Msg       string             `json:"msg"`
+	CreatedAt int64              `json:"created_at"`
+	UpdatedAt int64              `json:"updated_at"`
 	Version   int
 }
 
 type Approve struct {
-	Id string `json:"id"`
+	Id primitive.Identity `json:"id"`
 
-	Username  string        `json:"user_name"`
-	OrgName   string        `json:"org_name"`
-	Role      OrgRole       `json:"role"`
-	ExpireAt  int64         `json:"expire_at"`
-	Inviter   string        `json:"Inviter"`
-	Status    ApproveStatus `json:"status"`
-	By        string        `json:"by"`
-	Msg       string        `json:"msg"`
-	CreatedAt int64         `json:"created_at"`
-	UpdatedAt int64         `json:"updated_at"`
+	Username  primitive.Account  `json:"user_name"`
+	UserId    primitive.Identity `json:"user_id"`
+	OrgName   primitive.Account  `json:"org_name"`
+	OrgId     primitive.Identity `json:"org_id"`
+	Role      OrgRole            `json:"role"`
+	ExpireAt  int64              `json:"expire_at"`
+	Inviter   primitive.Account  `json:"Inviter"`
+	InviterId primitive.Identity `json:"InviterId"`
+	Status    ApproveStatus      `json:"status"`
+	By        string             `json:"by"`
+	Msg       string             `json:"msg"`
+	CreatedAt int64              `json:"created_at"`
+	UpdatedAt int64              `json:"updated_at"`
 	Version   int
 }
 
 func (a Approve) ToMember() OrgMember {
 	return OrgMember{
 		Username: a.Username,
+		UserId:   a.UserId,
 		OrgName:  a.OrgName,
+		OrgId:    a.OrgId,
 		Role:     a.Role,
 	}
 }
@@ -291,8 +283,8 @@ func (cmd OrgRemoveMemberCmd) Validate() error {
 
 func (cmd OrgRemoveMemberCmd) ToMember() OrgMember {
 	return OrgMember{
-		Username: cmd.Account.Account(),
-		OrgName:  cmd.Org.Account(),
+		Username: cmd.Account,
+		OrgName:  cmd.Org,
 	}
 }
 
@@ -310,26 +302,26 @@ type OrgInviteMemberCmd struct {
 	Msg     string
 }
 
-func (cmd OrgInviteMemberCmd) ToApprove(expire int64) Approve {
-	return Approve{
-		OrgName:   cmd.Org.Account(),
-		Username:  cmd.Account.Account(),
-		Role:      OrgRole(cmd.Role),
-		Status:    ApproveStatusPending,
-		Inviter:   cmd.Actor.Account(),
-		CreatedAt: utils.Now(),
-		ExpireAt:  utils.Expiry(expire),
-		Msg:       cmd.Msg,
+func (cmd OrgInviteMemberCmd) ToApprove(expire int64) *Approve {
+	return &Approve{
+		OrgName:  cmd.Org,
+		Username: cmd.Account,
+		Role:     cmd.Role,
+		Status:   ApproveStatusPending,
+		Inviter:  cmd.Actor,
+		ExpireAt: utils.Expiry(expire),
+		Msg:      cmd.Msg,
 	}
 }
 
 type OrgAddMemberCmd struct {
-	User primitive.Account
-	Org  primitive.Account
-	Id   string
-	Type InviteType
-	Role OrgRole
-	Msg  string
+	User   primitive.Account
+	UserId primitive.Identity
+	Org    primitive.Account
+	OrgId  primitive.Identity
+	Type   InviteType
+	Role   OrgRole
+	Msg    string
 }
 
 func (cmd OrgAddMemberCmd) Validate() error {
@@ -346,8 +338,10 @@ func (cmd OrgAddMemberCmd) Validate() error {
 
 func (cmd OrgAddMemberCmd) ToMember() OrgMember {
 	return OrgMember{
-		Username: cmd.User.Account(),
-		OrgName:  cmd.Org.Account(),
+		Username: cmd.User,
+		UserId:   cmd.UserId,
+		OrgName:  cmd.Org,
+		OrgId:    cmd.OrgId,
 		Role:     OrgRole(cmd.Role),
 		Type:     cmd.Type,
 	}
@@ -358,6 +352,16 @@ type OrgRemoveInviteCmd = OrgRemoveMemberCmd
 type OrgRequestMemberCmd struct {
 	OrgNormalCmd
 	Msg string
+}
+
+func (o *OrgRequestMemberCmd) ToMemberRequest(role OrgRole) *MemberRequest {
+	return &MemberRequest{
+		Username: o.Actor,
+		OrgName:  o.Org,
+		Role:     role,
+		Status:   ApproveStatusPending,
+		Msg:      o.Msg,
+	}
 }
 
 type OrgCancelRequestMemberCmd struct {
@@ -463,8 +467,8 @@ func (cmd OrgInvitationListCmd) Validate() error {
 
 func (cmd OrgInviteMemberCmd) ToMember() OrgMember {
 	return OrgMember{
-		Username: cmd.Account.Account(),
+		Username: cmd.Account,
 		Role:     OrgRole(cmd.Role),
-		OrgName:  cmd.Org.Account(),
+		OrgName:  cmd.Org,
 	}
 }

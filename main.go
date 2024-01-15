@@ -12,7 +12,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 	"github.com/openmerlin/merlin-server/server"
 )
 
@@ -63,6 +62,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) (options, error) {
 	return o, err
 }
 
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and api Bearer.
 func main() {
 	o, err := gatherOptions(
 		flag.NewFlagSet(os.Args[0], flag.ExitOnError),
@@ -94,18 +97,8 @@ func main() {
 		return
 	}
 
-	// mongo
-	m := &cfg.Mongodb
-	if err := mongodb.Initialize(m.DBConn, m.DBName, m.DBCert, o.service.RemoveCfg); err != nil {
-		logrus.Errorf("initialize mongodb failed, err:%s", err.Error())
-
-		return
-	}
-
-	defer mongodb.Close()
-
 	//redis
-	if err := redisdb.Init(&cfg.Redis, true); err != nil {
+	if err := redisdb.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
 
 		return
@@ -127,8 +120,10 @@ func main() {
 		return
 	}
 
-	// init
-	cfg.Init()
+	// init cfg
+	if err := cfg.Init(); err != nil {
+		logrus.Errorf("init cfg failed, err:%s", err.Error())
+	}
 
 	// session
 	if err := cfg.InitSession(); err != nil {

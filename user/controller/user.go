@@ -1,11 +1,14 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
@@ -25,7 +28,7 @@ func AddRouterForUserController(
 	}
 
 	rg.PUT("/v1/user", m.Write, ctl.Update)
-	rg.GET("/v1/user", m.Optional, ctl.Get)
+	rg.GET("/v1/user", m.Read, ctl.Get)
 
 	rg.POST("/v1/user/token", m.Write, ctl.CreatePlatformToken)
 	rg.DELETE("/v1/user/token/:name", m.Write, ctl.DeletePlatformToken)
@@ -43,6 +46,7 @@ type UserController struct {
 // @Tags     User
 // @Param    body  body  userBasicInfoUpdateRequest  true  "body of updating user"
 // @Accept   json
+// @Security Bearer
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/user [put]
 func (ctl *UserController) Update(ctx *gin.Context) {
@@ -65,18 +69,19 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 
 	user := ctl.m.GetUser(ctx)
 
-	if err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
+	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx, nil)
+		commonctl.SendRespOfPut(ctx, u)
 	}
 }
 
-// @Summary  Get
-// @Description  get user
+// @Summary  Get user info
+// @Description  get user info
 // @Tags     User
 // @Accept   json
-// @Success  200  {object}      userDetail
+// @Success  200  {object}      commonctl.ResponseData
+// @Security Bearer
 // @Router   /v1/user [get]
 func (ctl *UserController) Get(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -97,6 +102,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 // @Param    name  path  string  true  "token name"
 // @Accept   json
 // @Success  204
+// @Security Bearer
 // @Router   /v1/user/token/{name} [delete]
 func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 	user := ctl.m.GetUser(ctx)
@@ -108,10 +114,15 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 		return
 	}
 
+	name, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, fmt.Errorf("invalid token name"))
+	}
+
 	err = ctl.s.DeleteToken(
 		&domain.TokenDeletedCmd{
 			Account: user,
-			Name:    ctx.Param("name"),
+			Name:    name,
 		},
 		platform,
 	)
@@ -128,7 +139,8 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 // @Tags     User
 // @Param    body  body  tokenCreateRequest  true  "body of create token"
 // @Accept   json
-// @Success  201  {object}  app.TokenDTO
+// @Security Bearer
+// @Success  201  {object}  commonctl.ResponseData
 // @Router   /v1/user/token [post]
 func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	var req tokenCreateRequest
@@ -139,7 +151,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		return
 	}
 
-	user := ctl.m.GetUser(ctx)
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
@@ -176,10 +188,11 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 // @Description  list all platform tokens of user
 // @Tags     User
 // @Accept   json
-// @Success  200  {object}  []app.TokenDTO
+// @Security Bearer
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/user/token [get]
 func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
-	if v, err := ctl.s.ListTokens(ctl.m.GetUser(ctx)); err != nil {
+	if v, err := ctl.s.ListTokens(ctl.m.GetUserAndExitIfFailed(ctx)); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)

@@ -48,7 +48,7 @@ func IsChinesePhone(phone string) bool {
 }
 
 func IsUrl(str string) bool {
-	u, err := url.Parse(str)
+	u, err := url.ParseRequestURI(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 

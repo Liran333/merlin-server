@@ -6,10 +6,10 @@ import (
 )
 
 type Token interface {
-	Save(*domain.PlatformToken) (domain.PlatformToken, error)
-	Delete(primitive.Account, string) error
+	Add(*domain.PlatformToken) (domain.PlatformToken, error)
+	Delete(primitive.Account, primitive.Account) error
 	GetByAccount(primitive.Account) ([]domain.PlatformToken, error)
 	GetByLastEight(string) ([]domain.PlatformToken, error)
-
+	GetByName(primitive.Account, primitive.Account) (domain.PlatformToken, error)
 	//Search(*UserSearchOption) (UserSearchResult, error)
 }

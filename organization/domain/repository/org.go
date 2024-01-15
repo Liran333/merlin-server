@@ -6,10 +6,11 @@ import (
 )
 
 type Organization interface {
-	Save(*domain.Organization) (domain.Organization, error)
-	Delete(*domain.Organization) error
+	AddOrg(*domain.Organization) (domain.Organization, error)
+	SaveOrg(*domain.Organization) (domain.Organization, error)
+	DeleteOrg(*domain.Organization) error
 	CheckName(primitive.Account) bool
-	GetByName(primitive.Account) (domain.Organization, error)
-	GetByOwner(primitive.Account) ([]domain.Organization, error)
+	GetOrgByName(primitive.Account) (domain.Organization, error)
+	GetOrgByOwner(primitive.Account) ([]domain.Organization, error)
 	//Search(*UserSearchOption) (UserSearchResult, error)
 }

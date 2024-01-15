@@ -1,192 +1,96 @@
 package repositoryimpl
 
 import (
-	"context"
-	"fmt"
-
-	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	mongo "github.com/openmerlin/merlin-server/common/infrastructure/mongo"
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"gorm.io/gorm/clause"
+
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
-func NewTokenRepo(m mongodbClient) repository.Token {
-	return &tokenRepoImpl{m}
+func NewTokenRepo(db postgresql.Impl) repository.Token {
+	tokenTableName = db.TableName()
+
+	if err := postgresql.DB().AutoMigrate(&TokenDO{}); err != nil {
+		return nil
+	}
+
+	return &tokenRepoImpl{db}
 }
 
 type tokenRepoImpl struct {
-	cli mongodbClient
+	postgresql.Impl
 }
 
-func (impl *tokenRepoImpl) Save(u *domain.PlatformToken) (r domain.PlatformToken, err error) {
-	if u.Id != "" {
-		if err = impl.update(u); err != nil {
-			err = fmt.Errorf("failed to update token: %w", err)
-		} else {
-			r = *u
-			r.Version += 1
-		}
+func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToken, err error) {
+	u.Id = primitive.CreateIdentity(primitive.GetId())
+	do := toTokenDO(u)
 
+	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
+	if err != nil {
 		return
 	}
 
-	v, err := impl.insert(u)
-	if err != nil {
-		err = fmt.Errorf("failed to add token info %w", err)
-	} else {
-		r = *u
-		r.Id = v
-	}
+	new = do.toToken()
 
 	return
 }
 
-func tokenFilterByAccountAndName(account, name string) bson.M {
-	return bson.M{
-		fieldName:    name,
-		fieldAccount: account,
-	}
-}
-
-func tokenFilterByAccount(account string) bson.M {
-	return bson.M{
-		fieldAccount: account,
-	}
-}
-
-func (impl *tokenRepoImpl) Delete(acc domain.Account, name string) (err error) {
-	f := func(ctx context.Context) error {
-		return impl.cli.DeleteOne(
-			ctx, tokenFilterByAccountAndName(acc.Account(), name),
-		)
-	}
-
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-	}
-
-	return
+func (impl *tokenRepoImpl) Delete(acc, name domain.Account) (err error) {
+	return impl.DB().Where(impl.EqualQuery(fieldName), name.Account()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
 }
 
 func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.PlatformToken, err error) {
-	var v []DToken
-	f := func(ctx context.Context) error {
-		return impl.cli.GetDocs(
-			ctx, tokenFilterByAccount(account.Account()),
-			bson.M{}, &v,
-		)
+	query := impl.DB().Where(
+		impl.EqualQuery(fieldOwner), account.Account(),
+	)
+
+	var dos []TokenDO
+
+	err = query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, err
 	}
 
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = commonrepo.NewErrorResourceNotExists(err)
-		}
-
-		return
-	}
-
-	r = make([]domain.PlatformToken, len(v))
-	for i := range v {
-		toToken(v[i], &r[i])
+	r = make([]domain.PlatformToken, len(dos))
+	for i := range dos {
+		r[i] = dos[i].toToken()
 	}
 
 	return
-}
-
-func tokenFilterByLastEight(LastEight string) bson.M {
-	return bson.M{
-		fieldLastEight: LastEight,
-	}
 }
 
 func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.PlatformToken, err error) {
-	var v []DToken
-	f := func(ctx context.Context) error {
-		return impl.cli.GetDocs(
-			ctx, tokenFilterByLastEight(LastEight),
-			bson.M{}, &v,
-		)
+	query := impl.DB().Where(
+		impl.EqualQuery(fieldLastEight), LastEight,
+	)
+
+	var dos []TokenDO
+
+	err = query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, err
 	}
 
-	if err = primitive.WithContext(f); err != nil {
-		if impl.cli.IsDocNotExists(err) {
-			err = nil
-		}
-
-		return
-	}
-
-	r = make([]domain.PlatformToken, len(v))
-	for i := range v {
-		toToken(v[i], &r[i])
+	r = make([]domain.PlatformToken, len(dos))
+	for i := range dos {
+		r[i] = dos[i].toToken()
 	}
 
 	return
 }
 
-func (impl *tokenRepoImpl) update(u *domain.PlatformToken) (err error) {
-	var token DToken
-	err = toTokenDoc(*u, &token)
-	if err != nil {
-		return
-	}
-	doc, err := mongo.GenDoc(token)
-	if err != nil {
-		return
-	}
+func (impl *tokenRepoImpl) GetByName(acc, name primitive.Account) (r domain.PlatformToken, err error) {
+	tmpDo := &TokenDO{}
+	tmpDo.Name = name.Account()
+	tmpDo.Owner = acc.Account()
 
-	filter, err := mongo.ObjectIdFilter(u.Id)
-	if err != nil {
+	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
 		return
 	}
 
-	f := func(ctx context.Context) error {
-		return impl.cli.UpdateDoc(
-			ctx, filter, doc, mongoCmdSet, u.Version,
-		)
-	}
-
-	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocNotExists(err) {
-		err = fmt.Errorf("concurrent updating: %w", err)
-	}
-
-	return
-}
-
-func (impl *tokenRepoImpl) insert(u *domain.PlatformToken) (id string, err error) {
-	var token DToken
-	err = toTokenDoc(*u, &token)
-	if err != nil {
-		return
-	}
-
-	doc, err := mongo.GenDoc(token)
-	if err != nil {
-		return
-	}
-
-	doc[fieldVersion] = 0
-	doc[fieldFollower] = bson.A{}
-	doc[fieldFollowing] = bson.A{}
-
-	f := func(ctx context.Context) error {
-		v, err := impl.cli.NewDocIfNotExist(
-			ctx, mongo.UserDocFilterByAccount(u.Account.Account()), doc,
-		)
-
-		id = v
-
-		return err
-	}
-
-	if err = primitive.WithContext(f); err != nil && impl.cli.IsDocExists(err) {
-		err = commonrepo.NewErrorDuplicateCreating(err)
-	}
+	r = tmpDo.toToken()
 
 	return
 }

@@ -1,13 +1,16 @@
 package repository
 
-import "github.com/openmerlin/merlin-server/user/domain"
+import (
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/user/domain"
+)
 
 type UserInfo struct {
-	Bio      domain.Bio
+	Desc     primitive.MSDDesc
 	Name     domain.Account
-	Email    domain.Email
-	AvatarId domain.AvatarId
-	Fullname string
+	Email    primitive.Email
+	AvatarId primitive.AvatarId
+	Fullname primitive.MSDFullname
 	UserId   string
 }
 

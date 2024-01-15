@@ -15,47 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1//request": {
-            "delete": {
-                "description": "Revoke member request of the organization",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Organization"
-                ],
-                "summary": "RevokeMember",
-                "parameters": [
-                    {
-                        "description": "body of the member request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.OrgRevokeMemberReqRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "organization name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.ApproveDTO"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/v1/account/{name}": {
             "get": {
                 "description": "get organization or user info",
@@ -65,11 +24,11 @@ const docTemplate = `{
                 "tags": [
                     "Organization"
                 ],
-                "summary": "GetUser",
+                "summary": "User or organization info",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
+                        "description": "name of the user of organization",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -79,14 +38,28 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_common_app.UserDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found"
                     }
                 }
             }
         },
         "/v1/invite": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "List invitation of the organization",
                 "consumes": [
                     "application/json"
@@ -99,7 +72,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "organization name",
-                        "name": "org",
+                        "name": "org_name",
                         "in": "query"
                     },
                     {
@@ -137,15 +110,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.ApproveDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Accept invite of the organization",
                 "consumes": [
                     "application/json"
@@ -169,15 +144,17 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.ApproveDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Send invitation to a user to join the organization",
                 "consumes": [
                     "application/json"
@@ -195,25 +172,23 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/controller.OrgInviteMemberRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.OrganizationDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Revoke invitation of the organization",
                 "consumes": [
                     "application/json"
@@ -231,13 +206,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/controller.OrgRevokeInviteRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "organization name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -511,6 +479,11 @@ const docTemplate = `{
         },
         "/v1/name": {
             "head": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Check the name is available",
                 "consumes": [
                     "application/json"
@@ -522,7 +495,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
+                        "description": "the name to be check whether it's usable",
                         "name": "name",
                         "in": "query",
                         "required": true
@@ -530,16 +503,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "name"
-                        }
+                        "description": "name is valid"
+                    },
+                    "409": {
+                        "description": "name is invalid"
                     }
                 }
             }
         },
         "/v1/organization": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "get organization info",
                 "consumes": [
                     "application/json"
@@ -566,15 +544,23 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.OrganizationDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "create a new organization",
                 "consumes": [
                     "application/json"
@@ -598,7 +584,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.OrganizationDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -627,12 +613,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.OrganizationDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "update org basic info",
                 "consumes": [
                     "application/json"
@@ -663,12 +654,17 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/app.OrganizationDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "leave the organization",
                 "consumes": [
                     "application/json"
@@ -693,6 +689,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "delete a organization",
                 "consumes": [
                     "application/json"
@@ -719,6 +720,11 @@ const docTemplate = `{
         },
         "/v1/organization/{name}/member": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "list organization members",
                 "consumes": [
                     "application/json"
@@ -740,15 +746,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.MemberDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Edit a member to the organization's role",
                 "consumes": [
                     "application/json"
@@ -779,12 +787,17 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/app.MemberDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Remove a member from a organization",
                 "consumes": [
                     "application/json"
@@ -820,6 +833,11 @@ const docTemplate = `{
         },
         "/v1/request": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "List requests of the organization",
                 "consumes": [
                     "application/json"
@@ -864,15 +882,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.MemberRequestDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Approve a user's member request of the organization",
                 "consumes": [
                     "application/json"
@@ -896,12 +916,17 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.MemberRequestDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Request to be a member of the organization",
                 "consumes": [
                     "application/json"
@@ -925,7 +950,41 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.OrganizationDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Revoke member request of the organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "RevokeMember",
+                "parameters": [
+                    {
+                        "description": "body of the member request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.OrgRevokeMemberReqRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -1244,32 +1303,34 @@ const docTemplate = `{
         },
         "/v1/user": {
             "get": {
-                "description": "get user",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get user info",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "User"
                 ],
-                "summary": "Get",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "account",
-                        "name": "account",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get user info",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.userDetail"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "update user basic info",
                 "consumes": [
                     "application/json"
@@ -1301,6 +1362,11 @@ const docTemplate = `{
         },
         "/v1/user/token": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "list all platform tokens of user",
                 "consumes": [
                     "application/json"
@@ -1313,15 +1379,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.TokenDTO"
-                            }
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "create a new platform token of user",
                 "consumes": [
                     "application/json"
@@ -1345,7 +1413,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.TokenDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -1353,6 +1421,11 @@ const docTemplate = `{
         },
         "/v1/user/token/{name}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "delete a new platform token of user",
                 "consumes": [
                     "application/json"
@@ -1617,93 +1690,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "app.ApproveDTO": {
-            "type": "object",
-            "properties": {
-                "by": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "expires_at": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "inviter": {
-                    "type": "string"
-                },
-                "msg": {
-                    "type": "string"
-                },
-                "org_name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "user_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.MemberDTO": {
-            "type": "object",
-            "properties": {
-                "org_full_name": {
-                    "type": "string"
-                },
-                "org_name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "user_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.MemberRequestDTO": {
-            "type": "object",
-            "properties": {
-                "by": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "msg": {
-                    "type": "string"
-                },
-                "org_name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "app.ModelDTO": {
             "type": "object",
             "properties": {
@@ -1779,44 +1765,6 @@ const docTemplate = `{
                 }
             }
         },
-        "app.OrganizationDTO": {
-            "type": "object",
-            "properties": {
-                "allow_request": {
-                    "type": "boolean"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "platform_id": {
-                    "type": "string"
-                },
-                "website": {
-                    "type": "string"
-                }
-            }
-        },
         "app.SpaceDTO": {
             "type": "object",
             "properties": {
@@ -1889,29 +1837,6 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
-                }
-            }
-        },
-        "app.TokenDTO": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "expired": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "permission": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
                 }
             }
         },
@@ -2159,7 +2084,7 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "full_name": {
+                "fullname": {
                     "type": "string"
                 },
                 "website": {
@@ -2179,7 +2104,7 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "full_name": {
+                "fullname": {
                     "type": "string"
                 },
                 "name": {
@@ -2412,39 +2337,13 @@ const docTemplate = `{
                 "avatar_id": {
                     "type": "string"
                 },
-                "bio": {
+                "description": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
                 "fullname": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.userDetail": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "bio": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
                     "type": "string"
                 }
             }
@@ -2489,47 +2388,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_openmerlin_merlin-server_common_app.UserDTO": {
-            "type": "object",
-            "properties": {
-                "allow_request": {
-                    "type": "boolean"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "integer"
-                },
-                "website": {
-                    "type": "string"
-                }
-            }
-        },
         "github_com_openmerlin_merlin-server_session_app.UserDTO": {
             "type": "object",
             "properties": {
@@ -2539,11 +2397,11 @@ const docTemplate = `{
                 "avatar_id": {
                     "type": "string"
                 },
-                "bio": {
-                    "type": "string"
-                },
                 "created_at": {
                     "type": "integer"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "email": {
                     "type": "string"
@@ -2553,6 +2411,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },
@@ -2619,6 +2480,14 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and api Bearer.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

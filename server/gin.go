@@ -19,7 +19,6 @@ import (
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
-	"github.com/openmerlin/merlin-server/infrastructure/mongodb"
 
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	userctl "github.com/openmerlin/merlin-server/user/controller"
@@ -54,6 +53,12 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepofileadapter"
 )
 
+var (
+	Version  = "development" // program version for this build
+	APITitle = "Modelfoundry"
+	APIDesc  = "Modelfoundry server APIs"
+)
+
 func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
@@ -72,6 +77,10 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 
 	// restful api
 	setRouterOfRestful("/api", engine, cfg, &services)
+
+	api.SwaggerInfo.Title = APITitle
+	api.SwaggerInfo.Description = APIDesc
+	api.SwaggerInfo.Version = Version
 
 	engine.UseRawPath = true
 
@@ -110,19 +119,17 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	collections := &cfg.Mongodb.Collections
-
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
-	token := userrepoimpl.NewTokenRepo(mongodb.NewCollection(collections.Token))
+	token := userrepoimpl.NewTokenRepo(postgresql.DAO(cfg.User.Tables.Token))
 
-	userRepo := userrepoimpl.NewUserRepo(mongodb.NewCollection(collections.User))
+	userRepo := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User))
 
 	services.userApp = userapp.NewUserService(userRepo, git, token)
 
 	services.userRepo = userRepo
 
-	services.orgMember = orgrepoimpl.NewMemberRepo(mongodb.NewCollection(collections.Member))
+	services.orgMember = orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
 
 	services.sessionApp = sessionAppService(cfg, services.userApp)
 
@@ -159,8 +166,9 @@ func sessionAppService(cfg *config.Config, userApp userapp.UserService) sessiona
 // setRouter init router
 func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
 	api.SwaggerInfo.BasePath = prefix
-	api.SwaggerInfo.Title = "merlin"
-	api.SwaggerInfo.Description = "set header: 'PRIVATE-TOKEN=xxx'"
+	api.SwaggerInfo.Title = APITitle
+	api.SwaggerInfo.Description = APIDesc
+	api.SwaggerInfo.Version = Version
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
@@ -183,8 +191,9 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 // setRouter init router
 func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
 	api.SwaggerInfo.BasePath = prefix
-	api.SwaggerInfo.Title = "merlin"
-	api.SwaggerInfo.Description = "set header: 'PRIVATE-TOKEN=xxx'"
+	api.SwaggerInfo.Title = APITitle
+	api.SwaggerInfo.Description = APIDesc
+	api.SwaggerInfo.Version = Version
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
@@ -204,16 +213,10 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 // user and org router
 func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
-	org := orgrepoimpl.NewOrgRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.User),
-	)
+	org := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User))
 
 	invitation := orgrepoimpl.NewInviteRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.Invitation),
-	)
-
-	request := orgrepoimpl.NewMemberRequestRepo(
-		mongodb.NewCollection(cfg.Mongodb.Collections.MemberRequest),
+		postgresql.DAO(cfg.Org.Tables.Invite),
 	)
 
 	/*
@@ -223,7 +226,7 @@ func setRouterOfUserAndOrg(v1 *gin.RouterGroup, cfg *config.Config, services *al
 
 	orgAppService := orgapp.NewOrgService(
 		services.userApp, org, services.orgMember,
-		invitation, request, services.permission, &cfg.Org,
+		invitation, services.permission, &cfg.Org,
 	)
 
 	userctl.AddRouterForUserController(
@@ -310,16 +313,25 @@ func logRequest() gin.HandlerFunc {
 
 		endTime := time.Now()
 
-		logrus.Infof(
-			"| %d | %d | %s | %s",
+		errmsg := ""
+		for _, ginErr := range c.Errors {
+			if errmsg != "" {
+				errmsg += ","
+			}
+			errmsg = fmt.Sprintf("%s%s", errmsg, ginErr.Error())
+		}
+
+		log := fmt.Sprintf(
+			"| %d | %d | %s | %s ",
 			c.Writer.Status(),
 			endTime.Sub(startTime),
 			c.Request.Method,
 			c.Request.RequestURI,
 		)
-
-		for _, ginErr := range c.Errors {
-			logrus.Error(ginErr)
+		if errmsg != "" {
+			log += fmt.Sprintf("| %s ", errmsg)
 		}
+
+		logrus.Info(log)
 	}
 }
