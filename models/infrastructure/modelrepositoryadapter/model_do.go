@@ -19,6 +19,7 @@ const (
 	fieldOthers     = "others"
 	fieldLicense    = "license"
 	fieldVersion    = "version"
+	fieldFullName   = "fullname"
 	fieldUpdatedAt  = "updated_at"
 	fieldCreatedAt  = "created_at"
 	fieldVisibility = "visibility"
