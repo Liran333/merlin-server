@@ -122,9 +122,9 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	db := adapter.db()
 
 	if opt.Name != "" {
-		query, arg := likeFilter(fieldName, opt.Name)
-
-		db = db.Where(query, arg)
+		query1, arg1 := likeFilter(fieldName, opt.Name)
+		query2, arg2 := likeFilter(fieldFullName, opt.Name)
+		db = db.Where(db.Where(query1, arg1).Or(query2, arg2))
 
 		if strings.Contains(readme, strings.ToLower(opt.Name)) {
 			db = db.Where(notEqualQuery(fieldName), README)
