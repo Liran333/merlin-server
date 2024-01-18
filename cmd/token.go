@@ -52,7 +52,7 @@ var tokenAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("add user token failed :%s with %s", err.Error(), viper.GetString("token.create.name"))
 		}
-		tokenName, err := primitive.NewAccount(viper.GetString("token.create.token_name"))
+		tokenName, err := primitive.NewTokenName(viper.GetString("token.create.token_name"))
 		if err != nil {
 			logrus.Fatalf("add user token failed :%s with  %s", err.Error(), viper.GetString("token.create.token_name"))
 		}
@@ -93,7 +93,7 @@ var tokenDelCmd = &cobra.Command{
 			logrus.Fatalf("delete user token failed :%s with %s", err.Error(), viper.GetString("token.del.name"))
 		}
 
-		tokenName, err := primitive.NewAccount(viper.GetString("token.del.token_name"))
+		tokenName, err := primitive.NewTokenName(viper.GetString("token.del.token_name"))
 		if err != nil {
 			logrus.Fatalf(err.Error())
 		}
@@ -151,7 +151,7 @@ var tokenGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
 		}
-		name, err := primitive.NewAccount(viper.GetString("token.get.token_name"))
+		name, err := primitive.NewTokenName(viper.GetString("token.get.token_name"))
 		if err != nil {
 			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
 		}

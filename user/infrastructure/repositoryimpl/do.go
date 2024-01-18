@@ -12,12 +12,14 @@ const (
 	fieldCount      = "count"
 	fieldPlatformId = "platform_id"
 	fieldAccount    = "account"
-	fieldBio        = "bio"
+	fieldType       = "type"
 	fieldAvatarId   = "avatar_id"
 	fieldFullname   = "fullname"
 	fieldVersion    = "version"
 	fieldOwner      = "owner"
 	fieldLastEight  = "last_eight"
+	fieldCreatedAt  = "created_at"
+	fieldUpdatedAt  = "updated_at"
 )
 
 var (
@@ -36,7 +38,7 @@ type UserDO struct {
 	AvatarId          string `gorm:"column:avatar_id"`
 	Type              int    `gorm:"column:type;index:type_index"`
 	Website           string `gorm:"column:website"`
-	OwnerId           int64  `gorm:"column:owner_id;index:owner_index"`
+	OwnerId           int64  `gorm:"column:owner_id;index:owner_id_index"`
 	Owner             string `gorm:"column:owner;index:owner_index"`
 	DefaultRole       string `gorm:"column:default_role"`
 	AllowRequest      bool   `gorm:"column:allow_request"`
@@ -50,19 +52,19 @@ type UserDO struct {
 }
 
 func toUserDO(u *domain.User) (do UserDO) {
-	if u.Desc != nil {
-		do.Desc = u.Desc.MSDDesc()
-	}
-
 	do = UserDO{
 		Name:        u.Account.Account(),
 		Fullname:    u.Fullname.MSDFullname(),
 		Email:       u.Email.Email(),
 		AvatarId:    u.AvatarId.AvatarId(),
-		Type:        primitive.UserType,
+		Type:        u.Type,
 		PlatformId:  u.PlatformId,
 		PlatformPwd: u.PlatformPwd,
 		Version:     u.Version,
+	}
+
+	if u.Desc != nil {
+		do.Desc = u.Desc.MSDDesc()
 	}
 
 	do.ID = u.Id.Integer()
@@ -72,11 +74,11 @@ func toUserDO(u *domain.User) (do UserDO) {
 
 func toOrgDO(u *org.Organization) (do UserDO) {
 	do = UserDO{
-		Desc:              u.Description.MSDDesc(),
-		Name:              u.Name.Account(),
+		Desc:              u.Desc.MSDDesc(),
+		Name:              u.Account.Account(),
 		Fullname:          u.Fullname.MSDFullname(),
 		AvatarId:          u.AvatarId.AvatarId(),
-		Type:              primitive.OrgType,
+		Type:              u.Type,
 		PlatformId:        u.PlatformId,
 		Version:           u.Version,
 		AllowRequest:      u.AllowRequest,
@@ -96,41 +98,32 @@ func toOrgDO(u *org.Organization) (do UserDO) {
 }
 
 func (u *UserDO) toUser() domain.User {
-	return domain.User{
-		Id:          primitive.CreateIdentity(u.ID),
-		Version:     u.Version,
-		Desc:        primitive.CreateMSDDesc(u.Desc),
-		Account:     primitive.CreateAccount(u.Name),
-		Fullname:    primitive.CreateMSDFullname(u.Fullname),
-		Email:       primitive.CreateEmail(u.Email),
-		AvatarId:    primitive.CreateAvatarId(u.AvatarId),
-		PlatformId:  u.PlatformId,
-		PlatformPwd: u.PlatformPwd,
-		CreatedAt:   u.CreatedAt.Unix(),
-		UpdatedAt:   u.UpdatedAt.Unix(),
-	}
+	return u.toOrg()
 }
 
 func (u *UserDO) toOrg() org.Organization {
 	return org.Organization{
 		Id:                primitive.CreateIdentity(u.ID),
 		Version:           u.Version,
-		Description:       primitive.CreateMSDDesc(u.Desc),
-		Name:              primitive.CreateAccount(u.Name),
+		Desc:              primitive.CreateMSDDesc(u.Desc),
+		Account:           primitive.CreateAccount(u.Name),
 		Fullname:          primitive.CreateMSDFullname(u.Fullname),
 		AvatarId:          primitive.CreateAvatarId(u.AvatarId),
 		PlatformId:        u.PlatformId,
 		CreatedAt:         u.CreatedAt.Unix(),
 		UpdatedAt:         u.UpdatedAt.Unix(),
-		AllowRequest:      u.AllowRequest,
-		DefaultRole:       u.DefaultRole,
-		OwnerTeamId:       u.OwnerTeamId,
-		ReadTeamId:        u.ReadTeamId,
-		WriteTeamId:       u.WriteTeamId,
-		ContributorTeamId: u.ContributorTeamId,
-		Owner:             primitive.CreateAccount(u.Owner),
-		OwnerId:           primitive.CreateIdentity(u.OwnerId),
-		Website:           u.Website,
+		PlatformPwd:       u.PlatformPwd,                       // user only
+		Email:             primitive.CreateEmail(u.Email),      // user only
+		AllowRequest:      u.AllowRequest,                      // org only
+		DefaultRole:       u.DefaultRole,                       // org only
+		OwnerTeamId:       u.OwnerTeamId,                       // org only
+		ReadTeamId:        u.ReadTeamId,                        // org only
+		WriteTeamId:       u.WriteTeamId,                       // org only
+		ContributorTeamId: u.ContributorTeamId,                 // org only
+		Owner:             primitive.CreateAccount(u.Owner),    // org only
+		OwnerId:           primitive.CreateIdentity(u.OwnerId), // org only
+		Website:           u.Website,                           // org only
+		Type:              u.Type,
 	}
 }
 
@@ -158,7 +151,7 @@ func (do *TokenDO) TableName() string {
 
 func toTokenDO(u *domain.PlatformToken) (do TokenDO) {
 	do = TokenDO{
-		Name:       u.Name.Account(),
+		Name:       u.Name.TokenName(),
 		Owner:      u.Account.Account(),
 		OwnerId:    u.OwnerId.Integer(),
 		Expire:     u.Expire,
@@ -178,7 +171,7 @@ func (t *TokenDO) toToken() (token domain.PlatformToken) {
 	token = domain.PlatformToken{
 		Id:         primitive.CreateIdentity(t.ID),
 		Version:    t.Version,
-		Name:       primitive.CreateAccount(t.Name),
+		Name:       primitive.CreateTokenName(t.Name),
 		Account:    primitive.CreateAccount(t.Owner),
 		OwnerId:    primitive.CreateIdentity(t.OwnerId),
 		Expire:     t.Expire,

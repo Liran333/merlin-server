@@ -142,6 +142,35 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidName() {
 	assert.NotNil(s.T(), err)
 }
 
+// token名只能包括[a-zA-Z0-9_-]
+func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
+	invalidChar := string("!@#$%^&*(){}[]")
+	for _, c := range invalidChar {
+		// test a read permission token
+		d := swagger.ControllerTokenCreateRequest{
+			Name: "read" + string(c),
+			Perm: "invalidperm",
+		}
+
+		data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+		assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+		assert.NotNil(s.T(), err)
+	}
+}
+
+// token名不能是纯数字
+func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
+	// test a read permission token
+	d := swagger.ControllerTokenCreateRequest{
+		Name: "12",
+		Perm: "write",
+	}
+
+	_, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.NotNil(s.T(), err)
+}
+
 // 创建token成功
 // read权限无权删除token
 func (s *SuiteUserToken) TestTokenCreateToken() {
@@ -213,6 +242,7 @@ func (s *SuiteUserToken) TestTokenDeleteToken() {
 	assert.Equal(s.T(), 404, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
+
 func TestUserToken(t *testing.T) {
 	suite.Run(t, new(SuiteUserToken))
 }

@@ -41,6 +41,7 @@ func (s *SuiteUser) TestGetUser() {
 	assert.Equalf(s.T(), user["avatar_id"], "https://avatars.githubusercontent.com/u/2853724?v=5", "avatar_id is not equal")
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
 	assert.Equalf(s.T(), user["email"], "testupdateuser@modelfoudnry.cn", "email is not equal")
+	assert.Equal(s.T(), getInt64(s.T(), user["type"]), int64(0))
 }
 
 // 未登录用户无法获取个人信息

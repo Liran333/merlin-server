@@ -7,6 +7,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
+	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
 type stubOrg struct{}
@@ -15,14 +16,14 @@ var stubMember = &orgdomain.OrgMember{
 	Id:       primitive.CreateIdentity(1),
 	OrgName:  primitive.CreateAccount("org"),
 	Username: primitive.CreateAccount("XXXX"),
-	Role:     orgdomain.OrgRoleAdmin,
+	Role:     user.OrgRoleAdmin,
 }
 
 var stub1Member = &orgdomain.OrgMember{
 	Id:       primitive.CreateIdentity(1),
 	OrgName:  primitive.CreateAccount("member"),
 	Username: primitive.CreateAccount("ffff"),
-	Role:     orgdomain.OrgRoleWriter,
+	Role:     user.OrgRoleWriter,
 }
 
 func (s *stubOrg) Add(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
@@ -138,7 +139,7 @@ func TestPermCheck(t *testing.T) {
 			ObjectType: string(primitive.ObjTypeOrg),
 			Rules: []permission.Rule{
 				{
-					Role:      string(orgdomain.OrgRoleAdmin),
+					Role:      string(user.OrgRoleAdmin),
 					Operation: []string{"write", "read", "create", "delete"},
 				},
 			},
@@ -147,7 +148,7 @@ func TestPermCheck(t *testing.T) {
 			ObjectType: string(primitive.ObjTypeMember),
 			Rules: []permission.Rule{
 				{
-					Role:      string(orgdomain.OrgRoleWriter),
+					Role:      string(user.OrgRoleWriter),
 					Operation: []string{"write", "read"},
 				},
 			},

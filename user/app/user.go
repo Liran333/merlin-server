@@ -35,9 +35,8 @@ type UserService interface {
 	Create(*domain.UserCreateCmd) (UserDTO, error)
 	Delete(domain.Account) error
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
-
 	UserInfo(domain.Account) (UserInfoDTO, error)
-	GetByAccount(domain.Account, bool) (UserDTO, error)
+	GetByAccount(domain.Account) (UserDTO, error)
 	GetUserAvatarId(domain.Account) (AvatarDTO, error)
 	GetUserFullname(domain.Account) (string, error)
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
@@ -48,7 +47,7 @@ type UserService interface {
 	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
 	DeleteToken(*domain.TokenDeletedCmd, platform.BaseAuthClient) error
 	ListTokens(domain.Account) ([]TokenDTO, error)
-	GetToken(domain.Account, domain.Account) (TokenDTO, error)
+	GetToken(domain.Account, primitive.TokenName) (TokenDTO, error)
 	VerifyToken(string, primitive.TokenPerm) (TokenDTO, error)
 }
 
@@ -129,6 +128,18 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
+	if err = s.git.Update(&domain.UserCreateCmd{
+		Account:  user.Account,
+		Fullname: user.Fullname,
+		Email:    user.Email,
+		AvatarId: user.AvatarId,
+		Desc:     user.Desc,
+	}); err != nil {
+		logrus.Error(err)
+		err = allerror.NewInvalidParam("failed to update git user info")
+		return
+	}
+
 	dto = newUserDTO(&user)
 
 	return
@@ -139,20 +150,19 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 		err = allerror.NewInvalidParam("account is nil")
 		return
 	}
-	usernew, err := s.GetByAccount(account, true)
+	// get user from db
+	usernew, err := s.repo.GetByAccount(account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user info")
 		}
+
 		return
 	}
 
 	return git.NewBaseAuthClient(
-		usernew.Account,
-		usernew.Password,
+		usernew.Account.Account(),
+		usernew.PlatformPwd,
 	)
 }
 
@@ -177,10 +187,8 @@ func (s userService) Delete(account domain.Account) (err error) {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			logrus.Warnf("user %s not found", account.Account())
 			err = nil
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to delete user")
 		}
+
 		return
 	}
 
@@ -201,35 +209,29 @@ func (s userService) Delete(account domain.Account) (err error) {
 }
 
 func (s userService) UserInfo(account domain.Account) (dto UserInfoDTO, err error) {
-	if dto.UserDTO, err = s.GetByAccount(account, false); err != nil {
+	if dto.UserDTO, err = s.GetByAccount(account); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user info")
 		}
+
 		return
 	}
 
 	return
 }
 
-func (s userService) GetByAccount(account domain.Account, pwd bool) (dto UserDTO, err error) {
-	// update user
+func (s userService) GetByAccount(account domain.Account) (dto UserDTO, err error) {
+	// get user
 	u, err := s.repo.GetByAccount(account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user")
 		}
+
 		return
 	}
 
-	if !pwd {
-		u.PlatformPwd = ""
-	}
+	u.PlatformPwd = ""
 
 	dto = newUserDTO(&u)
 
@@ -244,10 +246,8 @@ func (s userService) GetUserAvatarId(user domain.Account) (
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", user.Account()))
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user avatar id")
 		}
+
 		return ava, err
 	}
 
@@ -269,10 +269,8 @@ func (s userService) GetUsersAvatarId(users []domain.Account) (
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user avatar id")
 		}
+
 		return
 	}
 
@@ -291,10 +289,8 @@ func (s userService) GetUserFullname(user domain.Account) (
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", user.Account()))
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to get user fullname")
 		}
+
 		return "", err
 	}
 
@@ -314,17 +310,8 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd, client platform.Ba
 	}
 
 	_, err = s.token.GetByName(cmd.Account, cmd.Name)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = nil
-		} else {
-			logrus.Error(err)
-
-			err = allerror.NewInvalidParam("failed to get token info")
-			return
-		}
-	} else {
-		err = allerror.NewInvalidParam("token is already existed")
+	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
+		logrus.Error(err)
 		return
 	}
 
@@ -362,17 +349,16 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 
 	_, err = s.token.GetByName(cmd.Account, cmd.Name)
 	if err != nil {
-		logrus.Error(err)
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errTokenNotFound("token not found")
+			err = allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, "token not found")
 		}
+
 		return
 	}
 
 	err = client.DeleteToken(cmd)
 	if err != nil {
 		logrus.Error(err)
-		err = allerror.NewInvalidParam("failed to delete platform token")
 		return
 	}
 
@@ -380,11 +366,9 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
-		} else {
-			logrus.Error(err)
-			err = allerror.NewInvalidParam("failed to delete token")
 		}
 	}
+
 	return
 }
 
@@ -438,13 +422,14 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 	return
 }
 
-func (s userService) GetToken(acc, name domain.Account) (TokenDTO, error) {
+func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (TokenDTO, error) {
 	token, err := s.token.GetByName(acc, name)
 	if err != nil {
+		logrus.Error(err)
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errTokenNotFound("token not found")
 		}
-		logrus.Error(err)
+
 		return TokenDTO{}, err
 	}
 

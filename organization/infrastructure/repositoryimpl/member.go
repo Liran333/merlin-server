@@ -128,7 +128,7 @@ func (impl *memberRepoImpl) GetByOrgAndRole(org string, role domain.OrgRole) (me
 	query.Orgname = org
 	query.Role = role
 
-	err = impl.DB().Where(&query).Error
+	err = impl.DB().Where(&query).Find(&v).Error
 	if err != nil || len(v) == 0 {
 		return
 	}
@@ -149,7 +149,7 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 	query := Member{}
 	query.Username = name
 
-	err = impl.DB().Where(&query).Error
+	err = impl.DB().Where(&query).Find(&v).Error
 	if err != nil || len(v) == 0 {
 		return
 	}

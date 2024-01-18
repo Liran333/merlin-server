@@ -13,7 +13,7 @@ type MSDFullname interface {
 
 func NewMSDFullname(v string) (MSDFullname, error) {
 	if v == "" {
-		return nil, errors.New("empty fullname")
+		return msdFullname(v), nil
 	}
 
 	v = utils.XSSEscapeString(v)

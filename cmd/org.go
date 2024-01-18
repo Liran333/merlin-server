@@ -498,14 +498,14 @@ var orgGetCmd = &cobra.Command{
 			} else {
 				fmt.Println("Org info:")
 				fmt.Printf("Name: %s\n", u.Name)
-				fmt.Printf("Full name: %s\n", u.FullName)
-				fmt.Printf("Website: %s\n", u.Website)
+				fmt.Printf("Full name: %s\n", u.Fullname)
+				fmt.Printf("Website: %s\n", *u.Website)
 				fmt.Printf("AvatarId: %s\n", u.AvatarId)
 				fmt.Printf("Id: %s\n", u.Id)
 				fmt.Printf("Description: %s\n", u.Description)
-				fmt.Printf("Owner: %s\n", u.Owner)
+				fmt.Printf("Owner: %s\n", *u.Owner)
 				fmt.Printf("Default role: %s\n", u.DefaultRole)
-				fmt.Printf("Allow request: %t\n", u.AllowRequest)
+				fmt.Printf("Allow request: %t\n", *u.AllowRequest)
 			}
 		} else if owner != nil {
 			orgs, err := orgAppService.GetByOwner(primitive.CreateAccount(actor), owner)
@@ -515,12 +515,12 @@ var orgGetCmd = &cobra.Command{
 				for o := range orgs {
 					fmt.Println("Org info:")
 					fmt.Printf("Name: %s\n", orgs[o].Name)
-					fmt.Printf("Full name: %s\n", orgs[o].FullName)
-					fmt.Printf("Website: %s\n", orgs[o].Website)
+					fmt.Printf("Full name: %s\n", orgs[o].Fullname)
+					fmt.Printf("Website: %s\n", *orgs[o].Website)
 					fmt.Printf("AvatarId: %s\n", orgs[o].AvatarId)
 					fmt.Printf("Id: %s\n", orgs[o].Id)
 					fmt.Printf("Description: %s\n", orgs[o].Description)
-					fmt.Printf("Owner: %s\n", orgs[o].Owner)
+					fmt.Printf("Owner: %s\n", *orgs[o].Owner)
 				}
 			}
 		} else if u != nil {
@@ -531,12 +531,12 @@ var orgGetCmd = &cobra.Command{
 				for o := range orgs {
 					fmt.Println("Org info:")
 					fmt.Printf("Name: %s\n", orgs[o].Name)
-					fmt.Printf("Full name: %s\n", orgs[o].FullName)
-					fmt.Printf("Website: %s\n", orgs[o].Website)
+					fmt.Printf("Full name: %s\n", orgs[o].Fullname)
+					fmt.Printf("Website: %s\n", *orgs[o].Website)
 					fmt.Printf("AvatarId: %s\n", orgs[o].AvatarId)
 					fmt.Printf("Id: %s\n", orgs[o].Id)
 					fmt.Printf("Description: %s\n", orgs[o].Description)
-					fmt.Printf("Owner: %s\n", orgs[o].Owner)
+					fmt.Printf("Owner: %s\n", *orgs[o].Owner)
 				}
 			}
 		}

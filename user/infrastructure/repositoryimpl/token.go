@@ -37,8 +37,8 @@ func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToke
 	return
 }
 
-func (impl *tokenRepoImpl) Delete(acc, name domain.Account) (err error) {
-	return impl.DB().Where(impl.EqualQuery(fieldName), name.Account()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
+func (impl *tokenRepoImpl) Delete(acc primitive.Account, name primitive.TokenName) (err error) {
+	return impl.DB().Where(impl.EqualQuery(fieldName), name.TokenName()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
 }
 
 func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.PlatformToken, err error) {
@@ -81,9 +81,9 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 	return
 }
 
-func (impl *tokenRepoImpl) GetByName(acc, name primitive.Account) (r domain.PlatformToken, err error) {
+func (impl *tokenRepoImpl) GetByName(acc primitive.Account, name primitive.TokenName) (r domain.PlatformToken, err error) {
 	tmpDo := &TokenDO{}
-	tmpDo.Name = name.Account()
+	tmpDo.Name = name.TokenName()
 	tmpDo.Owner = acc.Account()
 
 	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {

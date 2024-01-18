@@ -68,6 +68,28 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.NotEqual(s.T(), 0, org["updated_at"])
 	assert.Equal(s.T(), "test1", org["owner"])
 	assert.Equal(s.T(), s.owerId, org["owner_id"])
+	assert.Equal(s.T(), int64(1), getInt64(s.T(), org["type"]))
+	assert.Equal(s.T(), "write", org["default_role"])
+	assert.Equal(s.T(), "", org["avatar_id"])
+	assert.Equal(s.T(), "", org["website"])
+	assert.Equal(s.T(), "", org["description"])
+	allow, ok := org["allow_request"].(bool)
+	assert.Equal(s.T(), true, ok)
+	assert.Equal(s.T(), false, allow)
+	assert.Nil(s.T(), org["email"])
+
+	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &swagger.OrganizationApiV1OrganizationGetOpts{})
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	count := 0
+	orgs := getArrary(s.T(), data.Data)
+	for _, v := range orgs {
+		if v != nil {
+			count++
+		}
+	}
+	assert.Equal(s.T(), 1, count)
 
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 	assert.Equal(s.T(), 204, r.StatusCode)
@@ -113,7 +135,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	assert.Equal(s.T(), 409, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.NameApi.V1NameHead(Auth, "test2")
+	r, err = Api.NameApi.V1NameHead(Auth, "testnonexist")
 	assert.Equal(s.T(), 200, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -191,6 +213,8 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 
 // 名下无组织时，查询个人组织返回一个空列表
 func (s *SuiteOrg) TestOrgListEmpty() {
+	_, _ = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+
 	// list by owner
 	d := swagger.OrganizationApiV1OrganizationGetOpts{
 		Owner: optional.NewString(s.owner),

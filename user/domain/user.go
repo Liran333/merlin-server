@@ -7,10 +7,11 @@ import (
 	"encoding/base64"
 	"errors"
 
+	"golang.org/x/crypto/pbkdf2"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 const (
@@ -19,19 +20,49 @@ const (
 	tokenExpired    = "token expired"
 )
 
+type OrgRole = string
+
+const (
+	OrgRoleContributor OrgRole = "contributor" // in contributor team
+	OrgRoleReader      OrgRole = "read"        // in read team
+	OrgRoleWriter      OrgRole = "write"       // in write team
+	OrgRoleAdmin       OrgRole = "admin"       // in owner team
+)
+
+type UserType = int
+
+const (
+	UserTypeUser UserType = iota
+	UserTypeOrganization
+)
+
 // user
 type User struct {
-	Id          primitive.Identity
-	Email       primitive.Email
-	Account     Account
-	Fullname    primitive.MSDFullname
-	PlatformPwd string //password for git user
-	PlatformId  int64  // id in gitea
-	CreatedAt   int64
-	UpdatedAt   int64
-	Desc        primitive.MSDDesc
-	AvatarId    primitive.AvatarId
-	Version     int
+	Id                primitive.Identity
+	Email             primitive.Email
+	Account           Account
+	Fullname          primitive.MSDFullname
+	PlatformPwd       string //password for git user
+	PlatformId        int64  // id in gitea
+	Website           string
+	Owner             primitive.Account
+	OwnerId           primitive.Identity
+	WriteTeamId       int64
+	ReadTeamId        int64
+	OwnerTeamId       int64
+	ContributorTeamId int64
+	CreatedAt         int64
+	UpdatedAt         int64
+	Desc              primitive.MSDDesc
+	AvatarId          primitive.AvatarId
+	Type              UserType
+	DefaultRole       OrgRole
+	AllowRequest      bool
+	Version           int
+}
+
+func (u User) IsOrganization() bool {
+	return u.Type == UserTypeOrganization
 }
 
 type UserInfo struct {
@@ -42,7 +73,7 @@ type UserInfo struct {
 type PlatformToken struct {
 	Id      primitive.Identity
 	Token   string
-	Name    primitive.Account
+	Name    primitive.TokenName
 	Account Account            // owner name
 	OwnerId primitive.Identity // owner id
 	// TODO: expire not honor by gitea
@@ -126,9 +157,9 @@ type UserCreateCmd struct {
 }
 
 type TokenCreatedCmd struct {
-	Account    Account           // user name
-	Name       primitive.Account // name of the token
-	Expire     int64             // timeout in seconds
+	Account    Account             // user name
+	Name       primitive.TokenName // name of the token
+	Expire     int64               // timeout in seconds
 	Permission primitive.TokenPerm
 }
 
@@ -145,8 +176,8 @@ func (cmd TokenCreatedCmd) Validate() error {
 }
 
 type TokenDeletedCmd struct {
-	Account Account // actor user name
-	Name    Account // name of the token
+	Account Account             // actor user name
+	Name    primitive.TokenName // name of the token
 }
 
 func (cmd TokenDeletedCmd) Validate() error {
@@ -192,5 +223,6 @@ func (cmd *UserCreateCmd) ToUser() User {
 		Desc:     cmd.Desc,
 		AvatarId: cmd.AvatarId,
 		Fullname: cmd.Fullname,
+		Type:     UserTypeUser,
 	}
 }

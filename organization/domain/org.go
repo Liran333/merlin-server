@@ -5,38 +5,19 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/user/domain"
+	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
 type InviteType = string
+type OrgRole = string
+type Organization = user.User
 
 const (
 	InviteTypeInvite  InviteType = "invite"
 	InviteTypeRequest InviteType = "request"
 )
-
-type Organization struct {
-	Id                primitive.Identity    `json:"id"`
-	Name              primitive.Account     `json:"name"`
-	Fullname          primitive.MSDFullname `json:"fullname"`
-	AvatarId          primitive.AvatarId    `json:"avatar_id"`
-	PlatformId        int64                 `json:"platform_id"`
-	Description       primitive.MSDDesc     `json:"description"`
-	CreatedAt         int64                 `json:"created_at"`
-	UpdatedAt         int64                 `json:"updated_at"`
-	Website           string                `json:"website"`
-	Owner             primitive.Account     `json:"owner"`
-	OwnerId           primitive.Identity    `json:"owner_id"`
-	WriteTeamId       int64                 `json:"write_team_id"`
-	ReadTeamId        int64                 `json:"read_team_id"`
-	OwnerTeamId       int64                 `json:"owner_team_id"`
-	ContributorTeamId int64                 `json:"contributor_team_id"`
-	Type              int                   `json:"type"`
-	DefaultRole       OrgRole               `json:"default_role"`
-	AllowRequest      bool                  `json:"allow_request"`
-
-	Version int
-}
 
 type OrgCreatedCmd struct {
 	Name        primitive.Account     `json:"name"`
@@ -88,7 +69,7 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 		return allerror.NewInvalidParam("org name is nil")
 	}
 
-	if cmd.DefaultRole != "" && cmd.DefaultRole != string(OrgRoleAdmin) && cmd.DefaultRole != string(OrgRoleReader) && cmd.DefaultRole != string(OrgRoleWriter) && cmd.DefaultRole != string(OrgRoleContributor) {
+	if cmd.DefaultRole != "" && cmd.DefaultRole != string(user.OrgRoleAdmin) && cmd.DefaultRole != string(user.OrgRoleReader) && cmd.DefaultRole != string(user.OrgRoleWriter) && cmd.DefaultRole != string(user.OrgRoleContributor) {
 		return allerror.NewInvalidParam("invalid default role")
 	}
 
@@ -110,8 +91,8 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 		change = true
 	}
 
-	if cmd.Description != o.Description.MSDDesc() && cmd.Description != "" {
-		o.Description = primitive.CreateMSDDesc(cmd.Description)
+	if cmd.Description != o.Desc.MSDDesc() && cmd.Description != "" {
+		o.Desc = primitive.CreateMSDDesc(cmd.Description)
 		change = true
 	}
 
@@ -134,13 +115,19 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 }
 
 func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
+	if cmd.FullName == nil {
+		err = allerror.NewInvalidParam("org fullname is empty")
+		return
+	}
+
 	o = &Organization{
-		Name:        cmd.Name,
-		Fullname:    cmd.FullName,
-		Description: cmd.Description,
-		Website:     cmd.Website,
-		Owner:       cmd.Owner,
-		AvatarId:    cmd.AvatarId,
+		Account:  cmd.Name,
+		Fullname: cmd.FullName,
+		Desc:     cmd.Description,
+		Website:  cmd.Website,
+		Owner:    cmd.Owner,
+		AvatarId: cmd.AvatarId,
+		Type:     domain.UserTypeOrganization,
 	}
 
 	return
@@ -160,15 +147,6 @@ func ToApprove(member OrgMember, expiry int64, inviter primitive.Account) Approv
 		Inviter:  inviter,
 	}
 }
-
-type OrgRole = string
-
-const (
-	OrgRoleContributor OrgRole = "contributor" // in contributor team
-	OrgRoleReader      OrgRole = "read"        // in read team
-	OrgRoleWriter      OrgRole = "write"       // in write team
-	OrgRoleAdmin       OrgRole = "admin"       // in owner team
-)
 
 type ApproveStatus = string
 
@@ -237,10 +215,10 @@ func (a Approve) ToMember() OrgMember {
 }
 
 func (cmd OrgInviteMemberCmd) Validate() error {
-	if cmd.Role != string(OrgRoleContributor) &&
-		cmd.Role != string(OrgRoleReader) &&
-		cmd.Role != string(OrgRoleWriter) &&
-		cmd.Role != string(OrgRoleAdmin) {
+	if cmd.Role != string(user.OrgRoleContributor) &&
+		cmd.Role != string(user.OrgRoleReader) &&
+		cmd.Role != string(user.OrgRoleWriter) &&
+		cmd.Role != string(user.OrgRoleAdmin) {
 		return allerror.NewInvalidParam(fmt.Sprintf("invalid role: %s", cmd.Role))
 	}
 

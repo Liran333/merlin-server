@@ -3,25 +3,69 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
 type CmdToCreateUser = domain.UserCreateCmd
+type CmdToListModels = repository.ListOption
 
 type UserInfoDTO struct {
 	UserDTO
 }
 
 type UserDTO struct {
-	Id      string `json:"id"`
-	Email   string `json:"email"`
-	Account string `json:"account"`
+	Id           string  `json:"id"`
+	Name         string  `json:"account"`
+	Fullname     string  `json:"fullname"`
+	AvatarId     string  `json:"avatar_id"`
+	Email        *string `json:"email,omitempty"`
+	Description  string  `json:"description"`
+	CreatedAt    int64   `json:"created_at"`
+	UpdatedAt    int64   `json:"updated_at"`
+	Website      *string `json:"website,omitempty"`
+	Owner        *string `json:"owner,omitempty"`
+	OwnerId      *string `json:"owner_id,omitempty"`
+	Type         int     `json:"type"`
+	AllowRequest *bool   `json:"allow_request,omitempty"`
+	DefaultRole  string  `json:"default_role,omitempty"`
+}
 
-	Bio       string `json:"description"`
-	Fullname  string `json:"fullname"`
-	AvatarId  string `json:"avatar_id"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
-	Password  string `json:"-"`
+func NewUserDTO(u *domain.User) (dto UserDTO) {
+	return newUserDTO(u)
+}
+
+func newUserDTO(u *domain.User) (dto UserDTO) {
+	dto.Name = u.Account.Account()
+	if u.AvatarId != nil {
+		dto.AvatarId = u.AvatarId.AvatarId()
+	}
+
+	if u.Desc != nil {
+		dto.Description = u.Desc.MSDDesc()
+	}
+
+	if u.IsOrganization() {
+		website := u.Website
+		owner := u.Owner.Account()
+		ownerId := u.OwnerId.Identity()
+		allow := u.AllowRequest
+		dto.Website = &website
+		dto.Owner = &owner
+		dto.OwnerId = &ownerId
+		dto.AllowRequest = &allow
+		dto.DefaultRole = u.DefaultRole
+	} else {
+		email := u.Email.Email()
+		dto.Email = &email
+	}
+
+	dto.Type = u.Type
+	dto.Fullname = u.Fullname.MSDFullname()
+	dto.CreatedAt = u.CreatedAt
+	dto.UpdatedAt = u.UpdatedAt
+	dto.Id = u.Id.Identity()
+
+	return
 }
 
 type TokenDTO struct {
@@ -41,7 +85,7 @@ func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 	dto.UpdatedAt = t.UpdatedAt
 	dto.Expire = t.Expire
 	dto.Account = t.Account.Account()
-	dto.Name = t.Name.Account()
+	dto.Name = t.Name.TokenName()
 	dto.Permission = t.Permission.TokenPerm()
 	dto.Token = t.Token
 	dto.Id = t.Id.Identity()
@@ -62,25 +106,8 @@ func ToAvatarDTO(a *domain.User) (dto AvatarDTO) {
 	return
 }
 
-func newUserDTO(u *domain.User) (dto UserDTO) {
-	dto.Account = u.Account.Account()
-	if u.AvatarId != nil {
-		dto.AvatarId = u.AvatarId.AvatarId()
-	}
-
-	if u.Desc != nil {
-		dto.Bio = u.Desc.MSDDesc()
-	}
-
-	dto.Email = u.Email.Email()
-
-	dto.Password = u.PlatformPwd
-	dto.Fullname = u.Fullname.MSDFullname()
-	dto.CreatedAt = u.CreatedAt
-	dto.UpdatedAt = u.UpdatedAt
-	dto.Id = u.Id.Identity()
-
-	return
+type ToUserDTO interface {
+	NewUserDTO() UserDTO
 }
 
 type UpdateUserBasicInfoCmd struct {

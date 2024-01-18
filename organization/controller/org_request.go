@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
@@ -96,6 +97,11 @@ type orgCreateRequest struct {
 
 func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 	if cmd.Name, err = primitive.NewAccount(req.Name); err != nil {
+		return
+	}
+
+	if req.FullName == "" {
+		err = allerror.NewInvalidParam("org fullname can't be empty")
 		return
 	}
 

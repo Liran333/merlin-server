@@ -40,8 +40,8 @@ docker exec -it merlin-server-pg-1 psql -U gitea -c 'create database merlin;'
 genConfig config.tpl $ROOTDIR/deploy/config.yml
 docker restart merlin-server-server-1
 # create user and token for server
-docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com -f test111
-docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test2 -e test@1234.com -f test222
+docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com
+docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test2 -e test@1234.com
 docker exec -it merlin-server-server-1 ./cmd -c config.yml token add -n test1 -t test1 -p write | tail -n 1 | tee $ROOTDIR/tests/e2e/token
 echo >> $ROOTDIR/tests/e2e/token
 docker exec -it merlin-server-server-1 ./cmd -c config.yml token add -n test2 -t test1 -p write | tail -n 1 | tee -a $ROOTDIR/tests/e2e/token

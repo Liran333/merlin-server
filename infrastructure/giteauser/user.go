@@ -3,6 +3,7 @@ package giteauser
 import (
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 
 	"github.com/openmerlin/go-sdk/gitea"
@@ -15,6 +16,8 @@ type UserCreateCmd struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
+
+type UserUpdateCmd = domain.UserCreateCmd
 
 func genPasswd() (string, error) {
 	var container string
@@ -90,6 +93,39 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 
 func (c *UserClient) DeleteUser(name string) (err error) {
 	_, err = c.client.AdminDeleteUser(name)
+
+	return
+}
+
+func (c *UserClient) UpdateUser(cmd *UserUpdateCmd) (err error) {
+	if cmd == nil {
+		return fmt.Errorf("cmd is nil")
+	}
+
+	if cmd.Account == nil {
+		return fmt.Errorf("account is nil")
+	}
+
+	d := gitea.EditUserOption{
+		LoginName: cmd.Account.Account(),
+	}
+
+	if cmd.Email != nil {
+		email := cmd.Email.Email()
+		d.Email = &email
+	}
+
+	if cmd.Desc != nil {
+		desc := cmd.Desc.MSDDesc()
+		d.Description = &desc
+	}
+
+	if cmd.Fullname != nil {
+		fullname := cmd.Fullname.MSDFullname()
+		d.FullName = &fullname
+	}
+
+	_, err = c.client.AdminEditUser(cmd.Account.Account(), d)
 
 	return
 }

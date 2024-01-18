@@ -77,14 +77,14 @@ var userGetCmd = &cobra.Command{
 			logrus.Fatalf("get user failed :%s", err.Error())
 		}
 
-		u, err := userAppService.GetByAccount(acc, false)
+		u, err := userAppService.GetByAccount(acc)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		} else {
 			fmt.Println("User info:")
-			fmt.Printf("Name: %s\n", u.Account)
-			fmt.Printf("Email: %s\n", u.Email)
-			fmt.Printf("Bio: %s\n", u.Bio)
+			fmt.Printf("Name: %s\n", u.Name)
+			fmt.Printf("Email: %s\n", *u.Email)
+			fmt.Printf("Bio: %s\n", u.Description)
 			fmt.Printf("AvatarId: %s\n", u.AvatarId)
 			fmt.Printf("Id: %s\n", u.Id)
 			fmt.Printf("Fullname: %s\n", u.Fullname)
@@ -199,9 +199,6 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := userAddCmd.MarkFlagRequired("email"); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := userAddCmd.MarkFlagRequired("fullname"); err != nil {
 		logrus.Fatal(err)
 	}
 

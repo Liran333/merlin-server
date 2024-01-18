@@ -10,6 +10,7 @@ import (
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	perm "github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
+	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
 type Permission interface {
@@ -48,7 +49,7 @@ func checkAction(bitmap uint64, action primitive.Action) bool {
 }
 
 func isValidRole(role string) bool {
-	if role == string(orgdomain.OrgRoleAdmin) || role == string(orgdomain.OrgRoleWriter) || role == string(orgdomain.OrgRoleContributor) || role == string(orgdomain.OrgRoleReader) {
+	if role == string(user.OrgRoleAdmin) || role == string(user.OrgRoleWriter) || role == string(user.OrgRoleContributor) || role == string(user.OrgRoleReader) {
 		return true
 	}
 

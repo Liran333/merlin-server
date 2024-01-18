@@ -6,32 +6,28 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
-type FollowFindOption struct {
-	Follower domain.Account
+type ListOption struct {
+	// can't define Name as domain.ResourceName
+	// because the Name can be subpart of the real resource name
+	Name string
 
-	CountPerPage int
+	// list the Owner only used when type is organization
+	Owner primitive.Account
+
+	// list by type
+	Type *domain.UserType
+
+	// sort
+	SortType primitive.SortType
+
+	// whether to calculate the total
+	Count        bool
 	PageNum      int
-}
-
-type FollowerUserInfos struct {
-	Users []domain.FollowerUserInfo
-	Total int
-}
-
-type UserSearchOption struct {
-	// can't define Name as domain.Account
-	// because the Name can be subpart of the real account
-	Name   string
-	TopNum int
-}
-
-type UserSearchResult struct {
-	Top []domain.Account
-
-	Total int
+	CountPerPage int
 }
 
 type User interface {
+	// user
 	AddUser(*domain.User) (domain.User, error)
 	SaveUser(*domain.User) (domain.User, error)
 	DeleteUser(*domain.User) error
@@ -46,4 +42,6 @@ type User interface {
 	CheckName(primitive.Account) bool
 	GetOrgByName(primitive.Account) (org.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
+	// list
+	ListAccount(*ListOption) ([]domain.User, int, error)
 }

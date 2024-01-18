@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -66,6 +67,11 @@ func IsPictureName(pictureName string) bool {
 	}
 
 	return allowed
+}
+
+func IsInt(input string) bool {
+	_, err := strconv.Atoi(input)
+	return err == nil
 }
 
 func IsTxt(fileName string) bool {

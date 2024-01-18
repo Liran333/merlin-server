@@ -99,7 +99,7 @@ func (req *tokenCreateRequest) toCmd(user domain.Account) (cmd domain.TokenCreat
 		return
 	}
 
-	if cmd.Name, err = primitive.NewAccount(req.Name); err != nil {
+	if cmd.Name, err = primitive.NewTokenName(req.Name); err != nil {
 		return
 	}
 

@@ -2,6 +2,7 @@ package repositoryimpl
 
 import (
 	"errors"
+	"fmt"
 
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -96,6 +97,7 @@ func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
 func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organization, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
+	tmpDo.Type = domain.UserTypeOrganization
 
 	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
 		return
@@ -109,7 +111,7 @@ func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organiz
 func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Organization, err error) {
 	query := impl.DB().Where(
 		impl.EqualQuery(fieldOwner), account.Account(),
-	)
+	).Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization)
 
 	var dos []UserDO
 
@@ -182,6 +184,7 @@ func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
+	tmpDo.Type = domain.UserTypeUser
 
 	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
 		return
@@ -232,4 +235,67 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 	}
 
 	return
+}
+
+func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domain.User, count int, err error) {
+	query := impl.DB()
+
+	if opt == nil {
+		err = fmt.Errorf("list option is nil")
+		return
+	}
+
+	if opt.Name != "" {
+		filter, arg := impl.LikeFilter(fieldName, opt.Name)
+
+		query = query.Where(filter, arg)
+	}
+
+	if opt.Owner != nil {
+		query = query.Where(impl.EqualQuery(fieldOwner), opt.Owner.Account())
+	}
+
+	if opt.Type != nil {
+		query = query.Where(impl.EqualQuery(fieldType), *opt.Type)
+	}
+
+	if v := impl.order(opt.SortType); v != "" {
+		query = query.Order(v)
+	}
+
+	var dos []UserDO
+
+	err = query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, 0, nil
+	}
+
+	users = make([]domain.User, len(dos))
+	for i := range dos {
+		users[i] = dos[i].toUser()
+	}
+
+	return
+}
+
+func (impl *userRepoImpl) order(t primitive.SortType) string {
+	if t == nil {
+		return ""
+	}
+
+	switch t.SortType() {
+	case primitive.SortByAlphabetical:
+		return fieldName
+
+	case primitive.SortByRecentlyUpdated:
+		return impl.OrderByDesc(fieldUpdatedAt)
+
+	case primitive.SortByRecentlyCreated:
+		return impl.OrderByDesc(fieldCreatedAt)
+
+	// TODO other type
+
+	default:
+		return ""
+	}
 }

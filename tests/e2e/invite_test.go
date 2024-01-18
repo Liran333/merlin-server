@@ -148,6 +148,8 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equalf(s.T(), 201, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
+	id := getData(s.T(), data.Data)["id"]
+
 	// 被邀请人接受邀请
 	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
@@ -172,6 +174,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), "ok", invite["msg"])
 	assert.Equal(s.T(), "approved", invite["status"])
 
+	// 接收后成为member
 	data, r, err = Api.OrganizationApi.V1OrganizationNameMemberGet(Auth2, s.name)
 	assert.Equal(s.T(), 200, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -191,6 +194,39 @@ func (s *SuiteInvite) TestInviteAprove() {
 	}
 
 	assert.Equal(s.T(), 2, count)
+
+	// 查询已经接受的邀请
+	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+		Status:  optional.NewString("approved"),
+	})
+	assert.Equalf(s.T(), 200, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	invites := getArrary(s.T(), data.Data)
+
+	for _, invite := range invites {
+		if invite != nil && invite["id"] == id {
+			assert.Equal(s.T(), s.name, invite["org_name"])
+			assert.Equal(s.T(), s.orgId, invite["org_id"])
+			assert.Equal(s.T(), s.invitee, invite["user_name"])
+			assert.Equal(s.T(), s.inviteeId, invite["user_id"])
+			assert.NotEqual(s.T(), "", invite["id"])
+			assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["created_at"]))
+			assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["updated_at"]))
+			assert.Equal(s.T(), "write", invite["role"])
+			assert.Equal(s.T(), s.owner, invite["inviter"])
+			assert.Equal(s.T(), s.invitee, invite["by"])
+			assert.Equal(s.T(), "ok", invite["msg"])
+		}
+	}
+
+	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
+		User: s.invitee,
+	}, s.name)
+
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
 }
 
 // 无效的权限
@@ -217,6 +253,16 @@ func (s *SuiteInvite) TestInviteInvalidOrgname() {
 
 	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
+
+	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: "orgnonexisted",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equalf(s.T(), 404, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
 }
 
 // 无效的用户名
@@ -230,7 +276,18 @@ func (s *SuiteInvite) TestInviteInvalidUser() {
 
 	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
+
+	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    "usernonexisted",
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equalf(s.T(), 404, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
 }
+
 func TestInvite(t *testing.T) {
 	suite.Run(t, new(SuiteInvite))
 }

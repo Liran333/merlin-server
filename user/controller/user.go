@@ -12,7 +12,6 @@ import (
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
-	userinfra "github.com/openmerlin/merlin-server/user/infrastructure/git"
 )
 
 func AddRouterForUserController(
@@ -67,7 +66,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
-	user := ctl.m.GetUser(ctx)
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
 
 	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -76,8 +75,8 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	}
 }
 
-// @Summary  Get user info
-// @Description  get user info
+// @Summary  Get current user info
+// @Description  get current sign-in user info
 // @Tags     User
 // @Accept   json
 // @Success  200  {object}      commonctl.ResponseData
@@ -114,7 +113,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 		return
 	}
 
-	name, err := primitive.NewAccount(ctx.Param("name"))
+	name, err := primitive.NewTokenName(ctx.Param("name"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, fmt.Errorf("invalid token name"))
 	}
@@ -160,24 +159,14 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		return
 	}
 
-	info, err := ctl.s.GetByAccount(user, true)
+	pl, err := ctl.s.GetPlatformUser(user)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	platform, err := userinfra.NewBaseAuthClient(
-		info.Account,
-		info.Password,
-	)
-	if err != nil {
-		commonctl.SendError(ctx, err)
-
-		return
-	}
-
-	if v, err := ctl.s.CreateToken(&cmd, platform); err != nil {
+	if v, err := ctl.s.CreateToken(&cmd, pl); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, v)

@@ -42,7 +42,7 @@ type ApproveDTO struct {
 
 func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	var fullname string
-	u, err := user.GetByAccount(m.Username, false)
+	u, err := user.GetByAccount(m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 		fullname = ""
@@ -84,7 +84,7 @@ type MemberRequestDTO struct {
 
 func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) MemberRequestDTO {
 	var fullname string
-	u, err := user.GetByAccount(m.Username, false)
+	u, err := user.GetByAccount(m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 		fullname = ""
@@ -126,24 +126,8 @@ type OrgListOptions struct {
 	Member   primitive.Account
 }
 
-func ToDTO(org *domain.Organization, role domain.OrgRole) OrganizationDTO {
-	if org.DefaultRole == "" {
-		org.DefaultRole = role
-	}
-	return OrganizationDTO{
-		Id:           org.Id.Identity(),
-		Name:         org.Name.Account(),
-		FullName:     org.Fullname.MSDFullname(),
-		Description:  org.Description.MSDDesc(),
-		Website:      org.Website,
-		CreatedAt:    org.CreatedAt,
-		UpdatedAt:    org.UpdatedAt,
-		Owner:        org.Owner.Account(),
-		OwnerId:      org.OwnerId.Identity(),
-		AvatarId:     org.AvatarId.AvatarId(),
-		DefaultRole:  string(org.DefaultRole),
-		AllowRequest: org.AllowRequest,
-	}
+func ToDTO(org *domain.Organization) userapp.UserDTO {
+	return userapp.NewUserDTO(org)
 }
 
 func ToMemberDTO(member *domain.OrgMember) MemberDTO {

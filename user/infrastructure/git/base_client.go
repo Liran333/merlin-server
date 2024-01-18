@@ -5,6 +5,7 @@ import (
 
 	"github.com/openmerlin/go-sdk/gitea"
 
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	common "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	org "github.com/openmerlin/merlin-server/organization/domain"
@@ -56,7 +57,7 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 	}
 	// create token first
 	t, _, err := c.client.CreateAccessToken(gitea.CreateAccessTokenOption{
-		Name:   cmd.Name.Account(),
+		Name:   cmd.Name.TokenName(),
 		Scopes: perms,
 	})
 	if err != nil {
@@ -76,13 +77,14 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 
 func (c *BaseAuthClient) DeleteToken(cmd *domain.TokenDeletedCmd) (err error) {
 	if cmd == nil {
-		return fmt.Errorf("nil cmd")
+		return allerror.NewInvalidParam("nil cmd")
 	}
 
 	if cmd.Account.Account() != c.username {
-		return fmt.Errorf("username mismatched, requested user: %s, client user: %s", cmd.Account.Account(), c.username)
+		return allerror.NewNoPermission(fmt.Sprintf("username mismatched, requested user: %s, client user: %s", cmd.Account.Account(), c.username))
 	}
-	_, err = c.client.DeleteAccessToken(cmd.Name.Account())
+
+	_, err = c.client.DeleteAccessToken(cmd.Name.TokenName())
 
 	return
 }
@@ -98,7 +100,7 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		return
 	}
 
-	if cmd.Name == nil {
+	if cmd.Account == nil {
 		err = fmt.Errorf("nil name")
 		return
 	}
@@ -109,9 +111,9 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 	}
 
 	tmp, _, err := c.client.CreateOrg(gitea.CreateOrgOption{
-		Name:                      cmd.Name.Account(),
+		Name:                      cmd.Account.Account(),
 		FullName:                  cmd.Fullname.MSDFullname(),
-		Description:               cmd.Description.MSDDesc(),
+		Description:               cmd.Desc.MSDDesc(),
 		Website:                   cmd.Website,
 		Visibility:                gitea.VisibleTypePublic,
 		RepoAdminChangeTeamAccess: false,
@@ -121,21 +123,21 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		return
 	}
 
-	teams, _, err := c.client.ListOrgTeams(cmd.Name.Account(), gitea.ListTeamsOptions{})
+	teams, _, err := c.client.ListOrgTeams(cmd.Account.Account(), gitea.ListTeamsOptions{})
 	if err != nil {
-		_, _ = c.client.DeleteOrg(cmd.Name.Account())
+		_, _ = c.client.DeleteOrg(cmd.Account.Account())
 		err = fmt.Errorf("failed to list org teams: %w", err)
 		return
 	}
 	// first team must be owner team
 	if len(teams) != 1 {
-		_, _ = c.client.DeleteOrg(cmd.Name.Account())
+		_, _ = c.client.DeleteOrg(cmd.Account.Account())
 		err = fmt.Errorf("invalid org team count: %d", len(teams))
 		return
 	}
 	cmd.OwnerTeamId = teams[0].ID
 
-	team, _, err := c.client.CreateTeam(cmd.Name.Account(), gitea.CreateTeamOption{
+	team, _, err := c.client.CreateTeam(cmd.Account.Account(), gitea.CreateTeamOption{
 		Name:                    "contributor",
 		Description:             "contributor team",
 		Permission:              gitea.AccessModeRead,
@@ -144,12 +146,12 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		Units:                   []gitea.RepoUnitType{gitea.RepoUnitCode},
 	})
 	if err != nil {
-		_, _ = c.client.DeleteOrg(cmd.Name.Account())
+		_, _ = c.client.DeleteOrg(cmd.Account.Account())
 		return
 	}
 	cmd.ContributorTeamId = team.ID
 
-	team, _, err = c.client.CreateTeam(cmd.Name.Account(), gitea.CreateTeamOption{
+	team, _, err = c.client.CreateTeam(cmd.Account.Account(), gitea.CreateTeamOption{
 		Name:                    "write",
 		Description:             "write team",
 		Permission:              gitea.AccessModeWrite,
@@ -158,13 +160,13 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		Units:                   []gitea.RepoUnitType{gitea.RepoUnitCode},
 	})
 	if err != nil {
-		_, _ = c.client.DeleteOrg(cmd.Name.Account())
+		_, _ = c.client.DeleteOrg(cmd.Account.Account())
 		return
 	}
 
 	cmd.WriteTeamId = team.ID
 
-	team, _, err = c.client.CreateTeam(cmd.Name.Account(), gitea.CreateTeamOption{
+	team, _, err = c.client.CreateTeam(cmd.Account.Account(), gitea.CreateTeamOption{
 		Name:                    "read",
 		Description:             "read team",
 		Permission:              gitea.AccessModeRead,
@@ -173,7 +175,7 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 		Units:                   []gitea.RepoUnitType{gitea.RepoUnitCode},
 	})
 	if err != nil {
-		_, _ = c.client.DeleteOrg(cmd.Name.Account())
+		_, _ = c.client.DeleteOrg(cmd.Account.Account())
 		return
 	}
 
@@ -208,13 +210,13 @@ func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (
 	}
 
 	switch member.Role {
-	case org.OrgRoleContributor:
+	case domain.OrgRoleContributor:
 		_, err = c.client.AddTeamMember(o.ContributorTeamId, member.Username.Account())
-	case org.OrgRoleReader:
+	case domain.OrgRoleReader:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, member.Username.Account())
-	case org.OrgRoleWriter:
+	case domain.OrgRoleWriter:
 		_, err = c.client.AddTeamMember(o.WriteTeamId, member.Username.Account())
-	case org.OrgRoleAdmin:
+	case domain.OrgRoleAdmin:
 		_, err = c.client.AddTeamMember(o.OwnerTeamId, member.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
@@ -233,13 +235,13 @@ func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember
 	}
 
 	switch member.Role {
-	case org.OrgRoleContributor:
+	case domain.OrgRoleContributor:
 		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, member.Username.Account())
-	case org.OrgRoleReader:
+	case domain.OrgRoleReader:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, member.Username.Account())
-	case org.OrgRoleWriter:
+	case domain.OrgRoleWriter:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, member.Username.Account())
-	case org.OrgRoleAdmin:
+	case domain.OrgRoleAdmin:
 		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, member.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
@@ -264,13 +266,13 @@ func (c *BaseAuthClient) CanDelete(name primitive.Account) (can bool, err error)
 
 func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, now *org.OrgMember) (err error) {
 	switch orig {
-	case org.OrgRoleContributor:
+	case domain.OrgRoleContributor:
 		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, now.Username.Account())
-	case org.OrgRoleReader:
+	case domain.OrgRoleReader:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, now.Username.Account())
-	case org.OrgRoleWriter:
+	case domain.OrgRoleWriter:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, now.Username.Account())
-	case org.OrgRoleAdmin:
+	case domain.OrgRoleAdmin:
 		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)
@@ -281,13 +283,13 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, n
 	}
 
 	switch now.Role {
-	case org.OrgRoleContributor:
+	case domain.OrgRoleContributor:
 		_, err = c.client.AddTeamMember(o.ContributorTeamId, now.Username.Account())
-	case org.OrgRoleReader:
+	case domain.OrgRoleReader:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, now.Username.Account())
-	case org.OrgRoleWriter:
+	case domain.OrgRoleWriter:
 		_, err = c.client.AddTeamMember(o.WriteTeamId, now.Username.Account())
-	case org.OrgRoleAdmin:
+	case domain.OrgRoleAdmin:
 		_, err = c.client.AddTeamMember(o.OwnerTeamId, now.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)

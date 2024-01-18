@@ -19,6 +19,7 @@ type Impl interface {
 	IntersectionFilter(field string, value []string) (query string, arg pq.StringArray)
 	EqualQuery(field string) string
 	NotEqualQuery(field string) string
+	OrderByDesc(field string) string
 	InFilter(field string) string
 	DB() *gorm.DB
 	TableName() string
