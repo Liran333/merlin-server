@@ -5,7 +5,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
-	"github.com/openmerlin/merlin-server/utils"
 )
 
 type CmdToCreateModel struct {
@@ -43,8 +42,8 @@ type ModelDTO struct {
 	Owner         string         `json:"owner"`
 	Labels        ModelLabelsDTO `json:"labels"`
 	Fullname      string         `json:"fullname"`
-	CreatedAt     string         `json:"created_at"`
-	UpdatedAt     string         `json:"updated_at"`
+	CreatedAt     int64          `json:"created_at"`
+	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
 	Visibility    string         `json:"visibility"`
 	DownloadCount int            `json:"download_count"`
@@ -74,8 +73,8 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		Name:          model.Name.MSDName(),
 		Owner:         model.Owner.Account(),
 		Labels:        toModelLabelsDTO(model),
-		CreatedAt:     utils.ToDate(model.CreatedAt),
-		UpdatedAt:     utils.ToDate(model.UpdatedAt),
+		CreatedAt:     model.CreatedAt,
+		UpdatedAt:     model.UpdatedAt,
 		LikeCount:     model.LikeCount,
 		Visibility:    model.Visibility.Visibility(),
 		DownloadCount: model.DownloadCount,

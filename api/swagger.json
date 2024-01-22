@@ -1297,14 +1297,14 @@
                         "Bearer": []
                     }
                 ],
-                "description": "get user info",
+                "description": "get current sign-in user info",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "User"
                 ],
-                "summary": "Get user info",
+                "summary": "Get current user info",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1769,6 +1769,9 @@
                 "fullname": {
                     "type": "string"
                 },
+                "hardware": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -1782,6 +1785,9 @@
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "sdk": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -2150,6 +2156,9 @@
                 "fullname": {
                     "type": "string"
                 },
+                "hardware": {
+                    "type": "string"
+                },
                 "init_readme": {
                     "type": "boolean"
                 },
@@ -2160,6 +2169,9 @@
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "sdk": {
                     "type": "string"
                 },
                 "visibility": {
@@ -2230,6 +2242,9 @@
                 "fullname": {
                     "type": "string"
                 },
+                "hardware": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2246,6 +2261,9 @@
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "sdk": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -2383,11 +2401,17 @@
                 "account": {
                     "type": "string"
                 },
+                "allow_request": {
+                    "type": "boolean"
+                },
                 "avatar_id": {
                     "type": "string"
                 },
                 "created_at": {
                     "type": "integer"
+                },
+                "default_role": {
+                    "type": "string"
                 },
                 "description": {
                     "type": "string"
@@ -2401,8 +2425,20 @@
                 "id": {
                     "type": "string"
                 },
+                "owner": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
+                },
+                "website": {
+                    "type": "string"
                 }
             }
         },

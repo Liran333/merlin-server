@@ -5,7 +5,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
-	"github.com/openmerlin/merlin-server/utils"
 )
 
 type CmdToCreateSpace struct {
@@ -38,13 +37,15 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 
 type SpaceDTO struct {
 	Id            string         `json:"id"`
+	SDK           string         `json:"sdk"`
 	Name          string         `json:"name"`
 	Desc          string         `json:"desc"`
 	Owner         string         `json:"owner"`
 	Labels        SpaceLabelsDTO `json:"labels"`
 	Fullname      string         `json:"fullname"`
-	CreatedAt     string         `json:"created_at"`
-	UpdatedAt     string         `json:"updated_at"`
+	Hardware      string         `json:"hardware"`
+	CreatedAt     int64          `json:"created_at"`
+	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
 	Visibility    string         `json:"visibility"`
 	DownloadCount int            `json:"download_count"`
@@ -71,11 +72,13 @@ func toSpaceLabelsDTO(space *domain.Space) SpaceLabelsDTO {
 func toSpaceDTO(space *domain.Space) SpaceDTO {
 	dto := SpaceDTO{
 		Id:            space.Id.Identity(),
+		SDK:           space.SDK.SDK(),
 		Name:          space.Name.MSDName(),
 		Owner:         space.Owner.Account(),
 		Labels:        toSpaceLabelsDTO(space),
-		CreatedAt:     utils.ToDate(space.CreatedAt),
-		UpdatedAt:     utils.ToDate(space.UpdatedAt),
+		Hardware:      space.Hardware.Hardware(),
+		CreatedAt:     space.CreatedAt,
+		UpdatedAt:     space.UpdatedAt,
 		LikeCount:     space.LikeCount,
 		Visibility:    space.Visibility.Visibility(),
 		DownloadCount: space.DownloadCount,
