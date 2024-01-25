@@ -48,14 +48,14 @@ func (impl *giteaImpl) GetLabels(option *localgitea.Option) (label domain.ModelL
 	return domain.ModelLabels{
 		Task:       meta.Task,
 		Others:     sets.New(meta.Tags...),
-		Frameworks: sets.New(meta.Frameworks),
+		Frameworks: sets.New(meta.Frameworks...),
 	}, nil
 }
 
 type MetaData struct {
 	Task       string   `yaml:"pipeline_tag"`
 	Tags       []string `yaml:"tags"`
-	Frameworks string   `yaml:"framework"`
+	Frameworks []string `yaml:"frameworks"`
 }
 
 func (impl *giteaImpl) parseTags(content []byte) (meta MetaData, err error) {
