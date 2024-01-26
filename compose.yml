@@ -1,4 +1,40 @@
 services:
+  vault:
+    image: hashicorp/vault
+    container_name: vault
+    restart: on-failure:10
+    ports:
+      - "8201:8201"
+    environment:
+      VAULT_ADDR: 'https://0.0.0.0:8201'
+      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": [{"tcp":{"address": "0.0.0.0:8201","tls_disable": true}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h"}, "ui": true}'
+      VAULT_DEV_ROOT_TOKEN_ID: '00000000-0000-0000-0000-000000000000'
+      VAULT_TOKEN: '00000000-0000-0000-0000-000000000000'
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8201"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: server -dev -dev-root-token-id="00000000-0000-0000-0000-000000000000"
+    networks:
+      network:
+        ipv4_address: 10.5.0.2
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+    networks:
+      network:
+        ipv4_address: 10.5.0.3
   redis:
     image: redis
     entrypoint:
@@ -8,6 +44,9 @@ services:
       deploy/.env
     ports:
     - "${REDIS_PORT}:${REDIS_PORT}"
+    networks:
+      network:
+        ipv4_address: 10.5.0.4
   pg:
     image: postgres:16
     environment:
@@ -17,6 +56,9 @@ services:
       deploy/.env
     ports:
     - "${PG_PORT}:${PG_PORT}"
+    networks:
+      network:
+        ipv4_address: 10.5.0.5
   gitea:
     build:
       context: https://github.com/openmerlin/gitea.git
@@ -26,6 +68,8 @@ services:
     environment:
       - USER_UID=1000
       - USER_GID=1000
+      - KAFKA_ADDR=10.5.0.3:9092
+      - KAFKA_VER=2.1.0
     restart: always
     volumes:
       - /etc/timezone:/etc/timezone:ro
@@ -40,6 +84,12 @@ services:
       retries: 5
     ports:
     - "${GITEA_PORT}:${GITEA_PORT}"
+    networks:
+      network:
+        ipv4_address: 10.5.0.6
+    depends_on:
+    - kafka
+    - pg
   server:
     build:
       context: .
@@ -47,6 +97,7 @@ services:
     depends_on:
     - redis
     - gitea
+    - vault
     command:
       - --config-file
       - /home/modelfoundry/config.yml
@@ -67,3 +118,14 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+    networks:
+      network:
+        ipv4_address: 10.5.0.7
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

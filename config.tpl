@@ -1,34 +1,40 @@
 organization:
-  invite_expiry: 1209600
-  default_role: write
+  invite_expiry: {{(ds "data").INVITE_EXPIRY }}
+  default_role: {{(ds "data").DEFAULT_ROLE }}
   tables:
     invite: "invite"
     member: "member"
 
 session:
   oidc:
-    app_id: {{(ds "data").OIDC_APPID }}
-    secret: {{(ds "data").OIDC_SECRET }}
-    endpoint: {{(ds "data").OIDC_ENDPOINT }}
+    app_id: {{(ds "secret").data.OIDC_APPID }}
+    secret: {{(ds "secret").data.OIDC_SECRET }}
+    endpoint: {{(ds "secret").data.OIDC_ENDPOINT }}
   login:
     login: login
+  domain:
+    max_session_num: {{(ds "data").MAX_SESSION_NUM }}
+    csrf_token_timeout: {{(ds "data").CSRF_TOKEN_TIMEOUT }}
+    csrf_token_timeout_to_reset: {{(ds "data").CSRF_TOKEN_TIMEOUT_TO_RESET }}
+  controller:
+    csrf_token_cookie_expiry: {{(ds "data").CSRF_TOKEN_COOKIE_EXPIRY }}
 
 gitea:
-  url: http://{{(ds "data").GITEA_HOST }}:{{(ds "data").GITEA_PORT }}
-  token: {{(ds "data").GITEA_ROOT_TOKEN }}
+  url: {{(ds "secret").data.GITEA_BASE_URL }}
+  token: {{(ds "secret").data.GITEA_ROOT_TOKEN }}
 
 space:
   tables:
     space: "space"
   primitive:
     sdk:
-    - a
-    - b
-    - c
+{{- range (ds "data").SPACE_SDK}}
+    - {{ . }}
+{{- end }}
     hardware:
-    - CPU basic 2 vCPU · 16GB · FREE
-    - CPU basic 2 vCPU · 8GB · FREE
-    - CPU basic 2 vCPU · 4GB · FREE
+{{- range (ds "data").SPACE_HARDWARE}}
+    - {{ . }}
+{{- end }}
 
 permission:
   permissions:
@@ -95,15 +101,36 @@ permission:
         - role: read
           operation:
           - read
+    - object_type: space
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: contributor
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: write
+          operation:
+          - write
+          - read
+        - role: read
+          operation:
+          - read
 
 model:
   tables:
     model: "model"
 
 redis:
-  address: {{(ds "data").REDIS_HOST }}:{{(ds "data").REDIS_PORT }}
-  password: {{(ds "data").REDIS_PASS }}
-  db_cert: ""
+  address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}
+  password: {{(ds "secret").data.REDIS_PASS }}
+  db_cert: {{(ds "secret").data.REDIS_CERT }}
   db: 0
 
 user:
@@ -111,75 +138,28 @@ user:
     user: user
     token: token
 
+coderepo:
+  tables:
+    branch: branch
+
 primitive:
-  min_name_length: 1
+  min_name_length: {{(ds "data").MIN_NAME_LEN }}
+  max_name_length: {{(ds "data").MAX_NAME_LEN }}
+  max_desc_length: {{(ds "data").MAX_DESC_LEN }}
+  max_fullname_length: {{(ds "data").MAX_FULLNAME_LEN }}
   reserved_accounts:
-  - "404"
-  - "blogs"
-  - "brand"
-  - "collections"
-  - "community"
-  - "competions"
-  - "contribution"
-  - "datasets"
-  - "docs"
-  - "download"
-  - "enterprise"
-  - "error"
-  - "events"
-  - "gitadmin"
-  - "hardware"
-  - "learn"
-  - "legal"
-  - "leaderboard"
-  - "metrics"
-  - "models"
-  - "news"
-  - "organizations"
-  - "pricing"
-  - "privacy"
-  - "root"
-  - "search"
-  - "sigs"
-  - "spaces"
-  - "summit"
-  - "support"
-  - "tasks"
-  - "tool"
-  - "users"
+{{- range (ds "data").RESERVED_ACCOUNTS}}
+  - "{{ . }}"
+{{- end }}
   licenses:
-  - "apache-2.0"
-  - "mit"
-  - "cc-by-sa-3.0"
-  - "afl-3.0"
-  - "cc-by-sa-4.0"
-  - "lgpl-3.0"
-  - "lgpl-lr"
-  - "cc-by-nc-3.0"
-  - "bsd-2-clause"
-  - "ecl-2.0"
-  - "cc-by-nc-sa-4.0"
-  - "cc-by-nc-4.0"
-  - "gpl-3.0"
-  - "cc0-1.0"
-  - "cc"
-  - "bsd-3-clause"
-  - "agpl-3.0"
-  - "wtfpl"
-  - "artistic-2.0"
-  - "postgresql"
-  - "gpl-2.0"
-  - "isc"
-  - "eupl-1.1"
-  - "pddl"
-  - "bsd-3-clause-clear"
-  - "mpl-2.0"
-  - "odbl-1.0"
-  - "cc-by-4.0"
+{{- range (ds "data").LICENSES}}
+  - "{{ . }}"
+{{- end }}
 
 postgresql:
-  host: {{(ds "data").PG_HOST }}
-  user: {{(ds "data").PG_USER }}
-  pwd: {{(ds "data").PG_PASS }}
-  name: {{(ds "data").PG_DB }}
-  port: {{(ds "data").PG_PORT }}
+  host: {{(ds "secret").data.PG_HOST }}
+  user: {{(ds "secret").data.PG_USER }}
+  pwd: {{(ds "secret").data.PG_PASS }}
+  name: {{(ds "secret").data.PG_DB }}
+  port: {{(ds "secret").data.PG_PORT }}
+  cert: {{(ds "secret").data.PG_CERT }}
