@@ -1,0 +1,29 @@
+name: repos sync job from github to gitee
+on:
+  workflow_dispatch:
+  push:
+    paths:
+    - '.github/workflows/sync.yaml'
+    # Runs at every pull requests submitted in master branch
+    branches: [ master, main ]
+  schedule:
+    # Runs at 0,12 hour every day (every 12 hours)
+    - cron:  '0 */12 * * *'
+env:
+  GITEE_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY }}
+  GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+jobs:
+  sync-to-gitee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Yikun/hub-mirror-action@master
+        with:
+          src: github/openmerlin
+          dst: gitee/modelx
+          dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+          mappings: "merlin-server=>modelfoundry-server"
+          force_update: true
+          static_list: "merlin-server"
+          debug: true
