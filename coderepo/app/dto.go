@@ -2,8 +2,10 @@ package app
 
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
+	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 type CmdToCreateRepo struct {
@@ -42,4 +44,38 @@ func (cmd *CmdToUpdateRepo) toRepo(repo *domain.CodeRepo) (b bool) {
 	}
 
 	return
+}
+
+type CmdToCreateBranch struct {
+	domain.BranchIndex
+
+	RepoType   repoprimitive.RepoType
+	BaseBranch repoprimitive.BranchName
+}
+
+func (cmd *CmdToCreateBranch) toBranch() domain.Branch {
+	branch := domain.Branch{
+		BranchIndex: cmd.BranchIndex,
+		BaseBranch:  cmd.BaseBranch,
+		RepoType:    cmd.RepoType,
+		CreatedAt:   utils.Now(),
+	}
+
+	return branch
+}
+
+type BranchCreateDTO struct {
+	Name string `json:"branch_name"`
+}
+
+func toBranchCreateDTO(v string) BranchCreateDTO {
+	return BranchCreateDTO{
+		Name: v,
+	}
+}
+
+type CmdToDeleteBranch struct {
+	domain.BranchIndex
+
+	RepoType repoprimitive.RepoType
 }

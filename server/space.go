@@ -17,7 +17,11 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		return err
 	}
 
-	services.spaceRepoAdapter = spacerepositoryadapter.SpaceAdapter()
+	services.spaceApp = app.NewSpaceAppService(
+		services.permission,
+		services.codeRepoApp,
+		spacerepositoryadapter.SpaceAdapter(),
+	)
 
 	return nil
 }
@@ -25,11 +29,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForSpaceWebController(
 		rg,
-		app.NewSpaceAppService(
-			services.permission,
-			services.codeRepoApp,
-			services.spaceRepoAdapter,
-		),
+		services.spaceApp,
 		services.userMiddleWare,
 		services.userApp,
 	)
@@ -38,11 +38,7 @@ func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForSpaceRestfulController(
 		rg,
-		app.NewSpaceAppService(
-			services.permission,
-			services.codeRepoApp,
-			services.spaceRepoAdapter,
-		),
+		services.spaceApp,
 		services.userMiddleWare,
 	)
 }

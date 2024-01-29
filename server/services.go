@@ -9,9 +9,9 @@ import (
 
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 
-	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
+	modelapp "github.com/openmerlin/merlin-server/models/app"
 
-	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
 
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 
@@ -32,12 +32,16 @@ type allServices struct {
 
 	userMiddleWare middleware.UserMiddleWare
 
-	modelRepoAdapter modelrepo.ModelRepositoryAdapter
+	modelApp modelapp.ModelAppService
 
-	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter
+	spaceApp spaceapp.SpaceAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
+	if err = initCodeRepo(cfg, &services); err != nil {
+		return
+	}
+
 	if err = initModel(cfg, &services); err != nil {
 		return
 	}
@@ -53,8 +57,6 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 
 	// initSession depends on initUser
 	initSession(cfg, &services)
-
-	initCodeRepo(&services)
 
 	return
 }

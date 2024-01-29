@@ -29,7 +29,7 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfSpaceWeb(rg, services)
 
-	setRouteOfCodeRepoFile(rg, services)
+	setRouterOfCodeRepoFile(rg, services)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }

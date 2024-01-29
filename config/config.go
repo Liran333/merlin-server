@@ -5,6 +5,7 @@ import (
 
 	redislib "github.com/opensourceways/redis-lib"
 
+	"github.com/openmerlin/merlin-server/coderepo"
 	common "github.com/openmerlin/merlin-server/common/config"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
@@ -42,6 +43,7 @@ type Config struct {
 	Model      models.Config     `json:"model"`
 	Space      space.Config      `json:"space"`
 	Session    session.Config    `json:"session"`
+	CodeRepo   coderepo.Config   `json:"coderepo"`
 	Primitive  primitive.Config  `json:"primitive"`
 	Postgresql postgresql.Config `json:"postgresql"`
 	Permission permission.Config `json:"permission"`
@@ -57,6 +59,8 @@ func (cfg *Config) Init() error {
 	cfg.Model.Init()
 
 	cfg.Space.Init()
+
+	cfg.CodeRepo.Init()
 
 	return nil
 }
@@ -74,6 +78,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Model,
 		&cfg.Space,
 		&cfg.Session,
+		&cfg.CodeRepo,
 		&cfg.Primitive,
 		&cfg.Postgresql,
 	}

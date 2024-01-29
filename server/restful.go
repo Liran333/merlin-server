@@ -23,11 +23,13 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	setRouterOfUser(rg, cfg, services)
 
-	setRouteOfCodeRepoFile(rg, services)
+	setRouterOfCodeRepoFile(rg, services)
 
 	setRouterOfModelRestful(rg, services)
 
 	setRouterOfSpaceRestful(rg, services)
+
+	setRouterOfBranchRestful(rg, services)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }

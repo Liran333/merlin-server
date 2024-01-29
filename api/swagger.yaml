@@ -1,8 +1,13 @@
 definitions:
+  app.BranchCreateDTO:
+    properties:
+      branch_name:
+        type: string
+    type: object
   app.ModelDTO:
     properties:
       created_at:
-        type: string
+        type: integer
       desc:
         type: string
       download_count:
@@ -20,7 +25,7 @@ definitions:
       owner:
         type: string
       updated_at:
-        type: string
+        type: integer
       visibility:
         type: string
     type: object
@@ -51,7 +56,7 @@ definitions:
   app.SpaceDTO:
     properties:
       created_at:
-        type: string
+        type: integer
       desc:
         type: string
       download_count:
@@ -73,7 +78,7 @@ definitions:
       sdk:
         type: string
       updated_at:
-        type: string
+        type: integer
       visibility:
         type: string
     type: object
@@ -195,7 +200,7 @@ definitions:
       avatar_id:
         type: string
       created_at:
-        type: string
+        type: integer
       desc:
         type: string
       download_count:
@@ -215,7 +220,7 @@ definitions:
       owner:
         type: string
       updated_at:
-        type: string
+        type: integer
       visibility:
         type: string
     type: object
@@ -355,12 +360,19 @@ definitions:
       visibility:
         type: string
     type: object
+  controller.restfulReqToCreateBranch:
+    properties:
+      base_branch:
+        type: string
+      branch:
+        type: string
+    type: object
   controller.spaceDetail:
     properties:
       avatar_id:
         type: string
       created_at:
-        type: string
+        type: integer
       desc:
         type: string
       download_count:
@@ -384,7 +396,7 @@ definitions:
       sdk:
         type: string
       updated_at:
-        type: string
+        type: integer
       visibility:
         type: string
     type: object
@@ -1463,6 +1475,73 @@ paths:
       summary: DeletePlatformToken
       tags:
       - User
+  /v2/branch/{type}/{owner}/{repo}:
+    post:
+      consumes:
+      - application/json
+      description: create repo branch
+      parameters:
+      - description: type of space/model
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: owner of space/model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space/model
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: restfulReqToCreateBranch
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.restfulReqToCreateBranch'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app.BranchCreateDTO'
+      summary: CreateBranch
+      tags:
+      - BranchRestful
+  /v2/branch/{type}/{owner}/{repo}/{branch}:
+    delete:
+      consumes:
+      - application/json
+      description: delete repo branch
+      parameters:
+      - description: repo type
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: repo owner
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: repo name
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: branch name
+        in: path
+        name: branch
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: DeleteBranch
+      tags:
+      - BranchRestful
   /v2/model:
     get:
       consumes:

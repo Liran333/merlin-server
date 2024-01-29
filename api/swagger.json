@@ -1439,6 +1439,105 @@
                 }
             }
         },
+        "/v2/branch/{type}/{owner}/{repo}": {
+            "post": {
+                "description": "create repo branch",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BranchRestful"
+                ],
+                "summary": "CreateBranch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "type of space/model",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner of space/model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space/model",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "restfulReqToCreateBranch",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.restfulReqToCreateBranch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/app.BranchCreateDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/branch/{type}/{owner}/{repo}/{branch}": {
+            "delete": {
+                "description": "delete repo branch",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BranchRestful"
+                ],
+                "summary": "DeleteBranch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "repo type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "repo owner",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "repo name",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "branch name",
+                        "name": "branch",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v2/model": {
             "get": {
                 "description": "list global public model",
@@ -1679,11 +1778,19 @@
         }
     },
     "definitions": {
+        "app.BranchCreateDTO": {
+            "type": "object",
+            "properties": {
+                "branch_name": {
+                    "type": "string"
+                }
+            }
+        },
         "app.ModelDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "desc": {
                     "type": "string"
@@ -1710,7 +1817,7 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "visibility": {
                     "type": "string"
@@ -1758,7 +1865,7 @@
             "type": "object",
             "properties": {
                 "created_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "desc": {
                     "type": "string"
@@ -1791,7 +1898,7 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "visibility": {
                     "type": "string"
@@ -1978,7 +2085,7 @@
                     "type": "string"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "desc": {
                     "type": "string"
@@ -2008,7 +2115,7 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "visibility": {
                     "type": "string"
@@ -2224,6 +2331,17 @@
                 }
             }
         },
+        "controller.restfulReqToCreateBranch": {
+            "type": "object",
+            "properties": {
+                "base_branch": {
+                    "type": "string"
+                },
+                "branch": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.spaceDetail": {
             "type": "object",
             "properties": {
@@ -2231,7 +2349,7 @@
                     "type": "string"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "desc": {
                     "type": "string"
@@ -2267,7 +2385,7 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "visibility": {
                     "type": "string"
