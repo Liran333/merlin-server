@@ -23,7 +23,9 @@ jobs:
           dst: gitee/modelx
           dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           dst_token: ${{ secrets.GITEE_TOKEN }}
+          clone_style: ssh
           mappings: "merlin-server=>modelfoundry-server"
           force_update: true
           static_list: "merlin-server"
           debug: true
+          account_type: org
