@@ -25,6 +25,11 @@ const (
 	ErrorCodeCSRFTokenInvalid  = "csrf_token_invalid"   // #nosec G101
 	ErrorCodeCSRFTokenNotFound = "csrf_token_not_found" // #nosec G101
 
+	ErrorCodeBranchError        = "branch_error"
+	ErrorCodeBranchExist        = "branch_exist"
+	ErrorCodeBranchInavtive     = "branch_inactive"
+	ErrorCodeBaseBranchNotFound = "base_branch_not_found"
+
 	errorCodeInvalidParam = "invalid_param"
 )
 
