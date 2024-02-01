@@ -44,6 +44,9 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 	// restful api
 	setRouterOfRestful("/api", engine, cfg, &services)
 
+	// internal service api
+	setRouterOfInternal("/internal", engine, cfg, &services)
+
 	// start server
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", port),

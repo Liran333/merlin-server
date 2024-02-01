@@ -28,3 +28,9 @@ func setRouterOfSession(rg *gin.RouterGroup, services *allServices) {
 		rg, services.sessionApp, services.userMiddleWare,
 	)
 }
+
+func setRouterOfSessionInternal(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouterForSessionInternalController(
+		rg, services.sessionApp, services.userMiddleWare,
+	)
+}

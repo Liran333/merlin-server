@@ -7,6 +7,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/coderepo"
 	common "github.com/openmerlin/merlin-server/common/config"
+	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -44,6 +45,7 @@ type Config struct {
 	Space      space.Config      `json:"space"`
 	Session    session.Config    `json:"session"`
 	CodeRepo   coderepo.Config   `json:"coderepo"`
+	Internal   internal.Config   `json:"internal"`
 	Primitive  primitive.Config  `json:"primitive"`
 	Postgresql postgresql.Config `json:"postgresql"`
 	Permission permission.Config `json:"permission"`
@@ -62,6 +64,8 @@ func (cfg *Config) Init() error {
 
 	cfg.CodeRepo.Init()
 
+	internal.Init(&cfg.Internal)
+
 	return nil
 }
 
@@ -79,6 +83,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Space,
 		&cfg.Session,
 		&cfg.CodeRepo,
+		&cfg.Internal,
 		&cfg.Primitive,
 		&cfg.Postgresql,
 	}

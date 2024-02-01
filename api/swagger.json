@@ -1028,6 +1028,23 @@
                 }
             }
         },
+        "/v1/session/check": {
+            "put": {
+                "description": "check and refresh session",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Session"
+                ],
+                "summary": "CheckAndRefresh",
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    }
+                }
+            }
+        },
         "/v1/space": {
             "get": {
                 "description": "list global public space",
