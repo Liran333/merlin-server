@@ -37,6 +37,10 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
+		phone, err := primitive.NewPhone(viper.GetString("user.create.phone"))
+		if err != nil {
+			logrus.Fatalf("create user failed :%s", err.Error())
+		}
 		fullname, err := primitive.NewMSDFullname(viper.GetString("user.create.fullname"))
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
@@ -56,6 +60,7 @@ var userAddCmd = &cobra.Command{
 			Desc:     desc,
 			AvatarId: ava,
 			Fullname: fullname,
+			Phone:    phone,
 		})
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
@@ -76,8 +81,11 @@ var userGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		}
-
-		u, err := userAppService.GetByAccount(acc)
+		ac, err := primitive.NewAccount(actor)
+		if err != nil {
+			logrus.Fatalf("invalid owner :%s", err.Error())
+		}
+		u, err := userAppService.GetByAccount(ac, acc)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		} else {
@@ -195,10 +203,11 @@ func init() {
 	userAddCmd.Flags().StringP("name", "n", "", "user name")
 	userAddCmd.Flags().StringP("email", "e", "", "user email")
 	userAddCmd.Flags().StringP("fullname", "f", "", "user fullname")
+	userAddCmd.Flags().StringP("phone", "p", "", "user phone number")
 	if err := userAddCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
 	}
-	if err := userAddCmd.MarkFlagRequired("email"); err != nil {
+	if err := userAddCmd.MarkFlagRequired("phone"); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -206,6 +215,9 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.create.email", userAddCmd.Flags().Lookup("email")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.create.phone", userAddCmd.Flags().Lookup("phone")); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.create.fullname", userAddCmd.Flags().Lookup("fullname")); err != nil {

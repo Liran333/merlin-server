@@ -16,6 +16,8 @@ type Login struct {
 	IdToken   string
 	UserAgent primitive.UserAgent
 	CreatedAt int64
+	UserId    string
+	Phone     primitive.Phone
 }
 
 func (login *Login) IsSameLogin(ip string) bool {

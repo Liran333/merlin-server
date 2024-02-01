@@ -124,3 +124,37 @@ func (req *reqToGetUserInfo) toAccount() (primitive.Account, error) {
 
 	return primitive.NewAccount(req.Account)
 }
+
+type bindEmailRequest struct {
+	Email    string `json:"email" binding:"required"`
+	PassCode string `json:"code" binding:"required"`
+}
+
+func (req *bindEmailRequest) toCmd(user domain.Account) (cmd app.CmdToVerifyBindEmail, err error) {
+	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
+		return
+	}
+
+	cmd.PassCode = req.PassCode
+
+	cmd.User = user
+
+	return
+}
+
+type sendEmailRequest struct {
+	Email string `json:"email" binding:"required"`
+	Capt  string `json:"capt" binding:"required"`
+}
+
+func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEmail, err error) {
+	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
+		return
+	}
+
+	cmd.Capt = req.Capt
+
+	cmd.User = user
+
+	return
+}

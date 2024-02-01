@@ -159,6 +159,7 @@ func (org *orgService) GetOrgOrUser(acc primitive.Account) (dto userapp.UserDTO,
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		return
 	} else if err == nil {
+		u.ClearSenstiveData()
 		dto = userapp.NewUserDTO(&u)
 		return
 	}

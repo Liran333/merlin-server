@@ -8,6 +8,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	session "github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
@@ -35,8 +36,8 @@ type UserService interface {
 	Create(*domain.UserCreateCmd) (UserDTO, error)
 	Delete(domain.Account) error
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
-	UserInfo(domain.Account) (UserInfoDTO, error)
-	GetByAccount(domain.Account) (UserDTO, error)
+	UserInfo(domain.Account, domain.Account) (UserInfoDTO, error)
+	GetByAccount(domain.Account, domain.Account) (UserDTO, error)
 	GetUserAvatarId(domain.Account) (AvatarDTO, error)
 	GetUserFullname(domain.Account) (string, error)
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
@@ -49,6 +50,10 @@ type UserService interface {
 	ListTokens(domain.Account) ([]TokenDTO, error)
 	GetToken(domain.Account, primitive.TokenName) (TokenDTO, error)
 	VerifyToken(string, primitive.TokenPerm) (TokenDTO, error)
+
+	// email
+	SendBindEmail(*CmdToSendBindEmail) error
+	VerifyBindEmail(*CmdToVerifyBindEmail) error
 }
 
 // ps: platform user service
@@ -56,19 +61,24 @@ func NewUserService(
 	repo repository.User,
 	git git.User,
 	token repository.Token,
+	session session.LoginRepositoryAdapter,
+	oidc session.OIDCAdapter,
 ) UserService {
 	return userService{
-		repo:  repo,
-		git:   git,
-		token: token,
+		repo:    repo,
+		git:     git,
+		token:   token,
+		session: session,
+		oidc:    oidc,
 	}
 }
 
 type userService struct {
-	repo  repository.User
-	git   git.User
-	token repository.Token
-	// TODO: need perm orgapp.Permission
+	repo    repository.User
+	git     git.User
+	token   repository.Token
+	session session.LoginRepositoryAdapter
+	oidc    session.OIDCAdapter
 }
 
 func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
@@ -89,20 +99,21 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 
 	v := cmd.ToUser()
 
-	// create git user
-	var repoUser domain.User
-	if repoUser, err = s.git.Create(cmd); err != nil {
-		err = allerror.NewInvalidParam(fmt.Sprintf("failed to create platform user: %s", err))
-		return
-	}
+	if cmd.Email != nil && cmd.Email.Email() != "" {
+		// create git user when email is valid
+		var repoUser domain.User
+		if repoUser, err = s.git.Create(cmd); err != nil {
+			err = allerror.NewInvalidParam(fmt.Sprintf("failed to create platform user: %s", err))
+			return
+		}
 
-	v.PlatformId = repoUser.PlatformId
-	v.PlatformPwd = repoUser.PlatformPwd
+		v.PlatformId = repoUser.PlatformId
+		v.PlatformPwd = repoUser.PlatformPwd
+	}
 	// create user
 	u, err := s.repo.AddUser(&v)
 	if err != nil {
 		err = allerror.NewInvalidParam(fmt.Sprintf("failed to save user in db: %s", err))
-		s.git.Delete(&repoUser) // #nosec G104
 		return
 	}
 
@@ -128,16 +139,19 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
-	if err = s.git.Update(&domain.UserCreateCmd{
-		Account:  user.Account,
-		Fullname: user.Fullname,
-		Email:    user.Email,
-		AvatarId: user.AvatarId,
-		Desc:     user.Desc,
-	}); err != nil {
-		logrus.Error(err)
-		err = allerror.NewInvalidParam("failed to update git user info")
-		return
+	if user.Email != nil && user.Email.Email() != "" {
+		// update git user when email is valid
+		if err = s.git.Update(&domain.UserCreateCmd{
+			Account:  user.Account,
+			Fullname: user.Fullname,
+			Email:    user.Email,
+			AvatarId: user.AvatarId,
+			Desc:     user.Desc,
+		}); err != nil {
+			logrus.Error(err)
+			err = allerror.NewInvalidParam("failed to update git user info")
+			return
+		}
 	}
 
 	dto = newUserDTO(&user)
@@ -199,17 +213,19 @@ func (s userService) Delete(account domain.Account) (err error) {
 		return
 	}
 
-	// delete git user
-	err = s.git.Delete(&u)
-	if err != nil {
-		err = allerror.NewInvalidParam(fmt.Sprintf("failed to delete user in git server: %s", err))
+	if u.Email != nil && u.Email.Email() != "" {
+		// delete git user when email is valid
+		err = s.git.Delete(&u)
+		if err != nil {
+			err = allerror.NewInvalidParam(fmt.Sprintf("failed to delete user in git server: %s", err))
+		}
 	}
 
 	return
 }
 
-func (s userService) UserInfo(account domain.Account) (dto UserInfoDTO, err error) {
-	if dto.UserDTO, err = s.GetByAccount(account); err != nil {
+func (s userService) UserInfo(actor, account domain.Account) (dto UserInfoDTO, err error) {
+	if dto.UserDTO, err = s.GetByAccount(actor, account); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
@@ -220,10 +236,11 @@ func (s userService) UserInfo(account domain.Account) (dto UserInfoDTO, err erro
 	return
 }
 
-func (s userService) GetByAccount(account domain.Account) (dto UserDTO, err error) {
+func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, err error) {
 	// get user
 	u, err := s.repo.GetByAccount(account)
 	if err != nil {
+		logrus.Error(err)
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
@@ -231,6 +248,9 @@ func (s userService) GetByAccount(account domain.Account) (dto UserDTO, err erro
 		return
 	}
 
+	if actor == nil || actor.Account() != u.Account.Account() {
+		u.ClearSenstiveData()
+	}
 	u.PlatformPwd = ""
 
 	dto = newUserDTO(&u)
@@ -438,5 +458,67 @@ func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (Tok
 	}
 
 	return newTokenDTO(&token), nil
+}
 
+func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) (err error) {
+	err = s.oidc.SendBindEmail(cmd.Email.Email(), cmd.Capt)
+	return
+}
+
+func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
+	info, err := s.session.FindByUser(cmd.User)
+	if err != nil {
+		return
+	}
+
+	if len(info) == 0 {
+		err = fmt.Errorf("user session not found")
+		return
+	}
+
+	if info[0].UserId == "" {
+		err = fmt.Errorf("user id not found")
+		return
+	}
+
+	u, err := s.repo.GetByAccount(cmd.User)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errUserNotFound(fmt.Sprintf("user %s not found", cmd.User.Account()))
+		}
+
+		return
+	}
+
+	if u.Email.Email() == cmd.Email.Email() {
+		err = fmt.Errorf("email already binded")
+		return
+	}
+
+	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, info[0].UserId)
+	if err != nil {
+		return
+	}
+
+	u.Email = cmd.Email
+
+	userCmd := &domain.UserCreateCmd{
+		Email:    u.Email,
+		Account:  u.Account,
+		Fullname: u.Fullname,
+		Desc:     u.Desc,
+		AvatarId: u.AvatarId,
+	}
+	if u.Email.Email() == "" {
+		// create new user when email is nil
+		u, err = s.git.Create(userCmd)
+	} else {
+		err = s.git.Update(userCmd)
+	}
+	if err != nil {
+		return
+	}
+
+	_, err = s.repo.SaveUser(&u)
+	return
 }

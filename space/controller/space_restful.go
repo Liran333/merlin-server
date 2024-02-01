@@ -6,17 +6,20 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/space/app"
+	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
 func AddRouteForSpaceRestfulController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
 	m middleware.UserMiddleWare,
+	u userapp.UserService,
 ) {
 	ctl := SpaceRestfulController{
 		SpaceController: SpaceController{
 			appService:     s,
 			userMiddleWare: m,
+			user:           u,
 		},
 	}
 

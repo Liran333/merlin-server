@@ -8,6 +8,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/domain"
+	userapp "github.com/openmerlin/merlin-server/user/app"
+	userctl "github.com/openmerlin/merlin-server/user/controller"
 )
 
 func addRouteForSpaceController(
@@ -16,14 +18,15 @@ func addRouteForSpaceController(
 ) {
 	m := ctl.userMiddleWare
 
-	r.POST(`/v1/space`, m.Write, ctl.Create)
-	r.DELETE("/v1/space/:id", m.Write, ctl.Delete)
-	r.PUT("/v1/space/:id", m.Write, ctl.Update)
+	r.POST(`/v1/space`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Create)
+	r.DELETE("/v1/space/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Delete)
+	r.PUT("/v1/space/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Update)
 }
 
 type SpaceController struct {
 	appService     app.SpaceAppService
 	userMiddleWare middleware.UserMiddleWare
+	user           userapp.UserService
 }
 
 // @Summary  Create

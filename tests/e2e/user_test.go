@@ -12,10 +12,11 @@ import (
 
 type SuiteUser struct {
 	suite.Suite
+	phone string
 }
 
 func (s *SuiteUser) SetupSuite() {
-
+	s.phone = "13333333334"
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "read full name",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
@@ -42,6 +43,27 @@ func (s *SuiteUser) TestGetUser() {
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
 	assert.Equalf(s.T(), user["email"], "testupdateuser@modelfoudnry.cn", "email is not equal")
 	assert.Equal(s.T(), getInt64(s.T(), user["type"]), int64(0))
+	assert.NotEqual(s.T(), "", user["id"])
+	assert.NotEqual(s.T(), int64(0), getInt64(s.T(), user["created_at"]))
+	assert.NotEqual(s.T(), int64(0), getInt64(s.T(), user["updated_at"]))
+	assert.Equal(s.T(), s.phone, user["phone"])
+}
+
+func (s *SuiteUser) TestGetOtherUser() {
+
+	data, r, err := Api.OrganizationApi.V1AccountNameGet(Auth, "test2")
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	user := getData(s.T(), data.Data)
+
+	assert.Equalf(s.T(), "test2", user["account"], "fullname is not equal")
+	assert.Equal(s.T(), "", user["email"])
+	assert.Equal(s.T(), int64(0), getInt64(s.T(), user["type"]))
+	assert.NotEqual(s.T(), "", user["id"])
+	assert.NotEqual(s.T(), int64(0), getInt64(s.T(), user["created_at"]))
+	assert.NotEqual(s.T(), int64(0), getInt64(s.T(), user["updated_at"]))
+	assert.Equal(s.T(), "", user["phone"])
 }
 
 // 未登录用户无法获取个人信息

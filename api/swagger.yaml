@@ -190,6 +190,16 @@ definitions:
       msg:
         type: string
     type: object
+  controller.bindEmailRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
   controller.logoutInfo:
     properties:
       id_token:
@@ -367,6 +377,16 @@ definitions:
       branch:
         type: string
     type: object
+  controller.sendEmailRequest:
+    properties:
+      capt:
+        type: string
+      email:
+        type: string
+    required:
+    - capt
+    - email
+    type: object
   controller.spaceDetail:
     properties:
       avatar_id:
@@ -502,6 +522,8 @@ definitions:
       owner:
         type: string
       owner_id:
+        type: string
+      phone:
         type: string
       type:
         type: integer
@@ -1429,6 +1451,50 @@ paths:
       security:
       - Bearer: []
       summary: Update
+      tags:
+      - User
+  /v1/user/email/bind:
+    post:
+      consumes:
+      - application/json
+      description: bind user's email
+      parameters:
+      - description: body of bind email info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.bindEmailRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Bind User Email
+      tags:
+      - User
+  /v1/user/email/send:
+    post:
+      consumes:
+      - application/json
+      description: send user's email verify code
+      parameters:
+      - description: body of bind email info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.sendEmailRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Send User Email Verify code
       tags:
       - User
   /v1/user/token:

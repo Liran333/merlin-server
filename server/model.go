@@ -40,5 +40,6 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.modelApp,
 		services.userMiddleWare,
+		services.userApp,
 	)
 }

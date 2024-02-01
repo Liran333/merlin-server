@@ -35,6 +35,7 @@ type UserDO struct {
 	Fullname          string `gorm:"column:fullname"`
 	CreatedBy         string `gorm:"column:created_by"`
 	Email             string `gorm:"column:email"`
+	Phone             string `gorm:"column:phone"`
 	AvatarId          string `gorm:"column:avatar_id"`
 	Type              int    `gorm:"column:type;index:type_index"`
 	Website           string `gorm:"column:website"`
@@ -61,6 +62,7 @@ func toUserDO(u *domain.User) (do UserDO) {
 		PlatformId:  u.PlatformId,
 		PlatformPwd: u.PlatformPwd,
 		Version:     u.Version,
+		Phone:       u.Phone.PhoneNumber(),
 	}
 
 	if u.Desc != nil {
@@ -112,17 +114,18 @@ func (u *UserDO) toOrg() org.Organization {
 		PlatformId:        u.PlatformId,
 		CreatedAt:         u.CreatedAt.Unix(),
 		UpdatedAt:         u.UpdatedAt.Unix(),
-		PlatformPwd:       u.PlatformPwd,                       // user only
-		Email:             primitive.CreateEmail(u.Email),      // user only
-		AllowRequest:      u.AllowRequest,                      // org only
-		DefaultRole:       u.DefaultRole,                       // org only
-		OwnerTeamId:       u.OwnerTeamId,                       // org only
-		ReadTeamId:        u.ReadTeamId,                        // org only
-		WriteTeamId:       u.WriteTeamId,                       // org only
-		ContributorTeamId: u.ContributorTeamId,                 // org only
-		Owner:             primitive.CreateAccount(u.Owner),    // org only
-		OwnerId:           primitive.CreateIdentity(u.OwnerId), // org only
-		Website:           u.Website,                           // org only
+		PlatformPwd:       u.PlatformPwd,                        // user only
+		Email:             primitive.CreateEmail(u.Email),       // user only
+		Phone:             primitive.CreatePhoneNumber(u.Phone), // user only,
+		AllowRequest:      u.AllowRequest,                       // org only
+		DefaultRole:       u.DefaultRole,                        // org only
+		OwnerTeamId:       u.OwnerTeamId,                        // org only
+		ReadTeamId:        u.ReadTeamId,                         // org only
+		WriteTeamId:       u.WriteTeamId,                        // org only
+		ContributorTeamId: u.ContributorTeamId,                  // org only
+		Owner:             primitive.CreateAccount(u.Owner),     // org only
+		OwnerId:           primitive.CreateIdentity(u.OwnerId),  // org only
+		Website:           u.Website,                            // org only
 		Type:              u.Type,
 	}
 }

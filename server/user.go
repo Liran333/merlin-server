@@ -8,6 +8,8 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 
+	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
+	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/controller"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -21,7 +23,7 @@ func initUser(cfg *config.Config, services *allServices) {
 
 	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User))
 
-	services.userApp = app.NewUserService(services.userRepo, git, token)
+	services.userApp = app.NewUserService(services.userRepo, git, token, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 }
 
 func setRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {

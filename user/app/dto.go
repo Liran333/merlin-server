@@ -19,6 +19,7 @@ type UserDTO struct {
 	Fullname     string  `json:"fullname"`
 	AvatarId     string  `json:"avatar_id"`
 	Email        *string `json:"email,omitempty"`
+	Phone        *string `json:"phone,omitempty"`
 	Description  string  `json:"description"`
 	CreatedAt    int64   `json:"created_at"`
 	UpdatedAt    int64   `json:"updated_at"`
@@ -55,8 +56,17 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 		dto.AllowRequest = &allow
 		dto.DefaultRole = u.DefaultRole
 	} else {
-		email := u.Email.Email()
+		email := ""
+		if u.Email != nil {
+			email = u.Email.Email()
+		}
 		dto.Email = &email
+
+		phone := ""
+		if u.Phone != nil {
+			phone = u.Phone.PhoneNumber()
+		}
+		dto.Phone = &phone
 	}
 
 	dto.Type = u.Type
@@ -145,4 +155,16 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 	changed = cmd.avatarChanged || cmd.descChanged || cmd.emailChanged || cmd.fullNameChanged
 
 	return
+}
+
+type CmdToSendBindEmail struct {
+	User  primitive.Account
+	Email primitive.Email
+	Capt  string
+}
+
+type CmdToVerifyBindEmail struct {
+	User     primitive.Account
+	Email    primitive.Email
+	PassCode string
 }

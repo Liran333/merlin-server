@@ -1,7 +1,6 @@
 package primitive
 
 import (
-	"errors"
 	"fmt"
 	"net/mail"
 	"regexp"
@@ -13,12 +12,10 @@ type Email interface {
 }
 
 func NewEmail(v string) (Email, error) {
-	if v == "" {
-		return nil, errors.New("empty email")
-	}
-
-	if err := ValidateEmail(v); err != nil {
-		return nil, err
+	if v != "" {
+		if err := ValidateEmail(v); err != nil {
+			return nil, err
+		}
 	}
 
 	return dpEmail(v), nil

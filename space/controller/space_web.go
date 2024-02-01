@@ -20,8 +20,8 @@ func AddRouteForSpaceWebController(
 		SpaceController: SpaceController{
 			appService:     s,
 			userMiddleWare: m,
+			user:           u,
 		},
-		userApp: u,
 	}
 
 	addRouteForSpaceController(r, &ctl.SpaceController)
@@ -33,8 +33,6 @@ func AddRouteForSpaceWebController(
 
 type SpaceWebController struct {
 	SpaceController
-
-	userApp userapp.UserService
 }
 
 // @Summary  Get
@@ -69,7 +67,7 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 		//TODO check whether user like the space
 	}
 
-	if avatar, err := ctl.userApp.GetUserAvatarId(index.Owner); err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		detail.AvatarId = avatar.AvatarId
@@ -126,7 +124,7 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 		SpacesDTO: &dto,
 	}
 
-	if avatar, err := ctl.userApp.GetUserAvatarId(cmd.Owner); err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(cmd.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		result.AvatarId = avatar.AvatarId
@@ -199,7 +197,7 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 		i++
 	}
 
-	avatars, err := ctl.userApp.GetUsersAvatarId(accounts)
+	avatars, err := ctl.user.GetUsersAvatarId(accounts)
 	if err != nil {
 		return spacesInfo{}, err
 	}

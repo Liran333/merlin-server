@@ -14,32 +14,26 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-const (
-	tokenPermDenied = "token permission denied"
-	tokenInvalid    = "token invalid"
-	tokenExpired    = "token expired"
-)
-
 type OrgRole = string
-
-const (
-	OrgRoleContributor OrgRole = "contributor" // in contributor team
-	OrgRoleReader      OrgRole = "read"        // in read team
-	OrgRoleWriter      OrgRole = "write"       // in write team
-	OrgRoleAdmin       OrgRole = "admin"       // in owner team
-)
-
 type UserType = int
 
 const (
-	UserTypeUser UserType = iota
-	UserTypeOrganization
+	tokenPermDenied               = "token permission denied"
+	tokenInvalid                  = "token invalid"
+	tokenExpired                  = "token expired"
+	OrgRoleContributor   OrgRole  = "contributor" // in contributor team
+	OrgRoleReader        OrgRole  = "read"        // in read team
+	OrgRoleWriter        OrgRole  = "write"       // in write team
+	OrgRoleAdmin         OrgRole  = "admin"       // in owner team
+	UserTypeUser         UserType = 0
+	UserTypeOrganization UserType = 1
 )
 
 // user
 type User struct {
 	Id                primitive.Identity
 	Email             primitive.Email
+	Phone             primitive.Phone
 	Account           Account
 	Fullname          primitive.MSDFullname
 	PlatformPwd       string //password for git user
@@ -63,6 +57,11 @@ type User struct {
 
 func (u User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
+}
+
+func (u *User) ClearSenstiveData() {
+	u.Email = nil
+	u.Phone = nil
 }
 
 type UserInfo struct {
@@ -154,6 +153,7 @@ type UserCreateCmd struct {
 	Desc     primitive.MSDDesc
 	AvatarId primitive.AvatarId
 	Fullname primitive.MSDFullname
+	Phone    primitive.Phone
 }
 
 type TokenCreatedCmd struct {
@@ -207,7 +207,8 @@ type FollowerUserInfo struct {
 func (cmd *UserCreateCmd) Validate() error {
 	b := cmd.Email != nil &&
 		cmd.Account != nil &&
-		cmd.Fullname != nil
+		cmd.Fullname != nil &&
+		cmd.Phone != nil
 
 	if !b {
 		return errors.New("invalid cmd of creating user")
@@ -224,5 +225,6 @@ func (cmd *UserCreateCmd) ToUser() User {
 		AvatarId: cmd.AvatarId,
 		Fullname: cmd.Fullname,
 		Type:     UserTypeUser,
+		Phone:    cmd.Phone,
 	}
 }

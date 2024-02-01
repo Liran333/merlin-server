@@ -8,6 +8,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/domain"
+	userapp "github.com/openmerlin/merlin-server/user/app"
+	userctl "github.com/openmerlin/merlin-server/user/controller"
 )
 
 func addRouteForModelController(
@@ -16,12 +18,13 @@ func addRouteForModelController(
 ) {
 	m := ctl.userMiddleWare
 
-	r.POST(`/v1/model`, m.Write, ctl.Create)
-	r.DELETE("/v1/model/:id", m.Write, ctl.Delete)
-	r.PUT("/v1/model/:id", m.Write, ctl.Update)
+	r.POST(`/v1/model`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Create)
+	r.DELETE("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Delete)
+	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Update)
 }
 
 type ModelController struct {
+	user           userapp.UserService
 	appService     app.ModelAppService
 	userMiddleWare middleware.UserMiddleWare
 }

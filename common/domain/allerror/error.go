@@ -31,6 +31,14 @@ const (
 	ErrorCodeBaseBranchNotFound = "base_branch_not_found"
 
 	errorCodeInvalidParam = "invalid_param"
+
+	ErrorEmailError             = "email_error"
+	ErrorEmailCodeError         = "email_verify_code_error"
+	ErrorEmailCodeInvalid       = "email_verify_code_invalid"
+	ErrorCodeNeedBindEmail      = "user_no_email"
+	ErrorCodeUserDuplicateBind  = "user_duplicate_bind"
+	ErrorCodeEmailDuplicateBind = "email_duplicate_bind"
+	ErrorCodeEmailDuplicateSend = "email_duplicate_send"
 )
 
 // errorImpl

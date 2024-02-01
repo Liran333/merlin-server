@@ -42,7 +42,7 @@ type ApproveDTO struct {
 
 func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	var fullname string
-	u, err := user.GetByAccount(m.Username)
+	u, err := user.GetByAccount(nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 		fullname = ""
@@ -84,7 +84,7 @@ type MemberRequestDTO struct {
 
 func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) MemberRequestDTO {
 	var fullname string
-	u, err := user.GetByAccount(m.Username)
+	u, err := user.GetByAccount(nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 		fullname = ""

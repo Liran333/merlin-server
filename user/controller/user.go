@@ -2,12 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -29,9 +31,13 @@ func AddRouterForUserController(
 	rg.PUT("/v1/user", m.Write, ctl.Update)
 	rg.GET("/v1/user", m.Read, ctl.Get)
 
-	rg.POST("/v1/user/token", m.Write, ctl.CreatePlatformToken)
-	rg.DELETE("/v1/user/token/:name", m.Write, ctl.DeletePlatformToken)
-	rg.GET("/v1/user/token", m.Read, ctl.GetTokenInfo)
+	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), ctl.CreatePlatformToken)
+	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), ctl.DeletePlatformToken)
+	rg.GET("/v1/user/token", m.Read, CheckMail(ctl.m, ctl.s), ctl.GetTokenInfo)
+
+	rg.POST("/v1/user/email/bind", m.Write, ctl.BindEmail)
+	rg.POST("/v1/user/email/send", m.Write, ctl.SendEmail)
+
 }
 
 type UserController struct {
@@ -67,11 +73,110 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, u)
+	}
+}
+
+// check mail middleware
+func CheckMail(m middleware.UserMiddleWare, us app.UserService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := m.GetUserAndExitIfFailed(ctx)
+		if user == nil {
+			return
+		}
+
+		u, err := us.GetByAccount(user, user)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("user not found"))
+		} else {
+			if u.Email != nil && *u.Email != "" {
+				ctx.Next()
+			} else {
+				// will call ctx.Abort() internally
+				commonctl.SendError(ctx, allerror.New(allerror.ErrorCodeNeedBindEmail, "need bind user email firstly"))
+			}
+		}
+	}
+}
+
+// @Summary  Bind User Email
+// @Description  bind user's email
+// @Tags     User
+// @Param    body  body  bindEmailRequest  true  "body of bind email info"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/user/email/bind [post]
+func (ctl *UserController) BindEmail(ctx *gin.Context) {
+	var req bindEmailRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	cmd, err := req.toCmd(user)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
+
+	if err := ctl.s.VerifyBindEmail(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, nil)
+	}
+}
+
+// @Summary  Send User Email Verify code
+// @Description  send user's email verify code
+// @Tags     User
+// @Param    body  body  sendEmailRequest  true  "body of bind email info"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/user/email/send [post]
+func (ctl *UserController) SendEmail(ctx *gin.Context) {
+	var req sendEmailRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	cmd, err := req.toCmd(user)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
+
+	if err := ctl.s.SendBindEmail(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, nil)
 	}
 }
 
@@ -84,9 +189,12 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 // @Router   /v1/user [get]
 func (ctl *UserController) Get(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	// get user own info
-	if u, err := ctl.s.UserInfo(user); err != nil {
+	if u, err := ctl.s.UserInfo(user, user); err != nil {
 		logrus.Error(err)
 
 		commonctl.SendError(ctx, err)
@@ -151,6 +259,9 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	}
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
@@ -181,7 +292,12 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 // @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/user/token [get]
 func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
-	if v, err := ctl.s.ListTokens(ctl.m.GetUserAndExitIfFailed(ctx)); err != nil {
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	if v, err := ctl.s.ListTokens(user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)

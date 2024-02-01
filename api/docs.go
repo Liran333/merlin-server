@@ -1377,6 +1377,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/user/email/bind": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "bind user's email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Bind User Email",
+                "parameters": [
+                    {
+                        "description": "body of bind email info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.bindEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/email/send": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send user's email verify code",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Send User Email Verify code",
+                "parameters": [
+                    {
+                        "description": "body of bind email info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.sendEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/token": {
             "get": {
                 "security": [
@@ -2098,6 +2170,21 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.bindEmailRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "email"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.logoutInfo": {
             "type": "object",
             "properties": {
@@ -2370,6 +2457,21 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.sendEmailRequest": {
+            "type": "object",
+            "required": [
+                "capt",
+                "email"
+            ],
+            "properties": {
+                "capt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.spaceDetail": {
             "type": "object",
             "properties": {
@@ -2575,6 +2677,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "owner_id": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "type": {

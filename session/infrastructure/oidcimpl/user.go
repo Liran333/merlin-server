@@ -58,6 +58,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		Email    string `json:"email,omitempty"`
 		Sub      string `json:"sub,omitempty"`
 		FullName string `json:"nickname,omitempty"`
+		Phone    string `json:"phone_number,omitempty"`
 	}
 
 	if err = impl.getUserInfoByAccessToken(accessToken, &v); err != nil {
@@ -80,6 +81,15 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		return
 	}
 
+	if userInfo.Phone, err = primitive.NewPhone(v.Phone); err != nil {
+		return
+	}
+
+	if v.Sub == "" {
+		err = errors.New("no sub")
+
+		return
+	}
 	userInfo.UserId = v.Sub
 
 	return

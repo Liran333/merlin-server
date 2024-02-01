@@ -20,8 +20,8 @@ func AddRouteForModelWebController(
 		ModelController: ModelController{
 			appService:     s,
 			userMiddleWare: m,
+			user:           u,
 		},
-		userApp: u,
 	}
 
 	addRouteForModelController(r, &ctl.ModelController)
@@ -33,8 +33,6 @@ func AddRouteForModelWebController(
 
 type ModelWebController struct {
 	ModelController
-
-	userApp userapp.UserService
 }
 
 // @Summary  Get
@@ -69,7 +67,7 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 		//TODO check whether user like the model
 	}
 
-	if avatar, err := ctl.userApp.GetUserAvatarId(index.Owner); err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		detail.AvatarId = avatar.AvatarId
@@ -126,7 +124,7 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 		ModelsDTO: &dto,
 	}
 
-	if avatar, err := ctl.userApp.GetUserAvatarId(cmd.Owner); err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(cmd.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		result.AvatarId = avatar.AvatarId
@@ -199,7 +197,7 @@ func (ctl *ModelWebController) setAvatars(dto *app.ModelsDTO) (modelsInfo, error
 		i++
 	}
 
-	avatars, err := ctl.userApp.GetUsersAvatarId(accounts)
+	avatars, err := ctl.user.GetUsersAvatarId(accounts)
 	if err != nil {
 		return modelsInfo{}, err
 	}

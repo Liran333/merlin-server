@@ -48,7 +48,7 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 		return
 	}
 
-	user, err = s.userApp.GetByAccount(login.Name)
+	user, err = s.userApp.GetByAccount(login.Name, login.Name)
 	if err != nil {
 		if !allerror.IsNotFound(err) {
 			return
@@ -70,6 +70,8 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 		IdToken:   login.IDToken,
 		CreatedAt: utils.Now(),
 		UserAgent: cmd.UserAgent,
+		UserId:    login.UserId,
+		Phone:     login.Phone,
 	}
 
 	if err = s.loginRepo.Add(&v); err != nil {
@@ -110,6 +112,7 @@ func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error)
 		Account:  login.Name,
 		AvatarId: login.AvatarId,
 		Fullname: login.Fullname,
+		Phone:    login.Phone,
 	})
 }
 

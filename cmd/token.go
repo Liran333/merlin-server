@@ -12,6 +12,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
+	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
+	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -30,7 +32,7 @@ func inittoken() {
 		postgresql.DAO(cfg.User.Tables.Token),
 	)
 	userAppService = userapp.NewUserService(
-		user, git, t)
+		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 }
 
 var tokenCmd = &cobra.Command{

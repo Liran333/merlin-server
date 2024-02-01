@@ -11,6 +11,7 @@ import (
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	userctl "github.com/openmerlin/merlin-server/user/controller"
 )
 
 func AddRouterForOrgController(
@@ -25,27 +26,27 @@ func AddRouterForOrgController(
 		user: user,
 	}
 
-	rg.PUT("/v1/organization/:name", m.Write, ctl.Update)
-	rg.POST("/v1/organization", m.Write, ctl.Create)
+	rg.PUT("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Update)
+	rg.POST("/v1/organization", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Create)
 	rg.GET("/v1/organization/:name", m.Optional, ctl.Get)
 	rg.GET("/v1/organization", m.Read, ctl.List)
-	rg.POST("/v1/organization/:name", m.Write, ctl.Leave)
-	rg.DELETE("/v1/organization/:name", m.Write, ctl.Delete)
+	rg.POST("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Leave)
+	rg.DELETE("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Delete)
 	rg.HEAD("/v1/name", m.Read, ctl.Check)
 
-	rg.POST("/v1/invite", m.Write, ctl.InviteMember)
-	rg.PUT("/v1/invite", m.Write, ctl.AcceptInvite)
+	rg.POST("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.InviteMember)
+	rg.PUT("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.AcceptInvite)
 	rg.GET("/v1/invite", m.Read, ctl.ListInvitation)
-	rg.DELETE("/v1/invite", m.Write, ctl.RemoveInvitation)
+	rg.DELETE("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveInvitation)
 
-	rg.POST("/v1/request", m.Write, ctl.RequestMember)
-	rg.PUT("/v1/request", m.Write, ctl.ApproveRequest)
+	rg.POST("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RequestMember)
+	rg.PUT("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.ApproveRequest)
 	rg.GET("/v1/request", m.Read, ctl.ListRequests)
-	rg.DELETE("/v1/request", m.Write, ctl.RemoveRequest)
+	rg.DELETE("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveRequest)
 
-	rg.DELETE("/v1/organization/:name/member", m.Write, ctl.RemoveMember)
+	rg.DELETE("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveMember)
 	rg.GET("/v1/organization/:name/member", m.Read, ctl.ListMember)
-	rg.PUT("/v1/organization/:name/member", m.Write, ctl.EditMember)
+	rg.PUT("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.EditMember)
 
 	rg.GET("/v1/account/:name", m.Optional, ctl.GetUser)
 }
