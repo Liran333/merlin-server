@@ -4,24 +4,34 @@ import (
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
 type CmdToCreateSpace struct {
 	coderepoapp.CmdToCreateRepo
 
+	SDK      spaceprimitive.SDK
 	Desc     primitive.MSDDesc
 	Fullname primitive.MSDFullname
+	Hardware spaceprimitive.Hardware
 }
 
 type CmdToUpdateSpace struct {
 	coderepoapp.CmdToUpdateRepo
 
+	SDK      spaceprimitive.SDK
 	Desc     primitive.MSDDesc
 	Fullname primitive.MSDFullname
+	Hardware spaceprimitive.Hardware
 }
 
 func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
+	if v := cmd.SDK; v != nil && v != space.SDK {
+		space.SDK = v
+		b = true
+	}
+
 	if v := cmd.Desc; v != nil && v != space.Desc {
 		space.Desc = v
 		b = true
@@ -29,6 +39,11 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 
 	if v := cmd.Fullname; v != nil && v != space.Fullname {
 		space.Fullname = v
+		b = true
+	}
+
+	if v := cmd.Hardware; v != nil && v != space.Hardware {
+		space.Hardware = v
 		b = true
 	}
 

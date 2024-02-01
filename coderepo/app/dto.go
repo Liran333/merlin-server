@@ -4,16 +4,13 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
 type CmdToCreateRepo struct {
-	SDK        spaceprimitive.SDK
 	Name       primitive.MSDName
 	Owner      primitive.Account
 	License    primitive.License
-	Hardware   spaceprimitive.Hardware
 	Visibility primitive.Visibility
 	InitReadme bool
 }
