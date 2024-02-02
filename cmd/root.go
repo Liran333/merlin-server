@@ -55,7 +55,7 @@ func initServer(configFile string) {
 	domain.Init(&cfg.User)
 
 	// postgresql
-	if err := postgresql.Init(&cfg.Postgresql); err != nil {
+	if err := postgresql.Init(&cfg.Postgresql, false); err != nil {
 		logrus.Errorf("init postgresql failed, err:%s", err.Error())
 
 		return

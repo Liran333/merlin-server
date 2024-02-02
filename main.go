@@ -107,7 +107,7 @@ func main() {
 	defer redisdb.Close()
 
 	// postgresql
-	if err := postgresql.Init(&cfg.Postgresql); err != nil {
+	if err := postgresql.Init(&cfg.Postgresql, o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init postgresql failed, err:%s", err.Error())
 
 		return

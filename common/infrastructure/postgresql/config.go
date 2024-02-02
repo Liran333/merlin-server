@@ -36,12 +36,16 @@ func (cfg *Config) getLifeDuration() time.Duration {
 }
 
 func (p *Config) dsn() string {
-	sslmode := "disable"
 	if p.Dbcert != "" {
-		sslmode = "require"
+		return fmt.Sprintf(
+			"host=%v user=%v password=%v dbname=%v port=%v sslmode=verify-ca TimeZone=Asia/Shanghai sslrootcert=%v",
+			p.Host, p.User, p.Pwd, p.Name, p.Port, p.Dbcert,
+		)
+	} else {
+		return fmt.Sprintf(
+			"host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=Asia/Shanghai",
+			p.Host, p.User, p.Pwd, p.Name, p.Port,
+		)
 	}
-	return fmt.Sprintf(
-		"host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=Asia/Shanghai",
-		p.Host, p.User, p.Pwd, p.Name, p.Port, sslmode,
-	)
+
 }

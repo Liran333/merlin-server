@@ -1,13 +1,13 @@
 package main
 
 import (
-	kafka "github.com/opensourceways/kafka-lib/agent"
-	"github.com/opensourceways/server-common-lib/utils"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	kafka "github.com/opensourceways/kafka-lib/agent"
+	"github.com/opensourceways/server-common-lib/utils"
+	"os"
 )
 
 type Config struct {
@@ -28,7 +28,7 @@ type modelConfig struct {
 	Tables modelrepositoryadapter.Tables `json:"tables"`
 }
 
-func LoadConfig(path string) (*Config, error) {
+func LoadConfig(path string, remove bool) (*Config, error) {
 	cfg := new(Config)
 	if err := utils.LoadFromYaml(path, cfg); err != nil {
 		return nil, err
@@ -37,6 +37,12 @@ func LoadConfig(path string) (*Config, error) {
 	cfg.SetDefault()
 	if err := cfg.Validate(); err != nil {
 		return nil, err
+	}
+
+	if remove {
+		if err := os.Remove(path); err != nil {
+			return nil, err
+		}
 	}
 
 	return cfg, nil

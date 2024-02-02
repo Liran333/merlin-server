@@ -23,7 +23,8 @@ import (
 const component = "merlin-label"
 
 type options struct {
-	service liboptions.ServiceOptions
+	service   liboptions.ServiceOptions
+	removeCfg bool
 }
 
 func (o *options) Validate() error {
@@ -34,6 +35,11 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 
 	o.service.AddFlags(fs)
+
+	fs.BoolVar(
+		&o.removeCfg, "rm-cfg", false,
+		"whether remove the cfg file after initialized.",
+	)
 
 	if err := fs.Parse(args); err != nil {
 		fs.PrintDefaults()
@@ -56,7 +62,7 @@ func main() {
 	}
 
 	// cfg
-	cfg, err := LoadConfig(o.service.ConfigFile)
+	cfg, err := LoadConfig(o.service.ConfigFile, o.removeCfg)
 	if err != nil {
 		logrus.Errorf("load config failed, err:%s", err.Error())
 
@@ -64,7 +70,7 @@ func main() {
 	}
 
 	// kafka
-	if err = kafka.Init(&cfg.Kafka, log, nil, "", false); err != nil {
+	if err = kafka.Init(&cfg.Kafka, log, nil, "", o.removeCfg); err != nil {
 		logrus.Errorf("init kafka failed, err:%s", err.Error())
 
 		return
@@ -73,7 +79,7 @@ func main() {
 	defer kafka.Exit()
 
 	// postgresql
-	if err = postgresql.Init(&cfg.Postgresql); err != nil {
+	if err = postgresql.Init(&cfg.Postgresql, o.removeCfg); err != nil {
 		logrus.Errorf("init postgresql failed, err:%s", err.Error())
 
 		return

@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	"os"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -10,7 +11,7 @@ import (
 
 var db *gorm.DB
 
-func Init(cfg *Config) error {
+func Init(cfg *Config, removeCfg bool) error {
 	dbInstance, err := gorm.Open(
 		postgres.New(postgres.Config{
 			DSN: cfg.dsn(),
@@ -21,6 +22,12 @@ func Init(cfg *Config) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	if removeCfg {
+		if err := os.Remove(cfg.Dbcert); err != nil {
+			return err
+		}
 	}
 
 	sqlDb, err := dbInstance.DB()
