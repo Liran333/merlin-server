@@ -38,18 +38,6 @@ type allServices struct {
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
-	if err = initCodeRepo(cfg, &services); err != nil {
-		return
-	}
-
-	if err = initModel(cfg, &services); err != nil {
-		return
-	}
-
-	if err = initSpace(cfg, &services); err != nil {
-		return
-	}
-
 	initUser(cfg, &services)
 
 	// initOrg depends on initUser
@@ -57,6 +45,20 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 
 	// initSession depends on initUser
 	initSession(cfg, &services)
+
+	if err = initCodeRepo(cfg, &services); err != nil {
+		return
+	}
+
+	// initModel depends on initCodeRepo and initOrg
+	if err = initModel(cfg, &services); err != nil {
+		return
+	}
+
+	// initSpace depends on initCodeRepo and initOrg
+	if err = initSpace(cfg, &services); err != nil {
+		return
+	}
 
 	return
 }

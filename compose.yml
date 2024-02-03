@@ -1,7 +1,6 @@
 services:
   vault:
     image: hashicorp/vault
-    container_name: vault
     restart: on-failure:10
     ports:
       - "8201:8201"
@@ -13,10 +12,10 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8201"]
+      test: ["CMD-SHELL", "netstat -an | grep 8201 > /dev/null; if [ 0 != $? ]; then exit 1; fi;"]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 30s
+      retries: 10
     command: server -dev -dev-root-token-id="00000000-0000-0000-0000-000000000000"
     networks:
       network:
@@ -25,6 +24,11 @@ services:
     image: 'bitnami/kafka:latest'
     ports:
       - '9092:9092'
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --list --bootstrap-server 127.0.0.1:9092"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
@@ -40,6 +44,11 @@ services:
     entrypoint:
     - "/usr/local/bin/redis-server"
     - --requirepass ${REDIS_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASS} ping"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
     env_file:
       deploy/.env
     ports:
@@ -52,6 +61,11 @@ services:
     environment:
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_USER: ${PG_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${GITEA_DB_NAME}"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
     env_file:
       deploy/.env
     ports:
@@ -80,24 +94,37 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:3000"]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 30s
+      retries: 10
     ports:
     - "${GITEA_PORT}:${GITEA_PORT}"
     networks:
       network:
         ipv4_address: 10.5.0.6
     depends_on:
-    - kafka
-    - pg
+      kafka:
+        condition: service_healthy
+      pg:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
   server:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        MODE: debug
     depends_on:
-    - redis
-    - gitea
-    - vault
+      kafka:
+        condition: service_healthy
+      pg:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      gitea:
+        condition: service_healthy
     command:
       - --config-file
       - /home/modelfoundry/config.yml
@@ -115,9 +142,9 @@ services:
       deploy/.env
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:${SERVER_PORT}/api/swagger/index.html"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 30s
+      retries: 10
     networks:
       network:
         ipv4_address: 10.5.0.7

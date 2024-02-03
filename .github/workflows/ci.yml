@@ -14,21 +14,16 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.0'
+      - name: Install Dependencies
+        run: go install github.com/swaggo/swag/cmd/swag@latest
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.19'
+      - name: Unit tests
+        run: go test -v ./...
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./...
-      - run: go test -v -coverprofile=profile.cov ./...
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: false
-          tags: modelfoundry:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: docker run --rm -i -w /data -v `pwd`:/data securego/gosec -exclude-dir api -exclude-dir tests ./...
+      - name: Run e2e tests
+        run: bash -x scripts/init-env.sh && bash -x scripts/openapi.sh && cd tests/e2e && go test -v ./...

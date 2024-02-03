@@ -2427,7 +2427,13 @@
                 "fullname": {
                     "type": "string"
                 },
+                "hardware": {
+                    "type": "string"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "sdk": {
                     "type": "string"
                 },
                 "visibility": {

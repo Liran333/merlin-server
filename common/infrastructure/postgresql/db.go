@@ -24,7 +24,7 @@ func Init(cfg *Config, removeCfg bool) error {
 		return err
 	}
 
-	if removeCfg {
+	if removeCfg && cfg.Dbcert != "" {
 		if err := os.Remove(cfg.Dbcert); err != nil {
 			return err
 		}

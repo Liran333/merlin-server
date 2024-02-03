@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -x
 
 set -o pipefail
 
@@ -22,13 +22,14 @@ function genGiteaConfig() {
 
 function setupVault() {
 	# create new engine
-	docker exec -it vault vault secrets enable -address=http://127.0.0.1:8201 -version=2 -path=modelfoundry kv
+	docker exec -i merlin-server-vault-1 vault secrets enable -address=http://127.0.0.1:8201 -version=2 -path=modelfoundry kv
 
 	# import secrets
-	docker exec -it vault vault kv put -address=http://127.0.0.1:8201 modelfoundry/server \
-		REDIS_HOST=$REDIS_HOST REDIS_PASS=$REDIS_PASS REDIS_PORT=$REDIS_PORT GITEA_BASE_URL=http://$GITEA_HOST:3000 \
+	docker exec -i merlin-server-vault-1 vault kv put -address=http://127.0.0.1:8201 modelfoundry/server \
+		REDIS_HOST=$REDIS_HOST REDIS_PASS=$REDIS_PASS REDIS_PORT=$REDIS_PORT GITEA_BASE_URL=http://$GITEA_HOST:$GITEA_PORT \
 		PG_PASS=$PG_PASS PG_DB=$PG_DB PG_PORT=$PG_PORT PG_HOST=$PG_HOST PG_USER=$PG_USER GITEA_ROOT_TOKEN=$TOKEN \
-		OIDC_SECRET=$OIDC_SECRET OIDC_ENDPOINT=$OIDC_ENDPOINT OIDC_APPID=$OIDC_APPID REDIS_CERT="" PG_CERT=""
+		OIDC_SECRET=$OIDC_SECRET OIDC_ENDPOINT=$OIDC_ENDPOINT OIDC_APPID=$OIDC_APPID REDIS_CERT="" PG_CERT="" \
+		INTERNAL_TOKEN=$INTERNAL_TOKEN
 }
 
 # cleanup
@@ -40,10 +41,10 @@ docker compose rm -fsv
 # gen gitea config
 genGiteaConfig gitea.tpl $ROOTDIR/deploy/app.ini
 # start containers
-docker compose up --build --remove-orphans -d --wait
+docker compose up --build --remove-orphans -d --wait gitea
 
 # create admin for gitea
-TOKEN=$(docker exec -it merlin-server-gitea-1 gitea admin user create --admin --username gitadmin --password \
+TOKEN=$(docker exec -i merlin-server-gitea-1 gitea admin user create --admin --username gitadmin --password \
 	gitadmin --email gitadmin@modelfoundry.com --access-token| head -n 1 | \
 	awk '{print $6}' )
 
@@ -56,12 +57,14 @@ set +a
 
 setupVault
 # create db for server
-docker exec -it merlin-server-pg-1 psql -U gitea -c 'create database merlin;'
+docker exec -i merlin-server-pg-1 psql -U gitea -c 'create database merlin;'
 genServerConfig config.tpl $ROOTDIR/deploy/config.yml
-docker restart merlin-server-server-1
+docker compose up  --no-deps --build -d --wait server
+docker logs merlin-server-server-1
+echo "start to init users"
 # create user and token for server
-docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com -p 13333333334
-docker exec -it merlin-server-server-1 ./cmd -c config.yml user add -n test2 -e test@1234.com -p 15555555555
-docker exec -it merlin-server-server-1 ./cmd -c config.yml token add -n test1 -t test1 -p write | tail -n 1 | tee $ROOTDIR/tests/e2e/token
+docker exec -i merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com -p 13333333334
+docker exec -i merlin-server-server-1 ./cmd -c config.yml user add -n test2 -e test@1234.com -p 15555555555
+docker exec -i merlin-server-server-1 ./cmd -c config.yml token add -n test1 -t test1 -p write | tail -n 1 | tee $ROOTDIR/tests/e2e/token
 echo >> $ROOTDIR/tests/e2e/token
-docker exec -it merlin-server-server-1 ./cmd -c config.yml token add -n test2 -t test1 -p write | tail -n 1 | tee -a $ROOTDIR/tests/e2e/token
+docker exec -i merlin-server-server-1 ./cmd -c config.yml token add -n test2 -t test1 -p write | tail -n 1 | tee -a $ROOTDIR/tests/e2e/token

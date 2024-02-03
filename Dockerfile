@@ -1,7 +1,5 @@
-FROM openeuler/openeuler:23.09 as BUILDER
-RUN dnf update -y --repo OS --repo update && \
-    dnf install -y golang --repo OS --repo update && \
-    go env -w GOPROXY=https://goproxy.cn,direct
+FROM golang:1.21 as BUILDER
+RUN go env -w GOPROXY=https://goproxy.cn,direct
 
 # build binary
 COPY . /go/src/github.com/openmerlin/merlin-server
@@ -26,8 +24,9 @@ WORKDIR /home/modelfoundry
 COPY  --chown=modelfoundry --from=BUILDER /go/src/github.com/openmerlin/merlin-server/merlin-server /home/modelfoundry
 COPY  --chown=modelfoundry --from=BUILDER /go/src/github.com/openmerlin/merlin-server/cmd/cmd /home/modelfoundry
 
+ARG MODE=release
 RUN chmod 550 /home/modelfoundry/merlin-server && \
-    chmod 550 /home/modelfoundry/cmd && \
+    [ ${MODE} == "release" ] && rm /home/modelfoundry/cmd || chmod 550 /home/modelfoundry/cmd && \
     echo "umask 027" >> /home/modelfoundry/.bashrc && \
     echo 'set +o history' >> /home/modelfoundry/.bashrc
 

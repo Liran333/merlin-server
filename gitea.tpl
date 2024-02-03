@@ -61,3 +61,8 @@ PATH = {{(ds "data").GITEA_WORK_DIR }}/git/lfs
 
 [oauth2]
 JWT_SECRET = SO8Hx4FnzP2jCc5nZmaUh4-eu58eLAw7VUIegTxKK0s
+
+[message]
+SERVER_ADDR = {{(ds "data").KAFKA_ADDR }}
+MESSAGE_TYPE = "kafka"
+TOPIC_NAME = "testtopic"

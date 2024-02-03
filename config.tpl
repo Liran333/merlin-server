@@ -163,3 +163,6 @@ postgresql:
   name: {{(ds "secret").data.PG_DB }}
   port: {{(ds "secret").data.PG_PORT }}
   cert: {{(ds "secret").data.PG_CERT }}
+
+internal:
+  token: {{(ds "secret").data.INTERNAL_TOKEN }}
