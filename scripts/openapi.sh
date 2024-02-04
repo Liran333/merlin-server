@@ -22,7 +22,7 @@ cd $ROOTDIR && swag init --exclude tests -o api && cd -
 rm -rf $ROOTDIR/tests/e2e/client
 
 # using swagger codegen to generate client code
-docker run --rm -v ${ROOTDIR}:/local swaggerapi/swagger-codegen-cli generate \
+docker run --rm -u $(id -u):$(id -g) -v ${ROOTDIR}:/local swaggerapi/swagger-codegen-cli generate \
   -i /local/api/swagger.yaml \
   -l go \
   -o /local/tests/e2e/client \
