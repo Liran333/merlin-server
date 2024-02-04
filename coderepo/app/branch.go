@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain/repository"
-	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
@@ -55,9 +54,7 @@ func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch
 
 	branch := cmd.toBranch()
 
-	v, code, _ := s.branchClientAdapter.CreateBranch(&branch)
-
-	err = parseBranchCreaterCode(code)
+	v, err := s.branchClientAdapter.CreateBranch(&branch)
 	if err != nil {
 		return
 	}
@@ -93,21 +90,6 @@ func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch
 	}
 
 	err = s.branchAdapter.Delete(br.Id)
-
-	return
-}
-
-func parseBranchCreaterCode(code string) (err error) {
-	switch code {
-	case repository.ErrorBaseBranchNotFound:
-		err = allerror.New(allerror.ErrorCodeBaseBranchNotFound, "base branch not found")
-	case repository.ErrorBranchAlreadyExist:
-		err = allerror.New(allerror.ErrorCodeBranchExist, "branch already exist")
-	case repository.ErrorBranchInactive:
-		err = allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive")
-	default:
-		err = allerror.New(allerror.ErrorCodeBranchError, "branch error")
-	}
 
 	return
 }

@@ -4,13 +4,10 @@ import (
 	"github.com/openmerlin/go-sdk/gitea"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 )
 
 const (
-	errorBranchInactive     = "branch_inactiver"
-	errorBranchAlreadyExist = "branch_already_exist"
-	errorBaseBranchNotFound = "base_branch_not_found"
-
 	statusCodeInactive           = 403
 	statusCodeBranchAlreadyExist = 409
 	statusCodeBaseBranchNotFound = 404
@@ -24,7 +21,7 @@ func NewBranchClientAdapter(c *gitea.Client) *branchClientAdapter {
 	return &branchClientAdapter{client: c}
 }
 
-func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n string, code string, err error) {
+func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n string, err error) {
 	opt := gitea.CreateBranchOption{}
 	opt.BranchName = branch.Branch.BranchName()
 	opt.OldBranchName = branch.BaseBranch.BranchName()
@@ -37,8 +34,7 @@ func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n strin
 		return
 	}
 
-	code = generateCreateCode(r.StatusCode)
-
+	err = parseCreateError(r.StatusCode, err)
 	return
 }
 
@@ -50,15 +46,15 @@ func (adapter *branchClientAdapter) DeleteBranch(branch *domain.BranchIndex) err
 	return err
 }
 
-func generateCreateCode(c int) (code string) {
+func parseCreateError(c int, err error) error {
 	switch c {
 	case statusCodeBaseBranchNotFound:
-		code = errorBaseBranchNotFound
+		return allerror.New(allerror.ErrorCodeBaseBranchNotFound, "base branch not found")
 	case statusCodeBranchAlreadyExist:
-		code = errorBranchAlreadyExist
+		return allerror.New(allerror.ErrorCodeBranchExist, "branch already exist")
 	case statusCodeInactive:
-		code = errorBranchInactive
+		return allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive")
 	}
 
-	return
+	return err
 }

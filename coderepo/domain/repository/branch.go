@@ -6,12 +6,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
-const (
-	ErrorBranchInactive     = "branch_inactiver"
-	ErrorBranchAlreadyExist = "branch_already_exist"
-	ErrorBaseBranchNotFound = "base_branch_not_found"
-)
-
 type BranchRepositoryAdapter interface {
 	Add(*domain.Branch) error
 	Delete(primitive.Identity) error
@@ -19,7 +13,7 @@ type BranchRepositoryAdapter interface {
 }
 
 type BranchClientAdapter interface {
-	CreateBranch(*domain.Branch) (string, string, error)
+	CreateBranch(*domain.Branch) (string, error)
 	DeleteBranch(*domain.BranchIndex) error
 }
 
