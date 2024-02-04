@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -19,7 +20,7 @@ const (
 	apiTitle = "Modelfoundry"
 )
 
-func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
+func StartWebServer(key, cert string, port int, timeout time.Duration, cfg *config.Config) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(logRequest())
@@ -56,7 +57,16 @@ func StartWebServer(port int, timeout time.Duration, cfg *config.Config) {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	interrupts.ListenAndServe(srv, timeout)
+	if key != "" && cert != "" {
+		srv.TLSConfig = &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			PreferServerCipherSuites: true,
+		}
+		interrupts.ListenAndServeTLS(srv, cert, key, timeout)
+	} else {
+		interrupts.ListenAndServe(srv, timeout)
+
+	}
 }
 
 func logRequest() gin.HandlerFunc {
