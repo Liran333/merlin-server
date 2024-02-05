@@ -19,6 +19,9 @@ type daoImpl struct {
 // Each operation must generate a new gorm.DB instance.
 // If using the same gorm.DB instance by different operations, they will share the same error.
 func (dao *daoImpl) db() *gorm.DB {
+	if dbInstance == nil {
+		return nil
+	}
 	return dbInstance.Table(dao.table)
 }
 

@@ -1,23 +1,17 @@
 package utils
 
 import (
-	"crypto/rand"
-	"fmt"
-	"math/big"
 	"net/url"
 	"os"
 	"time"
 	"unicode/utf8"
 
-	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 )
 
 const (
 	layout     = "2006-01-02"
 	timeLayout = "2006-01-02 15:04:05"
-
-	maxAllowedAllocationLength = 64
 )
 
 func LoadFromYaml(path string, cfg interface{}) error {
@@ -41,10 +35,6 @@ func ToDate(n int64) string {
 	return time.Unix(n, 0).Format(layout)
 }
 
-func Date() string {
-	return time.Now().Format(layout)
-}
-
 func Time() string {
 	return time.Now().Format(timeLayout)
 }
@@ -59,74 +49,12 @@ func DateAndTime(n int64) (string, string) {
 	return t.Format(layout), t.Format(timeLayout)
 }
 
-func ToUnixTime(v string) (time.Time, error) {
-	t, err := time.Parse(layout, v)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return t, nil
-}
-
-func ExpiryReduceSecond(expiry int64) time.Time {
-	return time.Now().Add(time.Duration(expiry-10) * time.Second)
-}
-
 func Expiry(expiry int64) int64 {
 	return time.Now().Add(time.Second * time.Duration(expiry)).Unix()
 }
 
-func IsExpiry(expiry int64) bool {
-	if expiry <= 0 {
-		return false
-	}
-
-	return time.Now().Unix() > expiry
-}
-
 func StrLen(s string) int {
 	return utf8.RuneCountInString(s)
-}
-
-func GenRandoms(max, total int) []int {
-	if total > maxAllowedAllocationLength {
-		logrus.Error("argument total out of allowed in GenRandoms")
-
-		return nil
-	}
-
-	i := 0
-	m := make(map[int]struct{})
-	r := make([]int, total)
-	for {
-		randInt, err := rand.Int(rand.Reader, big.NewInt(int64(max+1)))
-		if err != nil {
-			logrus.Debugf("Error generating random number: %s", err)
-			return nil
-		}
-		n := int(randInt.Int64())
-
-		if _, ok := m[n]; !ok {
-			m[n] = struct{}{}
-			r[i] = n
-			if i++; i == total {
-				break
-			}
-		}
-	}
-
-	return r
-}
-
-// GetUUID use crypto.rand to get uuid
-func GetUUID() (uuid string) {
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		logrus.Debugf("Error generating uuid: %s", err)
-	}
-	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-	return
 }
 
 // ExtractDomain extract hostname in URL
@@ -138,33 +66,4 @@ func ExtractDomain(inputURL string) (string, error) {
 	domain := parsedURL.Hostname()
 
 	return domain, nil
-}
-
-// greatest common divisor (GCD) via Euclidean algorithm
-func GCD(a, b int) int {
-	for b != 0 {
-		t := b
-		b = a % b
-		a = t
-	}
-	return a
-}
-
-// find Least Common Multiple (LCM) via GCD
-func LCM(a, b int) int {
-	return a * (b / GCD(a, b))
-}
-
-func RetryThreeTimes(f func() error) {
-	if err := f(); err == nil {
-		return
-	}
-
-	for i := 1; i < 3; i++ {
-		time.Sleep(time.Second)
-
-		if err := f(); err == nil {
-			return
-		}
-	}
 }

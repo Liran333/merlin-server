@@ -13,13 +13,21 @@ type Config struct {
 }
 
 func Init(cfg *Config) {
+	if cfg == nil {
+		return
+	}
+
 	allHardware = map[string]bool{}
-	for _, v := range cfg.Hardware {
-		allHardware[strings.ToLower(v)] = true
+	if cfg.Hardware != nil {
+		for _, v := range cfg.Hardware {
+			allHardware[strings.ToLower(v)] = true
+		}
 	}
 
 	allSDK = map[string]bool{}
-	for _, sv := range cfg.SDK {
-		allSDK[strings.ToLower(sv)] = true
+	if cfg.SDK != nil {
+		for _, sv := range cfg.SDK {
+			allSDK[strings.ToLower(sv)] = true
+		}
 	}
 }

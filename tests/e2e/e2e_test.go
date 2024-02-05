@@ -39,12 +39,16 @@ func getToken() []string {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+	defer t.Close()
 
 	res := make([]string, 0)
-
 	reader := bufio.NewScanner(t)
 	for reader.Scan() {
 		res = append(res, reader.Text())
+	}
+
+	if err := reader.Err(); err != nil {
+		logrus.Fatal(err)
 	}
 
 	return res
@@ -58,10 +62,15 @@ func TestMain(m *testing.M) {
 
 	token := getToken()
 
+	// Check if token slice contains at least 2 elements.
+	if len(token) < 2 {
+		logrus.Fatal("Insufficient tokens provided. Need at least 2 tokens.")
+	}
+
 	Api = swagger.NewAPIClient(cfg)
 
-	Auth = newAuthCtx(token[0])
-	Auth2 = newAuthCtx(token[1])
+	Auth = newAuthCtx(token[0])  // Use the first token.
+	Auth2 = newAuthCtx(token[1]) // Use the second token.
 
 	m.Run()
 }
