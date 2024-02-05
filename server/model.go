@@ -31,6 +31,7 @@ func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.modelApp,
 		services.userMiddleWare,
+		services.operationLog,
 		services.userApp,
 	)
 }
@@ -40,6 +41,7 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.modelApp,
 		services.userMiddleWare,
+		services.operationLog,
 		services.userApp,
 	)
 }

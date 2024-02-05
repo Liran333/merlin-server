@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -20,8 +22,8 @@ type Permission interface {
 
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
-	Delete(primitive.Account, primitive.Identity) error
-	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) error
+	Delete(primitive.Account, primitive.Identity) (string, error)
+	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) (string, error)
 	GetByName(primitive.Account, *domain.ModelIndex) (ModelDTO, error)
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
@@ -75,62 +77,74 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 	// TODO send model created event in order to add activity and operation log
 }
 
-func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Identity) error {
+func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Identity) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
 		}
 
-		return err
+		return
 	}
 
-	if err := s.hasPermission(user, &model, primitive.ActionDelete); err != nil {
-		return err
+	action = fmt.Sprintf(
+		"delete model of %s:%s/%s",
+		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
+	)
+
+	if err = s.hasPermission(user, &model, primitive.ActionDelete); err != nil {
+		return
 	}
 
 	if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
-		return err
+		return
 	}
 
 	if err = s.repoAdapter.Delete(model.Id); err != nil {
-		return err
+		return
 	}
 
 	// TODO send model deleted event
 
-	return nil
+	return
 }
 
 func (s *modelAppService) Update(
 	user primitive.Account, modelId primitive.Identity, cmd *CmdToUpdateModel,
-) error {
+) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errorModelNotFound
 		}
 
-		return err
+		return
 	}
 
-	if err := s.hasPermission(user, &model, primitive.ActionWrite); err != nil {
-		return err
+	action = fmt.Sprintf(
+		"update model of %s:%s/%s",
+		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
+	)
+
+	if err = s.hasPermission(user, &model, primitive.ActionWrite); err != nil {
+		return
 	}
 
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
-		return err
+		return
 	}
 
 	b1 := cmd.toModel(&model)
 	if !b && !b1 {
-		return nil
+		return
 	}
 
-	return s.repoAdapter.Save(&model)
+	err = s.repoAdapter.Save(&model)
 
 	// send model updated event to add activity
+
+	return
 }
 
 func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelIndex) (ModelDTO, error) {

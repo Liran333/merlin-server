@@ -45,6 +45,10 @@ func Date() string {
 	return time.Now().Format(layout)
 }
 
+func Time() string {
+	return time.Now().Format(timeLayout)
+}
+
 func DateAndTime(n int64) (string, string) {
 	if n <= 0 {
 		return "", ""

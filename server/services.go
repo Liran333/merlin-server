@@ -30,6 +30,7 @@ type allServices struct {
 	codeRepoApp     coderepoapp.CodeRepoAppService
 	codeRepoFileApp coderepoapp.CodeRepoFileAppService
 
+	operationLog   middleware.OperationLog
 	userMiddleWare middleware.UserMiddleWare
 
 	modelApp modelapp.ModelAppService

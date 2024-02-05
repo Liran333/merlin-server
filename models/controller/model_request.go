@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strings"
 
@@ -26,6 +27,10 @@ type reqToCreateModel struct {
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
 	InitReadme bool   `json:"init_readme"`
+}
+
+func (req *reqToCreateModel) action() string {
+	return fmt.Sprintf("create model of %s/%s", req.Owner, req.Name)
 }
 
 func (req *reqToCreateModel) toCmd() (cmd app.CmdToCreateModel, err error) {
@@ -64,6 +69,18 @@ type reqToUpdateModel struct {
 	Desc       *string `json:"desc"`
 	Fullname   *string `json:"fullname"`
 	Visibility *string `json:"visibility"`
+}
+
+func (p *reqToUpdateModel) action() (str string) {
+	if p.Name != nil {
+		str += fmt.Sprintf("name = %s", *p.Name)
+	}
+
+	if p.Visibility != nil {
+		str += fmt.Sprintf("visibility = %s", *p.Visibility)
+	}
+
+	return
 }
 
 func (p *reqToUpdateModel) toCmd() (cmd app.CmdToUpdateModel, err error) {

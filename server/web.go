@@ -6,6 +6,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/openmerlin/merlin-server/api"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/operationlog"
 	"github.com/openmerlin/merlin-server/config"
 
 	sessionctl "github.com/openmerlin/merlin-server/session/controller"
@@ -17,6 +18,7 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
 	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp)
+	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

@@ -13,6 +13,7 @@ func AddRouteForModelRestfulController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
 	m middleware.UserMiddleWare,
+	l middleware.OperationLog,
 	u userapp.UserService,
 ) {
 	ctl := ModelRestfulController{
@@ -23,7 +24,7 @@ func AddRouteForModelRestfulController(
 		},
 	}
 
-	addRouteForModelController(r, &ctl.ModelController)
+	addRouteForModelController(r, &ctl.ModelController, l)
 
 	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
 	r.GET("/v1/model", m.Optional, ctl.List)

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -15,12 +17,13 @@ import (
 func addRouteForModelController(
 	r *gin.RouterGroup,
 	ctl *ModelController,
+	opLog middleware.OperationLog,
 ) {
 	m := ctl.userMiddleWare
 
-	r.POST(`/v1/model`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Create)
-	r.DELETE("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Delete)
-	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), ctl.Update)
+	r.POST(`/v1/model`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Create)
+	r.DELETE("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Delete)
+	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Update)
 }
 
 type ModelController struct {
@@ -43,6 +46,8 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	cmd, err := req.toCmd()
 	if err != nil {
@@ -77,7 +82,11 @@ func (ctl *ModelController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.Delete(user, modelId); err != nil {
+	action, err := ctl.appService.Delete(user, modelId)
+
+	middleware.SetAction(ctx, action)
+
+	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
@@ -114,10 +123,13 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 		return
 	}
 
-	err = ctl.appService.Update(
+	action, err := ctl.appService.Update(
 		ctl.userMiddleWare.GetUser(ctx),
 		modelId, &cmd,
 	)
+
+	middleware.SetAction(ctx, fmt.Sprintf("%s, set %s", action, req.action()))
+
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
