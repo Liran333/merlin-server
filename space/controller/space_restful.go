@@ -13,6 +13,7 @@ func AddRouteForSpaceRestfulController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
 	m middleware.UserMiddleWare,
+	l middleware.OperationLog,
 	u userapp.UserService,
 ) {
 	ctl := SpaceRestfulController{
@@ -23,7 +24,7 @@ func AddRouteForSpaceRestfulController(
 		},
 	}
 
-	addRouteForSpaceController(r, &ctl.SpaceController)
+	addRouteForSpaceController(r, &ctl.SpaceController, l)
 
 	r.GET("/v1/space/:owner/:name", m.Optional, ctl.Get)
 	r.GET("/v1/space", m.Optional, ctl.List)

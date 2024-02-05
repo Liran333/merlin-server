@@ -20,6 +20,7 @@ func AddRouterForUserController(
 	rg *gin.RouterGroup,
 	us app.UserService,
 	repo userrepo.User,
+	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 ) {
 	ctl := UserController{
@@ -28,15 +29,15 @@ func AddRouterForUserController(
 		m:    m,
 	}
 
-	rg.PUT("/v1/user", m.Write, ctl.Update)
+	rg.PUT("/v1/user", m.Write, l.Write, ctl.Update)
 	rg.GET("/v1/user", m.Read, ctl.Get)
 
-	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), ctl.CreatePlatformToken)
-	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), ctl.DeletePlatformToken)
+	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.CreatePlatformToken)
+	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.DeletePlatformToken)
 	rg.GET("/v1/user/token", m.Read, CheckMail(ctl.m, ctl.s), ctl.GetTokenInfo)
 
-	rg.POST("/v1/user/email/bind", m.Write, ctl.BindEmail)
-	rg.POST("/v1/user/email/send", m.Write, ctl.SendEmail)
+	rg.POST("/v1/user/email/bind", m.Write, l.Write, ctl.BindEmail)
+	rg.POST("/v1/user/email/send", m.Write, l.Write, ctl.SendEmail)
 
 }
 
@@ -70,6 +71,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, "update user basic info")
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -134,6 +136,7 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	if err := ctl.s.VerifyBindEmail(&cmd); err != nil {
@@ -171,6 +174,7 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	if err := ctl.s.SendBindEmail(&cmd); err != nil {
@@ -226,6 +230,8 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 		commonctl.SendBadRequestParam(ctx, fmt.Errorf("invalid token name"))
 	}
 
+	middleware.SetAction(ctx, fmt.Sprintf("delete token %s", name))
+
 	err = ctl.s.DeleteToken(
 		&domain.TokenDeletedCmd{
 			Account: user,
@@ -257,6 +263,8 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {

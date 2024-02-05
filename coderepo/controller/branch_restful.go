@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/openmerlin/merlin-server/coderepo/app"
@@ -12,14 +14,15 @@ func AddRouteForBranchRestfulController(
 	r *gin.RouterGroup,
 	s app.BranchAppService,
 	m middleware.UserMiddleWare,
+	l middleware.OperationLog,
 ) {
 	ctl := BranchRestfulController{
 		userMiddleWare: m,
 		appService:     s,
 	}
 
-	r.POST("/v1/branch/:type/:owner/:repo", m.Optional, ctl.Create)
-	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Optional, ctl.Delete)
+	r.POST("/v1/branch/:type/:owner/:repo", m.Optional, l.Write, ctl.Create)
+	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Optional, l.Write, ctl.Delete)
 }
 
 type BranchRestfulController struct {
@@ -44,6 +47,8 @@ func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action(ctx))
 
 	cmd, err := req.toCmd(ctx)
 	if err != nil {
@@ -79,6 +84,9 @@ func (ctl *BranchRestfulController) Delete(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("delete branch %s/%s/%s",
+		ctx.Param("owner"), ctx.Param("repo"), ctx.Param("branch")))
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 

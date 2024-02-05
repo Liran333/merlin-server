@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ func AddRouterForOrgController(
 	rg *gin.RouterGroup,
 	org orgapp.OrgService,
 	user userapp.UserService,
+	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 ) {
 	ctl := OrgController{
@@ -26,27 +28,27 @@ func AddRouterForOrgController(
 		user: user,
 	}
 
-	rg.PUT("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Update)
-	rg.POST("/v1/organization", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Create)
+	rg.PUT("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Update)
+	rg.POST("/v1/organization", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Create)
 	rg.GET("/v1/organization/:name", m.Optional, ctl.Get)
 	rg.GET("/v1/organization", m.Read, ctl.List)
-	rg.POST("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Leave)
-	rg.DELETE("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.Delete)
+	rg.POST("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Leave)
+	rg.DELETE("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Delete)
 	rg.HEAD("/v1/name", m.Read, ctl.Check)
 
-	rg.POST("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.InviteMember)
-	rg.PUT("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.AcceptInvite)
+	rg.POST("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.InviteMember)
+	rg.PUT("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.AcceptInvite)
 	rg.GET("/v1/invite", m.Read, ctl.ListInvitation)
-	rg.DELETE("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveInvitation)
+	rg.DELETE("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveInvitation)
 
-	rg.POST("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RequestMember)
-	rg.PUT("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.ApproveRequest)
+	rg.POST("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RequestMember)
+	rg.PUT("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.ApproveRequest)
 	rg.GET("/v1/request", m.Read, ctl.ListRequests)
-	rg.DELETE("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveRequest)
+	rg.DELETE("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveRequest)
 
-	rg.DELETE("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.RemoveMember)
+	rg.DELETE("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveMember)
 	rg.GET("/v1/organization/:name/member", m.Read, ctl.ListMember)
-	rg.PUT("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), ctl.EditMember)
+	rg.PUT("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.EditMember)
 
 	rg.GET("/v1/account/:name", m.Optional, ctl.GetUser)
 }
@@ -79,6 +81,8 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 	if user == nil {
 		return
 	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("update basic info of %s", ctx.Param("name")))
 
 	cmd, err := req.toCmd(user, ctx.Param("name"))
 	if err != nil {
@@ -245,6 +249,8 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -288,6 +294,7 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, fmt.Sprintf("delete organization %s", orgName))
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "delete organization")
 
 	err = ctl.org.Delete(&domain.OrgDeletedCmd{
@@ -354,6 +361,9 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx,
+		fmt.Sprintf("edit member %s to be %s of %s", req.User, req.Role, cmd.Org.Account()))
+
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "edit a member to organization")
 
 	if _, err = ctl.org.EditMember(&cmd); err != nil {
@@ -395,6 +405,9 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx,
+		fmt.Sprintf("remove member %s from %s", req.User, cmd.Org.Account()))
+
 	if err = ctl.org.RemoveMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -423,6 +436,7 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, fmt.Sprintf("leave organization %s", orgName))
 	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "leave organization")
 
 	err = ctl.org.RemoveMember(&domain.OrgRemoveMemberCmd{
@@ -458,6 +472,8 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
@@ -533,6 +549,8 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
+
 	cmd, err := req.toCmd(user)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
@@ -571,6 +589,8 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
+
 	cmd, err := req.toCmd(user)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
@@ -608,6 +628,8 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
@@ -688,6 +710,8 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 		return
 	}
 
+	middleware.SetAction(ctx, req.action())
+
 	cmd, err := req.toCmd(user)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
@@ -725,6 +749,8 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	cmd, err := req.toCmd(user)
 	if err != nil {

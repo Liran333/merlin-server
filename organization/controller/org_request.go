@@ -95,6 +95,10 @@ type orgCreateRequest struct {
 	Description string `json:"description"`
 }
 
+func (req *orgCreateRequest) action() string {
+	return fmt.Sprintf("create organization %s", req.Name)
+}
+
 func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 	if cmd.Name, err = primitive.NewAccount(req.Name); err != nil {
 		return
@@ -234,6 +238,10 @@ type OrgInviteMemberRequest struct {
 	OrgName string `json:"org_name" binding:"required"`
 }
 
+func (req *OrgInviteMemberRequest) action() string {
+	return fmt.Sprintf("invite %s as a %s in %s", req.User, req.Role, req.OrgName)
+}
+
 func (req *OrgInviteMemberRequest) toCmd(user primitive.Account) (
 	cmd domain.OrgInviteMemberCmd, err error,
 ) {
@@ -257,6 +265,10 @@ type OrgAcceptMemberRequest struct {
 	OrgName string `json:"org_name" binding:"required"`
 }
 
+func (req *OrgAcceptMemberRequest) action() string {
+	return fmt.Sprintf("accept invite from organization %s", req.OrgName)
+}
+
 func (req *OrgAcceptMemberRequest) toCmd(user primitive.Account) (
 	cmd domain.OrgAcceptInviteCmd, err error,
 ) {
@@ -275,6 +287,10 @@ type OrgApproveMemberRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
+}
+
+func (req *OrgApproveMemberRequest) action() string {
+	return fmt.Sprintf("approve %s to be a member of %s", req.User, req.OrgName)
 }
 
 func (req *OrgApproveMemberRequest) toCmd(user primitive.Account) (
@@ -299,6 +315,10 @@ type OrgReqMemberRequest struct {
 	OrgName string `json:"org_name" binding:"required"`
 }
 
+func (req *OrgReqMemberRequest) action() string {
+	return fmt.Sprintf("request to be a member of %s", req.OrgName)
+}
+
 func (req *OrgReqMemberRequest) toCmd(user primitive.Account) (
 	cmd domain.OrgRequestMemberCmd, err error,
 ) {
@@ -316,6 +336,10 @@ type OrgRevokeInviteRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
+}
+
+func (req *OrgRevokeInviteRequest) action() string {
+	return fmt.Sprintf("revoke invite of %s from %s", req.User, req.OrgName)
 }
 
 func (req *OrgRevokeInviteRequest) toCmd(user primitive.Account) (
@@ -343,6 +367,10 @@ type OrgRevokeMemberReqRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
+}
+
+func (req *OrgRevokeMemberReqRequest) action() string {
+	return fmt.Sprintf("revoke member request of %s to join %s", req.User, req.OrgName)
 }
 
 func (req *OrgRevokeMemberReqRequest) toCmd(user primitive.Account) (

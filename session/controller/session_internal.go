@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	sdk "github.com/openmerlin/merlin-sdk/session"
+
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -13,13 +14,14 @@ import (
 func AddRouterForSessionInternalController(
 	rg *gin.RouterGroup,
 	s app.SessionAppService,
+	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 ) {
 	pc := SessionInternalController{
 		s: s,
 	}
 
-	rg.PUT("/v1/session/check", m.Write, pc.CheckAndRefresh)
+	rg.PUT("/v1/session/check", m.Write, l.Write, pc.CheckAndRefresh)
 }
 
 type SessionInternalController struct {
@@ -40,6 +42,8 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, "check and refresh session")
 
 	cmd, err := cmdToCheck(&req)
 	if err != nil {

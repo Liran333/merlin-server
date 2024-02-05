@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strings"
 
@@ -29,6 +30,10 @@ type reqToCreateSpace struct {
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
 	InitReadme bool   `json:"init_readme"`
+}
+
+func (req *reqToCreateSpace) action() string {
+	return fmt.Sprintf("create space of %s/%s", req.Owner, req.Name)
 }
 
 func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
@@ -77,6 +82,18 @@ type reqToUpdateSpace struct {
 	Fullname   *string `json:"fullname"`
 	Hardware   *string `json:"hardware"`
 	Visibility *string `json:"visibility"`
+}
+
+func (p *reqToUpdateSpace) action() (str string) {
+	if p.Name != nil {
+		str += fmt.Sprintf("name = %s", *p.Name)
+	}
+
+	if p.Visibility != nil {
+		str += fmt.Sprintf("visibility = %s", *p.Visibility)
+	}
+
+	return
 }
 
 func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {

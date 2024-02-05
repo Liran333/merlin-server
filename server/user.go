@@ -28,6 +28,10 @@ func initUser(cfg *config.Config, services *allServices) {
 
 func setRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
 	controller.AddRouterForUserController(
-		v1, services.userApp, services.userRepo, services.userMiddleWare,
+		v1,
+		services.userApp,
+		services.userRepo,
+		services.operationLog,
+		services.userMiddleWare,
 	)
 }

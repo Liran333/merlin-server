@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -20,8 +22,8 @@ type Permission interface {
 
 type SpaceAppService interface {
 	Create(primitive.Account, *CmdToCreateSpace) (string, error)
-	Delete(primitive.Account, primitive.Identity) error
-	Update(primitive.Account, primitive.Identity, *CmdToUpdateSpace) error
+	Delete(primitive.Account, primitive.Identity) (string, error)
+	Update(primitive.Account, primitive.Identity, *CmdToUpdateSpace) (string, error)
 	GetByName(primitive.Account, *domain.SpaceIndex) (SpaceDTO, error)
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 }
@@ -77,62 +79,74 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	// TODO send space created event in order to add activity and operation log
 }
 
-func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Identity) error {
+func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Identity) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
 		}
 
-		return err
+		return
 	}
 
-	if err := s.hasPermission(user, &space, primitive.ActionDelete); err != nil {
-		return err
+	action = fmt.Sprintf(
+		"delete space of %s:%s/%s",
+		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
+	)
+
+	if err = s.hasPermission(user, &space, primitive.ActionDelete); err != nil {
+		return
 	}
 
 	if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
-		return err
+		return
 	}
 
 	if err = s.repoAdapter.Delete(space.Id); err != nil {
-		return err
+		return
 	}
 
 	// TODO send space deleted event
 
-	return nil
+	return
 }
 
 func (s *spaceAppService) Update(
 	user primitive.Account, spaceId primitive.Identity, cmd *CmdToUpdateSpace,
-) error {
+) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errorSpaceNotFound
 		}
 
-		return err
+		return
 	}
 
-	if err := s.hasPermission(user, &space, primitive.ActionWrite); err != nil {
-		return err
+	action = fmt.Sprintf(
+		"update space of %s:%s/%s",
+		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
+	)
+
+	if err = s.hasPermission(user, &space, primitive.ActionWrite); err != nil {
+		return
 	}
 
 	b, err := s.codeRepoApp.Update(&space.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
-		return err
+		return
 	}
 
 	b1 := cmd.toSpace(&space)
 	if !b && !b1 {
-		return nil
+		return
 	}
 
-	return s.repoAdapter.Save(&space)
+	err = s.repoAdapter.Save(&space)
 
 	// send space updated event to add activity
+
+	return
 }
 
 func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceIndex) (SpaceDTO, error) {

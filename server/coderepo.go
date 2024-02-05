@@ -58,6 +58,7 @@ func setRouterOfBranchRestful(rg *gin.RouterGroup, services *allServices) {
 			NewCheckRepoAdapter(services),
 		),
 		services.userMiddleWare,
+		services.operationLog,
 	)
 }
 

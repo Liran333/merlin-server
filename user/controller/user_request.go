@@ -94,6 +94,10 @@ type tokenCreateRequest struct {
 	Perm string `json:"perm" binding:"required"`
 }
 
+func (req *tokenCreateRequest) action() string {
+	return fmt.Sprintf("create a new platform token named %s", req.Name)
+}
+
 func (req *tokenCreateRequest) toCmd(user domain.Account) (cmd domain.TokenCreatedCmd, err error) {
 	if cmd.Permission, err = primitive.NewTokenPerm(req.Perm); err != nil {
 		return
@@ -130,6 +134,10 @@ type bindEmailRequest struct {
 	PassCode string `json:"code" binding:"required"`
 }
 
+func (req *bindEmailRequest) action() string {
+	return fmt.Sprintf("bind email %s", req.Email)
+}
+
 func (req *bindEmailRequest) toCmd(user domain.Account) (cmd app.CmdToVerifyBindEmail, err error) {
 	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
 		return
@@ -145,6 +153,10 @@ func (req *bindEmailRequest) toCmd(user domain.Account) (cmd app.CmdToVerifyBind
 type sendEmailRequest struct {
 	Email string `json:"email" binding:"required"`
 	Capt  string `json:"capt" binding:"required"`
+}
+
+func (req *sendEmailRequest) action() string {
+	return fmt.Sprintf("send email verify code to %s", req.Email)
 }
 
 func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEmail, err error) {

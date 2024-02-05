@@ -31,6 +31,7 @@ func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.spaceApp,
 		services.userMiddleWare,
+		services.operationLog,
 		services.userApp,
 	)
 }
@@ -40,6 +41,7 @@ func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.spaceApp,
 		services.userMiddleWare,
+		services.operationLog,
 		services.userApp,
 	)
 }

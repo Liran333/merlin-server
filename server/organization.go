@@ -31,6 +31,10 @@ func initOrg(cfg *config.Config, services *allServices) {
 
 func setRouterOfOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
 	controller.AddRouterForOrgController(
-		v1, services.orgApp, services.userApp, services.userMiddleWare,
+		v1,
+		services.orgApp,
+		services.userApp,
+		services.operationLog,
+		services.userMiddleWare,
 	)
 }

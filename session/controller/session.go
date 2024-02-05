@@ -19,14 +19,15 @@ const (
 func AddRouterForSessionController(
 	rg *gin.RouterGroup,
 	s app.SessionAppService,
+	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 ) {
 	pc := SessionController{
 		s: s,
 	}
 
-	rg.POST("/v1/session", pc.Login)
-	rg.PUT("/v1/session", m.Write, pc.Logout)
+	rg.POST("/v1/session", l.Write, pc.Login)
+	rg.PUT("/v1/session", m.Write, l.Write, pc.Logout)
 }
 
 type SessionController struct {
@@ -48,6 +49,8 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, "login")
 
 	cmd, err := req.toCmd(ctx)
 	if err != nil {
@@ -84,6 +87,8 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, "logout")
 
 	loginId, err := primitive.NewUUID(v)
 	if err != nil {

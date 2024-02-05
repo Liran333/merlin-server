@@ -25,12 +25,12 @@ func initSession(cfg *config.Config, services *allServices) {
 
 func setRouterOfSession(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForSessionController(
-		rg, services.sessionApp, services.userMiddleWare,
+		rg, services.sessionApp, services.operationLog, services.userMiddleWare,
 	)
 }
 
 func setRouterOfSessionInternal(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForSessionInternalController(
-		rg, services.sessionApp, services.userMiddleWare,
+		rg, services.sessionApp, services.operationLog, services.userMiddleWare,
 	)
 }
