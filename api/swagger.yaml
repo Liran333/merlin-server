@@ -1501,6 +1501,21 @@ paths:
       summary: Send User Email Verify code
       tags:
       - User
+  /v1/user/privacy:
+    put:
+      consumes:
+      - application/json
+      description: revoke
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: PrivacyRevoke
+      tags:
+      - User
   /v1/user/token:
     get:
       consumes:

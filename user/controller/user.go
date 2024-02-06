@@ -39,6 +39,7 @@ func AddRouterForUserController(
 	rg.POST("/v1/user/email/bind", m.Write, l.Write, ctl.BindEmail)
 	rg.POST("/v1/user/email/send", m.Write, l.Write, ctl.SendEmail)
 
+	rg.PUT("/v1/user/privacy", m.Write, l.Write, ctl.PrivacyRevoke)
 }
 
 type UserController struct {
@@ -309,5 +310,27 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
+	}
+}
+
+// @Summary  PrivacyRevoke
+// @Description  revoke
+// @Tags     User
+// @Accept   json
+// @Security Bearer
+// @Success  202   {object}  commonctl.ResponseData
+// @Router   /v1/user/privacy [put]
+func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	middleware.SetAction(ctx, "privacy revoke")
+
+	if err := ctl.s.PrivacyRevoke(user); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
 	}
 }

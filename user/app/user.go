@@ -54,6 +54,8 @@ type UserService interface {
 	// email
 	SendBindEmail(*CmdToSendBindEmail) error
 	VerifyBindEmail(*CmdToVerifyBindEmail) error
+
+	PrivacyRevoke(user primitive.Account) error
 }
 
 // ps: platform user service
@@ -521,4 +523,8 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 
 	_, err = s.repo.SaveUser(&u)
 	return
+}
+
+func (s userService) PrivacyRevoke(user primitive.Account) error {
+	return s.oidc.PrivacyRevoke(user.Account())
 }

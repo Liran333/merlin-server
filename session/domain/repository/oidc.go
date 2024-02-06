@@ -35,4 +35,6 @@ type OIDCAdapter interface {
 
 	SendBindEmail(email, capt string) (err error)
 	VerifyBindEmail(email, passCode, userid string) (err error)
+
+	PrivacyRevoke(userid string) error
 }

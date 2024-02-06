@@ -1,6 +1,7 @@
 package oidcimpl
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 	"net/url"
@@ -29,6 +30,7 @@ func Init(v *Config) {
 		getManagerTokenURL: v.Endpoint + "/manager/token",
 		sendEmailURL:       v.Endpoint + "/manager/sendcode",
 		bindEmailURL:       v.Endpoint + "/manager/bind/account",
+		privacyRevokeUrl:   v.Endpoint + "/privacy/revoke",
 	}
 }
 
@@ -43,6 +45,7 @@ type user struct {
 	getManagerTokenURL string
 	sendEmailURL       string
 	bindEmailURL       string
+	privacyRevokeUrl   string
 }
 
 func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.UserInfo, err error) {
@@ -158,6 +161,33 @@ func (impl *user) getUserInfoByAccessToken(accessToken string, result interface{
 	req.Header.Add("Authorization", accessToken)
 
 	return sendHttpRequest(req, result)
+}
+
+func (impl *user) PrivacyRevoke(userid string) error {
+	var v = struct {
+		UserId string `json:"userId"`
+	}{
+		UserId: userid,
+	}
+
+	body, err := libutils.JsonMarshal(&v)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, impl.privacyRevokeUrl, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	token, err := impl.getManagerToken()
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("token", token)
+
+	return sendHttpRequest(req, nil)
 }
 
 func sendHttpRequest(req *http.Request, result interface{}) error {
