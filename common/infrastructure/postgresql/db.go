@@ -9,7 +9,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var (
+	db         *gorm.DB
+	errorCodes errorCode
+)
 
 func Init(cfg *Config, removeCfg bool) error {
 	dbInstance, err := gorm.Open(
@@ -40,6 +43,8 @@ func Init(cfg *Config, removeCfg bool) error {
 	sqlDb.SetMaxIdleConns(cfg.MaxIdle)
 
 	db = dbInstance
+
+	errorCodes = cfg.Code
 
 	return nil
 }

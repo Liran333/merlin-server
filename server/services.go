@@ -61,5 +61,9 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
+	if err = initSpaceApp(cfg, &services); err != nil {
+		return
+	}
+
 	return
 }

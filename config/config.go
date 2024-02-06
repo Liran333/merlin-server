@@ -10,12 +10,14 @@ import (
 	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/session"
 	"github.com/openmerlin/merlin-server/space"
+	spaceapp "github.com/openmerlin/merlin-server/space-app"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -41,9 +43,11 @@ type Config struct {
 	Org        orgdomain.Config  `json:"organization"`
 	User       userdomain.Config `json:"user"`
 	Redis      redislib.Config   `json:"redis"`
+	Kafka      kafka.Config      `json:"kafka"`
 	Model      models.Config     `json:"model"`
 	Space      space.Config      `json:"space"`
 	Session    session.Config    `json:"session"`
+	SpaceApp   spaceapp.Config   `json:"space_app"`
 	CodeRepo   coderepo.Config   `json:"coderepo"`
 	Internal   internal.Config   `json:"internal"`
 	Primitive  primitive.Config  `json:"primitive"`
@@ -79,9 +83,11 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Org,
 		&cfg.User,
 		&cfg.Redis,
+		&cfg.Kafka,
 		&cfg.Model,
 		&cfg.Space,
 		&cfg.Session,
+		&cfg.SpaceApp,
 		&cfg.CodeRepo,
 		&cfg.Internal,
 		&cfg.Primitive,

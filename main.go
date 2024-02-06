@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/server"
@@ -109,6 +110,15 @@ func main() {
 	}
 
 	defer redisdb.Close()
+
+	//kafka
+	if err := kafka.Init(&cfg.Kafka, logrus.NewEntry(logrus.StandardLogger())); err != nil {
+		logrus.Errorf("init kafka failed, err:%s", err.Error())
+
+		return
+	}
+
+	defer kafka.Exit()
 
 	// postgresql
 	if err := postgresql.Init(&cfg.Postgresql, o.service.RemoveCfg); err != nil {

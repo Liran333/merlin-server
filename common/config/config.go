@@ -15,8 +15,6 @@ type configItems interface {
 func SetDefault(cfg interface{}) {
 	if f, ok := cfg.(configSetDefault); ok {
 		f.SetDefault()
-
-		return
 	}
 
 	if f, ok := cfg.(configItems); ok {
@@ -30,7 +28,9 @@ func SetDefault(cfg interface{}) {
 
 func Validate(cfg interface{}) error {
 	if f, ok := cfg.(configValidate); ok {
-		return f.Validate()
+		if err := f.Validate(); err != nil {
+			return err
+		}
 	}
 
 	if f, ok := cfg.(configItems); ok {

@@ -166,3 +166,12 @@ postgresql:
 
 internal:
   token: {{(ds "secret").data.INTERNAL_TOKEN }}
+
+space_app:
+  tables:
+    space_app: space_app
+  topics:
+    space_app_created: space_app_created
+
+kafka:
+  address: {{(ds "secret").data.KAFKA_ADDR }}

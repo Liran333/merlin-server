@@ -37,6 +37,7 @@ type SpaceController struct {
 // @Tags     Space
 // @Param    body  body      reqToCreateSpace  true  "body of creating space"
 // @Accept   json
+// @Security Bearer
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/space [post]
 func (ctl *SpaceController) Create(ctx *gin.Context) {
@@ -70,6 +71,7 @@ func (ctl *SpaceController) Create(ctx *gin.Context) {
 // @Tags     Space
 // @Param    id    path  string        true  "id of space"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/space/{id} [delete]
 func (ctl *SpaceController) Delete(ctx *gin.Context) {
@@ -99,6 +101,7 @@ func (ctl *SpaceController) Delete(ctx *gin.Context) {
 // @Param    id    path  string            true  "id of space"
 // @Param    body  body  reqToUpdateSpace  true  "body of updating space"
 // @Accept   json
+// @Security Bearer
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/space/{id} [put]
 func (ctl *SpaceController) Update(ctx *gin.Context) {

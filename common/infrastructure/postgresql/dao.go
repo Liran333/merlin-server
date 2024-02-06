@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 
@@ -111,4 +112,10 @@ func (dao *daoImpl) InFilter(field string) string {
 
 func (dao *daoImpl) TableName() string {
 	return dao.table
+}
+
+func (dao *daoImpl) IsRecordExists(err error) bool {
+	pgError, ok := err.(*pgconn.PgError)
+
+	return ok && pgError.Code == errorCodes.UniqueConstraint
 }
