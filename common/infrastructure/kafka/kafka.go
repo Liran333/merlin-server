@@ -23,6 +23,6 @@ func (cfg *Config) SetDefault() {
 }
 
 // Init
-func Init(cfg *Config, log mq.Logger) error {
-	return kfklib.Init(&cfg.Config, log, nil, "", true)
+func Init(cfg *Config, log mq.Logger, removeCfg bool) error {
+	return kfklib.Init(&cfg.Config, log, nil, "", removeCfg)
 }

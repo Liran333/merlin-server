@@ -112,7 +112,7 @@ func main() {
 	defer redisdb.Close()
 
 	//kafka
-	if err := kafka.Init(&cfg.Kafka, logrus.NewEntry(logrus.StandardLogger())); err != nil {
+	if err := kafka.Init(&cfg.Kafka, logrus.NewEntry(logrus.StandardLogger()), o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init kafka failed, err:%s", err.Error())
 
 		return
@@ -136,7 +136,7 @@ func main() {
 
 	// init cfg
 	if err := cfg.Init(); err != nil {
-		logrus.Errorf("init cfg failed, err:%s", err.Error())
+		logrus.Fatal("init cfg failed, err:%s", err.Error())
 	}
 
 	// session
