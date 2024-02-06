@@ -136,7 +136,9 @@ func main() {
 
 	// init cfg
 	if err := cfg.Init(); err != nil {
-		logrus.Fatal("init cfg failed, err:%s", err.Error())
+		logrus.Errorf("init cfg failed, err:%s", err.Error())
+
+		return
 	}
 
 	// session

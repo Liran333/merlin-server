@@ -20,6 +20,7 @@ func AddRouteForSpaceAppInternalController(
 
 	r.POST(`/v1/space-app`, m.Write, ctl.Create)
 	r.PUT(`/v1/space-app/build/started`, m.Write, ctl.NotifyBuildIsStarted)
+	r.PUT(`/v1/space-app/service/started`, m.Write, ctl.NotifyServiceIsStarted)
 }
 
 type SpaceAppInternalController struct {
@@ -81,6 +82,37 @@ func (ctl *SpaceAppInternalController) NotifyBuildIsStarted(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.NotifyBuildIsStarted(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  NotifyServiceIsStarted
+// @Description  notidy space app service is started
+// @Tags     SpaceApp
+// @Param    body  body  reqToUpdateServiceInfo  true  "body"
+// @Accept   json
+// @Success  202   {object}  commonctl.ResponseData
+// @Security Bearer
+// @Router   /v1/space-app/service/started [put]
+func (ctl *SpaceAppInternalController) NotifyServiceIsStarted(ctx *gin.Context) {
+	req := reqToUpdateServiceInfo{}
+
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if err := ctl.appService.NotifyServiceIsStarted(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)

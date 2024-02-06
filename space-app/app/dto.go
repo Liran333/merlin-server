@@ -12,3 +12,9 @@ type CmdToNotifyBuildIsStarted struct {
 
 	LogURL primitive.URL
 }
+
+type CmdToNotifyServiceIsStarted struct {
+	CmdToNotifyBuildIsStarted
+
+	AppURL primitive.URL
+}

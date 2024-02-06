@@ -36,3 +36,19 @@ func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 
 	return nil
 }
+
+func (app *SpaceApp) StartService(appURL, logURL primitive.URL) error {
+	if !app.Status.IsBuildSuccessful() {
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not build successful")
+	}
+
+	if appURL != nil {
+		app.Status = appprimitive.AppStatusServing
+		app.AppURL = appURL
+		app.AppLogURL = logURL
+	} else {
+		app.Status = appprimitive.AppStatusStartFailed
+	}
+
+	return nil
+}

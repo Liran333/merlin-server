@@ -38,3 +38,20 @@ func (req *reqToUpdateBuildInfo) toCmd() (cmd app.CmdToNotifyBuildIsStarted, err
 
 	return
 }
+
+// reqToUpdateServiceInfo
+type reqToUpdateServiceInfo struct {
+	reqToUpdateBuildInfo
+
+	AppURL string `json:"app_url"`
+}
+
+func (req *reqToUpdateServiceInfo) toCmd() (cmd app.CmdToNotifyServiceIsStarted, err error) {
+	if cmd.CmdToNotifyBuildIsStarted, err = req.reqToUpdateBuildInfo.toCmd(); err != nil {
+		return
+	}
+
+	cmd.AppURL, err = primitive.NewURL(req.AppURL)
+
+	return
+}

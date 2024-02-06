@@ -341,11 +341,27 @@ definitions:
       visibility:
         type: string
     type: object
+  controller.reqToCreateSpaceApp:
+    properties:
+      commit_id:
+        type: string
+      space_id:
+        type: string
+    type: object
   controller.reqToLogin:
     properties:
       code:
         type: string
       redirect_uri:
+        type: string
+    type: object
+  controller.reqToUpdateBuildInfo:
+    properties:
+      commit_id:
+        type: string
+      log_url:
+        type: string
+      space_id:
         type: string
     type: object
   controller.reqToUpdateModel:
@@ -357,6 +373,17 @@ definitions:
       name:
         type: string
       visibility:
+        type: string
+    type: object
+  controller.reqToUpdateServiceInfo:
+    properties:
+      app_url:
+        type: string
+      commit_id:
+        type: string
+      log_url:
+        type: string
+      space_id:
         type: string
     type: object
   controller.reqToUpdateSpace:
@@ -1313,9 +1340,77 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Create
       tags:
       - Space
+  /v1/space-app/:
+    post:
+      consumes:
+      - application/json
+      description: create space app
+      parameters:
+      - description: body of creating space app
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateSpaceApp'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - SpaceApp
+  /v1/space-app/build/started:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app building is started
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateBuildInfo'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyBuildIsStarted
+      tags:
+      - SpaceApp
+  /v1/space-app/service/started:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app service is started
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateServiceInfo'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyServiceIsStarted
+      tags:
+      - SpaceApp
   /v1/space/{id}:
     delete:
       consumes:
@@ -1330,6 +1425,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: Delete
       tags:
       - Space
@@ -1354,6 +1451,8 @@ paths:
           description: Accepted
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Update
       tags:
       - Space

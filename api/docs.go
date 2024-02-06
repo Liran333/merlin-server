@@ -1132,6 +1132,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "create space",
                 "consumes": [
                     "application/json"
@@ -1161,8 +1166,121 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/space-app/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "Create",
+                "parameters": [
+                    {
+                        "description": "body of creating space app",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateSpaceApp"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/build/started": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "notidy space app building is started",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "NotifyBuildIsStarted",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateBuildInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/service/started": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "notidy space app service is started",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "NotifyServiceIsStarted",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateServiceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/{id}": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "update space",
                 "consumes": [
                     "application/json"
@@ -1199,6 +1317,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "delete space",
                 "consumes": [
                     "application/json"
@@ -2426,6 +2549,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.reqToCreateSpaceApp": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "space_id": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToLogin": {
             "type": "object",
             "properties": {
@@ -2433,6 +2567,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "redirect_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateBuildInfo": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "log_url": {
+                    "type": "string"
+                },
+                "space_id": {
                     "type": "string"
                 }
             }
@@ -2450,6 +2598,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateServiceInfo": {
+            "type": "object",
+            "properties": {
+                "app_url": {
+                    "type": "string"
+                },
+                "commit_id": {
+                    "type": "string"
+                },
+                "log_url": {
+                    "type": "string"
+                },
+                "space_id": {
                     "type": "string"
                 }
             }

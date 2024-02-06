@@ -6,28 +6,29 @@ import (
 )
 
 const (
-	Init = "init"
+	appInit = "init"
 
-	Building          = "building"
-	BuildFailed       = "build_failed"
-	BuildSuccessfully = "build_successfully"
+	building          = "building"
+	buildFailed       = "build_failed"
+	buildSuccessfully = "build_successfully"
 
-	Serving     = "serving"
-	StartFailed = "start_failed"
+	serving     = "serving"
+	startFailed = "start_failed"
 )
 
 var (
-	AppStatusInit              = appStatus(Init)
-	AppStatusServing           = appStatus(Serving)
-	AppStatusBuilding          = appStatus(Building)
-	AppStatusBuildFailed       = appStatus(BuildFailed)
-	AppStatusStartFailed       = appStatus(StartFailed)
-	AppStatusBuildSuccessfully = appStatus(BuildSuccessfully)
+	AppStatusInit              = appStatus(appInit)
+	AppStatusServing           = appStatus(serving)
+	AppStatusBuilding          = appStatus(building)
+	AppStatusBuildFailed       = appStatus(buildFailed)
+	AppStatusStartFailed       = appStatus(startFailed)
+	AppStatusBuildSuccessfully = appStatus(buildSuccessfully)
 )
 
 // AppStatus
 type AppStatus interface {
 	IsInit() bool
+	IsBuildSuccessful() bool
 	AppStatus() string
 }
 
@@ -36,12 +37,12 @@ func NewAppStatus(v string) (AppStatus, error) {
 	v = strings.ToLower(v)
 
 	switch v {
-	case Init:
-	case Serving:
-	case Building:
-	case BuildFailed:
-	case StartFailed:
-	case BuildSuccessfully:
+	case appInit:
+	case serving:
+	case building:
+	case buildFailed:
+	case startFailed:
+	case buildSuccessfully:
 
 	default:
 		return nil, errors.New("unknown appStatus")
@@ -63,5 +64,9 @@ func (r appStatus) AppStatus() string {
 }
 
 func (r appStatus) IsInit() bool {
-	return string(r) == Init
+	return string(r) == appInit
+}
+
+func (r appStatus) IsBuildSuccessful() bool {
+	return string(r) == buildSuccessfully
 }
