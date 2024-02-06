@@ -5,15 +5,19 @@ import "strings"
 const (
 	errorCodeNoPermission = "no_permission"
 
+	ErrorCodeUserNotFound = "user_not_found"
+
 	ErrorCodeModelNotFound = "model_not_found"
 
 	ErrorCodeSpaceNotFound = "space_not_found"
 
-	ErrorCodeUserNotFound = "user_not_found"
-
 	ErrorCodeTokenNotFound = "token_not_found"
 
 	ErrorCodeOrganizationNotFound = "organization_not_found"
+
+	// space app
+	ErrorCodeSpaceAppNotFound        = "space_app_not_found"
+	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
 
 	// This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"

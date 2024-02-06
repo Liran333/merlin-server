@@ -3,6 +3,7 @@ package postgresql
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -96,6 +97,16 @@ func (dao *daoImpl) IntersectionFilter(field string, value []string) (query stri
 
 func (dao *daoImpl) EqualQuery(field string) string {
 	return fmt.Sprintf(`%s = ?`, field)
+}
+
+func (dao *daoImpl) MultiEqualQuery(fields ...string) string {
+	v := make([]string, len(fields))
+
+	for i, field := range fields {
+		v[i] = dao.EqualQuery(field)
+	}
+
+	return strings.Join(v, " AND ")
 }
 
 func (dao *daoImpl) NotEqualQuery(field string) string {

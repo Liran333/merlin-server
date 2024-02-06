@@ -27,6 +27,7 @@ var (
 
 // AppStatus
 type AppStatus interface {
+	IsInit() bool
 	AppStatus() string
 }
 
@@ -59,4 +60,8 @@ type appStatus string
 
 func (r appStatus) AppStatus() string {
 	return string(r)
+}
+
+func (r appStatus) IsInit() bool {
+	return string(r) == Init
 }
