@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,12 +16,13 @@ import (
 )
 
 const (
-	version  = "development" // program version for this build
-	apiDesc  = "Modelfoundry server APIs"
-	apiTitle = "Modelfoundry"
+	version         = "development" // program version for this build
+	apiDesc         = "Modelfoundry server APIs"
+	apiTitle        = "Modelfoundry"
+	waitServerStart = 3 // 3s
 )
 
-func StartWebServer(key, cert string, port int, timeout time.Duration, cfg *config.Config) {
+func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Duration, cfg *config.Config) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(logRequest())
@@ -63,6 +65,18 @@ func StartWebServer(key, cert string, port int, timeout time.Duration, cfg *conf
 			PreferServerCipherSuites: true,
 		}
 		interrupts.ListenAndServeTLS(srv, cert, key, timeout)
+		// wait server start
+		time.Sleep(time.Duration(waitServerStart) * time.Second)
+		if removeCfg {
+			if err := os.Remove(cert); err != nil {
+				logrus.Errorf("remove cert file: %s", err)
+			}
+
+			if err := os.Remove(key); err != nil {
+				logrus.Errorf("remove key file: %s", err)
+			}
+		}
+
 	} else {
 		interrupts.ListenAndServe(srv, timeout)
 

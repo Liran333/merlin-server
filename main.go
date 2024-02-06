@@ -147,5 +147,5 @@ func main() {
 	}
 
 	// run
-	server.StartWebServer(o.service.Key, o.service.Cert, o.service.Port, o.service.GracePeriod, cfg)
+	server.StartWebServer(o.service.Key, o.service.Cert, o.service.RemoveCfg, o.service.Port, o.service.GracePeriod, cfg)
 }
