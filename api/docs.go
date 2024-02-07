@@ -1988,6 +1988,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/v2/space/{id}": {
+            "get": {
+                "description": "get space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "Get",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.SpaceMetaDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/v2/space/{owner}/{name}": {
             "get": {
                 "description": "get space",
@@ -2172,6 +2201,26 @@ const docTemplate = `{
                     }
                 },
                 "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.SpaceMetaDTO": {
+            "type": "object",
+            "properties": {
+                "hardware": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "sdk": {
                     "type": "string"
                 }
             }

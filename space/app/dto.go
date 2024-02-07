@@ -116,3 +116,22 @@ type SpacesDTO struct {
 }
 
 type CmdToListSpaces = repository.ListOption
+
+type SpaceMetaDTO struct {
+	Id       string `json:"id"`
+	SDK      string `json:"sdk"`
+	Name     string `json:"name"`
+	Owner    string `json:"owner"`
+	Hardware string `json:"hardware"`
+}
+
+func toSpaceMetaDTO(space *domain.Space) SpaceMetaDTO {
+	dto := SpaceMetaDTO{
+		Id:       space.Id.Identity(),
+		SDK:      space.SDK.SDK(),
+		Name:     space.Name.MSDName(),
+		Owner:    space.Owner.Account(),
+		Hardware: space.Hardware.Hardware(),
+	}
+	return dto
+}

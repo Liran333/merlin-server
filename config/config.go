@@ -31,9 +31,9 @@ func LoadConfig(path string, cfg *Config, remove bool) error {
 		return err
 	}
 
-	cfg.setDefault()
+	common.SetDefault(cfg)
 
-	return cfg.validate()
+	return common.Validate(cfg)
 }
 
 type Config struct {
@@ -95,18 +95,12 @@ func (cfg *Config) ConfigItems() []interface{} {
 	}
 }
 
-func (cfg *Config) setDefault() {
+func (cfg *Config) SetDefault() {
 	if cfg.ReadHeaderTimeout <= 0 {
 		cfg.ReadHeaderTimeout = 10
 	}
-
-	common.SetDefault(cfg)
 }
 
-func (cfg *Config) validate() error {
-	if err := utils.CheckConfig(cfg, ""); err != nil {
-		return err
-	}
-
-	return common.Validate(cfg)
+func (cfg *Config) Validate() error {
+	return utils.CheckConfig(cfg, "")
 }

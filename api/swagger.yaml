@@ -97,6 +97,19 @@ definitions:
       task:
         type: string
     type: object
+  app.SpaceMetaDTO:
+    properties:
+      hardware:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      sdk:
+        type: string
+    type: object
   app.SpacesDTO:
     properties:
       spaces:
@@ -1873,6 +1886,25 @@ paths:
       summary: List
       tags:
       - SpaceRestful
+  /v2/space/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get space
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpaceMetaDTO'
+      summary: Get
+      tags:
+      - SpaceInternal
   /v2/space/{owner}/{name}:
     get:
       consumes:

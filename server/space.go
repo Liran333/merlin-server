@@ -45,3 +45,13 @@ func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
 		services.userApp,
 	)
 }
+
+func setRouterOfSpaceInternal(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouterForSpaceInternalController(
+		rg,
+		app.NewSpaceInternalAppService(
+			spacerepositoryadapter.SpaceAdapter(),
+		),
+		services.userMiddleWare,
+	)
+}
