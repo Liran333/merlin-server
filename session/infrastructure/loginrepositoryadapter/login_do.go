@@ -23,7 +23,6 @@ func toLoginDO(m *domain.Login) loginDO {
 		UserAgent: m.UserAgent.UserAgent(),
 		CreatedAt: m.CreatedAt,
 		UserId:    m.UserId,
-		Phone:     m.Phone.PhoneNumber(),
 	}
 }
 
@@ -35,7 +34,6 @@ type loginDO struct {
 	UserAgent string         `gorm:"column:user_agent"`
 	CreatedAt int64          `gorm:"column:created_at"`
 	UserId    string         `gorm:"column:user_id"` // user id in OIDC provider
-	Phone     string         `gorm:"column:phone"`
 }
 
 func (do *loginDO) TableName() string {
@@ -51,6 +49,5 @@ func (do *loginDO) toLogin() domain.Login {
 		UserAgent: primitive.CreateUserAgent(do.UserAgent),
 		CreatedAt: do.CreatedAt,
 		UserId:    do.UserId,
-		Phone:     primitive.CreatePhoneNumber(do.Phone),
 	}
 }

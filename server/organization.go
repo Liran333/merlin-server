@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 
@@ -15,7 +16,7 @@ import (
 
 // initOrg depends on initUser
 func initOrg(cfg *config.Config, services *allServices) {
-	org := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User))
+	org := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key))
 
 	orgMember := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
 

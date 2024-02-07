@@ -12,6 +12,13 @@ then
 	exit 1
 fi
 
+openssl > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+	echo "please install openssl"
+	exit 1
+fi
+
 function genServerConfig() {
 	docker run --rm --net=host -e VAULT_TOKEN=00000000-0000-0000-0000-000000000000 -v $ROOTDIR:/data hairyhenderson/gomplate:stable -d data=/data/config-meta.yaml -d secret=vault+http://127.0.0.1:8201/modelfoundry/data/server -f /data/$1 > $2
 }
@@ -29,7 +36,7 @@ function setupVault() {
 		REDIS_HOST=$REDIS_HOST REDIS_PASS=$REDIS_PASS REDIS_PORT=$REDIS_PORT GITEA_BASE_URL=http://$GITEA_HOST:$GITEA_PORT \
 		PG_PASS=$PG_PASS PG_DB=$PG_DB PG_PORT=$PG_PORT PG_HOST=$PG_HOST PG_USER=$PG_USER GITEA_ROOT_TOKEN=$TOKEN \
 		OIDC_SECRET=$OIDC_SECRET OIDC_ENDPOINT=$OIDC_ENDPOINT OIDC_APPID=$OIDC_APPID REDIS_CERT="" PG_CERT="" \
-		INTERNAL_TOKEN=$INTERNAL_TOKEN KAFKA_ADDR=$KAFKA_ADDR
+		INTERNAL_TOKEN=$INTERNAL_TOKEN KAFKA_ADDR=$KAFKA_ADDR USER_ENC_KEY=$USER_ENC_KEY
 }
 
 # cleanup
@@ -48,11 +55,11 @@ TOKEN=$(docker exec -i merlin-server-gitea-1 gitea admin user create --admin --u
 	gitadmin --email gitadmin@modelfoundry.com --access-token| head -n 1 | \
 	awk '{print $6}' )
 
-# replace key and root token in .env
-sed -i "s/GITEA_ROOT_TOKEN=.*/GITEA_ROOT_TOKEN=$TOKEN/" $ROOTDIR/deploy/.env
+# create key for server
+USER_ENC_KEY=$(openssl rand -base64 32)
 
 set -a
-source $ROOTDIR/.env
+source $ROOTDIR/deploy/.env
 set +a
 
 setupVault

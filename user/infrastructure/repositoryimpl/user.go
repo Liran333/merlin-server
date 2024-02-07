@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"gorm.io/gorm/clause"
@@ -14,18 +15,19 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
-func NewUserRepo(db postgresql.Impl) repository.User {
+func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 	userTableName = db.TableName()
 
 	if err := postgresql.DB().AutoMigrate(&UserDO{}); err != nil {
 		return nil
 	}
 
-	return &userRepoImpl{db}
+	return &userRepoImpl{db, enc}
 }
 
 type userRepoImpl struct {
 	postgresql.Impl
+	e crypto.Encrypter
 }
 
 func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err error) {
@@ -37,9 +39,7 @@ func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err
 		return
 	}
 
-	new = do.toOrg()
-
-	return
+	return do.toOrg(impl.e)
 }
 
 func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, err error) {
@@ -66,9 +66,7 @@ func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, er
 		return
 	}
 
-	new = tmpDo.toOrg()
-
-	return
+	return tmpDo.toOrg(impl.e)
 }
 
 func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
@@ -103,9 +101,7 @@ func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organiz
 		return
 	}
 
-	r = tmpDo.toOrg()
-
-	return
+	return tmpDo.toOrg(impl.e)
 }
 
 func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Organization, err error) {
@@ -122,7 +118,10 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 
 	os = make([]org.Organization, len(dos))
 	for i := range dos {
-		os[i] = dos[i].toOrg()
+		os[i], err = dos[i].toOrg(impl.e)
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -130,7 +129,10 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 
 func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 	u.Id = primitive.CreateIdentity(primitive.GetId())
-	do := toUserDO(u)
+	do, err := toUserDO(u, impl.e)
+	if err != nil {
+		return
+	}
 
 	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
 
@@ -138,13 +140,15 @@ func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 		return
 	}
 
-	new = do.toUser()
-
-	return
+	return do.toUser(impl.e)
 }
 
 func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) {
-	do := toUserDO(u)
+	do, err := toUserDO(u, impl.e)
+	if err != nil {
+		return
+	}
+
 	do.Version += 1
 
 	tmpDo := &UserDO{}
@@ -167,9 +171,7 @@ func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) 
 		return
 	}
 
-	new = tmpDo.toUser()
-
-	return
+	return tmpDo.toUser(impl.e)
 }
 
 func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
@@ -190,9 +192,7 @@ func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, e
 		return
 	}
 
-	r = tmpDo.toUser()
-
-	return
+	return tmpDo.toUser(impl.e)
 }
 
 func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
@@ -231,7 +231,10 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 
 	users = make([]domain.User, len(dos))
 	for i := range dos {
-		users[i] = dos[i].toUser()
+		users[i], err = dos[i].toUser(impl.e)
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -272,7 +275,10 @@ func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domai
 
 	users = make([]domain.User, len(dos))
 	for i := range dos {
-		users[i] = dos[i].toUser()
+		users[i], err = dos[i].toUser(impl.e)
+		if err != nil {
+			return
+		}
 	}
 
 	return

@@ -7,6 +7,7 @@ type tables struct {
 
 type Config struct {
 	Tables tables `json:"tables"            required:"true"`
+	Key    []byte `json:"key"               required:"true"`
 }
 
 var _config Config

@@ -1,6 +1,8 @@
 package loginrepositoryadapter
 
-import "github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+import (
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+)
 
 var loginAdapterInstance *loginAdapter
 

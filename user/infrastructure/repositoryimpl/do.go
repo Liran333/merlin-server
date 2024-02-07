@@ -1,6 +1,7 @@
 package repositoryimpl
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	org "github.com/openmerlin/merlin-server/organization/domain"
@@ -27,7 +28,6 @@ var (
 	userTableName  string
 )
 
-// TODO: senstive data should be store in vault
 type UserDO struct {
 	postgresql.CommonModel
 	Desc              string `gorm:"column:desc"`
@@ -52,7 +52,7 @@ type UserDO struct {
 	Version           int    `gorm:"column:version"`
 }
 
-func toUserDO(u *domain.User) (do UserDO) {
+func toUserDONoEnc(u *domain.User) (do UserDO) {
 	do = UserDO{
 		Name:        u.Account.Account(),
 		Fullname:    u.Fullname.MSDFullname(),
@@ -63,6 +63,43 @@ func toUserDO(u *domain.User) (do UserDO) {
 		PlatformPwd: u.PlatformPwd,
 		Version:     u.Version,
 		Phone:       u.Phone.PhoneNumber(),
+	}
+
+	if u.Desc != nil {
+		do.Desc = u.Desc.MSDDesc()
+	}
+
+	do.ID = u.Id.Integer()
+
+	return
+}
+
+func toUserDO(u *domain.User, e crypto.Encrypter) (do UserDO, err error) {
+	email, err := e.Encrypt(u.Email.Email())
+	if err != nil {
+		return
+	}
+
+	phone, err := e.Encrypt(u.Phone.PhoneNumber())
+	if err != nil {
+		return
+	}
+
+	pwd, err := e.Encrypt(u.PlatformPwd)
+	if err != nil {
+		return
+	}
+
+	do = UserDO{
+		Name:        u.Account.Account(),
+		Fullname:    u.Fullname.MSDFullname(),
+		Email:       email,
+		AvatarId:    u.AvatarId.AvatarId(),
+		Type:        u.Type,
+		PlatformId:  u.PlatformId,
+		PlatformPwd: pwd,
+		Version:     u.Version,
+		Phone:       phone,
 	}
 
 	if u.Desc != nil {
@@ -99,12 +136,17 @@ func toOrgDO(u *org.Organization) (do UserDO) {
 	return
 }
 
-func (u *UserDO) toUser() domain.User {
-	return u.toOrg()
+func (u *UserDO) toUser(e crypto.Encrypter) (domain.User, error) {
+	return u.toOrg(e)
 }
 
-func (u *UserDO) toOrg() org.Organization {
-	return org.Organization{
+func (u *UserDO) toUserNoEnc() domain.User {
+	return u.toOrgNoEnc()
+}
+
+func (u *UserDO) toOrgNoEnc() (o org.Organization) {
+
+	o = org.Organization{
 		Id:                primitive.CreateIdentity(u.ID),
 		Version:           u.Version,
 		Desc:              primitive.CreateMSDDesc(u.Desc),
@@ -128,6 +170,52 @@ func (u *UserDO) toOrg() org.Organization {
 		Website:           u.Website,                            // org only
 		Type:              u.Type,
 	}
+
+	return
+}
+
+func (u *UserDO) toOrg(e crypto.Encrypter) (o org.Organization, err error) {
+	email, err := e.Decrypt(u.Email)
+	if err != nil {
+		return
+	}
+
+	phone, err := e.Decrypt(u.Phone)
+	if err != nil {
+		return
+	}
+
+	pwd, err := e.Decrypt(u.PlatformPwd)
+	if err != nil {
+		return
+	}
+
+	o = org.Organization{
+		Id:                primitive.CreateIdentity(u.ID),
+		Version:           u.Version,
+		Desc:              primitive.CreateMSDDesc(u.Desc),
+		Account:           primitive.CreateAccount(u.Name),
+		Fullname:          primitive.CreateMSDFullname(u.Fullname),
+		AvatarId:          primitive.CreateAvatarId(u.AvatarId),
+		PlatformId:        u.PlatformId,
+		CreatedAt:         u.CreatedAt.Unix(),
+		UpdatedAt:         u.UpdatedAt.Unix(),
+		PlatformPwd:       pwd,                                 // user only
+		Email:             primitive.CreateEmail(email),        // user only
+		Phone:             primitive.CreatePhoneNumber(phone),  // user only,
+		AllowRequest:      u.AllowRequest,                      // org only
+		DefaultRole:       u.DefaultRole,                       // org only
+		OwnerTeamId:       u.OwnerTeamId,                       // org only
+		ReadTeamId:        u.ReadTeamId,                        // org only
+		WriteTeamId:       u.WriteTeamId,                       // org only
+		ContributorTeamId: u.ContributorTeamId,                 // org only
+		Owner:             primitive.CreateAccount(u.Owner),    // org only
+		OwnerId:           primitive.CreateIdentity(u.OwnerId), // org only
+		Website:           u.Website,                           // org only
+		Type:              u.Type,
+	}
+
+	return
 }
 
 func (do *UserDO) TableName() string {

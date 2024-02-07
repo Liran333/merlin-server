@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
@@ -21,7 +22,7 @@ func initUser(cfg *config.Config, services *allServices) {
 
 	token := userrepoimpl.NewTokenRepo(postgresql.DAO(cfg.User.Tables.Token))
 
-	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User))
+	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key))
 
 	services.userApp = app.NewUserService(services.userRepo, git, token, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 }

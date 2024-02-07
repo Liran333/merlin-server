@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -16,15 +17,18 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/user/domain/repository"
+
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 
 var userAppService userapp.UserService
+var userrepo repository.User
 
 func inittoken() {
-	user := userrepoimpl.NewUserRepo(
-		postgresql.DAO(cfg.User.Tables.User),
+	userrepo = userrepoimpl.NewUserRepo(
+		postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key),
 	)
 
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
@@ -32,7 +36,7 @@ func inittoken() {
 		postgresql.DAO(cfg.User.Tables.Token),
 	)
 	userAppService = userapp.NewUserService(
-		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
+		userrepo, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 }
 
 var tokenCmd = &cobra.Command{

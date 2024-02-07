@@ -43,6 +43,8 @@ type UserService interface {
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
 	HasUser(primitive.Account) bool
 
+	ListUsers() ([]UserDTO, error)
+
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
 
 	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
@@ -256,6 +258,23 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 	u.PlatformPwd = ""
 
 	dto = newUserDTO(&u)
+
+	return
+}
+
+func (s userService) ListUsers() (dtos []UserDTO, err error) {
+	// get user
+	t := domain.UserTypeUser
+	u, _, err := s.repo.ListAccount(&repository.ListOption{Type: &t})
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	dtos = make([]UserDTO, len(u))
+	for i := range u {
+		dtos[i] = newUserDTO(&u[i])
+	}
 
 	return
 }

@@ -71,7 +71,6 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 		CreatedAt: utils.Now(),
 		UserAgent: cmd.UserAgent,
 		UserId:    login.UserId,
-		Phone:     login.Phone,
 	}
 
 	if err = s.loginRepo.Add(&v); err != nil {

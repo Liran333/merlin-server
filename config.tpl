@@ -137,6 +137,7 @@ user:
   tables:
     user: user
     token: token
+  key: {{(ds "secret").data.USER_ENC_KEY }}
 
 coderepo:
   tables:

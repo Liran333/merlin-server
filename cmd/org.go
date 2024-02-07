@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -36,7 +37,7 @@ func initorg() {
 	p := orgapp.NewPermService(&cfg.Permission, member)
 
 	user := userrepoimpl.NewUserRepo(
-		postgresql.DAO(cfg.User.Tables.User),
+		postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key),
 	)
 	t := userrepoimpl.NewTokenRepo(
 		postgresql.DAO(cfg.User.Tables.Token),
