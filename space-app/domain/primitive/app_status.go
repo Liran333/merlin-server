@@ -28,8 +28,9 @@ var (
 // AppStatus
 type AppStatus interface {
 	IsInit() bool
-	IsBuildSuccessful() bool
 	AppStatus() string
+	IsBuilding() bool
+	IsBuildSuccessful() bool
 }
 
 // NewAppStatus
@@ -65,6 +66,10 @@ func (r appStatus) AppStatus() string {
 
 func (r appStatus) IsInit() bool {
 	return string(r) == appInit
+}
+
+func (r appStatus) IsBuilding() bool {
+	return string(r) == building
 }
 
 func (r appStatus) IsBuildSuccessful() bool {

@@ -13,6 +13,12 @@ type CmdToNotifyBuildIsStarted struct {
 	LogURL primitive.URL
 }
 
+type CmdToNotifyBuildIsDone struct {
+	domain.SpaceAppIndex
+
+	Success bool
+}
+
 type CmdToNotifyServiceIsStarted struct {
 	CmdToNotifyBuildIsStarted
 

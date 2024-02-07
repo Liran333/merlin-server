@@ -17,6 +17,7 @@ var (
 type SpaceAppInternalAppService interface {
 	Create(cmd *CmdToCreateApp) error
 	NotifyBuildIsStarted(cmd *CmdToNotifyBuildIsStarted) error
+	NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error
 	NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error
 }
 
@@ -68,6 +69,24 @@ func (s *spaceappInternalAppService) NotifyBuildIsStarted(cmd *CmdToNotifyBuildI
 	}
 
 	if err := v.StartBuilding(cmd.LogURL); err != nil {
+		return err
+	}
+
+	return s.repo.Save(&v)
+}
+
+// NotifyBuildIsDone
+func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error {
+	v, err := s.repo.Find(&cmd.SpaceAppIndex)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errSpaceAppNotFound
+		}
+
+		return err
+	}
+
+	if err := v.SetBuildIsDone(cmd.Success); err != nil {
 		return err
 	}
 

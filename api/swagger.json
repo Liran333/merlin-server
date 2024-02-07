@@ -1191,6 +1191,42 @@
                 }
             }
         },
+        "/v1/space-app/build/done": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "notidy space app build is done",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "NotifyBuildIsDone",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToSetBuildIsDone"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space-app/build/started": {
             "put": {
                 "security": [
@@ -2606,6 +2642,20 @@
                 },
                 "redirect_uri": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.reqToSetBuildIsDone": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "space_id": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },

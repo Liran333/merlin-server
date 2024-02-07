@@ -368,6 +368,15 @@ definitions:
       redirect_uri:
         type: string
     type: object
+  controller.reqToSetBuildIsDone:
+    properties:
+      commit_id:
+        type: string
+      space_id:
+        type: string
+      success:
+        type: boolean
+    type: object
   controller.reqToUpdateBuildInfo:
     properties:
       commit_id:
@@ -1378,6 +1387,28 @@ paths:
       security:
       - Bearer: []
       summary: Create
+      tags:
+      - SpaceApp
+  /v1/space-app/build/done:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app build is done
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToSetBuildIsDone'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyBuildIsDone
       tags:
       - SpaceApp
   /v1/space-app/build/started:

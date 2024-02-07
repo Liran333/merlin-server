@@ -39,6 +39,23 @@ func (req *reqToUpdateBuildInfo) toCmd() (cmd app.CmdToNotifyBuildIsStarted, err
 	return
 }
 
+// reqToSetBuildIsDone
+type reqToSetBuildIsDone struct {
+	reqToCreateSpaceApp
+
+	Success bool `json:"success"`
+}
+
+func (req *reqToSetBuildIsDone) toCmd() (cmd app.CmdToNotifyBuildIsDone, err error) {
+	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
+		return
+	}
+
+	cmd.Success = req.Success
+
+	return
+}
+
 // reqToUpdateServiceInfo
 type reqToUpdateServiceInfo struct {
 	reqToUpdateBuildInfo
