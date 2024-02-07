@@ -11,6 +11,10 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+const (
+	prefix = "MF_OPERATION_LOG"
+)
+
 func OperationLog(u middleware.UserMiddleWare) *operationLog {
 	return &operationLog{u}
 }
@@ -43,7 +47,8 @@ func (log *operationLog) Write(ctx *gin.Context) {
 	}
 
 	str := fmt.Sprintf(
-		"| %s | %s | %s | %s | %v | %s",
+		"%s | %s | %s | %s | %s | %v | %s",
+		prefix,
 		startTime,
 		user,
 		ip,
