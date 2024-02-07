@@ -13,6 +13,7 @@ type SpaceAppIndex struct {
 
 type SpaceApp struct {
 	Id int64
+
 	SpaceAppIndex
 
 	Status appprimitive.AppStatus

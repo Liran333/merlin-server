@@ -8,9 +8,9 @@ import (
 	"github.com/openmerlin/merlin-server/space-app/app"
 )
 
-func AddRouteForSpaceAppInternalController(
+func AddRouteForSpaceappInternalController(
 	r *gin.RouterGroup,
-	s app.SpaceAppInternalAppService,
+	s app.SpaceappInternalAppService,
 	m middleware.UserMiddleWare,
 ) {
 
@@ -25,7 +25,7 @@ func AddRouteForSpaceAppInternalController(
 }
 
 type SpaceAppInternalController struct {
-	appService app.SpaceAppInternalAppService
+	appService app.SpaceappInternalAppService
 }
 
 // @Summary  Create

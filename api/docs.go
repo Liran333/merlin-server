@@ -1348,6 +1348,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}": {
+            "get": {
+                "description": "get space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceAppWeb"
+                ],
+                "summary": "Get",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.SpaceAppDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/{id}": {
             "put": {
                 "security": [
@@ -1725,6 +1761,66 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/token/verify": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "verify a platform token of user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Verify token",
+                "parameters": [
+                    {
+                        "description": "body of token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.tokenVerifyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "token"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "token"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "token"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "internal"
                         }
                     }
                 }
@@ -2209,6 +2305,26 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "app.SpaceAppDTO": {
+            "type": "object",
+            "properties": {
+                "app_log_url": {
+                    "type": "string"
+                },
+                "app_url": {
+                    "type": "string"
+                },
+                "build_log_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -2919,6 +3035,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.tokenVerifyRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.userBasicInfoUpdateRequest": {
             "type": "object",
             "properties": {
@@ -3096,6 +3223,12 @@ const docTemplate = `{
             "description": "Type \"Bearer\" followed by a space and api Bearer.",
             "type": "apiKey",
             "name": "Authorization",
+            "in": "header"
+        },
+        "Internal": {
+            "description": "Type \"Internal\" followed by a space and internal token.",
+            "type": "apiKey",
+            "name": "TOKEN",
             "in": "header"
         }
     }

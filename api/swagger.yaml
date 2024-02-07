@@ -53,6 +53,19 @@ definitions:
       total:
         type: integer
     type: object
+  app.SpaceAppDTO:
+    properties:
+      app_log_url:
+        type: string
+      app_url:
+        type: string
+      build_log_url:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
   app.SpaceDTO:
     properties:
       created_at:
@@ -514,6 +527,13 @@ definitions:
     required:
     - name
     - perm
+    type: object
+  controller.tokenVerifyRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
     type: object
   controller.userBasicInfoUpdateRequest:
     properties:
@@ -1414,6 +1434,30 @@ paths:
       summary: Create
       tags:
       - SpaceApp
+  /v1/space-app/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpaceAppDTO'
+      summary: Get
+      tags:
+      - SpaceAppWeb
   /v1/space-app/build/done:
     put:
       consumes:
@@ -1739,6 +1783,44 @@ paths:
       summary: DeletePlatformToken
       tags:
       - User
+  /v1/user/token/verify:
+    post:
+      consumes:
+      - application/json
+      description: verify a platform token of user
+      parameters:
+      - description: body of token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.tokenVerifyRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            type: token
+        "401":
+          description: Unauthorized
+          schema:
+            type: token
+        "403":
+          description: Forbidden
+          schema:
+            type: token
+        "500":
+          description: Internal Server Error
+          schema:
+            type: internal
+      security:
+      - Internal: []
+      summary: Verify token
+      tags:
+      - User
   /v2/branch/{type}/{owner}/{repo}:
     post:
       consumes:
@@ -1990,5 +2072,10 @@ securityDefinitions:
     description: Type "Bearer" followed by a space and api Bearer.
     in: header
     name: Authorization
+    type: apiKey
+  Internal:
+    description: Type "Internal" followed by a space and internal token.
+    in: header
+    name: TOKEN
     type: apiKey
 swagger: "2.0"

@@ -7,14 +7,13 @@ import (
 	"github.com/openmerlin/merlin-server/space-app/domain/message"
 	appprimitive "github.com/openmerlin/merlin-server/space-app/domain/primitive"
 	"github.com/openmerlin/merlin-server/space-app/domain/repository"
-	spaceapp "github.com/openmerlin/merlin-server/space/app"
 )
 
 var (
-	errSpaceAppNotFound = allerror.NewNotFound(allerror.ErrorCodeSpaceAppNotFound, "not found")
+	errorSpaceAppNotFound = allerror.NewNotFound(allerror.ErrorCodeSpaceAppNotFound, "not found")
 )
 
-type SpaceAppInternalAppService interface {
+type SpaceappInternalAppService interface {
 	Create(cmd *CmdToCreateApp) error
 	NotifyBuildIsStarted(cmd *CmdToNotifyBuildIsStarted) error
 	NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error
@@ -33,9 +32,8 @@ func NewSpaceappInternalAppService(
 
 // spaceappInternalAppService
 type spaceappInternalAppService struct {
-	msg   message.SpaceAppMessage
-	repo  repository.Repository
-	space spaceapp.SpaceAppService
+	msg  message.SpaceAppMessage
+	repo repository.Repository
 }
 
 // Create
@@ -62,7 +60,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsStarted(cmd *CmdToNotifyBuildI
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errSpaceAppNotFound
+			err = errorSpaceAppNotFound
 		}
 
 		return err
@@ -80,7 +78,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDo
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errSpaceAppNotFound
+			err = errorSpaceAppNotFound
 		}
 
 		return err
@@ -98,7 +96,7 @@ func (s *spaceappInternalAppService) NotifyServiceIsStarted(cmd *CmdToNotifyServ
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errSpaceAppNotFound
+			err = errorSpaceAppNotFound
 		}
 
 		return err

@@ -48,6 +48,19 @@ func (adapter *appRepositoryAdapter) remove(spaceId primitive.Identity) error {
 	).Error
 }
 
+func (adapter *appRepositoryAdapter) FindBySpaceId(spaceId primitive.Identity) (domain.SpaceApp, error) {
+	do := spaceappDO{SpaceId: spaceId.Integer()}
+
+	// It must new a new DO, otherwise the sql statement will include duplicate conditions.
+	result := spaceappDO{}
+
+	if err := adapter.dao.GetRecord(&do, &result); err != nil {
+		return domain.SpaceApp{}, err
+	}
+
+	return result.toSpaceApp(), nil
+}
+
 func (adapter *appRepositoryAdapter) Find(index *domain.SpaceAppIndex) (domain.SpaceApp, error) {
 	do := spaceappDO{SpaceId: index.SpaceId.Integer(), CommitId: index.CommitId}
 
