@@ -180,8 +180,12 @@ var tokenVerifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		token := viper.GetString("token.verify.token")
 
-		_, b := userAppService.VerifyToken(token, primitive.NewReadPerm())
-		logrus.Infof("verify user token result %t", b)
+		_, err := userAppService.VerifyToken(token, primitive.NewReadPerm())
+		if err != nil {
+			logrus.Infof("verify user token failed, %s", err.Error())
+		} else {
+			logrus.Infof("verify user token success")
+		}
 
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {

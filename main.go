@@ -71,6 +71,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) (options, error) {
 // @in header
 // @name Authorization
 // @description Type "Bearer" followed by a space and api Bearer.
+// @securityDefinitions.apikey Internal
+// @in header
+// @name TOKEN
+// @description Type "Internal" followed by a space and internal token.
 func main() {
 	o, err := gatherOptions(
 		flag.NewFlagSet(os.Args[0], flag.ExitOnError),

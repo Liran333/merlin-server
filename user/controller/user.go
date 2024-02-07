@@ -34,7 +34,7 @@ func AddRouterForUserController(
 
 	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.CreatePlatformToken)
 	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.DeletePlatformToken)
-	rg.GET("/v1/user/token", m.Read, CheckMail(ctl.m, ctl.s), ctl.GetTokenInfo)
+	rg.GET("/v1/user/token", m.Read, ctl.GetTokenInfo)
 
 	rg.POST("/v1/user/email/bind", m.Write, l.Write, ctl.BindEmail)
 	rg.POST("/v1/user/email/send", m.Write, l.Write, ctl.SendEmail)

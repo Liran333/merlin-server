@@ -20,6 +20,7 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	// set routers
 	setRouterOfSessionInternal(rg, services)
+	setInternalRouterOfUser(rg, cfg, services)
 
 	setRouterOfSpaceInternal(rg, services)
 

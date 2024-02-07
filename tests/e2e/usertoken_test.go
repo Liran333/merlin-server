@@ -65,6 +65,53 @@ func (s *SuiteUserToken) TearDownSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// verify token
+func (s *SuiteUserToken) TestVerifyToken() {
+	d := swagger.ControllerTokenCreateRequest{
+		Name: "testverify",
+		Perm: "read",
+	}
+
+	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	m := getData(s.T(), data.Data)
+
+	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
+	assert.Equal(s.T(), s.id, m["owner_id"])
+
+	t := swagger.ControllerTokenVerifyRequest{
+		Token: getString(s.T(), m["token"]),
+	}
+
+	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testverify")
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// verify invalid token
+func (s *SuiteUserToken) TestVerifyInvalidToken() {
+
+	t := swagger.ControllerTokenVerifyRequest{
+		Token: getString(s.T(), "2233445notok"),
+	}
+
+	_, r, err := InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
+	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	t = swagger.ControllerTokenVerifyRequest{}
+
+	_, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
+	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.NotNil(s.T(), err)
+}
+
 // 无法创建同名token
 func (s *SuiteUserToken) TestCreateDuplicateToken() {
 	d := swagger.ControllerTokenCreateRequest{

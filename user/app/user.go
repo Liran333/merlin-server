@@ -444,12 +444,12 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 	tokens, err := s.token.GetByLastEight(token[len(token)-8:])
 	if err != nil {
 		logrus.Errorf("failed to find token: %s", err)
-		err = allerror.NewNoPermission("failed to find token")
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "failed to find token")
 		return
 	}
 
 	if len(tokens) == 0 {
-		err = allerror.NewNoPermission("not a valid token")
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "not a valid token")
 		return
 	}
 

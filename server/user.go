@@ -36,3 +36,11 @@ func setRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServi
 		services.userMiddleWare,
 	)
 }
+
+func setInternalRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
+	controller.AddRouterForUserInternalController(
+		v1,
+		services.userApp,
+		services.userMiddleWare,
+	)
+}

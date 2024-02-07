@@ -13,9 +13,11 @@ import (
 )
 
 var (
-	Auth  context.Context
-	Auth2 context.Context
-	Api   *swagger.APIClient
+	Auth       context.Context
+	Auth2      context.Context
+	Interal    context.Context
+	Api        *swagger.APIClient
+	InteralApi *swagger.APIClient
 )
 
 func LoadFromYaml(path string, cfg *swagger.Configuration) error {
@@ -31,6 +33,12 @@ func newAuthCtx(token string) context.Context {
 	return context.WithValue(context.Background(), swagger.ContextAPIKey, swagger.APIKey{
 		Key:    token,
 		Prefix: "Bearer", // Omit if not necessary.
+	})
+}
+
+func newInteralCtx(token string) context.Context {
+	return context.WithValue(context.Background(), swagger.ContextAPIKey, swagger.APIKey{
+		Key: token,
 	})
 }
 
@@ -55,8 +63,13 @@ func getToken() []string {
 }
 
 func TestMain(m *testing.M) {
-	cfg := swagger.NewConfiguration()
-	if err := LoadFromYaml("./cfg.yaml", cfg); err != nil {
+	api := swagger.NewConfiguration()
+	if err := LoadFromYaml("./api.yaml", api); err != nil {
+		logrus.Fatal(err)
+	}
+
+	internal := swagger.NewConfiguration()
+	if err := LoadFromYaml("./internal.yaml", internal); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -67,10 +80,12 @@ func TestMain(m *testing.M) {
 		logrus.Fatal("Insufficient tokens provided. Need at least 2 tokens.")
 	}
 
-	Api = swagger.NewAPIClient(cfg)
+	Api = swagger.NewAPIClient(api)
+	InteralApi = swagger.NewAPIClient(internal)
 
 	Auth = newAuthCtx(token[0])  // Use the first token.
 	Auth2 = newAuthCtx(token[1]) // Use the second token.
+	Interal = newInteralCtx("12345")
 
 	m.Run()
 }
