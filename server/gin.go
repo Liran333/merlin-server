@@ -61,7 +61,7 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 
 	if key != "" && cert != "" {
 		srv.TLSConfig = &tls.Config{
-			MinVersion:               tls.VersionTLS12,
+			MinVersion:               tls.VersionTLS13, // tls1.3 cipher suite is not configurable
 			PreferServerCipherSuites: true,
 		}
 		interrupts.ListenAndServeTLS(srv, cert, key, timeout)
