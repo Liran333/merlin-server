@@ -45,3 +45,13 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 		services.userApp,
 	)
 }
+
+func setRouterOfModelInternal(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouterForModelInternalController(
+		rg,
+		app.NewModelInternalAppService(
+			modelrepositoryadapter.ModelLabelsAdapter(),
+		),
+		services.userMiddleWare,
+	)
+}

@@ -61,5 +61,5 @@ type ModelRepositoryAdapter interface {
 }
 
 type ModelLabelsRepoAdapter interface {
-	Save(*domain.ModelIndex, *domain.ModelLabels) error
+	Save(primitive.Identity, *domain.ModelLabels) error
 }

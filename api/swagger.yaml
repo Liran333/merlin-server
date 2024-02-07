@@ -867,6 +867,31 @@ paths:
       summary: Update
       tags:
       - Model
+  /v1/model/{id}/label:
+    put:
+      consumes:
+      - application/json
+      description: reset label of model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateModel'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: ResetLabel
+      tags:
+      - ModelInternal
   /v1/model/{owner}:
     get:
       consumes:

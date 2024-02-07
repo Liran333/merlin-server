@@ -382,6 +382,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/model/{id}/label": {
+            "put": {
+                "description": "reset label of model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelInternal"
+                ],
+                "summary": "ResetLabel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{owner}": {
             "get": {
                 "description": "list model",

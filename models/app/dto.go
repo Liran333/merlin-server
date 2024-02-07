@@ -97,3 +97,5 @@ type ModelsDTO struct {
 }
 
 type CmdToListModels = repository.ListOption
+
+type CmdToResetLabels = domain.ModelLabels

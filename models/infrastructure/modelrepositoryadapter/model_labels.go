@@ -3,6 +3,7 @@ package modelrepositoryadapter
 import (
 	"errors"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 )
@@ -11,13 +12,11 @@ type modelLabelsAdapter struct {
 	daoImpl
 }
 
-func (adapter *modelLabelsAdapter) Save(index *domain.ModelIndex, labels *domain.ModelLabels) error {
+func (adapter *modelLabelsAdapter) Save(modelId primitive.Identity, labels *domain.ModelLabels) error {
 	do := toLabelsDO(labels)
 
-	v := adapter.db().Model(&modelDO{}).Where(
-		equalQuery(fieldOwner), index.Owner.Account(),
-	).Where(
-		equalQuery(fieldName), index.Name.MSDName(),
+	v := adapter.db().Model(
+		&modelDO{Id: modelId.Integer()},
 	).Select(
 		fieldTask, fieldOthers, fieldFrameworks,
 	).Updates(&do)

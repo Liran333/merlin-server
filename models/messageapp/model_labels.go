@@ -1,12 +1,12 @@
 package messageapp
 
 import (
-	"github.com/openmerlin/merlin-server/models/domain"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 )
 
 type ModelAppService interface {
-	ResetLabels(*domain.ModelIndex, *CmdToResetLabels) error
+	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 }
 
 func NewModelAppService(repoAdapter repository.ModelLabelsRepoAdapter) ModelAppService {
@@ -19,6 +19,6 @@ type modelAppService struct {
 	repoAdapter repository.ModelLabelsRepoAdapter
 }
 
-func (s *modelAppService) ResetLabels(index *domain.ModelIndex, cmd *CmdToResetLabels) error {
-	return s.repoAdapter.Save(index, cmd)
+func (s *modelAppService) ResetLabels(modelId primitive.Identity, cmd *CmdToResetLabels) error {
+	return s.repoAdapter.Save(modelId, cmd)
 }

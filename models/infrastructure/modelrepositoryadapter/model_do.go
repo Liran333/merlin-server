@@ -47,11 +47,19 @@ func toModelDO(m *domain.Model) modelDO {
 }
 
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
-	return modelDO{
-		Task:       labels.Task,
-		Others:     labels.Others.UnsortedList(),
-		Frameworks: labels.Frameworks.UnsortedList(),
+	do := modelDO{
+		Task: labels.Task,
 	}
+
+	if labels.Others != nil {
+		do.Others = labels.Others.UnsortedList()
+	}
+
+	if labels.Frameworks != nil {
+		do.Frameworks = labels.Frameworks.UnsortedList()
+	}
+
+	return do
 }
 
 type modelDO struct {

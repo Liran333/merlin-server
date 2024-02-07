@@ -55,12 +55,7 @@ func (m *MessageServer) handle(payload []byte, header map[string]string) error {
 		return err
 	}
 
-	index, err := m.toModelIndex(&p)
-	if err != nil {
-		return err
-	}
-
-	return m.modelsService.ResetLabels(&index, &labels)
+	return m.modelsService.ResetLabels(primitive.CreateIdentity(p.Repo.ID), &labels)
 }
 
 func (m *MessageServer) parseRequest(header map[string]string) (eventType webhook.HookEventType, err error) {

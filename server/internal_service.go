@@ -23,6 +23,8 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setRouterOfSpaceInternal(rg, services)
 
+	setRouterOfModelInternal(rg, services)
+
 	setRouterOfSpaceAppInternal(rg, services, cfg)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
