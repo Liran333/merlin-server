@@ -441,6 +441,11 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 		return
 	}
 
+	if len(token) < 8 {
+		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "token too short")
+		return
+	}
+
 	tokens, err := s.token.GetByLastEight(token[len(token)-8:])
 	if err != nil {
 		logrus.Errorf("failed to find token: %s", err)
