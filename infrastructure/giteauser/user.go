@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/go-sdk/gitea"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
-	"github.com/sirupsen/logrus"
 )
 
 type UserCreateCmd struct {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )

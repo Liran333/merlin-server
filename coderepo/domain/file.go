@@ -1,8 +1,9 @@
 package domain
 
 import (
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"time"
+
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
 type CodeRepoFile struct {

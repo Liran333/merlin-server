@@ -195,9 +195,9 @@ func sendHttpRequest(req *http.Request, result interface{}) error {
 	req.Header.Set("User-Agent", "merlin-server-authing")
 	req.Header.Add("content-type", "application/json")
 
-	hc := libutils.NewHttpClient(3)
+	httpClient := libutils.NewHttpClient(3)
 
-	_, err := hc.ForwardTo(req, result)
+	_, err := httpClient.ForwardTo(req, result)
 
 	return err
 }

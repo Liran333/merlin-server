@@ -34,8 +34,9 @@ func (a Action) String() string {
 		return "delete"
 	case ActionCreate:
 		return "create"
+	default:
+		return ""
 	}
-	return ""
 }
 
 type tokenPerm string

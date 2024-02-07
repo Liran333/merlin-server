@@ -8,7 +8,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
-
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/user/app"

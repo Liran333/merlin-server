@@ -1,21 +1,15 @@
 package server
 
 import (
+	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/config"
-
+	modelapp "github.com/openmerlin/merlin-server/models/app"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
+	sessionapp "github.com/openmerlin/merlin-server/session/app"
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
-
-	orgapp "github.com/openmerlin/merlin-server/organization/app"
-
-	modelapp "github.com/openmerlin/merlin-server/models/app"
-
-	spaceapp "github.com/openmerlin/merlin-server/space/app"
-
-	sessionapp "github.com/openmerlin/merlin-server/session/app"
-
-	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 )
 
 type allServices struct {

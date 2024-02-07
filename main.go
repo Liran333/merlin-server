@@ -21,6 +21,7 @@ type options struct {
 	enableDebug bool
 }
 
+// ServiceOptions defines configuration parameters for the service.
 type ServiceOptions struct {
 	Port        int
 	ConfigFile  string

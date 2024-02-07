@@ -91,8 +91,6 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 		return
 	}
 
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update org basic info")
-
 	if o, err := ctl.org.UpdateBasicInfo(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -295,7 +293,6 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 	}
 
 	middleware.SetAction(ctx, fmt.Sprintf("delete organization %s", orgName))
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "delete organization")
 
 	err = ctl.org.Delete(&domain.OrgDeletedCmd{
 		Actor: user,
@@ -364,8 +361,6 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 	middleware.SetAction(ctx,
 		fmt.Sprintf("edit member %s to be %s of %s", req.User, req.Role, cmd.Org.Account()))
 
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "edit a member to organization")
-
 	if _, err = ctl.org.EditMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -395,8 +390,6 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 
 		return
 	}
-
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "remove a member to organization")
 
 	cmd, err := req.toCmd(ctx.Param("name"), user)
 	if err != nil {
@@ -437,7 +430,6 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 	}
 
 	middleware.SetAction(ctx, fmt.Sprintf("leave organization %s", orgName))
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "leave organization")
 
 	err = ctl.org.RemoveMember(&domain.OrgRemoveMemberCmd{
 		Actor:   user,
@@ -481,8 +473,6 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 
 		return
 	}
-
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "invite a member to organization")
 
 	if dto, err := ctl.org.InviteMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -558,8 +548,6 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 		return
 	}
 
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "revoke a request of organization")
-
 	if _, err = ctl.org.CancelReqMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -598,8 +586,6 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 		return
 	}
 
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "request a member to organization")
-
 	if dto, err := ctl.org.RequestMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -637,8 +623,6 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 
 		return
 	}
-
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "approve a member request to organization")
 
 	if _, err = ctl.org.ApproveRequest(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -719,8 +703,6 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 		return
 	}
 
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "revoke a invitation of organization")
-
 	if _, err = ctl.org.RevokeInvite(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -758,8 +740,6 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 
 		return
 	}
-
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "accept a invitation of organization")
 
 	if a, err := ctl.org.AcceptInvite(&cmd); err != nil {
 		commonctl.SendError(ctx, err)

@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	libutils "github.com/opensourceways/server-common-lib/utils"
-	"github.com/sirupsen/logrus"
 )
 
 const (

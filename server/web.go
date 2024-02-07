@@ -8,7 +8,6 @@ import (
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/operationlog"
 	"github.com/openmerlin/merlin-server/config"
-
 	sessionctl "github.com/openmerlin/merlin-server/session/controller"
 )
 

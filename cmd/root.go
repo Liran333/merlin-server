@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 
-	"github.com/opensourceways/community-robot-lib/logrusutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/opensourceways/community-robot-lib/logrusutil"
 	redisdb "github.com/opensourceways/redis-lib"
 )
 

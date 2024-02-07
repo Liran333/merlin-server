@@ -116,9 +116,9 @@ func (t PlatformToken) Match(token string) bool {
 		return false
 	}
 
-	dstBytes := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
+	derivedKey := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
 
-	return bytes.Equal(srcBtye, dstBytes)
+	return bytes.Equal(srcBtye, derivedKey)
 }
 
 func EncryptToken(token string) (enc, salt string, err error) {

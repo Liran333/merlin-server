@@ -6,11 +6,9 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-
 	"github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/controller"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
-
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 

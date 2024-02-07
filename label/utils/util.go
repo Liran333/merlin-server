@@ -11,10 +11,10 @@ func GetOrgRepo(r *structs.Repository) (string, string) {
 		return "", ""
 	}
 
-	split := strings.Split(r.FullName, "/")
-	if len(split) != 2 {
+	repoId := strings.Split(r.FullName, "/")
+	if len(repoId) != 2 {
 		return "", ""
 	}
 
-	return split[0], split[1]
+	return repoId[0], repoId[1]
 }

@@ -896,13 +896,13 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 	approve.Status = domain.ApproveStatusRejected
 	approve.Msg = cmd.Msg
 
-	new, err := org.invite.SaveRequest(&approve)
+	updatedRequest, err := org.invite.SaveRequest(&approve)
 	if err != nil {
 		err = fmt.Errorf("failed to remove invite, %w", err)
 		return
 	}
 
-	dto = ToMemberRequestDTO(&new, org.user)
+	dto = ToMemberRequestDTO(&updatedRequest, org.user)
 
 	return
 }
@@ -987,13 +987,13 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 	approve.Status = domain.ApproveStatusRejected
 	approve.Msg = cmd.Msg
 
-	new, err := org.invite.SaveInvite(&approve)
+	updatedInvite, err := org.invite.SaveInvite(&approve)
 	if err != nil {
 		err = fmt.Errorf("failed to remove invite, %w", err)
 		return
 	}
 
-	dto = ToApproveDTO(&new, org.user)
+	dto = ToApproveDTO(&updatedInvite, org.user)
 
 	return
 }

@@ -42,6 +42,8 @@ const (
 	ErrorCodeUserDuplicateBind  = "user_duplicate_bind"
 	ErrorCodeEmailDuplicateBind = "email_duplicate_bind"
 	ErrorCodeEmailDuplicateSend = "email_duplicate_send"
+
+	ErrorBaseCase = "internal_error"
 )
 
 // errorImpl

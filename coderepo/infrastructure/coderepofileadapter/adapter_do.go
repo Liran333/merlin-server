@@ -2,12 +2,13 @@ package coderepofileadapter
 
 import (
 	"fmt"
-	"github.com/openmerlin/merlin-server/coderepo/domain"
-	"github.com/openmerlin/merlin-server/utils"
 	"strings"
 
 	"github.com/gobwas/glob"
 	"github.com/sirupsen/logrus"
+
+	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 const (

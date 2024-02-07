@@ -1,10 +1,10 @@
 package repositoryimpl
 
 import (
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"gorm.io/gorm/clause"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )

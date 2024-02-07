@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	sdk "github.com/openmerlin/merlin-sdk/session"
-
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"

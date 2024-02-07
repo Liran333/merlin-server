@@ -3,12 +3,13 @@ package repositoryimpl
 import (
 	"errors"
 
+	"gorm.io/gorm/clause"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
-	"gorm.io/gorm/clause"
 )
 
 func NewInviteRepo(db postgresql.Impl) repository.Approve {

@@ -12,5 +12,4 @@ type Organization interface {
 	CheckName(primitive.Account) bool
 	GetOrgByName(primitive.Account) (domain.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]domain.Organization, error)
-	//Search(*UserSearchOption) (UserSearchResult, error)
 }

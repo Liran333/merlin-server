@@ -3,11 +3,6 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
-	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
-	"github.com/openmerlin/merlin-server/config"
-
 	"github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/coderepo/controller"
 	coderepoprimtive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
@@ -15,6 +10,10 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/branchrepositoryadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepofileadapter"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"github.com/openmerlin/merlin-server/config"
 
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	modeldomain "github.com/openmerlin/merlin-server/models/domain"

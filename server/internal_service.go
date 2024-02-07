@@ -6,9 +6,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/openmerlin/merlin-server/api"
-	"github.com/openmerlin/merlin-server/config"
-
 	"github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
+	"github.com/openmerlin/merlin-server/config"
 )
 
 func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {

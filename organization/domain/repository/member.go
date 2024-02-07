@@ -14,5 +14,4 @@ type OrgMember interface {
 	GetByOrgAndRole(string, domain.OrgRole) ([]domain.OrgMember, error)
 	GetByOrgAndUser(org, user string) (domain.OrgMember, error)
 	GetByUser(string) ([]domain.OrgMember, error)
-	//Search(*UserSearchOption) (UserSearchResult, error)
 }

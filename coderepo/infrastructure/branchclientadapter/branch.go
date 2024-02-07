@@ -54,7 +54,7 @@ func parseCreateError(c int, err error) error {
 		return allerror.New(allerror.ErrorCodeBranchExist, "branch already exist")
 	case statusCodeInactive:
 		return allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive")
+	default:
+		return allerror.New(allerror.ErrorBaseCase, "unexpected error when creating branch") // default case modified to return 500
 	}
-
-	return err
 }

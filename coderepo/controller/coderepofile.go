@@ -2,10 +2,10 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/openmerlin/merlin-server/common/controller/middleware"
 
 	"github.com/openmerlin/merlin-server/coderepo/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
 )
 
 func AddRouterForCodeRepoFileController(

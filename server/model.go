@@ -5,7 +5,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/controller"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"

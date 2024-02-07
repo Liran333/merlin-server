@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/openmerlin/merlin-server/common/domain/crypto"
-	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"gorm.io/gorm/clause"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"

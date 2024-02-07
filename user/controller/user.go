@@ -73,7 +73,6 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	}
 
 	middleware.SetAction(ctx, "update user basic info")
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -138,7 +137,6 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 	}
 
 	middleware.SetAction(ctx, req.action())
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	if err := ctl.s.VerifyBindEmail(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -176,7 +174,6 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 	}
 
 	middleware.SetAction(ctx, req.action())
-	//prepareOperateLog(ctx, pl.Account, OPERATE_TYPE_USER, "update user basic info")
 
 	if err := ctl.s.SendBindEmail(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
