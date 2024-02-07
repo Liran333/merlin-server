@@ -3,12 +3,14 @@ package space
 import (
 	"github.com/openmerlin/merlin-server/space/controller"
 	"github.com/openmerlin/merlin-server/space/domain/primitive"
+	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
 // Config
 type Config struct {
 	Tables     spacerepositoryadapter.Tables `json:"tables"`
+	Topics     messageadapter.Topics         `json:"topics"`
 	Primitive  primitive.Config              `json:"primitive"`
 	Controller controller.Config             `json:"controller"`
 }
@@ -16,6 +18,7 @@ type Config struct {
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.Tables,
+		&cfg.Topics,
 		&cfg.Primitive,
 		&cfg.Controller,
 	}

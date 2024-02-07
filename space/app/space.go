@@ -8,8 +8,10 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -30,11 +32,13 @@ type SpaceAppService interface {
 
 func NewSpaceAppService(
 	permission Permission,
+	msgAdapter message.SpaceMessage,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.SpaceRepositoryAdapter,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:  permission,
+		msgAdapter:  msgAdapter,
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
 	}
@@ -42,6 +46,7 @@ func NewSpaceAppService(
 
 type spaceAppService struct {
 	permission  Permission
+	msgAdapter  message.SpaceMessage
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.SpaceRepositoryAdapter
 }
@@ -106,7 +111,10 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		return
 	}
 
-	// TODO send space deleted event
+	e := domain.NewSpaceDeletedEvent(&space)
+	if err1 := s.msgAdapter.SendSpaceDeletedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send space deleted event, space id:%s", spaceId.Identity())
+	}
 
 	return
 }
@@ -144,7 +152,10 @@ func (s *spaceAppService) Update(
 
 	err = s.repoAdapter.Save(&space)
 
-	// send space updated event to add activity
+	e := domain.NewSpaceUpdatedEvent(&space)
+	if err1 := s.msgAdapter.SendSpaceUpdatedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send space updated event, space id:%s", spaceId.Identity())
+	}
 
 	return
 }

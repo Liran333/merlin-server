@@ -7,6 +7,7 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
+	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
@@ -18,6 +19,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 
 	services.spaceApp = app.NewSpaceAppService(
 		services.permission,
+		messageadapter.MessageAdapter(&cfg.Space.Topics),
 		services.codeRepoApp,
 		spacerepositoryadapter.SpaceAdapter(),
 	)

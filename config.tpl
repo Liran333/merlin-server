@@ -35,6 +35,9 @@ space:
 {{- range (ds "data").SPACE_HARDWARE}}
     - {{ . }}
 {{- end }}
+  topics:
+    space_updated: space_updated
+    space_deleted: space_deleted
 
 permission:
   permissions:
@@ -173,6 +176,7 @@ space_app:
     space_app: space_app
   topics:
     space_app_created: space_app_created
+    space_updated: space_updated
 
 kafka:
   address: {{(ds "secret").data.KAFKA_ADDR }}
