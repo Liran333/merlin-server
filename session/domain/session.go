@@ -6,6 +6,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
+	"github.com/sirupsen/logrus"
 )
 
 // Login
@@ -33,7 +34,8 @@ func (login *Login) Invalid() bool {
 
 func (login *Login) Validate(ip string, userAgent primitive.UserAgent) error {
 	if ip != login.IP || userAgent != login.UserAgent {
-		return allerror.New(allerror.ErrorCodeLoginIdInvalid, "another login")
+		logrus.Warnf("request ip %s ua %s differ from login ip %s ua %s", ip, userAgent, login.IP, login.UserAgent)
+		return nil
 	}
 
 	return nil
