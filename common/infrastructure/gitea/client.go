@@ -1,6 +1,11 @@
 package gitea
 
-import "github.com/openmerlin/go-sdk/gitea"
+import (
+	"crypto/tls"
+	"net/http"
+
+	"github.com/openmerlin/go-sdk/gitea"
+)
 
 var (
 	cli      *gitea.Client
@@ -13,7 +18,11 @@ type Config struct {
 }
 
 func Init(cfg *Config) error {
-	client, err := gitea.NewClient(cfg.URL, gitea.SetToken(cfg.Token))
+	client, err := gitea.NewClient(cfg.URL, gitea.SetToken(cfg.Token), gitea.SetHTTPClient(&http.Client{
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}},
+	}))
 	if err == nil {
 		cli = client
 		endpoint = cfg.URL
@@ -27,5 +36,9 @@ func Client() *gitea.Client {
 }
 
 func NewClient(username, password string) (*gitea.Client, error) {
-	return gitea.NewClient(endpoint, gitea.SetBasicAuth(username, password))
+	return gitea.NewClient(endpoint, gitea.SetBasicAuth(username, password), gitea.SetHTTPClient(&http.Client{
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}},
+	}))
 }
