@@ -52,6 +52,9 @@ func (s *spaceappAppService) GetByName(
 	if err != nil {
 		return dto, err
 	}
+	if spaceId == nil {
+		return dto, errorSpaceAppNotFound
+	}
 
 	// TODO it should find by newest commit
 	app, err := s.repo.FindBySpaceId(spaceId)
