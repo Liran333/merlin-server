@@ -79,7 +79,7 @@ func (s *spaceappAppService) checkPermission(
 	}
 
 	if space.IsPublic() {
-		return nil, nil
+		return space.Id, nil
 	}
 
 	// can't access private app anonymously
