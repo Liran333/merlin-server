@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/openmerlin/go-sdk/gitea v0.0.0-20231227092419-677da2d9d0b2
-	github.com/openmerlin/merlin-sdk v0.0.0-20240124030158-eb80b59f5e03
+	github.com/openmerlin/merlin-sdk v0.0.0-20240212054011-bf415f182ddb
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771
 	github.com/opensourceways/kafka-lib v0.0.0-20231114071554-b2af9944cf3a
 	github.com/opensourceways/redis-lib v0.0.0-20231018083224-85bc8e32c7c0

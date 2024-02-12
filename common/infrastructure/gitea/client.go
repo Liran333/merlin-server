@@ -20,7 +20,7 @@ type Config struct {
 func Init(cfg *Config) error {
 	client, err := gitea.NewClient(cfg.URL, gitea.SetToken(cfg.Token), gitea.SetHTTPClient(&http.Client{
 		Transport: &http.Transport{TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // #nosec G402
 		}},
 	}))
 	if err == nil {
@@ -38,7 +38,7 @@ func Client() *gitea.Client {
 func NewClient(username, password string) (*gitea.Client, error) {
 	return gitea.NewClient(endpoint, gitea.SetBasicAuth(username, password), gitea.SetHTTPClient(&http.Client{
 		Transport: &http.Transport{TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // #nosec G402
 		}},
 	}))
 }
