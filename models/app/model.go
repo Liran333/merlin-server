@@ -10,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -220,10 +221,12 @@ func (s *modelAppService) hasPermission(user primitive.Account, model *domain.Mo
 	}
 
 	if model.OwnedByPerson() {
+		logrus.Error("can't delete model owned by other person")
 		return errorModelNotFound
 	}
 
 	if err := s.permission.Check(user, model.Owner, primitive.ObjTypeModel, action); err != nil {
+		logrus.Errorf("permission check failed when deleting model, %s", err)
 		return errorModelNotFound
 	}
 

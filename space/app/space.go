@@ -233,10 +233,12 @@ func (s *spaceAppService) hasPermission(user primitive.Account, space *domain.Sp
 	}
 
 	if space.OwnedByPerson() {
+		logrus.Error("can't delete space owned by other person")
 		return errorSpaceNotFound
 	}
 
 	if err := s.permission.Check(user, space.Owner, primitive.ObjTypeSpace, action); err != nil {
+		logrus.Errorf("permission check failed when deleting space, %s", err)
 		return errorSpaceNotFound
 	}
 

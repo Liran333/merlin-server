@@ -96,11 +96,12 @@ permission:
           - write
           - create
           - read
-          - delete
         - role: write
           operation:
           - write
+          - create
           - read
+          - delete
         - role: read
           operation:
           - read
@@ -117,11 +118,12 @@ permission:
           - write
           - create
           - read
-          - delete
         - role: write
           operation:
           - write
+          - create
           - read
+          - delete
         - role: read
           operation:
           - read
@@ -176,7 +178,14 @@ space_app:
     space_app: space_app
   topics:
     space_app_created: space_app_created
-    space_updated: space_updated
+    space_code_changed: space_code_changed
+    space_hardware_updated: space_hardware_updated
+    space_deleted: space_deleted
 
 kafka:
   address: {{(ds "secret").data.KAFKA_ADDR }}
+  mq_cert: {{(ds "secret").data.KAFKA_CERT }}
+  user_name: {{(ds "secret").data.KAFKA_USERNAME }}
+  password: {{(ds "secret").data.KAFKA_PASSWORD }}
+  algorithm: {{(ds "secret").data.KAFKA_ALGO }}
+  skip_cert_verify: true

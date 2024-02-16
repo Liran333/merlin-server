@@ -213,6 +213,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 
 // 名下无组织时，查询个人组织返回一个空列表
 func (s *SuiteOrg) TestOrgListEmpty() {
+	// make sure the org is not exist
 	_, _ = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 
 	// list by owner

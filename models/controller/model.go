@@ -37,6 +37,7 @@ type ModelController struct {
 // @Tags     Model
 // @Param    body  body      reqToCreateModel  true  "body of creating model"
 // @Accept   json
+// @Security Bearer
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/model [post]
 func (ctl *ModelController) Create(ctx *gin.Context) {
@@ -70,6 +71,7 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 // @Tags     Model
 // @Param    id    path  string        true  "id of model"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/model/{id} [delete]
 func (ctl *ModelController) Delete(ctx *gin.Context) {
@@ -99,6 +101,7 @@ func (ctl *ModelController) Delete(ctx *gin.Context) {
 // @Param    id    path  string            true  "id of model"
 // @Param    body  body  reqToUpdateModel  true  "body of updating model"
 // @Accept   json
+// @Security Bearer
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/model/{id} [put]
 func (ctl *ModelController) Update(ctx *gin.Context) {
