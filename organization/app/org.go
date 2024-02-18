@@ -61,24 +61,26 @@ func NewOrgService(
 	cfg *domain.Config,
 ) OrgService {
 	return &orgService{
-		user:         user,
-		repo:         repo,
-		member:       member,
-		perm:         perm,
-		invite:       invite,
-		defaultRole:  domain.OrgRole(cfg.DefaultRole),
-		inviteExpiry: cfg.InviteExpiry,
+		user:             user,
+		repo:             repo,
+		member:           member,
+		perm:             perm,
+		invite:           invite,
+		defaultRole:      domain.OrgRole(cfg.DefaultRole),
+		inviteExpiry:     cfg.InviteExpiry,
+		MaxCountPerOwner: cfg.MaxCountPerOwner,
 	}
 }
 
 type orgService struct {
-	inviteExpiry int64
-	defaultRole  domain.OrgRole
-	user         userapp.UserService
-	repo         userrepo.User
-	member       repository.OrgMember
-	invite       repository.Approve
-	perm         Permission
+	MaxCountPerOwner int64
+	inviteExpiry     int64
+	defaultRole      domain.OrgRole
+	user             userapp.UserService
+	repo             userrepo.User
+	member           repository.OrgMember
+	invite           repository.Approve
+	perm             Permission
 }
 
 func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err error) {
@@ -89,6 +91,10 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	if !org.repo.CheckName(cmd.Name) {
 		err = allerror.NewInvalidParam(fmt.Sprintf("name %s is already been taken", cmd.Name.Account()))
+		return
+	}
+
+	if err = org.orgCountCheck(cmd.Owner); err != nil {
 		return
 	}
 
@@ -138,6 +144,19 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 	o = ToDTO(orgTemp)
 
 	return
+}
+
+func (org *orgService) orgCountCheck(owner primitive.Account) error {
+	total, err := org.repo.GetOrgCountByOwner(owner)
+	if err != nil {
+		return err
+	}
+
+	if total >= org.MaxCountPerOwner {
+		return allerror.NewCountExceeded("org count exceed")
+	}
+
+	return nil
 }
 
 func (org *orgService) GetByAccount(acc primitive.Account) (dto userapp.UserDTO, err error) {

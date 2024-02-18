@@ -3,6 +3,8 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -10,11 +12,11 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
-	"github.com/sirupsen/logrus"
 )
 
 var (
-	errorModelNotFound = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
+	errorModelNotFound      = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
+	errorModelCountExceeded = allerror.NewCountExceeded("model count exceed")
 )
 
 type Permission interface {
@@ -55,6 +57,10 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if err := s.modelCountCheck(cmd.Owner); err != nil {
+		return "", err
 	}
 
 	coderepo, err := s.codeRepoApp.Create(&cmd.CmdToCreateRepo)
@@ -228,6 +234,23 @@ func (s *modelAppService) hasPermission(user primitive.Account, model *domain.Mo
 	if err := s.permission.Check(user, model.Owner, primitive.ObjTypeModel, action); err != nil {
 		logrus.Errorf("permission check failed when deleting model, %s", err)
 		return errorModelNotFound
+	}
+
+	return nil
+}
+
+func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
+	cmdToList := CmdToListModels{
+		Owner: owner,
+	}
+
+	total, err := s.repoAdapter.Count(&cmdToList)
+	if err != nil {
+		return err
+	}
+
+	if total >= config.MaxCountPerOwner {
+		return errorModelCountExceeded
 	}
 
 	return nil

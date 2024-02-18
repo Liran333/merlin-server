@@ -118,6 +118,13 @@ func (adapter *modelAdapter) List(opt *repository.ListOption) ([]repository.Mode
 	return r, int(total), nil
 }
 
+func (adapter *modelAdapter) Count(opt *repository.ListOption) (int, error) {
+	var total int64
+	err := adapter.toQuery(opt).Count(&total).Error
+
+	return int(total), err
+}
+
 func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	db := adapter.db()
 

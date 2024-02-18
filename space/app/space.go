@@ -3,6 +3,8 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -11,11 +13,11 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
-	"github.com/sirupsen/logrus"
 )
 
 var (
-	errorSpaceNotFound = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found")
+	errorSpaceNotFound      = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found")
+	errorSpaceCountExceeded = allerror.NewCountExceeded("space count exceed")
 )
 
 type Permission interface {
@@ -59,6 +61,10 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if err := s.spaceCountCheck(cmd.Owner); err != nil {
+		return "", err
 	}
 
 	coderepo, err := s.codeRepoApp.Create(&cmd.CmdToCreateRepo)
@@ -240,6 +246,23 @@ func (s *spaceAppService) hasPermission(user primitive.Account, space *domain.Sp
 	if err := s.permission.Check(user, space.Owner, primitive.ObjTypeSpace, action); err != nil {
 		logrus.Errorf("permission check failed when deleting space, %s", err)
 		return errorSpaceNotFound
+	}
+
+	return nil
+}
+
+func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
+	cmdToList := CmdToListSpaces{
+		Owner: owner,
+	}
+
+	total, err := s.repoAdapter.Count(&cmdToList)
+	if err != nil {
+		return err
+	}
+
+	if total >= config.MaxCountPerOwner {
+		return errorSpaceCountExceeded
 	}
 
 	return nil

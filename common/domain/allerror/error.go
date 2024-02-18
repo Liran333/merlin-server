@@ -15,6 +15,8 @@ const (
 
 	ErrorCodeOrganizationNotFound = "organization_not_found"
 
+	ErrorCodeCountExceeded = "count_exceeded"
+
 	// space app
 	ErrorCodeSpaceAppNotFound        = "space_app_not_found"
 	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
@@ -113,4 +115,8 @@ func NewNoPermission(msg string) noPermissionError {
 
 func NewInvalidParam(msg string) errorImpl {
 	return New(errorCodeInvalidParam, msg)
+}
+
+func NewCountExceeded(msg string) errorImpl {
+	return New(ErrorCodeCountExceeded, msg)
 }

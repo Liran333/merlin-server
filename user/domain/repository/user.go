@@ -42,6 +42,7 @@ type User interface {
 	CheckName(primitive.Account) bool
 	GetOrgByName(primitive.Account) (org.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
+	GetOrgCountByOwner(primitive.Account) (int64, error)
 	// list
 	ListAccount(*ListOption) ([]domain.User, int, error)
 }

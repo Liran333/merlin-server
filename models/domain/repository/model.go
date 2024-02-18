@@ -58,6 +58,7 @@ type ModelRepositoryAdapter interface {
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
 	List(*ListOption) ([]ModelSummary, int, error)
+	Count(*ListOption) (int, error)
 }
 
 type ModelLabelsRepoAdapter interface {

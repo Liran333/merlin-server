@@ -58,6 +58,7 @@ type SpaceRepositoryAdapter interface {
 	Delete(primitive.Identity) error
 	Save(*domain.Space) error
 	List(*ListOption) ([]SpaceSummary, int, error)
+	Count(*ListOption) (int, error)
 }
 
 type SpaceLabelsRepoAdapter interface {

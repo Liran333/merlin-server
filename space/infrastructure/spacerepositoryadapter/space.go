@@ -118,6 +118,13 @@ func (adapter *spaceAdapter) List(opt *repository.ListOption) ([]repository.Spac
 	return r, int(total), nil
 }
 
+func (adapter *spaceAdapter) Count(opt *repository.ListOption) (int, error) {
+	var total int64
+	err := adapter.toQuery(opt).Count(&total).Error
+
+	return int(total), err
+}
+
 func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	db := adapter.db()
 

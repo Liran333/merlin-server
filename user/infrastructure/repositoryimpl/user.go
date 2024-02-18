@@ -127,6 +127,15 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 	return
 }
 
+func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total int64, err error) {
+	err = impl.DB().
+		Where(impl.EqualQuery(fieldOwner), account.Account()).
+		Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization).
+		Count(&total).Error
+
+	return
+}
+
 func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 	u.Id = primitive.CreateIdentity(primitive.GetId())
 	do, err := toUserDO(u, impl.e)
