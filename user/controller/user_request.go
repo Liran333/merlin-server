@@ -174,3 +174,7 @@ func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEm
 type tokenVerifyRequest struct {
 	Token string `json:"token" binding:"required"`
 }
+
+type tokenVerifyResp struct {
+	Account string `json:"account"`
+}

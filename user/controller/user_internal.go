@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -49,11 +48,11 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 		return
 	}
 
-	logrus.Infof("verify %s", req.Token)
-
-	if _, err := ctl.s.VerifyToken(req.Token, primitive.NewReadPerm()); err != nil {
+	if v, err := ctl.s.VerifyToken(req.Token, primitive.NewReadPerm()); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, nil)
+		commonctl.SendRespOfPost(ctx, tokenVerifyResp{
+			Account: v.Account,
+		})
 	}
 }

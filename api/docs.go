@@ -291,6 +291,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "create model",
                 "consumes": [
                     "application/json"
@@ -322,6 +327,11 @@ const docTemplate = `{
         },
         "/v1/model/{id}": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "update model",
                 "consumes": [
                     "application/json"
@@ -358,6 +368,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "delete model",
                 "consumes": [
                     "application/json"

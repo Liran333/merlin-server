@@ -843,6 +843,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Create
       tags:
       - Model
@@ -860,6 +862,8 @@ paths:
       responses:
         "204":
           description: No Content
+      security:
+      - Bearer: []
       summary: Delete
       tags:
       - Model
@@ -884,6 +888,8 @@ paths:
           description: Accepted
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
       summary: Update
       tags:
       - Model
