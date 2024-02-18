@@ -1043,6 +1043,114 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/resource/permission/delete": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "check if can delete resource",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Delete",
+                "parameters": [
+                    {
+                        "description": "body of request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCheckPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/resource/permission/read": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "check if can read resource",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Read",
+                "parameters": [
+                    {
+                        "description": "body of request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCheckPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/resource/permission/update": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "check if can update resource",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "description": "body of request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCheckPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/session": {
             "put": {
                 "description": "logout",
@@ -2740,6 +2848,20 @@ const docTemplate = `{
                 "user"
             ],
             "properties": {
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToCheckPermission": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
                 "user": {
                     "type": "string"
                 }

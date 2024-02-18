@@ -25,6 +25,14 @@ type Space struct {
 	DownloadCount int
 }
 
+func (s *Space) ResourceOwner() primitive.Account {
+	return s.Owner
+}
+
+func (s *Space) ResourceType() primitive.ObjType {
+	return primitive.ObjTypeSpace
+}
+
 func (s *Space) OwnedBy(user primitive.Account) bool {
 	return s.Owner == user || s.CreatedBy == user
 }
@@ -39,7 +47,4 @@ type SpaceLabels struct {
 	Frameworks sets.Set[string] // framework labels
 }
 
-type SpaceIndex struct {
-	Owner primitive.Account
-	Name  primitive.MSDName
-}
+type SpaceIndex = coderepo.CodeRepoIndex

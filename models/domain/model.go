@@ -22,6 +22,14 @@ type Model struct {
 	DownloadCount int
 }
 
+func (m *Model) ResourceOwner() primitive.Account {
+	return m.Owner
+}
+
+func (m *Model) ResourceType() primitive.ObjType {
+	return primitive.ObjTypeModel
+}
+
 func (m *Model) OwnedBy(user primitive.Account) bool {
 	return m.Owner == user || m.CreatedBy == user
 }
@@ -36,7 +44,4 @@ type ModelLabels struct {
 	Frameworks sets.Set[string] // framework labels
 }
 
-type ModelIndex struct {
-	Owner primitive.Account
-	Name  primitive.MSDName
-}
+type ModelIndex = coderepo.CodeRepoIndex

@@ -329,6 +329,15 @@ definitions:
     required:
     - user
     type: object
+  controller.reqToCheckPermission:
+    properties:
+      name:
+        type: string
+      owner:
+        type: string
+      user:
+        type: string
+    type: object
   controller.reqToCreateModel:
     properties:
       desc:
@@ -1303,6 +1312,72 @@ paths:
       summary: ApproveRequest
       tags:
       - Organization
+  /v1/resource/permission/delete:
+    post:
+      consumes:
+      - application/json
+      description: check if can delete resource
+      parameters:
+      - description: body of request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCheckPermission'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Delete
+      tags:
+      - Permission
+  /v1/resource/permission/read:
+    post:
+      consumes:
+      - application/json
+      description: check if can read resource
+      parameters:
+      - description: body of request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCheckPermission'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Read
+      tags:
+      - Permission
+  /v1/resource/permission/update:
+    post:
+      consumes:
+      - application/json
+      description: check if can update resource
+      parameters:
+      - description: body of request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCheckPermission'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Update
+      tags:
+      - Permission
   /v1/session:
     post:
       consumes:

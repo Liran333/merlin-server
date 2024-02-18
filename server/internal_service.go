@@ -19,6 +19,7 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	// set routers
 	setRouterOfSessionInternal(rg, services)
+
 	setInternalRouterOfUser(rg, cfg, services)
 
 	setRouterOfSpaceInternal(rg, services)
@@ -26,6 +27,8 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 	setRouterOfModelInternal(rg, services)
 
 	setRouterOfSpaceAppInternal(rg, services, cfg)
+
+	setRouterOfResourcePermissionInternal(rg, services)
 
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }

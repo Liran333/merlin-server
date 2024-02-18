@@ -2,6 +2,7 @@ package server
 
 import (
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/config"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
@@ -18,6 +19,8 @@ type allServices struct {
 
 	orgApp     orgapp.OrgService
 	permission orgapp.Permission
+
+	permissionApp commonapp.ResourcePermissionAppService
 
 	sessionApp sessionapp.SessionAppService
 
@@ -58,6 +61,10 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	if err = initSpaceApp(cfg, &services); err != nil {
 		return
 	}
+
+	services.permissionApp = commonapp.NewResourcePermissionAppService(
+		services.permission,
+	)
 
 	return
 }

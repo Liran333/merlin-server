@@ -196,7 +196,7 @@ func (s *SuiteOrgModel) TestOrgContributorCantDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 403, r.StatusCode)
+	assert.Equal(s.T(), 404, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
