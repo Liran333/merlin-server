@@ -11,7 +11,6 @@ import (
 type userBasicInfoUpdateRequest struct {
 	AvatarId *string `json:"avatar_id"`
 	Desc     *string `json:"description"`
-	Email    *string `json:"email"`
 	Fullname *string `json:"fullname"`
 }
 
@@ -31,19 +30,13 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		}
 	}
 
-	if req.Email != nil {
-		if cmd.Email, err = primitive.NewEmail(*req.Email); err != nil {
-			return
-		}
-	}
-
 	if req.Fullname != nil {
 		if cmd.Fullname, err = primitive.NewMSDFullname(*req.Fullname); err != nil {
 			return
 		}
 	}
 
-	if req.AvatarId == nil && req.Desc == nil && req.Email == nil && req.Fullname == nil {
+	if req.AvatarId == nil && req.Desc == nil && req.Fullname == nil {
 		err = fmt.Errorf("all param are empty")
 		return
 	}

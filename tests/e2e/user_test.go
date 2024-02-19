@@ -21,7 +21,6 @@ func (s *SuiteUser) SetupSuite() {
 		Fullname:    "read full name",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
 		Description: "valid desc",
-		Email:       "testupdateuser@modelfoudnry.cn",
 	}
 
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
@@ -41,7 +40,6 @@ func (s *SuiteUser) TestGetUser() {
 	assert.Equalf(s.T(), user["fullname"], "read full name", "fullname is not equal")
 	assert.Equalf(s.T(), user["avatar_id"], "https://avatars.githubusercontent.com/u/2853724?v=5", "avatar_id is not equal")
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
-	assert.Equalf(s.T(), user["email"], "testupdateuser@modelfoudnry.cn", "email is not equal")
 	assert.Equal(s.T(), getInt64(s.T(), user["type"]), int64(0))
 	assert.NotEqual(s.T(), "", user["id"])
 	assert.NotEqual(s.T(), int64(0), getInt64(s.T(), user["created_at"]))

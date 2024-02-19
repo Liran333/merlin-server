@@ -86,7 +86,7 @@ func (s *SuiteUserToken) TestVerifyToken() {
 	}
 
 	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), 201, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testverify")

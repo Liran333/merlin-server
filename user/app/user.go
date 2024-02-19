@@ -143,8 +143,8 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
+	// update git user when email is valid
 	if user.Email != nil && user.Email.Email() != "" {
-		// update git user when email is valid
 		if err = s.git.Update(&domain.UserCreateCmd{
 			Account:  user.Account,
 			Fullname: user.Fullname,
@@ -517,12 +517,15 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 	}
 
 	if u.Email.Email() == cmd.Email.Email() {
-		err = fmt.Errorf("email already binded")
 		return
 	}
 
+	if u.Email.Email() != "" {
+		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "user already bind another email address")
+	}
+
 	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, info[0].UserId)
-	if err != nil {
+	if err != nil && !allerror.IsUserDuplicateBind(err) {
 		return
 	}
 
@@ -535,17 +538,15 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 		Desc:     u.Desc,
 		AvatarId: u.AvatarId,
 	}
-	if u.Email.Email() == "" {
-		// create new user when email is nil
-		u, err = s.git.Create(userCmd)
-	} else {
-		err = s.git.Update(userCmd)
-	}
+
+	_, err = s.repo.SaveUser(&u)
 	if err != nil {
 		return
 	}
 
-	_, err = s.repo.SaveUser(&u)
+	// create new user when email
+	_, err = s.git.Create(userCmd)
+
 	return
 }
 

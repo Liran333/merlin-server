@@ -101,6 +101,20 @@ func IsNotFound(err error) bool {
 	return false
 }
 
+func IsUserDuplicateBind(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if e, ok := err.(errorImpl); ok {
+		if e.ErrorCode() == ErrorCodeUserDuplicateBind {
+			return true
+		}
+	}
+
+	return false
+}
+
 // noPermissionError
 type noPermissionError struct {
 	errorImpl

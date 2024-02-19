@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +20,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 		Fullname:    "read full name",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
 		Description: "valid desc",
-		Email:       "testupdateuser@modelfoudnry.cn",
 	}
 	data, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Equal(s.T(), r.StatusCode, 202)
@@ -32,7 +30,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 	assert.Equalf(s.T(), user["fullname"], "read full name", "fullname is not equal")
 	assert.Equalf(s.T(), user["avatar_id"], "https://avatars.githubusercontent.com/u/2853724?v=5", "avatar_id is not equal")
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
-	assert.Equalf(s.T(), user["email"], "testupdateuser@modelfoudnry.cn", "email is not equal")
 }
 
 // fullname不能为空
@@ -43,27 +40,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Equal(s.T(), 400, r.StatusCode)
-	assert.NotNil(s.T(), err)
-}
-
-// 无效的email会导致更新失败
-func (s *SuiteUserUpdate) TestUpdateUserInfoNoToken() {
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
-		Email: "invalidemail",
-	}
-	_, r, err := Api.UserApi.V1UserPut(context.Background(), d)
-	assert.Equal(s.T(), r.StatusCode, 401)
-	assert.NotNil(s.T(), err)
-}
-
-// 无效的email会导致更新失败
-func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidEmail() {
-
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
-		Email: "invalidemail",
-	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), r.StatusCode, 400)
 	assert.NotNil(s.T(), err)
 }
 
@@ -120,7 +96,6 @@ func (s *SuiteUserUpdate) TearDownSuite() {
 		Fullname:    "testfullname",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=1",
 		Description: "testdesc",
-		Email:       "test@test.cn",
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Equal(s.T(), 202, r.StatusCode)

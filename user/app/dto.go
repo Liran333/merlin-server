@@ -122,12 +122,10 @@ type ToUserDTO interface {
 
 type UpdateUserBasicInfoCmd struct {
 	Desc            primitive.MSDDesc
-	Email           primitive.Email
 	AvatarId        primitive.AvatarId
 	Fullname        primitive.MSDFullname
 	descChanged     bool
 	avatarChanged   bool
-	emailChanged    bool
 	fullNameChanged bool
 }
 
@@ -142,17 +140,12 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 		cmd.descChanged = true
 	}
 
-	if cmd.Email != nil && u.Email.Email() != cmd.Email.Email() {
-		u.Email = cmd.Email
-		cmd.emailChanged = true
-	}
-
 	if cmd.Fullname != nil && u.Fullname.MSDFullname() != cmd.Fullname.MSDFullname() {
 		u.Fullname = cmd.Fullname
 		cmd.fullNameChanged = true
 	}
 
-	changed = cmd.avatarChanged || cmd.descChanged || cmd.emailChanged || cmd.fullNameChanged
+	changed = cmd.avatarChanged || cmd.descChanged || cmd.fullNameChanged
 
 	return
 }

@@ -172,10 +172,6 @@ var userEditCmd = &cobra.Command{
 		if err == nil {
 			updateCmd.Desc = desc
 		}
-		email, err := primitive.NewEmail(viper.GetString("user.edit.email"))
-		if err == nil {
-			updateCmd.Email = email
-		}
 		fullname, err := primitive.NewMSDFullname(viper.GetString("user.edit.fullname"))
 		if err != nil {
 			updateCmd.Fullname = fullname
@@ -186,6 +182,36 @@ var userEditCmd = &cobra.Command{
 			logrus.Fatalf("edit user failed :%s", err.Error())
 		} else {
 			logrus.Info("edit user successfully")
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initServer(configFile)
+		inittoken()
+	},
+}
+
+var userBindCmd = &cobra.Command{
+	Use: "bind",
+	Run: func(cmd *cobra.Command, args []string) {
+		acc, err := primitive.NewAccount(viper.GetString("user.bind.name"))
+		if err != nil {
+			logrus.Fatalf("edit user failed :%s with %s", err.Error(), viper.GetString("user.bind.name"))
+		}
+
+		email, err := primitive.NewEmail(viper.GetString("user.bind.email"))
+		if err != nil {
+			logrus.Fatalf("user email invalid, %s", err)
+		}
+
+		err = userAppService.VerifyBindEmail(&userapp.CmdToVerifyBindEmail{
+			User:     acc,
+			Email:    email,
+			PassCode: "123",
+		})
+		if err != nil {
+			logrus.Fatalf("bind user failed :%s", err.Error())
+		} else {
+			logrus.Info("bind user successfully")
 		}
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -223,6 +249,7 @@ func init() {
 	userCmd.AddCommand(userGetAvaCmd)
 	userCmd.AddCommand(userEditCmd)
 	userCmd.AddCommand(userListCmd)
+	userCmd.AddCommand(userBindCmd)
 	// 添加命令行参数
 	userAddCmd.Flags().StringP("name", "n", "", "user name")
 	userAddCmd.Flags().StringP("email", "e", "", "user email")
@@ -248,6 +275,21 @@ func init() {
 		logrus.Fatal(err)
 	}
 
+	userBindCmd.Flags().StringP("name", "n", "", "user name")
+	userBindCmd.Flags().StringP("email", "e", "", "user email")
+	if err := viper.BindPFlag("user.bind.name", userBindCmd.Flags().Lookup("name")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := viper.BindPFlag("user.bind.email", userBindCmd.Flags().Lookup("email")); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := userBindCmd.MarkFlagRequired("name"); err != nil {
+		logrus.Fatal(err)
+	}
+	if err := userBindCmd.MarkFlagRequired("email"); err != nil {
+		logrus.Fatal(err)
+	}
+
 	userDelCmd.Flags().StringP("name", "n", "", "user name")
 	if err := userDelCmd.MarkFlagRequired("name"); err != nil {
 		logrus.Fatal(err)
@@ -267,7 +309,6 @@ func init() {
 	}
 
 	userEditCmd.Flags().StringP("name", "n", "", "user name")
-	userEditCmd.Flags().StringP("email", "e", "", "user email")
 	userEditCmd.Flags().StringP("bio", "b", "", "user bio")
 	userEditCmd.Flags().StringP("avatar", "a", "", "user avatar")
 	userEditCmd.Flags().StringP("fullname", "f", "", "user fullname")
@@ -275,7 +316,7 @@ func init() {
 		logrus.Fatal(err)
 	}
 
-	userEditCmd.MarkFlagsOneRequired("avatar", "bio", "email", "fullname")
+	userEditCmd.MarkFlagsOneRequired("avatar", "bio", "fullname")
 
 	if err := viper.BindPFlag("user.del.name", userDelCmd.Flags().Lookup("name")); err != nil {
 		logrus.Fatal(err)
@@ -284,9 +325,6 @@ func init() {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.edit.name", userEditCmd.Flags().Lookup("name")); err != nil {
-		logrus.Fatal(err)
-	}
-	if err := viper.BindPFlag("user.edit.email", userEditCmd.Flags().Lookup("email")); err != nil {
 		logrus.Fatal(err)
 	}
 	if err := viper.BindPFlag("user.edit.bio", userEditCmd.Flags().Lookup("bio")); err != nil {

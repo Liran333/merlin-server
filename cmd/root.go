@@ -64,8 +64,16 @@ func initServer(configFile string) {
 	// init
 	if err := cfg.Init(); err != nil {
 		logrus.Errorf("init cfg failed, err:%s", err.Error())
+
+		return
 	}
 
+	// session
+	if err := cfg.InitSession(); err != nil {
+		logrus.Errorf("init session failed, err:%s", err.Error())
+
+		return
+	}
 	// gitea
 	if err := basegitea.Init(&cfg.Git); err != nil {
 		logrus.Fatalf("init gitea failed, err:%s", err.Error())
