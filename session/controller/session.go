@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -65,6 +66,8 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 
 		return
 	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("%s login", user.Name))
 
 	setCookieOfLoginId(ctx, session.LoginId.String(), nil)
 
