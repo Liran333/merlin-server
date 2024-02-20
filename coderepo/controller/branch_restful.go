@@ -39,7 +39,7 @@ type BranchRestfulController struct {
 // @Param    body     body restfulReqToCreateBranch true  "restfulReqToCreateBranch"
 // @Accept   json
 // @Success  201   {object}  app.BranchCreateDTO
-// @Router   /v2/branch/{type}/{owner}/{repo} [post]
+// @Router   /v1/branch/{type}/{owner}/{repo} [post]
 func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 	var req restfulReqToCreateBranch
 	if err := ctx.BindJSON(&req); err != nil {
@@ -76,7 +76,7 @@ func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 // @Param    branch  path  string  true  "branch name"
 // @Accept   json
 // @Success  204
-// @Router   /v2/branch/{type}/{owner}/{repo}/{branch} [delete]
+// @Router   /v1/branch/{type}/{owner}/{repo}/{branch} [delete]
 func (ctl *BranchRestfulController) Delete(ctx *gin.Context) {
 	cmd, err := toBanchDeleteCmd(ctx)
 	if err != nil {

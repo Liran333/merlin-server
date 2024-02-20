@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type SuiteOrgModel struct {
+type SuiteOrgSpace struct {
 	suite.Suite
 	name         string
 	orgId        string
@@ -22,7 +22,7 @@ type SuiteOrgModel struct {
 	owerId       string
 }
 
-func (s *SuiteOrgModel) SetupSuite() {
+func (s *SuiteOrgSpace) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
 	s.avatarid = "https://avatars.githubusercontent.com/u/2853724?v=1"
@@ -67,14 +67,14 @@ func (s *SuiteOrgModel) SetupSuite() {
 	assert.Nil(s.T(), err)
 }
 
-func (s *SuiteOrgModel) TearDownSuite() {
+func (s *SuiteOrgSpace) TearDownSuite() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
-// 拥有read权限的用户不能创建模型，不能修改和删除他人模型
-func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
+// 拥有read权限的用户不能创建Space，不能修改和删除他人Space
+func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "read",
@@ -83,20 +83,31 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+	// read用户不能创建Space
+	_, r, err = Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
 	assert.Equal(s.T(), 403, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -105,14 +116,19 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 
 	id := getString(s.T(), data.Data)
 
-	//read用户不能修改和删除他人模型
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
-		Desc: "model desc new",
+	//read用户不能修改和删除他人Space
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		Name:       "testspace",
+		Sdk:        "gradio",
+		Visibility: "public",
 	})
 	assert.Equal(s.T(), 404, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
 	assert.Equal(s.T(), 404, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
@@ -124,17 +140,22 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
-// 拥有write权限的用户可以创建和删除模型
-func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+// 拥有write权限的用户可以创建和删除Space
+func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -143,17 +164,22 @@ func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 
 	id := getString(s.T(), data.Data)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
-// 拥有write权限的用户可以修改和删除他人的模型
-func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+// 拥有write权限的用户可以修改和删除他人的Space
+func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -163,23 +189,33 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	//write用户可以修改和删除他人Space
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
-		Desc: "model desc new",
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		Name:       "testspace",
+		Sdk:        "gradio",
+		Visibility: "public",
 	})
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
-// 拥有admin权限的用户可以修改和删除他人的模型
-func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+// 拥有admin权限的用户可以修改和删除他人的Space
+func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -188,20 +224,25 @@ func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 
 	id := getString(s.T(), data.Data)
 
-	//admin用户可以修改和删除他人模型
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth, id, swagger.ControllerReqToUpdateModel{
-		Desc: "model desc new",
+	//admin用户可以修改和删除他人Space
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth, id, swagger.ControllerReqToUpdateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		Name:       "testspace",
+		Sdk:        "gradio",
+		Visibility: "public",
 	})
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
-// 拥有contribute权限的用户可以创建修改和删除自己的模型
-func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
+// 拥有contribute权限的用户可以创建修改和删除自己的Space
+func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "contributor",
@@ -209,10 +250,15 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -221,13 +267,18 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
-		Desc: "model desc new",
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		Name:       "testspace",
+		Sdk:        "gradio",
+		Visibility: "public",
 	})
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -239,8 +290,8 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 	assert.Nil(s.T(), err)
 }
 
-// 拥有contribute权限的用户不可以修改或删除他人模型
-func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
+// 拥有contribute权限的用户不可以修改或删除他人Space
+func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "contributor",
@@ -249,10 +300,15 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
-		Name:       "testmodel",
-		Owner:      s.name,
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
 		License:    "mit",
+		Name:       "testspace",
+		Owner:      s.name,
+		Sdk:        "gradio",
 		Visibility: "public",
 	})
 
@@ -261,18 +317,23 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 
 	id := getString(s.T(), data.Data)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
 	assert.Equal(s.T(), 404, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
-		Desc: "model desc new",
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		Name:       "testspace",
+		Sdk:        "gradio",
+		Visibility: "public",
 	})
-	//Error: 这里contributor应该不能修改他人模型，但实际返回202
+	// Error: 这里contributor应该不能修改他人Space，但实际返回202
 	//assert.Equal(s.T(), 401, r.StatusCode)
 	//assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -284,6 +345,7 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
-func TestOrgModel(t *testing.T) {
-	suite.Run(t, new(SuiteOrgModel))
+
+func TestOrgSpace(t *testing.T) {
+	suite.Run(t, new(SuiteOrgSpace))
 }
