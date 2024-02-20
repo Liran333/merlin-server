@@ -31,6 +31,8 @@ type ServiceOptions struct {
 	RemoveCfg   bool
 }
 
+// Validate checks if the ServiceOptions are valid.
+// It returns an error if the config file is missing.
 func (o *ServiceOptions) Validate() error {
 	if o.ConfigFile == "" {
 		return fmt.Errorf("missing config-file")
@@ -39,6 +41,8 @@ func (o *ServiceOptions) Validate() error {
 	return nil
 }
 
+// AddFlags adds flags for ServiceOptions to the provided FlagSet.
+// It includes flags for port, remove-config, config-file, cert, key, and grace-period.
 func (o *ServiceOptions) AddFlags(fs *flag.FlagSet) {
 	fs.IntVar(&o.Port, "port", 8888, "Port to listen on.")
 	fs.BoolVar(&o.RemoveCfg, "rm-cfg", false, "whether remove the cfg file after initialized .")
@@ -49,6 +53,7 @@ func (o *ServiceOptions) AddFlags(fs *flag.FlagSet) {
 	fs.DurationVar(&o.GracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration.")
 }
 
+// Validate validates the options and returns an error if any validation fails.
 func (o *options) Validate() error {
 	return o.service.Validate()
 }

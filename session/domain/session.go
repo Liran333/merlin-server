@@ -3,10 +3,11 @@ package domain
 import (
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
-	"github.com/sirupsen/logrus"
 )
 
 // Login
