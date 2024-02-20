@@ -64,7 +64,7 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 		&modelDO{Id: model.Id.Integer()},
 	).Where(
 		equalQuery(fieldVersion), model.Version,
-	).Select(`*`).Updates(&do)
+	).Select(`*`).Omit(fieldTask, fieldOthers, fieldFrameworks).Updates(&do)
 
 	if v.Error != nil {
 		return v.Error
