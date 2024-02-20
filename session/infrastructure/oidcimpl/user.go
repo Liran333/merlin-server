@@ -30,7 +30,7 @@ func Init(v *Config) {
 		getManagerTokenURL: v.Endpoint + "/manager/token",
 		sendEmailURL:       v.Endpoint + "/manager/sendcode",
 		bindEmailURL:       v.Endpoint + "/manager/bind/account",
-		privacyRevokeUrl:   v.Endpoint + "/privacy/revoke",
+		privacyRevokeUrl:   v.Endpoint + "/manager/privacy/revoke",
 	}
 }
 

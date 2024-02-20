@@ -492,18 +492,8 @@ func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) (err error) {
 }
 
 func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
-	info, err := s.session.FindByUser(cmd.User)
+	userId, err := s.getUserIdOfLogin(cmd.User)
 	if err != nil {
-		return
-	}
-
-	if len(info) == 0 {
-		err = fmt.Errorf("user session not found")
-		return
-	}
-
-	if info[0].UserId == "" {
-		err = fmt.Errorf("user id not found")
 		return
 	}
 
@@ -524,7 +514,7 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "user already bind another email address")
 	}
 
-	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, info[0].UserId)
+	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, userId)
 	if err != nil && !allerror.IsUserDuplicateBind(err) {
 		return
 	}
@@ -550,6 +540,34 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 	return
 }
 
+func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, err error) {
+	loginInfo, err := s.session.FindByUser(user)
+	if err != nil {
+		return
+	}
+
+	if len(loginInfo) == 0 {
+		err = fmt.Errorf("user session not found")
+
+		return
+	}
+
+	if loginInfo[0].UserId == "" {
+		err = fmt.Errorf("user id not found")
+
+		return
+	}
+
+	userId = loginInfo[0].UserId
+
+	return
+}
+
 func (s userService) PrivacyRevoke(user primitive.Account) error {
-	return s.oidc.PrivacyRevoke(user.Account())
+	userId, err := s.getUserIdOfLogin(user)
+	if err != nil {
+		return err
+	}
+
+	return s.oidc.PrivacyRevoke(userId)
 }
