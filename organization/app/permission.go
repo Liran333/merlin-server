@@ -95,45 +95,7 @@ func (p *permService) checkInOrg(
 	objType primitive.ObjType,
 	op primitive.Action,
 ) error {
-	if user == nil {
-		return allerror.NewNoPermission("user is nil")
-	}
-
-	if obj == nil {
-		return allerror.NewNoPermission("object is nil")
-	}
-
-	if user == obj {
-		return nil
-	}
-
-	m, err := p.org.GetByOrgAndUser(obj.Account(), user.Account())
-	if err != nil {
-		logrus.Errorf("get member failed: %s", err)
-
-		return allerror.NewNoPermission(
-			fmt.Sprintf("%s does not have a valid role in %s", user.Account(), obj.Account()),
-		)
-	}
-
-	ok := p.doCheckPerm(string(m.Role), objType, op)
-	res := "cannot"
-	if ok {
-		res = "can"
-	}
-
-	logrus.Debugf(
-		"user %s (role %s) %s do %d on %s:%s",
-		user.Account(), m.Role, res, op, obj.Account(), objType,
-	)
-
-	if !ok {
-		return allerror.NewNoPermission(fmt.Sprintf(
-			"%s %s %s permission denied", user.Account(), op.String(), string(objType),
-		))
-	}
-
-	return nil
+	return p.doCheck(user, obj, objType, op, nil)
 }
 
 // subject: a user session or a token sessioin
@@ -145,6 +107,25 @@ func (p *permService) Check(
 	objType primitive.ObjType,
 	op primitive.Action,
 	createdByUser bool,
+) error {
+	if op.IsModification() {
+		return p.doCheck(user, obj, objType, op, func() bool {
+			return createdByUser
+		})
+	}
+
+	return p.doCheck(user, obj, objType, op, nil)
+}
+
+// subject: a user session or a token sessioin
+// object: model, dataset, space, system
+// op: write, read
+func (p *permService) doCheck(
+	user primitive.Account,
+	obj primitive.Account,
+	objType primitive.ObjType,
+	op primitive.Action,
+	judgeInAdvance func() bool,
 ) error {
 	if user == nil {
 		return allerror.NewNoPermission("user is nil")
@@ -167,14 +148,13 @@ func (p *permService) Check(
 		))
 	}
 
-	if createdByUser && op.IsModification() {
+	if judgeInAdvance != nil && judgeInAdvance() {
 		return nil
 	}
 
 	ok := p.doCheckPerm(string(m.Role), objType, op)
-
 	res := "cannot"
-	if !ok {
+	if ok {
 		res = "can"
 	}
 

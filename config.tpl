@@ -71,7 +71,6 @@ permission:
         - role: admin
           operation:
           - write
-          - create
           - read
           - delete
         - role: contributor
