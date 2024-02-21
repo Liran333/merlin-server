@@ -72,6 +72,21 @@ func (s *SuiteUser) TestGetUserNoToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// 未登录用户获取其他人信息
+func (s *SuiteUser) TestGetOtherUserNoToken() {
+
+	data, r, err := Api.OrganizationApi.V1AccountNameGet(context.Background(), "test2")
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	user := getData(s.T(), data.Data)
+
+	assert.Equalf(s.T(), "test2", user["account"], "fullname is not equal")
+
+	assert.Equal(s.T(), "", user["email"])
+	assert.Equal(s.T(), "", user["phone"])
+}
+
 func TestUser(t *testing.T) {
 	suite.Run(t, new(SuiteUser))
 }

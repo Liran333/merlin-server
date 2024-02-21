@@ -43,6 +43,17 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 	assert.NotNil(s.T(), err)
 }
 
+// fullname更新成功
+func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
+
+	d := swagger.ControllerUserBasicInfoUpdateRequest{
+		Fullname: "testFullname",
+	}
+	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), 202, r.StatusCode, "Expected success for fullname update")
+}
+
 // 无效的fullname会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 
@@ -52,6 +63,17 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Equal(s.T(), 400, r.StatusCode)
 	assert.NotNil(s.T(), err)
+}
+
+// desc更新成功
+func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
+
+	d := swagger.ControllerUserBasicInfoUpdateRequest{
+		Description: "test description",
+	}
+	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Nil(s.T(), err)
 }
 
 // 无效的desc会导致更新失败

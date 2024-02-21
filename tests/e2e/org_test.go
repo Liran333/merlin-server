@@ -289,6 +289,72 @@ func (s *SuiteOrg) TestOrgNonexist() {
 	assert.NotNil(s.T(), err)
 }
 
+// 用户可以批量查询某个用户所拥有的组织
+func (s *SuiteOrgModel) TestOrgOwnerSearch() {
+	// list all
+	d := swagger.OrganizationApiV1OrganizationGetOpts{Owner: optional.NewString("test1")}
+	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEmpty(s.T(), data.Data)
+}
+
+// 用户可以批量查询某个用户所属的组织
+func (s *SuiteOrgModel) TestOrgMemberSearch() {
+	// list all
+	d := swagger.OrganizationApiV1OrganizationGetOpts{Username: optional.NewString("test1")}
+	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+
+	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEmpty(s.T(), data.Data)
+}
+
+// 无效的组织名, 名字过长, 为空
+func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
+	// Slice of invalid names
+	invalidNames := []string{
+		"", // Empty name
+		string(make([]byte, 201)),
+	}
+
+	for _, name := range invalidNames {
+		d := swagger.ControllerOrgCreateRequest{
+			Name:     name,
+			Fullname: s.fullname,
+			Website:  s.website,
+		}
+
+		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+		// Expect a 400 Bad Request response due to invalid name
+		assert.Equal(s.T(), 400, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+name)
+		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+name)
+	}
+}
+
+// 无效的组织昵称, 名字过长, 为空
+func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
+	// Slice of invalid names
+	invalidFullname := []string{
+		"", // Empty name
+		string(make([]byte, 201)),
+	}
+
+	for _, fullname := range invalidFullname {
+		d := swagger.ControllerOrgCreateRequest{
+			Name:     s.name,
+			Fullname: fullname,
+			Website:  s.website,
+		}
+
+		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+		// Expect a 400 Bad Request response due to invalid name
+		assert.Equal(s.T(), 400, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+fullname)
+		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+fullname)
+	}
+}
+
 func TestOrg(t *testing.T) {
 	suite.Run(t, new(SuiteOrg))
 }

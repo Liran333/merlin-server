@@ -133,7 +133,7 @@ func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 	assert.NotNil(s.T(), err)
 }
 
-// 正常登录的用户可以查询token信心
+// 正常登录的用户可以查询toke信息
 func (s *SuiteUserToken) TestGetUserToken() {
 
 	data, r, err := Api.UserApi.V1UserTokenGet(Auth)

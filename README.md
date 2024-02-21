@@ -30,7 +30,7 @@ swag init -o api
 
 ## run end to end test
 ```bash
-bash scripts/init-env.sh && bash scripts/openapi
+bash scripts/init-env.sh && bash scripts/openapi.sh
 cd tests/e2e
 go test -v ./...
 ```
