@@ -268,9 +268,15 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	//Error: 这里contributor应该不能修改他人模型，但实际返回202
-	//assert.Equal(s.T(), 401, r.StatusCode)
-	//assert.Nil(s.T(), err)
+
+	// 拥有contribute权限的用户不可以修改他人模型
+	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 拥有contribute权限的用户不可以删除他人模型
+	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
 	assert.Equal(s.T(), 204, r.StatusCode)

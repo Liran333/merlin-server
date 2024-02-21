@@ -329,9 +329,15 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	// Error: 这里contributor应该不能修改他人Space，但实际返回202
-	//assert.Equal(s.T(), 401, r.StatusCode)
-	//assert.Nil(s.T(), err)
+
+	// 拥有contribute权限的用户不可以修改他人Space
+	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 拥有contribute权限的用户不可以删除他人Space
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
 	assert.Equal(s.T(), 204, r.StatusCode)
