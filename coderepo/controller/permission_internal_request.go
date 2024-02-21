@@ -14,8 +14,10 @@ type reqToCheckPermission struct {
 func (req *reqToCheckPermission) toCmd() (
 	user primitive.Account, index domain.CodeRepoIndex, err error,
 ) {
-	if user, err = primitive.NewAccount(req.User); err != nil {
-		return
+	if req.User != "" {
+		if user, err = primitive.NewAccount(req.User); err != nil {
+			return
+		}
 	}
 
 	if index.Owner, err = primitive.NewAccount(req.Owner); err != nil {

@@ -53,6 +53,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/coderepo/permission/read": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "check if can read repo's sub-resource not the repo itsself",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Read",
+                "parameters": [
+                    {
+                        "description": "body of request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCheckPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/coderepo/permission/update": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "check if can create/update/delete repo's sub-resource not the repo itsself",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "description": "body of request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCheckPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/invite": {
             "get": {
                 "security": [
@@ -1036,114 +1108,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/resource/permission/delete": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "check if can delete resource",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Permission"
-                ],
-                "summary": "Delete",
-                "parameters": [
-                    {
-                        "description": "body of request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.reqToCheckPermission"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/resource/permission/read": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "check if can read resource",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Permission"
-                ],
-                "summary": "Read",
-                "parameters": [
-                    {
-                        "description": "body of request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.reqToCheckPermission"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/resource/permission/update": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "check if can update resource",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Permission"
-                ],
-                "summary": "Update",
-                "parameters": [
-                    {
-                        "description": "body of request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.reqToCheckPermission"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }

@@ -5,21 +5,16 @@ import (
 
 	"github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/coderepo/controller"
-	coderepoprimtive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/branchclientadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/branchrepositoryadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepofileadapter"
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/coderepo/infrastructure/resourceadapterimpl"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-
-	modelapp "github.com/openmerlin/merlin-server/models/app"
-	modeldomain "github.com/openmerlin/merlin-server/models/domain"
-
-	spaceapp "github.com/openmerlin/merlin-server/space/app"
-	spaceomain "github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
 func initCodeRepo(cfg *config.Config, services *allServices) error {
@@ -51,36 +46,27 @@ func setRouterOfBranchRestful(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForBranchRestfulController(
 		rg,
 		app.NewBranchAppService(
-			services.permission,
+			services.permissionApp,
 			branchrepositoryadapter.BranchAdapter(),
+			resourceadapterimpl.NewResourceAdapterImpl(
+				modelrepositoryadapter.ModelAdapter(),
+				spacerepositoryadapter.SpaceAdapter(),
+			),
 			branchclientadapter.NewBranchClientAdapter(gitea.Client()),
-			NewCheckRepoAdapter(services),
 		),
 		services.userMiddleWare,
 		services.operationLog,
 	)
 }
 
-func NewCheckRepoAdapter(services *allServices) *checkRepoAdapter {
-	return &checkRepoAdapter{
-		modelApp: services.modelApp,
-		spaceApp: services.spaceApp,
-	}
-}
-
-type checkRepoAdapter struct {
-	modelApp modelapp.ModelAppService
-	spaceApp spaceapp.SpaceAppService
-}
-
-func (a *checkRepoAdapter) CheckRepo(t coderepoprimtive.RepoType, account primitive.Account, name primitive.MSDName) (err error) {
-	if t.IsModel() {
-		_, err = a.modelApp.GetByName(account, &modeldomain.ModelIndex{Owner: account, Name: name})
-
-	} else if t.IsSpace() {
-		_, err = a.spaceApp.GetByName(account, &spaceomain.SpaceIndex{Owner: account, Name: name})
-
-	}
-
-	return
+func setRouterOfCodeRepoPermissionInternal(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouteForCodeRepoPermissionInternalController(
+		rg,
+		services.permissionApp,
+		resourceadapterimpl.NewResourceAdapterImpl(
+			modelrepositoryadapter.ModelAdapter(),
+			spacerepositoryadapter.SpaceAdapter(),
+		),
+		services.userMiddleWare,
+	)
 }

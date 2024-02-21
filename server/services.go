@@ -17,8 +17,7 @@ type allServices struct {
 	userApp  userapp.UserService
 	userRepo userrepo.User
 
-	orgApp     orgapp.OrgService
-	permission orgapp.Permission
+	orgApp orgapp.OrgService
 
 	permissionApp commonapp.ResourcePermissionAppService
 
@@ -61,10 +60,6 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	if err = initSpaceApp(cfg, &services); err != nil {
 		return
 	}
-
-	services.permissionApp = commonapp.NewResourcePermissionAppService(
-		services.permission,
-	)
 
 	return
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	commondomain "github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
@@ -31,3 +32,5 @@ type CodeRepoIndex struct {
 	Name  primitive.MSDName
 	Owner primitive.Account
 }
+
+type Resource = commondomain.Resource

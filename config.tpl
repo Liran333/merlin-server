@@ -93,7 +93,6 @@ permission:
           - delete
         - role: contributor
           operation:
-          - write
           - create
           - read
         - role: write
@@ -115,7 +114,6 @@ permission:
           - delete
         - role: contributor
           operation:
-          - write
           - create
           - read
         - role: write

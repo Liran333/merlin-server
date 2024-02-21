@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
-	coderepoprimtive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
@@ -15,8 +14,4 @@ type BranchRepositoryAdapter interface {
 type BranchClientAdapter interface {
 	CreateBranch(*domain.Branch) (string, error)
 	DeleteBranch(*domain.BranchIndex) error
-}
-
-type CheckRepoAdapter interface {
-	CheckRepo(coderepoprimtive.RepoType, primitive.Account, primitive.MSDName) error
 }

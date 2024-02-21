@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -33,7 +34,7 @@ type SpaceAppService interface {
 }
 
 func NewSpaceAppService(
-	permission Permission,
+	permission commonapp.ResourcePermissionAppService,
 	msgAdapter message.SpaceMessage,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.SpaceRepositoryAdapter,
@@ -47,20 +48,16 @@ func NewSpaceAppService(
 }
 
 type spaceAppService struct {
-	permission  Permission
+	permission  commonapp.ResourcePermissionAppService
 	msgAdapter  message.SpaceMessage
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.SpaceRepositoryAdapter
 }
 
 func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) (string, error) {
-	if user != cmd.Owner {
-		err := s.permission.Check(
-			user, cmd.Owner, primitive.ObjTypeSpace, primitive.ActionCreate,
-		)
-		if err != nil {
-			return "", err
-		}
+	err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeSpace)
+	if err != nil {
+		return "", err
 	}
 
 	if err := s.spaceCountCheck(cmd.Owner); err != nil {
@@ -105,7 +102,11 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	if err = s.hasPermission(user, &space, primitive.ActionDelete); err != nil {
+	if err = s.permission.CanDelete(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorSpaceNotFound
+		}
+
 		return
 	}
 
@@ -142,7 +143,11 @@ func (s *spaceAppService) Update(
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	if err = s.hasPermission(user, &space, primitive.ActionWrite); err != nil {
+	if err = s.permission.CanUpdate(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorSpaceNotFound
+		}
+
 		return
 	}
 
@@ -178,16 +183,11 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 		return dto, err
 	}
 
-	if space.IsPublic() {
-		return toSpaceDTO(&space), nil
-	}
+	if err := s.permission.CanRead(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorSpaceNotFound
+		}
 
-	// can't access private space anonymously
-	if user == nil {
-		return dto, errorSpaceNotFound
-	}
-
-	if err := s.hasPermission(user, &space, primitive.ActionRead); err != nil {
 		return dto, err
 	}
 
@@ -206,9 +206,8 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 			cmd.Visibility = primitive.VisibilityPublic
 		} else {
 			if user != cmd.Owner {
-				err := s.permission.Check(
+				err := s.permission.CanListOrgResource(
 					user, cmd.Owner, primitive.ObjTypeSpace,
-					primitive.ActionRead,
 				)
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
@@ -230,24 +229,6 @@ func (s *spaceAppService) DeleteById(user primitive.Account, spaceId string) err
 	// get space by space id
 	// check if user can delete it
 	// delete it
-	return nil
-}
-
-func (s *spaceAppService) hasPermission(user primitive.Account, space *domain.Space, action primitive.Action) error {
-	if space.OwnedBy(user) {
-		return nil
-	}
-
-	if space.OwnedByPerson() {
-		logrus.Error("can't delete space owned by other person")
-		return errorSpaceNotFound
-	}
-
-	if err := s.permission.Check(user, space.Owner, primitive.ObjTypeSpace, action); err != nil {
-		logrus.Errorf("permission check failed when deleting space, %s", err)
-		return errorSpaceNotFound
-	}
-
 	return nil
 }
 

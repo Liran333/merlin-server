@@ -1,6 +1,8 @@
 package app
 
 import (
+	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space-app/domain/repository"
@@ -26,7 +28,7 @@ type permissionValidator interface {
 func NewSpaceappAppService(
 	repo repository.Repository,
 	spaceRepo spaceRepository,
-	permission permissionValidator,
+	permission commonapp.ResourcePermissionAppService,
 ) *spaceappAppService {
 	return &spaceappAppService{
 		repo:       repo,
@@ -39,7 +41,7 @@ func NewSpaceappAppService(
 type spaceappAppService struct {
 	repo       repository.Repository
 	spaceRepo  spaceRepository
-	permission permissionValidator
+	permission commonapp.ResourcePermissionAppService
 }
 
 // GetByName
@@ -48,13 +50,26 @@ func (s *spaceappAppService) GetByName(
 ) (SpaceAppDTO, error) {
 	var dto SpaceAppDTO
 
-	spaceId, err := s.checkPermission(user, index, primitive.ActionRead)
+	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errorSpaceAppNotFound
+		}
+
+		return dto, err
+	}
+
+	if err = s.permission.CanRead(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorSpaceAppNotFound
+		}
+
 		return dto, err
 	}
 
 	// TODO it should find by newest commit
-	app, err := s.repo.FindBySpaceId(spaceId)
+
+	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errorSpaceAppNotFound
@@ -64,48 +79,4 @@ func (s *spaceappAppService) GetByName(
 	}
 
 	return toSpaceAppDTO(&app), nil
-}
-
-func (s *spaceappAppService) checkPermission(
-	user primitive.Account, index *spacedomain.SpaceIndex, action primitive.Action,
-) (primitive.Identity, error) {
-	space, err := s.spaceRepo.FindByName(index)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
-		}
-
-		return nil, err
-	}
-
-	if space.IsPublic() {
-		return space.Id, nil
-	}
-
-	// can't access private app anonymously
-	if user == nil {
-		return nil, errorSpaceAppNotFound
-	}
-
-	err = s.hasPermission(user, &space, action)
-
-	return space.Id, err
-}
-
-func (s *spaceappAppService) hasPermission(
-	user primitive.Account, space *spacedomain.Space, action primitive.Action,
-) error {
-	if space.OwnedBy(user) {
-		return nil
-	}
-
-	if space.OwnedByPerson() {
-		return errorSpaceAppNotFound
-	}
-
-	if err := s.permission.Check(user, space.Owner, primitive.ObjTypeModel, action); err != nil {
-		return errorSpaceAppNotFound
-	}
-
-	return nil
 }

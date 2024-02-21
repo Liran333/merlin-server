@@ -1,14 +1,15 @@
 package app
 
 import (
+	"github.com/openmerlin/merlin-server/coderepo/domain"
+	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repository"
+	"github.com/openmerlin/merlin-server/coderepo/domain/resourceadapter"
+	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
-
-type Permission interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
-}
 
 type BranchAppService interface {
 	Create(primitive.Account, *CmdToCreateBranch) (BranchCreateDTO, error)
@@ -16,39 +17,31 @@ type BranchAppService interface {
 }
 
 func NewBranchAppService(
-	permission Permission,
+	permission commonapp.ResourcePermissionAppService,
 	branchAdapter repository.BranchRepositoryAdapter,
+	resourceAdapter resourceadapter.ResourceAdapter,
 	branchClientAdapter repository.BranchClientAdapter,
-	checkRepoAdapter repository.CheckRepoAdapter,
 ) BranchAppService {
 	return &branchAppService{
 		permission:          permission,
 		branchAdapter:       branchAdapter,
+		resourceAdapter:     resourceAdapter,
 		branchClientAdapter: branchClientAdapter,
-		checkRepoAdapter:    checkRepoAdapter,
 	}
 }
 
 type branchAppService struct {
-	permission          Permission
+	permission          commonapp.ResourcePermissionAppService
 	branchAdapter       repository.BranchRepositoryAdapter
+	resourceAdapter     resourceadapter.ResourceAdapter
 	branchClientAdapter repository.BranchClientAdapter
-	checkRepoAdapter    repository.CheckRepoAdapter
 }
 
 func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch) (
 	dto BranchCreateDTO, err error,
 ) {
-	if user != cmd.Owner {
-		err = s.permission.Check(
-			user, cmd.Owner, primitive.ObjTypeModel, primitive.ActionCreate,
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if err = s.checkRepoAdapter.CheckRepo(cmd.RepoType, cmd.Owner, cmd.Repo); err != nil {
+	index := cmd.RepoIndex()
+	if err = s.canModify(user, cmd.RepoType, &index); err != nil {
 		return
 	}
 
@@ -66,14 +59,10 @@ func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch
 	return
 }
 
-func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch) (err error) {
-	if user != cmd.Owner {
-		err = s.permission.Check(
-			user, cmd.Owner, primitive.ObjTypeModel, primitive.ActionDelete,
-		)
-		if err != nil {
-			return
-		}
+func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch) error {
+	index := cmd.RepoIndex()
+	if err := s.canModify(user, cmd.RepoType, &index); err != nil {
+		return err
 	}
 
 	br, err := s.branchAdapter.FindByIndex(&cmd.BranchIndex)
@@ -82,14 +71,27 @@ func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch
 			err = nil
 		}
 
-		return
+		return err
 	}
 
 	if err = s.branchClientAdapter.DeleteBranch(&cmd.BranchIndex); err != nil {
-		return
+		return err
 	}
 
-	err = s.branchAdapter.Delete(br.Id)
+	return s.branchAdapter.Delete(br.Id)
+}
 
-	return
+func (s *branchAppService) canModify(
+	user primitive.Account, t repoprimitive.RepoType, index *domain.CodeRepoIndex,
+) error {
+	repo, err := s.resourceAdapter.GetByType(t, index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			return allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo")
+		}
+
+		return err
+	}
+
+	return s.permission.CanUpdate(user, repo)
 }

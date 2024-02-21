@@ -3,9 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -19,10 +18,6 @@ var (
 	errorModelCountExceeded = allerror.NewCountExceeded("model count exceed")
 )
 
-type Permission interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
-}
-
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
 	Delete(primitive.Account, primitive.Identity) (string, error)
@@ -32,7 +27,7 @@ type ModelAppService interface {
 }
 
 func NewModelAppService(
-	permission Permission,
+	permission commonapp.ResourcePermissionAppService,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
 ) ModelAppService {
@@ -44,19 +39,14 @@ func NewModelAppService(
 }
 
 type modelAppService struct {
-	permission  Permission
+	permission  commonapp.ResourcePermissionAppService
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter
 }
 
 func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) (string, error) {
-	if user != cmd.Owner {
-		err := s.permission.Check(
-			user, cmd.Owner, primitive.ObjTypeModel, primitive.ActionCreate,
-		)
-		if err != nil {
-			return "", err
-		}
+	if err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeModel); err != nil {
+		return "", err
 	}
 
 	if err := s.modelCountCheck(cmd.Owner); err != nil {
@@ -99,7 +89,11 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	if err = s.hasPermission(user, &model, primitive.ActionDelete); err != nil {
+	if err = s.permission.CanDelete(user, &model); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorModelNotFound
+		}
+
 		return
 	}
 
@@ -133,7 +127,11 @@ func (s *modelAppService) Update(
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	if err = s.hasPermission(user, &model, primitive.ActionWrite); err != nil {
+	if err = s.permission.CanUpdate(user, &model); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorModelNotFound
+		}
+
 		return
 	}
 
@@ -166,16 +164,11 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 		return dto, err
 	}
 
-	if model.IsPublic() {
-		return toModelDTO(&model), nil
-	}
+	if err := s.permission.CanRead(user, &model); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorModelNotFound
+		}
 
-	// can't access private model anonymously
-	if user == nil {
-		return dto, errorModelNotFound
-	}
-
-	if err := s.hasPermission(user, &model, primitive.ActionRead); err != nil {
 		return dto, err
 	}
 
@@ -194,9 +187,8 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 			cmd.Visibility = primitive.VisibilityPublic
 		} else {
 			if user != cmd.Owner {
-				err := s.permission.Check(
+				err := s.permission.CanListOrgResource(
 					user, cmd.Owner, primitive.ObjTypeModel,
-					primitive.ActionRead,
 				)
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
@@ -218,24 +210,6 @@ func (s *modelAppService) DeleteById(user primitive.Account, modelId string) err
 	// get model by model id
 	// check if user can delete it
 	// delete it
-	return nil
-}
-
-func (s *modelAppService) hasPermission(user primitive.Account, model *domain.Model, action primitive.Action) error {
-	if model.OwnedBy(user) {
-		return nil
-	}
-
-	if model.OwnedByPerson() {
-		logrus.Error("can't delete model owned by other person")
-		return errorModelNotFound
-	}
-
-	if err := s.permission.Check(user, model.Owner, primitive.ObjTypeModel, action); err != nil {
-		logrus.Errorf("permission check failed when deleting model, %s", err)
-		return errorModelNotFound
-	}
-
 	return nil
 }
 

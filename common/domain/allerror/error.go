@@ -13,6 +13,8 @@ const (
 
 	ErrorCodeTokenNotFound = "token_not_found"
 
+	ErrorCodeRepoNotFound = "repo_not_found"
+
 	ErrorCodeOrganizationNotFound = "organization_not_found"
 
 	ErrorCodeCountExceeded = "count_exceeded"
@@ -94,11 +96,9 @@ func IsNotFound(err error) bool {
 		return false
 	}
 
-	if _, ok := err.(notfoudError); ok {
-		return true
-	}
+	_, ok := err.(notfoudError)
 
-	return false
+	return ok
 }
 
 func IsUserDuplicateBind(err error) bool {
@@ -125,6 +125,16 @@ func (e noPermissionError) NoPermission() {}
 // NewNoPermission
 func NewNoPermission(msg string) noPermissionError {
 	return noPermissionError{New(errorCodeNoPermission, msg)}
+}
+
+func IsNoPermission(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	_, ok := err.(noPermissionError)
+
+	return ok
 }
 
 func NewInvalidParam(msg string) errorImpl {

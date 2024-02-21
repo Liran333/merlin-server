@@ -21,7 +21,7 @@ func setRouterOfSpaceAppWeb(rg *gin.RouterGroup, services *allServices) {
 	s := app.NewSpaceappAppService(
 		repositoryadapter.AppRepositoryAdapter(),
 		spacerepositoryadapter.SpaceAdapter(),
-		services.permission,
+		services.permissionApp,
 	)
 
 	controller.AddRouterForSpaceappWebController(

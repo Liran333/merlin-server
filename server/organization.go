@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
@@ -20,11 +21,13 @@ func initOrg(cfg *config.Config, services *allServices) {
 
 	invitation := orgrepoimpl.NewInviteRepo(postgresql.DAO(cfg.Org.Tables.Invite))
 
-	services.permission = app.NewPermService(&cfg.Permission, orgMember)
+	permission := app.NewPermService(&cfg.Permission, orgMember)
+
+	services.permissionApp = commonapp.NewResourcePermissionAppService(permission)
 
 	services.orgApp = app.NewOrgService(
 		services.userApp, org, orgMember,
-		invitation, services.permission, &cfg.Org,
+		invitation, permission, &cfg.Org,
 	)
 }
 

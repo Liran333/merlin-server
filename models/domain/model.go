@@ -30,8 +30,8 @@ func (m *Model) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeModel
 }
 
-func (m *Model) OwnedBy(user primitive.Account) bool {
-	return m.Owner == user || m.CreatedBy == user
+func (m *Model) IsCreatedBy(user primitive.Account) bool {
+	return m.CreatedBy == user
 }
 
 func (m *Model) OwnedByPerson() bool {

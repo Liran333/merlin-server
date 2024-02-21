@@ -21,8 +21,8 @@ func AddRouteForBranchRestfulController(
 		appService:     s,
 	}
 
-	r.POST("/v1/branch/:type/:owner/:repo", m.Optional, l.Write, ctl.Create)
-	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Optional, l.Write, ctl.Delete)
+	r.POST("/v1/branch/:type/:owner/:repo", m.Write, l.Write, ctl.Create)
+	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Write, l.Write, ctl.Delete)
 }
 
 type BranchRestfulController struct {

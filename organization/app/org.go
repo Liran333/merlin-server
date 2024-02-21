@@ -57,7 +57,7 @@ func NewOrgService(
 	repo userrepo.User,
 	member repository.OrgMember,
 	invite repository.Approve,
-	perm Permission,
+	perm *permService,
 	cfg *domain.Config,
 ) OrgService {
 	return &orgService{
@@ -80,7 +80,7 @@ type orgService struct {
 	repo             userrepo.User
 	member           repository.OrgMember
 	invite           repository.Approve
-	perm             Permission
+	perm             *permService
 }
 
 func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err error) {
@@ -201,7 +201,7 @@ func (org *orgService) ListAccount(opt *userrepo.ListOption) (dtos []userapp.Use
 }
 
 func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
-	err := org.perm.Check(cmd.Actor, cmd.Name, primitive.ObjTypeOrg, primitive.ActionDelete)
+	err := org.perm.checkInOrg(cmd.Actor, cmd.Name, primitive.ObjTypeOrg, primitive.ActionDelete)
 	if err != nil {
 		return err
 	}
@@ -256,7 +256,7 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 		return
 	}
 
-	err = org.perm.Check(cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
+	err = org.perm.checkInOrg(cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
 	if err != nil {
 		return
 	}
@@ -511,12 +511,12 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 			return err
 		}
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionDelete)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionDelete)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionRead)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionRead)
 		if err != nil {
 			return err
 		}
@@ -547,7 +547,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 }
 
 func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, err error) {
-	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
+	err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
 	if err != nil {
 		return
 	}
@@ -637,7 +637,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 		return
 	}
 
-	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
+	err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
 	if err != nil {
 		return
 	}
@@ -831,7 +831,7 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 		return
 	}
 
-	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionWrite)
+	err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionWrite)
 	if err != nil {
 		return
 	}
@@ -889,7 +889,7 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 	// user can cancel the request by self
 	// or admin can reject the request
 	if cmd.Actor.Account() != cmd.Requester.Account() {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionDelete)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionDelete)
 		if err != nil {
 			return
 		}
@@ -937,7 +937,7 @@ func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []Me
 	}
 
 	if cmd.Actor != nil && cmd.Org != nil {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
 		if err != nil {
 			return
 		}
@@ -972,7 +972,7 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 	// user can revoke the invite by self
 	// or admin can revoke the invite
 	if cmd.Actor.Account() != cmd.Account.Account() {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionDelete)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionDelete)
 		if err != nil {
 			return
 		}
@@ -1039,7 +1039,7 @@ func (org *orgService) ListInvitation(cmd *domain.OrgInvitationListCmd) (dtos []
 
 	// permission check
 	if cmd.Org != nil && cmd.Actor != nil {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
+		err = org.perm.checkInOrg(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
 		if err != nil {
 			return
 		}

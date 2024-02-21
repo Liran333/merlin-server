@@ -4,50 +4,46 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/coderepo/domain/resourceadapter"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
-	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
 var errorNoPermission = allerror.NewNoPermission("no permission")
 
-func AddRouteForResourcePermissionInternalController(
+func AddRouteForCodeRepoPermissionInternalController(
 	r *gin.RouterGroup,
 	s commonapp.ResourcePermissionAppService,
-	model modelrepo.ModelRepositoryAdapter,
-	space spacerepo.SpaceRepositoryAdapter,
+	a resourceadapter.ResourceAdapter,
 	m middleware.UserMiddleWare,
 ) {
 
 	ctl := PermissionInternalController{
-		ps:    s,
-		model: model,
-		space: space,
+		ps:   s,
+		repo: a,
 	}
 
-	r.POST(`/v1/resource/permission/update`, m.Write, ctl.Update)
-	r.POST(`/v1/resource/permission/delete`, m.Write, ctl.Delete)
-	r.POST(`/v1/resource/permission/read`, m.Write, ctl.Read)
+	r.POST(`/v1/coderepo/permission/update`, m.Write, ctl.Update)
+	r.POST(`/v1/coderepo/permission/read`, m.Write, ctl.Read)
 }
 
 type PermissionInternalController struct {
-	ps    commonapp.ResourcePermissionAppService
-	model modelrepo.ModelRepositoryAdapter
-	space spacerepo.SpaceRepositoryAdapter
+	ps   commonapp.ResourcePermissionAppService
+	repo resourceadapter.ResourceAdapter
 }
 
 // @Summary  Update
-// @Description  check if can update resource
+// @Description  check if can create/update/delete repo's sub-resource not the repo itsself
 // @Tags     Permission
 // @Param    body  body  reqToCheckPermission  true  "body of request"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
 // @Security Internal
-// @Router   /v1/resource/permission/update [post]
+// @Router   /v1/coderepo/permission/update [post]
 func (ctl *PermissionInternalController) Update(ctx *gin.Context) {
 	user, r, err := ctl.parse(ctx)
 	if err != nil {
@@ -61,35 +57,14 @@ func (ctl *PermissionInternalController) Update(ctx *gin.Context) {
 	}
 }
 
-// @Summary  Delete
-// @Description  check if can delete resource
-// @Tags     Permission
-// @Param    body  body  reqToCheckPermission  true  "body of request"
-// @Accept   json
-// @Success  201   {object}  commonctl.ResponseData
-// @Security Internal
-// @Router   /v1/resource/permission/delete [post]
-func (ctl *PermissionInternalController) Delete(ctx *gin.Context) {
-	user, r, err := ctl.parse(ctx)
-	if err != nil {
-		return
-	}
-
-	if err := ctl.ps.CanDelete(user, r); err != nil {
-		commonctl.SendError(ctx, err)
-	} else {
-		commonctl.SendRespOfPost(ctx, "successfully")
-	}
-}
-
 // @Summary  Read
-// @Description  check if can read resource
+// @Description  check if can read repo's sub-resource not the repo itsself
 // @Tags     Permission
 // @Param    body  body  reqToCheckPermission  true  "body of request"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
 // @Security Internal
-// @Router   /v1/resource/permission/read [post]
+// @Router   /v1/coderepo/permission/read [post]
 func (ctl *PermissionInternalController) Read(ctx *gin.Context) {
 	user, r, err := ctl.parse(ctx)
 	if err != nil {
@@ -104,7 +79,7 @@ func (ctl *PermissionInternalController) Read(ctx *gin.Context) {
 }
 
 func (ctl *PermissionInternalController) parse(ctx *gin.Context) (
-	user primitive.Account, resource commonapp.Resource, err error,
+	user primitive.Account, resource domain.Resource, err error,
 ) {
 	req := reqToCheckPermission{}
 	if err = ctx.BindJSON(&req); err != nil {
@@ -120,21 +95,16 @@ func (ctl *PermissionInternalController) parse(ctx *gin.Context) (
 		return
 	}
 
-	if resource, err = ctl.getResource(index); err != nil {
-		commonctl.SendError(ctx, err)
+	if resource, err = ctl.repo.GetByName(&index); err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			commonctl.SendError(
+				ctx,
+				allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo"),
+			)
+		} else {
+			commonctl.SendError(ctx, err)
+		}
 	}
 
 	return
-}
-
-func (ctl *PermissionInternalController) getResource(index domain.CodeRepoIndex) (commonapp.Resource, error) {
-	if r, err := ctl.model.FindByName(&index); err == nil {
-		return &r, nil
-	}
-
-	if r, err := ctl.space.FindByName(&index); err == nil {
-		return &r, nil
-	}
-
-	return nil, errorNoPermission
 }

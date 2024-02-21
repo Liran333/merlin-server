@@ -18,7 +18,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 	}
 
 	services.spaceApp = app.NewSpaceAppService(
-		services.permission,
+		services.permissionApp,
 		messageadapter.MessageAdapter(&cfg.Space.Topics),
 		services.codeRepoApp,
 		spacerepositoryadapter.SpaceAdapter(),

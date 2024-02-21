@@ -33,8 +33,8 @@ func (s *Space) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeSpace
 }
 
-func (s *Space) OwnedBy(user primitive.Account) bool {
-	return s.Owner == user || s.CreatedBy == user
+func (s *Space) IsCreatedBy(user primitive.Account) bool {
+	return s.CreatedBy == user
 }
 
 func (s *Space) OwnedByPerson() bool {

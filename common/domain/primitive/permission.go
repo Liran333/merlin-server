@@ -39,6 +39,10 @@ func (a Action) String() string {
 	}
 }
 
+func (a Action) IsModification() bool {
+	return a == ActionDelete || a == ActionWrite
+}
+
 type tokenPerm string
 
 func (r tokenPerm) TokenPerm() string {

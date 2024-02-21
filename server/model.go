@@ -17,7 +17,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 	}
 
 	services.modelApp = app.NewModelAppService(
-		services.permission,
+		services.permissionApp,
 		services.codeRepoApp,
 		modelrepositoryadapter.ModelAdapter(),
 	)

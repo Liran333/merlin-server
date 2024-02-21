@@ -13,15 +13,12 @@ import (
 	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
-type Permission interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
-}
-
-func NewPermService(cfg *perm.Config, org repository.OrgMember) Permission {
+func NewPermService(cfg *perm.Config, org repository.OrgMember) *permService {
 	p := &permService{
 		org: org,
 	}
 	p.Init(cfg)
+
 	return p
 }
 
@@ -90,9 +87,14 @@ func (p *permService) doCheckPerm(role string, objType primitive.ObjType, op pri
 }
 
 // subject: a user session or a token sessioin
-// object: model, org, dataset, space, system
+// object: org
 // op: write, read
-func (p *permService) Check(user primitive.Account, obj primitive.Account, objType primitive.ObjType, op primitive.Action) (err error) {
+func (p *permService) checkInOrg(
+	user primitive.Account,
+	obj primitive.Account,
+	objType primitive.ObjType,
+	op primitive.Action,
+) error {
 	if user == nil {
 		return allerror.NewNoPermission("user is nil")
 	}
@@ -108,21 +110,84 @@ func (p *permService) Check(user primitive.Account, obj primitive.Account, objTy
 	m, err := p.org.GetByOrgAndUser(obj.Account(), user.Account())
 	if err != nil {
 		logrus.Errorf("get member failed: %s", err)
-		err = allerror.NewNoPermission(fmt.Sprintf("%s does not have a valid role in %s", user.Account(), obj.Account()))
-		return err
+
+		return allerror.NewNoPermission(
+			fmt.Sprintf("%s does not have a valid role in %s", user.Account(), obj.Account()),
+		)
 	}
 
 	ok := p.doCheckPerm(string(m.Role), objType, op)
-	res := ""
+	res := "cannot"
 	if ok {
 		res = "can"
-	} else {
-		res = "cannot"
 	}
 
-	logrus.Debugf("user %s (role %s) %s do %d on %s:%s", user.Account(), m.Role, res, op, obj.Account(), objType)
+	logrus.Debugf(
+		"user %s (role %s) %s do %d on %s:%s",
+		user.Account(), m.Role, res, op, obj.Account(), objType,
+	)
+
 	if !ok {
-		return allerror.NewNoPermission(fmt.Sprintf("%s %s %s permission denied", user.Account(), op.String(), string(objType)))
+		return allerror.NewNoPermission(fmt.Sprintf(
+			"%s %s %s permission denied", user.Account(), op.String(), string(objType),
+		))
 	}
+
+	return nil
+}
+
+// subject: a user session or a token sessioin
+// object: model, dataset, space, system
+// op: write, read
+func (p *permService) Check(
+	user primitive.Account,
+	obj primitive.Account,
+	objType primitive.ObjType,
+	op primitive.Action,
+	createdByUser bool,
+) error {
+	if user == nil {
+		return allerror.NewNoPermission("user is nil")
+	}
+
+	if obj == nil {
+		return allerror.NewNoPermission("object is nil")
+	}
+
+	if user == obj {
+		return nil
+	}
+
+	m, err := p.org.GetByOrgAndUser(obj.Account(), user.Account())
+	if err != nil {
+		logrus.Errorf("get member failed: %s", err)
+
+		return allerror.NewNoPermission(fmt.Sprintf(
+			"%s does not have a valid role in %s", user.Account(), obj.Account(),
+		))
+	}
+
+	if createdByUser && op.IsModification() {
+		return nil
+	}
+
+	ok := p.doCheckPerm(string(m.Role), objType, op)
+
+	res := "cannot"
+	if !ok {
+		res = "can"
+	}
+
+	logrus.Debugf(
+		"user %s (role %s) %s do %d on %s:%s",
+		user.Account(), m.Role, res, op, obj.Account(), objType,
+	)
+
+	if !ok {
+		return allerror.NewNoPermission(fmt.Sprintf(
+			"%s %s %s permission denied", user.Account(), op.String(), string(objType),
+		))
+	}
+
 	return nil
 }

@@ -19,3 +19,10 @@ type BranchIndex struct {
 	Owner  primitive.Account
 	Branch coderepoprimitive.BranchName
 }
+
+func (index *BranchIndex) RepoIndex() CodeRepoIndex {
+	return CodeRepoIndex{
+		Owner: index.Owner,
+		Name:  index.Repo,
+	}
+}
