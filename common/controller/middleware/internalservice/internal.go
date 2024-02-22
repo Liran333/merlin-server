@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
@@ -14,12 +15,15 @@ const tokenHeader = "TOKEN" // #nosec G101
 
 var noUserError = errors.New("no user")
 
-func NewAPIMiddleware() *internalServiceAPIMiddleware {
-	return &internalServiceAPIMiddleware{}
+func NewAPIMiddleware(securityLog middleware.SecurityLog) *internalServiceAPIMiddleware {
+	return &internalServiceAPIMiddleware{
+		securityLog,
+	}
 }
 
 // internalServiceAPIMiddleware
 type internalServiceAPIMiddleware struct {
+	securityLog middleware.SecurityLog
 }
 
 func (m *internalServiceAPIMiddleware) Write(ctx *gin.Context) {
@@ -41,6 +45,7 @@ func (m *internalServiceAPIMiddleware) Optional(ctx *gin.Context) {
 func (m *internalServiceAPIMiddleware) must(ctx *gin.Context) {
 	if err := m.checkToken(ctx); err != nil {
 		commonctl.SendError(ctx, err)
+		m.securityLog.Warn(ctx, err.Error())
 
 		ctx.Abort()
 	} else {

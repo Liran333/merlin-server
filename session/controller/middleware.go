@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/session/app"
@@ -18,12 +19,16 @@ const (
 
 var noUserError = errors.New("no user")
 
-func WebAPIMiddleware(session app.SessionAppService) *webAPIMiddleware {
-	return &webAPIMiddleware{session}
+func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog) *webAPIMiddleware {
+	return &webAPIMiddleware{
+		session,
+		securityLog,
+	}
 }
 
 type webAPIMiddleware struct {
-	session app.SessionAppService
+	session     app.SessionAppService
+	securityLog middleware.SecurityLog
 }
 
 func (m *webAPIMiddleware) Write(ctx *gin.Context) {
@@ -45,6 +50,7 @@ func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 func (m *webAPIMiddleware) must(ctx *gin.Context) {
 	if err := m.checkToken(ctx); err != nil {
 		commonctl.SendError(ctx, err)
+		m.securityLog.Warn(ctx, err.Error())
 
 		ctx.Abort()
 	} else {

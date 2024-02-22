@@ -7,6 +7,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/securitylog"
 	"github.com/openmerlin/merlin-server/config"
 )
 
@@ -15,7 +16,8 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
-	services.userMiddleWare = internalservice.NewAPIMiddleware()
+	services.securityLog = securitylog.SecurityLog()
+	services.userMiddleWare = internalservice.NewAPIMiddleware(services.securityLog)
 
 	// set routers
 	setRouterOfSessionInternal(rg, services)

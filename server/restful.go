@@ -7,6 +7,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/operationlog"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/securitylog"
 	"github.com/openmerlin/merlin-server/config"
 	userctl "github.com/openmerlin/merlin-server/user/controller"
 )
@@ -16,7 +17,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	rg := engine.Group(api.SwaggerInfo.BasePath)
 
-	services.userMiddleWare = userctl.RestfulAPI(services.userApp)
+	services.securityLog = securitylog.SecurityLog()
+	services.userMiddleWare = userctl.RestfulAPI(services.userApp, services.securityLog)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
 
 	// set routers

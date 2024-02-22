@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -20,13 +21,17 @@ const (
 
 var errNoUserError = errors.New("no user")
 
-func RestfulAPI(app userapp.UserService) *restfulAPI {
-	return &restfulAPI{app}
+func RestfulAPI(app userapp.UserService, securityLog middleware.SecurityLog) *restfulAPI {
+	return &restfulAPI{
+		app,
+		securityLog,
+	}
 }
 
 // restfulAPI
 type restfulAPI struct {
-	s userapp.UserService
+	s           userapp.UserService
+	securityLog middleware.SecurityLog
 }
 
 func (m *restfulAPI) Write(ctx *gin.Context) {
@@ -47,9 +52,9 @@ func (m *restfulAPI) check(ctx *gin.Context, ignore bool, permission primitive.T
 		if ignore {
 			ctx.Next()
 		} else {
-			commonctl.SendError(ctx, allerror.New(
-				allerror.ErrorCodeAccessTokenInvalid, "missing token",
-			))
+			err := allerror.New(allerror.ErrorCodeAccessTokenInvalid, "missing token")
+			commonctl.SendError(ctx, err)
+			m.securityLog.Warn(ctx, err.Error())
 
 			ctx.Abort()
 		}
@@ -59,6 +64,7 @@ func (m *restfulAPI) check(ctx *gin.Context, ignore bool, permission primitive.T
 
 	if t, err := m.s.VerifyToken(token, permission); err != nil {
 		commonctl.SendError(ctx, err)
+		m.securityLog.Warn(ctx, err.Error())
 
 		ctx.Abort()
 	} else {
