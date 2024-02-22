@@ -16,7 +16,7 @@ func NewTokenRepo(db postgresql.Impl) repository.Token {
 		return nil
 	}
 
-	return &tokenRepoImpl{db}
+	return &tokenRepoImpl{Impl: db}
 }
 
 type tokenRepoImpl struct {

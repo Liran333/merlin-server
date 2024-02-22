@@ -2,6 +2,7 @@ package operationlog
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -16,7 +17,7 @@ const (
 )
 
 func OperationLog(u middleware.UserMiddleWare) *operationLog {
-	return &operationLog{u}
+	return &operationLog{user: u}
 }
 
 type operationLog struct {
@@ -42,7 +43,7 @@ func (log *operationLog) Write(ctx *gin.Context) {
 	ip, _ := controller.GetIp(ctx)
 
 	result := "success"
-	if v := ctx.Writer.Status(); v < 200 || v >= 300 {
+	if v := ctx.Writer.Status(); v < http.StatusOK || v >= http.StatusMultipleChoices {
 		result = "failed"
 	}
 

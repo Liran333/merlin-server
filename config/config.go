@@ -17,7 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/session"
 	"github.com/openmerlin/merlin-server/space"
-	spaceapp "github.com/openmerlin/merlin-server/space-app"
+	spaceapp "github.com/openmerlin/merlin-server/spaceapp"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )

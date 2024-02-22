@@ -3,12 +3,13 @@ package main
 import (
 	"os"
 
+	kafka "github.com/opensourceways/kafka-lib/agent"
+	"github.com/opensourceways/server-common-lib/utils"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
-	kafka "github.com/opensourceways/kafka-lib/agent"
-	"github.com/opensourceways/server-common-lib/utils"
 )
 
 type Config struct {

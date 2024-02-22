@@ -1,9 +1,10 @@
 package e2e
 
 import (
-	swagger "e2e/client"
+	"net/http"
 	"testing"
 
+	swagger "e2e/client"
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -37,7 +38,7 @@ func (s *SuiteInvite) SetupSuite() {
 	s.invitee = "test2" // this name is hard code in init-env.sh
 
 	data, r, err := Api.UserApi.V1UserGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -46,7 +47,7 @@ func (s *SuiteInvite) SetupSuite() {
 	s.owerId = getString(s.T(), user["id"])
 
 	data, r, err = Api.UserApi.V1UserGet(Auth2)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user = getData(s.T(), data.Data)
@@ -64,7 +65,7 @@ func (s *SuiteInvite) SetupSuite() {
 
 	o := getData(s.T(), data.Data)
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
@@ -75,7 +76,7 @@ func (s *SuiteInvite) TearDownSuite() {
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
-	assert.Equalf(s.T(), 200, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	invites := getArrary(s.T(), data.Data)
@@ -90,13 +91,13 @@ func (s *SuiteInvite) TearDownSuite() {
 	assert.Equal(s.T(), 0, count)
 
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 	})
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 }
@@ -110,7 +111,7 @@ func (s *SuiteInvite) TestInviteSuccess() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 201, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	invite := getData(s.T(), data.Data)
@@ -132,7 +133,7 @@ func (s *SuiteInvite) TestInviteSuccess() {
 		Msg:     "no way",
 	})
 
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -145,7 +146,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 201, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	id := getData(s.T(), data.Data)["id"]
@@ -156,7 +157,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		Msg:     "ok",
 	})
 
-	assert.Equalf(s.T(), 202, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	invite := getData(s.T(), data.Data)
@@ -176,7 +177,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 
 	// 接收后成为member
 	data, r, err = Api.OrganizationApi.V1OrganizationNameMemberGet(Auth2, s.name)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	members := getArrary(s.T(), data.Data)
@@ -193,14 +194,14 @@ func (s *SuiteInvite) TestInviteAprove() {
 		}
 	}
 
-	assert.Equal(s.T(), 2, count)
+	assert.Equal(s.T(), countTwo, count)
 
 	// 查询已经接受的邀请
 	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("approved"),
 	})
-	assert.Equalf(s.T(), 200, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	invites := getArrary(s.T(), data.Data)
@@ -225,7 +226,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		User: s.invitee,
 	}, s.name)
 
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -238,7 +239,7 @@ func (s *SuiteInvite) TestInviteInvalidPerm() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
 
@@ -251,7 +252,7 @@ func (s *SuiteInvite) TestInviteInvalidOrgname() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -261,7 +262,7 @@ func (s *SuiteInvite) TestInviteInvalidOrgname() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 404, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
 
@@ -274,7 +275,7 @@ func (s *SuiteInvite) TestInviteInvalidUser() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -284,7 +285,7 @@ func (s *SuiteInvite) TestInviteInvalidUser() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 404, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
 

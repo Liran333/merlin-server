@@ -64,7 +64,7 @@ func (impl *user) getManagerToken() (token string, err error) {
 		return
 	}
 
-	if res.Status != 200 {
+	if res.Status != http.StatusOK {
 		err = errors.New("get token error")
 		return
 	}
@@ -145,7 +145,7 @@ func (impl *user) sendEmail(token, channel, email, capt string) (err error) {
 	var res normalEmailRes
 	err = sendHttpRequest(req, &res)
 
-	if res.Status != 200 {
+	if res.Status != http.StatusOK {
 		err = errorReturn(err)
 	}
 
@@ -182,7 +182,7 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 	var res normalEmailRes
 	err = sendHttpRequest(req, &res)
 
-	if res.Code != 200 {
+	if res.Code != http.StatusOK {
 		err = errorReturn(err)
 	}
 

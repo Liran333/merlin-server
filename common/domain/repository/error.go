@@ -6,7 +6,7 @@ type ErrorDuplicateCreating struct {
 }
 
 func NewErrorDuplicateCreating(err error) ErrorDuplicateCreating {
-	return ErrorDuplicateCreating{err}
+	return ErrorDuplicateCreating{error: err}
 }
 
 // ErrorResourceNotExists
@@ -15,7 +15,7 @@ type ErrorResourceNotExists struct {
 }
 
 func NewErrorResourceNotExists(err error) ErrorResourceNotExists {
-	return ErrorResourceNotExists{err}
+	return ErrorResourceNotExists{error: err}
 }
 
 // ErrorConcurrentUpdating
@@ -24,7 +24,7 @@ type ErrorConcurrentUpdating struct {
 }
 
 func NewErrorConcurrentUpdating(err error) ErrorConcurrentUpdating {
-	return ErrorConcurrentUpdating{err}
+	return ErrorConcurrentUpdating{error: err}
 }
 
 // helper

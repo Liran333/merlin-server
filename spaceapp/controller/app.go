@@ -6,8 +6,8 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/space-app/app"
 	"github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
 func AddRouterForSpaceappWebController(

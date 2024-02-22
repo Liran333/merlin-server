@@ -7,7 +7,7 @@ import (
 )
 
 func MessageAdapter(topic *Topics) *messageAdapter {
-	return &messageAdapter{*topic}
+	return &messageAdapter{topics: *topic}
 }
 
 type messageAdapter struct {

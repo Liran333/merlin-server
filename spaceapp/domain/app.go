@@ -3,7 +3,7 @@ package domain
 import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	appprimitive "github.com/openmerlin/merlin-server/space-app/domain/primitive"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
 
 type SpaceAppIndex struct {

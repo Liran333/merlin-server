@@ -12,6 +12,8 @@ import (
 	swagger "e2e/client"
 )
 
+const minElements = 2
+
 var (
 	Auth       context.Context
 	Auth2      context.Context
@@ -76,7 +78,7 @@ func TestMain(m *testing.M) {
 	token := getToken()
 
 	// Check if token slice contains at least 2 elements.
-	if len(token) < 2 {
+	if len(token) < minElements {
 		logrus.Fatal("Insufficient tokens provided. Need at least 2 tokens.")
 	}
 

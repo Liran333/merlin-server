@@ -5,8 +5,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	"github.com/openmerlin/merlin-server/space-app/domain/repository"
 	spacedomain "github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
 // SpaceappAppService

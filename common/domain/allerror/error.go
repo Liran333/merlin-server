@@ -88,7 +88,7 @@ func (e notfoudError) NotFound() {}
 
 // NewNotFound
 func NewNotFound(code string, msg string) notfoudError {
-	return notfoudError{New(code, msg)}
+	return notfoudError{errorImpl: New(code, msg)}
 }
 
 func IsNotFound(err error) bool {
@@ -124,7 +124,7 @@ func (e noPermissionError) NoPermission() {}
 
 // NewNoPermission
 func NewNoPermission(msg string) noPermissionError {
-	return noPermissionError{New(errorCodeNoPermission, msg)}
+	return noPermissionError{errorImpl: New(errorCodeNoPermission, msg)}
 }
 
 func IsNoPermission(err error) bool {

@@ -16,7 +16,7 @@ func Init(tables *Tables) error {
 
 	dao := postgresql.DAO(tables.Login)
 
-	loginAdapterInstance = &loginAdapter{dao}
+	loginAdapterInstance = &loginAdapter{dao: dao}
 
 	return nil
 }

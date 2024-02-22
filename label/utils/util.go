@@ -6,13 +6,15 @@ import (
 	"code.gitea.io/gitea/modules/structs"
 )
 
+const reId = 2
+
 func GetOrgRepo(r *structs.Repository) (string, string) {
 	if r == nil {
 		return "", ""
 	}
 
 	repoId := strings.Split(r.FullName, "/")
-	if len(repoId) != 2 {
+	if len(repoId) != reId {
 		return "", ""
 	}
 

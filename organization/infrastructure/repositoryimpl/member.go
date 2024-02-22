@@ -17,7 +17,7 @@ func NewMemberRepo(db postgresql.Impl) repository.OrgMember {
 		return nil
 	}
 
-	return &memberRepoImpl{db}
+	return &memberRepoImpl{Impl: db}
 }
 
 type memberRepoImpl struct {

@@ -2,8 +2,8 @@ package repositoryadapter
 
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/space-app/domain"
-	appprimitive "github.com/openmerlin/merlin-server/space-app/domain/primitive"
+	"github.com/openmerlin/merlin-server/spaceapp/domain"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
 
 const (

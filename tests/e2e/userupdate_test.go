@@ -1,12 +1,20 @@
 package e2e
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	swagger "e2e/client"
+)
+
+const (
+	countOne   = 1
+	countTwo   = 2
+	countThree = 3
+	length     = 51
 )
 
 type SuiteUserUpdate struct {
@@ -22,7 +30,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 		Description: "valid desc",
 	}
 	data, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), r.StatusCode, 202)
+	assert.Equal(s.T(), r.StatusCode, http.StatusAccepted)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -39,7 +47,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 		Fullname: "",
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -51,17 +59,17 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), 202, r.StatusCode, "Expected success for fullname update")
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode, "Expected success for fullname update")
 }
 
 // 无效的fullname会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
-		Fullname: string(make([]byte, 201)),
+		Fullname: string(make([]byte, http.StatusCreated)),
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -72,7 +80,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 		Description: "test description",
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -80,10 +88,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
-		Description: string(make([]byte, 201)),
+		Description: string(make([]byte, http.StatusCreated)),
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -94,7 +102,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
 		AvatarId: "invalid avatarid",
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -105,7 +113,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
 		AvatarId: "https://avatars.githubusercontent.com/u/2853724?v=4",
 	}
 	data, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -120,7 +128,7 @@ func (s *SuiteUserUpdate) TearDownSuite() {
 		Description: "testdesc",
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 

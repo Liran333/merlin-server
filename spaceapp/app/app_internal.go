@@ -3,10 +3,10 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	"github.com/openmerlin/merlin-server/space-app/domain"
-	"github.com/openmerlin/merlin-server/space-app/domain/message"
-	appprimitive "github.com/openmerlin/merlin-server/space-app/domain/primitive"
-	"github.com/openmerlin/merlin-server/space-app/domain/repository"
+	"github.com/openmerlin/merlin-server/spaceapp/domain"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/message"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
 var (

@@ -15,6 +15,8 @@ import (
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
 )
 
+const tokenLen = 8
+
 func errUserNotFound(msg string) error {
 	if msg == "" {
 		msg = "user not found"
@@ -441,12 +443,12 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 		return
 	}
 
-	if len(token) < 8 {
+	if len(token) < tokenLen {
 		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "token too short")
 		return
 	}
 
-	tokens, err := s.token.GetByLastEight(token[len(token)-8:])
+	tokens, err := s.token.GetByLastEight(token[len(token)-tokenLen:])
 	if err != nil {
 		logrus.Errorf("failed to find token: %s", err)
 		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "failed to find token")

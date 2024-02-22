@@ -27,6 +27,8 @@ const (
 	OrgRoleAdmin         OrgRole  = "admin"       // in owner team
 	UserTypeUser         UserType = 0
 	UserTypeOrganization UserType = 1
+	iter                          = 10000
+	keyLen                        = 32
 )
 
 // user
@@ -116,7 +118,7 @@ func (t PlatformToken) Match(token string) bool {
 		return false
 	}
 
-	derivedKey := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
+	derivedKey := pbkdf2.Key([]byte(token), saltBtye, iter, keyLen, sha256.New)
 
 	return bytes.Equal(srcBtye, derivedKey)
 }

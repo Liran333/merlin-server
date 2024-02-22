@@ -16,6 +16,11 @@ import (
 	"github.com/openmerlin/merlin-server/server"
 )
 
+const (
+	port        = 8888
+	gracePeriod = 180
+)
+
 type options struct {
 	service     ServiceOptions
 	enableDebug bool
@@ -44,13 +49,14 @@ func (o *ServiceOptions) Validate() error {
 // AddFlags adds flags for ServiceOptions to the provided FlagSet.
 // It includes flags for port, remove-config, config-file, cert, key, and grace-period.
 func (o *ServiceOptions) AddFlags(fs *flag.FlagSet) {
-	fs.IntVar(&o.Port, "port", 8888, "Port to listen on.")
+	fs.IntVar(&o.Port, "port", port, "Port to listen on.")
 	fs.BoolVar(&o.RemoveCfg, "rm-cfg", false, "whether remove the cfg file after initialized .")
 
 	fs.StringVar(&o.ConfigFile, "config-file", "", "Path to config file.")
 	fs.StringVar(&o.Cert, "cert", "", "Path to tls cert file.")
 	fs.StringVar(&o.Key, "key", "", "Path to tls key file.")
-	fs.DurationVar(&o.GracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration.")
+	fs.DurationVar(&o.GracePeriod, "grace-period", time.Duration(gracePeriod)*time.Second,
+		"On shutdown, try to handle remaining events for the specified duration.")
 }
 
 // Validate validates the options and returns an error if any validation fails.

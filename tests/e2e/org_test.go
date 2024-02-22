@@ -2,9 +2,10 @@ package e2e
 
 import (
 	"context"
-	swagger "e2e/client"
+	"net/http"
 	"testing"
 
+	swagger "e2e/client"
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -34,7 +35,7 @@ func (s *SuiteOrg) SetupSuite() {
 	s.owner = "test1" // this name is hard code in init-env.sh
 
 	data, r, err := Api.UserApi.V1UserGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -56,7 +57,7 @@ func (s *SuiteOrg) TestOrgCreate() {
 	}
 
 	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	org := getData(s.T(), data.Data)
@@ -79,7 +80,7 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Nil(s.T(), org["email"])
 
 	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &swagger.OrganizationApiV1OrganizationGetOpts{})
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	count := 0
@@ -89,10 +90,10 @@ func (s *SuiteOrg) TestOrgCreate() {
 			count++
 		}
 	}
-	assert.Equal(s.T(), 1, count)
+	assert.Equal(s.T(), countOne, count)
 
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -105,18 +106,18 @@ func (s *SuiteOrg) TestOrgCreateFailedNoToken() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(context.Background(), d)
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
 // 无效的组织名：名字过长
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
 	d := swagger.ControllerOrgCreateRequest{
-		Name: string(make([]byte, 51)),
+		Name: string(make([]byte, length)),
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -128,15 +129,15 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.NameApi.V1NameHead(Auth, s.owner)
-	assert.Equal(s.T(), 409, r.StatusCode)
+	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.NameApi.V1NameHead(Auth, "testnonexist")
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -148,7 +149,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameReserved() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -159,7 +160,7 @@ func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
 	}
 
 	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	d = swagger.ControllerOrgCreateRequest{
@@ -168,7 +169,7 @@ func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
 	}
 
 	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
 
@@ -181,7 +182,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidAvatarid() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -190,11 +191,11 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
 	d := swagger.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
-		Description: string(make([]byte, 201)),
+		Description: string(make([]byte, http.StatusCreated)),
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -207,7 +208,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 	}
 
 	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
 
@@ -221,7 +222,7 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 		Owner: optional.NewString(s.owner),
 	}
 	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	orgs := getArrary(s.T(), data.Data)
@@ -242,7 +243,7 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 		Username: optional.NewString(s.owner),
 	}
 	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &d)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	orgs = getArrary(s.T(), data.Data)
@@ -261,7 +262,7 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 	// list all
 	d = swagger.OrganizationApiV1OrganizationGetOpts{}
 	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &d)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	orgs = getArrary(s.T(), data.Data)
@@ -281,11 +282,11 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 // 查询不存在的组织
 func (s *SuiteOrg) TestOrgNonexist() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameGet(Auth, "nonexist")
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameGet(context.Background(), "nonexist")
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -295,7 +296,7 @@ func (s *SuiteOrgModel) TestOrgOwnerSearch() {
 	d := swagger.OrganizationApiV1OrganizationGetOpts{Owner: optional.NewString("test1")}
 	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
 
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), data.Data)
 }
@@ -306,7 +307,7 @@ func (s *SuiteOrgModel) TestOrgMemberSearch() {
 	d := swagger.OrganizationApiV1OrganizationGetOpts{Username: optional.NewString("test1")}
 	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
 
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), data.Data)
 }
@@ -316,7 +317,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 	// Slice of invalid names
 	invalidNames := []string{
 		"", // Empty name
-		string(make([]byte, 201)),
+		string(make([]byte, http.StatusCreated)),
 	}
 
 	for _, name := range invalidNames {
@@ -328,7 +329,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 
 		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 		// Expect a 400 Bad Request response due to invalid name
-		assert.Equal(s.T(), 400, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+name)
+		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+name)
 		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+name)
 	}
 }
@@ -338,7 +339,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 	// Slice of invalid names
 	invalidFullname := []string{
 		"", // Empty name
-		string(make([]byte, 201)),
+		string(make([]byte, http.StatusCreated)),
 	}
 
 	for _, fullname := range invalidFullname {
@@ -350,7 +351,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 
 		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 		// Expect a 400 Bad Request response due to invalid name
-		assert.Equal(s.T(), 400, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+fullname)
+		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+fullname)
 		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+fullname)
 	}
 }

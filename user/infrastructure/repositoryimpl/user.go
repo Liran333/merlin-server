@@ -22,7 +22,7 @@ func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 		return nil
 	}
 
-	return &userRepoImpl{db, enc}
+	return &userRepoImpl{Impl: db, e: enc}
 }
 
 type userRepoImpl struct {

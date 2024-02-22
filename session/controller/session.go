@@ -111,7 +111,7 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 	setCookieOfLoginId(ctx, "", &expiry)
 	setCookieOfCSRFToken(ctx, "", &expiry)
 
-	commonctl.SendRespOfPut(ctx, logoutInfo{idToken})
+	commonctl.SendRespOfPut(ctx, logoutInfo{IdToken: idToken})
 }
 
 func setCookieOfLoginId(ctx *gin.Context, value string, expiry *time.Time) {

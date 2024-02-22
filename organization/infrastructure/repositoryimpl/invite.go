@@ -17,7 +17,7 @@ func NewInviteRepo(db postgresql.Impl) repository.Approve {
 		return nil
 	}
 
-	return &inviteRepoImpl{db}
+	return &inviteRepoImpl{Impl: db}
 }
 
 type inviteRepoImpl struct {

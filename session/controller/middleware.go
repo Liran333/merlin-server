@@ -21,8 +21,8 @@ var noUserError = errors.New("no user")
 
 func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog) *webAPIMiddleware {
 	return &webAPIMiddleware{
-		session,
-		securityLog,
+		session:     session,
+		securityLog: securityLog,
 	}
 }
 

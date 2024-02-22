@@ -23,8 +23,8 @@ var errNoUserError = errors.New("no user")
 
 func RestfulAPI(app userapp.UserService, securityLog middleware.SecurityLog) *restfulAPI {
 	return &restfulAPI{
-		app,
-		securityLog,
+		s:           app,
+		securityLog: securityLog,
 	}
 }
 

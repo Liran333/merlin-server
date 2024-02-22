@@ -7,6 +7,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+const expireTime = 3
+
 type dbRedis struct {
 	Expiration time.Duration
 }
@@ -36,7 +38,7 @@ func (r dbRedis) Delete(
 func (r dbRedis) Expire(
 	ctx context.Context, key string, expire time.Duration,
 ) *redis.BoolCmd {
-	return client.Expire(ctx, key, 3*time.Second)
+	return client.Expire(ctx, key, expireTime*time.Second)
 }
 
 func DB() *redis.Client {

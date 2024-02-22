@@ -3,9 +3,12 @@ package gitea
 import (
 	"crypto/tls"
 	"net/http"
+	"time"
 
 	"github.com/openmerlin/go-sdk/gitea"
 )
+
+const timeout = 10
 
 var (
 	cli      *gitea.Client
@@ -22,6 +25,7 @@ func Init(cfg *Config) error {
 		Transport: &http.Transport{TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // #nosec G402
 		}},
+		Timeout: time.Duration(timeout) * time.Second,
 	}))
 	if err == nil {
 		cli = client
@@ -40,5 +44,6 @@ func NewClient(username, password string) (*gitea.Client, error) {
 		Transport: &http.Transport{TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // #nosec G402
 		}},
+		Timeout: time.Duration(timeout) * time.Second,
 	}))
 }

@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ type SuiteUserToken struct {
 
 func (s *SuiteUserToken) SetupSuite() {
 	data, r, err := Api.UserApi.V1UserGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -32,7 +33,7 @@ func (s *SuiteUserToken) SetupSuite() {
 	}
 
 	data, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	m := getData(s.T(), data.Data)
@@ -46,7 +47,7 @@ func (s *SuiteUserToken) SetupSuite() {
 	}
 
 	_, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	m = getData(s.T(), data.Data)
@@ -57,11 +58,11 @@ func (s *SuiteUserToken) SetupSuite() {
 
 func (s *SuiteUserToken) TearDownSuite() {
 	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "testread")
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testwrite")
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -73,7 +74,7 @@ func (s *SuiteUserToken) TestVerifyToken() {
 	}
 
 	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	m := getData(s.T(), data.Data)
@@ -86,11 +87,11 @@ func (s *SuiteUserToken) TestVerifyToken() {
 	}
 
 	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testverify")
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -102,13 +103,13 @@ func (s *SuiteUserToken) TestVerifyInvalidToken() {
 	}
 
 	_, r, err := InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	t = swagger.ControllerTokenVerifyRequest{}
 
 	_, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -120,7 +121,7 @@ func (s *SuiteUserToken) TestCreateDuplicateToken() {
 	}
 
 	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	s.T().Logf("create duplicate token return: %s", data.Msg)
 	assert.NotNil(s.T(), err)
 }
@@ -129,7 +130,7 @@ func (s *SuiteUserToken) TestCreateDuplicateToken() {
 func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 
 	_, r, err := Api.UserApi.V1UserTokenGet(context.Background())
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -137,7 +138,7 @@ func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 func (s *SuiteUserToken) TestGetUserToken() {
 
 	data, r, err := Api.UserApi.V1UserTokenGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	tokens := getArrary(s.T(), data.Data)
@@ -171,7 +172,7 @@ func (s *SuiteUserToken) TestGetUserToken() {
 		assert.Equal(s.T(), s.id, tokens[token]["owner_id"])
 	}
 
-	assert.Equal(s.T(), 3, count)
+	assert.Equal(s.T(), countThree, count)
 	assert.True(s.T(), readFound)
 	assert.True(s.T(), writeFound)
 }
@@ -185,7 +186,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidName() {
 	}
 
 	_, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -200,7 +201,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
 		}
 
 		data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-		assert.Equalf(s.T(), 400, r.StatusCode, data.Msg)
+		assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 		assert.NotNil(s.T(), err)
 	}
 }
@@ -214,7 +215,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 	}
 
 	_, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -228,7 +229,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	}
 
 	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	m := getData(s.T(), data.Data)
@@ -243,11 +244,11 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	auth := newAuthCtx(getString(s.T(), m["token"]))
 
 	data, r, err = Api.UserApi.V1UserTokenGet(auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "read")
-	assert.Equal(s.T(), 403, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// test a write permission token
@@ -257,7 +258,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	}
 
 	data, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	m = getData(s.T(), data.Data)
@@ -272,21 +273,21 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	auth = newAuthCtx(getString(s.T(), m["token"]))
 
 	data, r, err = Api.UserApi.V1UserTokenGet(auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "read")
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "write")
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
 // 删除不存在的token报404
 func (s *SuiteUserToken) TestTokenDeleteToken() {
 	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "nonexist")
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 

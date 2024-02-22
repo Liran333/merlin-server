@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/space-app/app"
+	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
 // reqToCreateSpaceApp

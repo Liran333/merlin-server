@@ -19,8 +19,8 @@ func Init(db *gorm.DB, tables *Tables) error {
 
 	dao := daoImpl{table: tables.Space}
 
-	spaceAdapterInstance = &spaceAdapter{dao}
-	spaceLabelsAdapterInstance = &spaceLabelsAdapter{dao}
+	spaceAdapterInstance = &spaceAdapter{daoImpl: dao}
+	spaceLabelsAdapterInstance = &spaceLabelsAdapter{daoImpl: dao}
 
 	return nil
 }

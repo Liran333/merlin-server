@@ -12,7 +12,7 @@ type User interface {
 }
 
 func NewUserGit(c *giteauser.UserClient) User {
-	return &userGitImpl{c}
+	return &userGitImpl{client: c}
 }
 
 type userGitImpl struct {

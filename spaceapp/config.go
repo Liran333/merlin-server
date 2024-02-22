@@ -1,8 +1,8 @@
 package spaceapp
 
 import (
-	"github.com/openmerlin/merlin-server/space-app/infrastructure/messageadapter"
-	"github.com/openmerlin/merlin-server/space-app/infrastructure/repositoryadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/messageadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
 )
 
 // Config

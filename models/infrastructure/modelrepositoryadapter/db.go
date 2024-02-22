@@ -19,8 +19,8 @@ func Init(db *gorm.DB, tables *Tables) error {
 
 	dao := daoImpl{table: tables.Model}
 
-	modelAdapterInstance = &modelAdapter{dao}
-	modelLabelsAdapterInstance = &modelLabelsAdapter{dao}
+	modelAdapterInstance = &modelAdapter{daoImpl: dao}
+	modelLabelsAdapterInstance = &modelLabelsAdapter{daoImpl: dao}
 
 	return nil
 }

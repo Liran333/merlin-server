@@ -3,11 +3,11 @@ package messageadapter
 import (
 	kfklib "github.com/opensourceways/kafka-lib/agent"
 
-	"github.com/openmerlin/merlin-server/space-app/domain/message"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/message"
 )
 
 func MessageAdapter(topic *Topics) *messageAdapter {
-	return &messageAdapter{*topic}
+	return &messageAdapter{topics: *topic}
 }
 
 type messageAdapter struct {

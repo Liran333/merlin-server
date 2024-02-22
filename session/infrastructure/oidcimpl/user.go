@@ -6,12 +6,18 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	libutils "github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
+)
+
+const (
+	MaxRetries = 3
+	timeout    = 10
 )
 
 var userInstance *user
@@ -195,7 +201,8 @@ func sendHttpRequest(req *http.Request, result interface{}) error {
 	req.Header.Set("User-Agent", "merlin-server-authing")
 	req.Header.Add("content-type", "application/json")
 
-	httpClient := libutils.NewHttpClient(3)
+	httpClient := libutils.NewHttpClient(MaxRetries)
+	httpClient.Client.Timeout = time.Duration(timeout) * time.Second
 
 	_, err := httpClient.ForwardTo(req, result)
 

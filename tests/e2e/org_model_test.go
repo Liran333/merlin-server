@@ -1,9 +1,10 @@
 package e2e
 
 import (
-	swagger "e2e/client"
+	"net/http"
 	"testing"
 
+	swagger "e2e/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -42,7 +43,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 
 	o := getData(s.T(), data.Data)
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
@@ -54,7 +55,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 201, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
@@ -63,13 +64,13 @@ func (s *SuiteOrgModel) SetupSuite() {
 		Msg:     "ok",
 	})
 
-	assert.Equalf(s.T(), 202, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 }
 
 func (s *SuiteOrgModel) TearDownSuite() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -80,7 +81,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 		Role: "read",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	_, r, err = Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
@@ -90,7 +91,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 403, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
@@ -100,7 +101,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -109,11 +110,11 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -121,11 +122,11 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 		Role: "write",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -138,13 +139,13 @@ func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -157,7 +158,7 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -166,11 +167,11 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -183,7 +184,7 @@ func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -192,11 +193,11 @@ func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -206,7 +207,7 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 		User: "test2",
 		Role: "contributor",
 	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
@@ -216,7 +217,7 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -224,18 +225,18 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -246,7 +247,7 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Role: "contributor",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
@@ -256,13 +257,13 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
@@ -270,16 +271,16 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	})
 
 	// 拥有contribute权限的用户不可以修改他人模型
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 拥有contribute权限的用户不可以删除他人模型
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -287,7 +288,7 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Role: "write",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 func TestOrgModel(t *testing.T) {

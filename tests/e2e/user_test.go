@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ func (s *SuiteUser) SetupSuite() {
 	}
 
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -32,7 +33,7 @@ func (s *SuiteUser) SetupSuite() {
 func (s *SuiteUser) TestGetUser() {
 
 	data, r, err := Api.UserApi.V1UserGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -50,7 +51,7 @@ func (s *SuiteUser) TestGetUser() {
 func (s *SuiteUser) TestGetOtherUser() {
 
 	data, r, err := Api.OrganizationApi.V1AccountNameGet(Auth, "test2")
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -68,7 +69,7 @@ func (s *SuiteUser) TestGetOtherUser() {
 func (s *SuiteUser) TestGetUserNoToken() {
 
 	_, r, err := Api.UserApi.V1UserGet(context.Background())
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 
@@ -76,7 +77,7 @@ func (s *SuiteUser) TestGetUserNoToken() {
 func (s *SuiteUser) TestGetOtherUserNoToken() {
 
 	data, r, err := Api.OrganizationApi.V1AccountNameGet(context.Background(), "test2")
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)

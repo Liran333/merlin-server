@@ -6,11 +6,11 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 
-	"github.com/openmerlin/merlin-server/space-app/app"
-	"github.com/openmerlin/merlin-server/space-app/controller"
-	"github.com/openmerlin/merlin-server/space-app/infrastructure/messageadapter"
-	"github.com/openmerlin/merlin-server/space-app/infrastructure/repositoryadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/app"
+	"github.com/openmerlin/merlin-server/spaceapp/controller"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/messageadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
 )
 
 func initSpaceApp(cfg *config.Config, services *allServices) error {

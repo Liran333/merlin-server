@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	token    string = "3c1c575c980bf6daa1bd3eae3a5fbe6edc3aa0c4"
-	salt     string = "VOGILiF8vCIODil7eR5r+31/YD3powAiatTo2yPbcVc"
-	encToken string = "WUdbCLY50CZvp6hNznE/06XWJ3kfyn7Vz2pJW3fjVRo"
+	token        string = "3c1c575c980bf6daa1bd3eae3a5fbe6edc3aa0c4"
+	salt         string = "VOGILiF8vCIODil7eR5r+31/YD3powAiatTo2yPbcVc"
+	encToken     string = "WUdbCLY50CZvp6hNznE/06XWJ3kfyn7Vz2pJW3fjVRo"
+	firstExpire         = 1234
+	secondExpire        = 9704334556
 )
 
 func TestPermCheck(t *testing.T) {
@@ -69,14 +71,14 @@ func TestPermCheck(t *testing.T) {
 			token,
 			primitive.NewReadPerm(),
 			primitive.NewReadPerm(),
-			1234,
+			firstExpire,
 			tokenExpired,
 		},
 		{
 			token,
 			primitive.NewReadPerm(),
 			primitive.NewReadPerm(),
-			9704334556,
+			secondExpire,
 			"",
 		},
 	}

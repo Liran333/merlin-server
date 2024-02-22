@@ -1,5 +1,10 @@
 package domain
 
+const (
+	hours   = 8
+	seconds = 3600
+)
+
 var config Config
 
 func Init(cfg *Config) {
@@ -18,7 +23,7 @@ func (cfg *Config) SetDefault() {
 	}
 
 	if cfg.CSRFTokenTimeout <= 0 {
-		cfg.CSRFTokenTimeout = 8 * 3600
+		cfg.CSRFTokenTimeout = hours * seconds
 	}
 
 	if cfg.CSRFTokenTimeoutToReset <= 0 {
