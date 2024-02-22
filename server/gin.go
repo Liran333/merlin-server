@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -98,6 +99,10 @@ func logRequest() gin.HandlerFunc {
 				errmsg += ","
 			}
 			errmsg = fmt.Sprintf("%s%s", errmsg, ginErr.Error())
+		}
+
+		if strings.Contains(c.Request.RequestURI, "/swagger/") {
+			return
 		}
 
 		log := fmt.Sprintf(

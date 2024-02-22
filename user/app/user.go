@@ -488,15 +488,14 @@ func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (Tok
 	return newTokenDTO(&token), nil
 }
 
-func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) (err error) {
-	err = s.oidc.SendBindEmail(cmd.Email.Email(), cmd.Capt)
-	return
+func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) error {
+	return s.oidc.SendBindEmail(cmd.Email.Email(), cmd.Capt)
 }
 
-func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
+func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	userId, err := s.getUserIdOfLogin(cmd.User)
 	if err != nil {
-		return
+		return err
 	}
 
 	u, err := s.repo.GetByAccount(cmd.User)
@@ -505,11 +504,11 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 			err = errUserNotFound(fmt.Sprintf("user %s not found", cmd.User.Account()))
 		}
 
-		return
+		return err
 	}
 
 	if u.Email.Email() == cmd.Email.Email() {
-		return
+		return nil
 	}
 
 	if u.Email.Email() != "" {
@@ -518,7 +517,7 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 
 	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, userId)
 	if err != nil && !allerror.IsUserDuplicateBind(err) {
-		return
+		return err
 	}
 
 	u.Email = cmd.Email
@@ -531,15 +530,26 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) (err error) {
 		AvatarId: u.AvatarId,
 	}
 
-	_, err = s.repo.SaveUser(&u)
-	if err != nil {
-		return
+	if u.PlatformId == 0 {
+		// create new user if user doesnot exist
+		user, err := s.git.Create(userCmd)
+		if err != nil {
+			return err
+		}
+
+		u.PlatformId = user.PlatformId
+		u.PlatformPwd = user.PlatformPwd
+	} else {
+		err = s.git.Update(userCmd)
+		if err != nil {
+			return err
+		}
 	}
+	// we must create git user before save
+	// bcs we need save platform id&pwd
+	_, err = s.repo.SaveUser(&u)
 
-	// create new user when email
-	_, err = s.git.Create(userCmd)
-
-	return
+	return err
 }
 
 func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, err error) {
