@@ -1,16 +1,21 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
 const (
-	userAgent = "User-Agent"
+	userAgent        = "User-Agent"
+	pbkdf2Iterations = 10000
+	pbkdf2KeyLength  = 32
 )
 
 func GetIp(ctx *gin.Context) (string, error) {
@@ -46,4 +51,16 @@ func GetCookie(ctx *gin.Context, key string) (string, error) {
 	}
 
 	return cookie.Value, nil
+}
+
+func EncodeToken(token string, salt string) (string, error) {
+	saltByte, err := base64.RawStdEncoding.DecodeString(salt)
+	if err != nil {
+		return "", err
+	}
+
+	encBytes := pbkdf2.Key([]byte(token), saltByte, pbkdf2Iterations, pbkdf2KeyLength, sha256.New)
+	enc := base64.RawStdEncoding.EncodeToString(encBytes)
+
+	return enc, nil
 }

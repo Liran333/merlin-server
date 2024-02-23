@@ -168,7 +168,8 @@ postgresql:
   cert: {{(ds "secret").data.PG_CERT }}
 
 internal:
-  token: {{(ds "secret").data.INTERNAL_TOKEN }}
+  token_hash: {{(ds "secret").data.INTERNAL_TOKEN_HASH }}
+  salt: {{(ds "secret").data.INTERNAL_SALT }}
 
 space_app:
   tables:

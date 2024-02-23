@@ -64,7 +64,15 @@ func (m *internalServiceAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) 
 }
 
 func (m *internalServiceAPIMiddleware) checkToken(ctx *gin.Context) error {
-	if ctx.GetHeader(tokenHeader) != config.Token {
+	rawToken := ctx.GetHeader(tokenHeader)
+	calcTokenHash, err := commonctl.EncodeToken(rawToken, config.Salt)
+	if err != nil {
+		return allerror.New(
+			allerror.ErrorCodeAccessTokenInvalid, "check token failed",
+		)
+	}
+
+	if calcTokenHash != config.TokenHash {
 		return allerror.New(
 			allerror.ErrorCodeAccessTokenInvalid, "invalid token",
 		)

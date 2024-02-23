@@ -7,5 +7,6 @@ func Init(cfg *Config) {
 }
 
 type Config struct {
-	Token string `json:"token" required:"true"`
+	TokenHash string `json:"token_hash" required:"true"`
+	Salt      string `json:"salt" required:"true"`
 }
