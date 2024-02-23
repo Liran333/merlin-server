@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 )
 
 const noneLen = 12
@@ -57,6 +58,10 @@ func (e *encryption) Decrypt(text string) (string, error) {
 	plain, err := hex.DecodeString(text)
 	if err != nil {
 		return "", err
+	}
+
+	if len(plain) < noneLen {
+		return "", fmt.Errorf("index is negative:%d", len(plain)-noneLen)
 	}
 
 	nonce := plain[len(plain)-noneLen:]

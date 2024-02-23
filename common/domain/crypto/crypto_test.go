@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestEncDec(t *testing.T) {
 		"as;dlkfjas;dlhfa;sdhfas;df",
 		"psdsasfsadfasdfas@asdfsadfl.com",
 		"13339849223",
-		"",
+		"1",
 	}
 
 	for _, v := range test {
@@ -32,4 +33,20 @@ func TestEncDec(t *testing.T) {
 			t.Fatal("encrypt and decrypt not equal")
 		}
 	}
+}
+
+func TestLenPlain(t *testing.T) {
+	enc := NewEncryption([]byte("12345678123456781234567812345678"))
+	// 准备测试数据
+	encrypted := "efb"
+
+	// 执行解密
+	decrypted, err := enc.Decrypt(encrypted)
+	t.Logf("%s\n", decrypted)
+	if err != nil {
+		fmt.Println("index is negative ")
+	} else {
+		t.Fatal("Decrypted data")
+	}
+
 }
