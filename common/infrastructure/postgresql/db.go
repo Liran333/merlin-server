@@ -2,16 +2,27 @@ package postgresql
 
 import (
 	"errors"
-	"os"
-
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
+	"os"
 )
 
 var (
 	db         *gorm.DB
 	errorCodes errorCode
+)
+
+var serverLogger = logger.New(
+	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	logger.Config{
+		LogLevel:                  logger.Warn, // Log level
+		IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+		ParameterizedQueries:      true,        // Don't include params in the SQL log
+		Colorful:                  false,       // Disable color
+	},
 )
 
 func Init(cfg *Config, removeCfg bool) error {
@@ -21,7 +32,9 @@ func Init(cfg *Config, removeCfg bool) error {
 			// disables implicit prepared statement usage
 			PreferSimpleProtocol: true,
 		}),
-		&gorm.Config{},
+		&gorm.Config{
+			Logger: serverLogger,
+		},
 	)
 	if err != nil {
 		return err
