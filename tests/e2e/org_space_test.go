@@ -1,11 +1,13 @@
 package e2e
 
 import (
-	swagger "e2e/client"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swagger "e2e/client"
 )
 
 type SuiteOrgSpace struct {
@@ -42,7 +44,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 
 	o := getData(s.T(), data.Data)
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
@@ -54,7 +56,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 201, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
@@ -63,13 +65,13 @@ func (s *SuiteOrgSpace) SetupSuite() {
 		Msg:     "ok",
 	})
 
-	assert.Equalf(s.T(), 202, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 }
 
 func (s *SuiteOrgSpace) TearDownSuite() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -80,7 +82,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Role: "read",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// read用户不能创建Space
@@ -96,7 +98,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 403, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
@@ -111,7 +113,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -125,11 +127,11 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -137,11 +139,11 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Role: "write",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -159,13 +161,13 @@ func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -183,7 +185,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -197,11 +199,11 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -219,7 +221,7 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -233,11 +235,11 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -247,7 +249,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 		User: "test2",
 		Role: "contributor",
 	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
@@ -262,7 +264,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -275,18 +277,18 @@ func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -297,7 +299,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Role: "contributor",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
@@ -312,13 +314,13 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
@@ -331,16 +333,16 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	})
 
 	// 拥有contribute权限的用户不可以修改他人Space
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 拥有contribute权限的用户不可以删除他人Space
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 404, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -348,7 +350,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 		Role: "write",
 	}, s.name)
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 

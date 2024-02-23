@@ -2,10 +2,13 @@ package e2e
 
 import (
 	"context"
-	swagger "e2e/client"
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
+
+	swagger "e2e/client"
 )
 
 type SuiteUserSpace struct {
@@ -32,7 +35,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -44,11 +47,11 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Name:     "testspace-new",
 	})
 
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -66,7 +69,7 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 

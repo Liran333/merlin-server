@@ -124,13 +124,13 @@ func (t PlatformToken) Match(token string) bool {
 }
 
 func EncryptToken(token string) (enc, salt string, err error) {
-	saltBtye := make([]byte, 32)
+	saltBtye := make([]byte, keyLen)
 	_, err = rand.Read(saltBtye)
 	if err != nil {
 		return
 	}
 
-	encBytes := pbkdf2.Key([]byte(token), saltBtye, 10000, 32, sha256.New)
+	encBytes := pbkdf2.Key([]byte(token), saltBtye, iter, keyLen, sha256.New)
 
 	enc = base64.RawStdEncoding.EncodeToString(encBytes)
 	salt = base64.RawStdEncoding.EncodeToString(saltBtye)

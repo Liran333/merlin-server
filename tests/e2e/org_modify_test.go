@@ -1,11 +1,13 @@
 package e2e
 
 import (
-	swagger "e2e/client"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swagger "e2e/client"
 )
 
 type SuiteOrgModify struct {
@@ -32,7 +34,7 @@ func (s *SuiteOrgModify) SetupSuite() {
 	s.owner = "test1" // this name is hard code in init-env.sh
 
 	data, r, err := Api.UserApi.V1UserGet(Auth)
-	assert.Equal(s.T(), 200, r.StatusCode)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	user := getData(s.T(), data.Data)
@@ -55,7 +57,7 @@ func (s *SuiteOrgModify) TestOrgCreate() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 修改组织的名称
@@ -64,18 +66,18 @@ func (s *SuiteOrgModify) TestOrgCreate() {
 	}
 
 	_, r2, err2 := Api.OrganizationApi.V1OrganizationNamePut(Auth, s.name, d2)
-	assert.Equal(s.T(), 202, r2.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r2.StatusCode)
 	assert.Nil(s.T(), err2)
 
 	r3, err3 := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 204, r3.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r3.StatusCode)
 	assert.Nil(s.T(), err3)
 }
 
 // 其他人无法删除组织
 func (s *SuiteOrgModify) TestOrgDeleteFail() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth2, s.name)
-	assert.Equal(s.T(), 403, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 

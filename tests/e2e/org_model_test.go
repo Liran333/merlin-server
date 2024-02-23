@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"testing"
 
-	swagger "e2e/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swagger "e2e/client"
 )
 
 type SuiteOrgModel struct {

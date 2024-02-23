@@ -2,10 +2,13 @@ package e2e
 
 import (
 	"context"
-	swagger "e2e/client"
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
+
+	swagger "e2e/client"
 )
 
 type SuiteUserModel struct {
@@ -27,7 +30,7 @@ func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
@@ -36,11 +39,11 @@ func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
 		Name:       "testmodel-new",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 202, r.StatusCode)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -53,7 +56,7 @@ func (s *SuiteUserModel) TestNotLoginCantCreateModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 401, r.StatusCode)
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 

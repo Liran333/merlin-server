@@ -17,7 +17,7 @@ var noUserError = errors.New("no user")
 
 func NewAPIMiddleware(securityLog middleware.SecurityLog) *internalServiceAPIMiddleware {
 	return &internalServiceAPIMiddleware{
-		securityLog,
+		securityLog: securityLog,
 	}
 }
 
