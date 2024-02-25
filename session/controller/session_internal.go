@@ -42,8 +42,6 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 		return
 	}
 
-	middleware.SetAction(ctx, "check and refresh session")
-
 	cmd, err := cmdToCheck(&req)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
