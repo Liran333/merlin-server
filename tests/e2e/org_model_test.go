@@ -75,6 +75,31 @@ func (s *SuiteOrgModel) TearDownSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// 当组织下有model时，删除组织失败
+func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
+	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+		Name:       "tempModel",
+		Owner:      s.name,
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 删除组织失败
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	assert.Equal(s.T(), 400, r.StatusCode, "can't delete the organization, while some repos still existed")
+	assert.NotNil(s.T(), err)
+
+	// 清空Model
+	id := getString(s.T(), data.Data)
+
+	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // 拥有read权限的用户不能创建模型，不能修改和删除他人模型
 func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{

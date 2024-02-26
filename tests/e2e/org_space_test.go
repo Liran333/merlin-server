@@ -75,6 +75,36 @@ func (s *SuiteOrgSpace) TearDownSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// 当组织下有Space，组织卡片时，删除组织失败
+func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "tempFullName",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
+		License:    "mit",
+		Name:       "tempSpace",
+		Owner:      s.name,
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 删除组织失败
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	assert.Equal(s.T(), 400, r.StatusCode, "can't delete the organization, while some spaces still existed")
+	assert.NotNil(s.T(), err)
+
+	// 清空Space
+	id := getString(s.T(), data.Data)
+
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // 拥有read权限的用户不能创建Space，不能修改和删除他人Space
 func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{

@@ -225,7 +225,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	}
 
 	if !can {
-		return fmt.Errorf("can't delte the organization, while some repos still existed")
+		return allerror.New(allerror.ErrorCodeOrgExistModel, "can't delete the organization, while some repos still existed")
 	}
 
 	err = org.member.DeleteByOrg(o.Account)
@@ -763,11 +763,6 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 			err = errOrgNotFound(fmt.Sprintf("the %s's invitation to org %s not found", cmd.Actor.Account(), cmd.Org.Account()))
 		}
 
-		return
-	}
-
-	if len(o) > 1 {
-		err = fmt.Errorf("multiple invitations found")
 		return
 	}
 

@@ -1,10 +1,10 @@
 package e2e
 
 import (
+	swagger "e2e/client"
 	"net/http"
 	"testing"
 
-	swagger "e2e/client"
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -151,6 +151,50 @@ func (s *SuiteInvite) TestInviteAprove() {
 
 	id := getData(s.T(), data.Data)["id"]
 
+	// 重复邀请同一个用户, 该用户只收到一条邀请通知，并且以最新通知为准
+	DupData, r2, err2 := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "read",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), 201, r2.StatusCode, data.Msg)
+	assert.Nil(s.T(), err2)
+
+	DupInvite := getData(s.T(), DupData.Data)
+
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), DupInvite["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), DupInvite["updated_at"]))
+	assert.Equal(s.T(), "read", DupInvite["role"])
+	assert.Equal(s.T(), "invite me ASAP", DupInvite["msg"])
+
+	// 恢复初始通知
+	_, _, _ = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	data2, r3, err3 := Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		Invitee: optional.NewString(s.invitee),
+	})
+
+	assert.Equalf(s.T(), 200, r3.StatusCode, data.Msg)
+	assert.Nil(s.T(), err3)
+
+	notifications := getArrary(s.T(), data2.Data)
+
+	countNtf := 0
+	for _, notification := range notifications {
+		if notification != nil {
+			countNtf++
+		}
+	}
+
+	assert.Equal(s.T(), 1, countNtf)
+
 	// 被邀请人接受邀请
 	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
@@ -179,6 +223,17 @@ func (s *SuiteInvite) TestInviteAprove() {
 	data, r, err = Api.OrganizationApi.V1OrganizationNameMemberGet(Auth2, s.name)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
+
+	// 已经在组织的用户无法邀请
+	_, r4, err4 := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equalf(s.T(), 400, r4.StatusCode, "the user is already a member of the org")
+	assert.NotNil(s.T(), err4)
 
 	members := getArrary(s.T(), data.Data)
 	count := 0

@@ -2,6 +2,7 @@ package repositoryimpl
 
 import (
 	"errors"
+	"gorm.io/gorm"
 
 	"gorm.io/gorm/clause"
 
@@ -60,16 +61,36 @@ func (impl *inviteRepoImpl) ListInvitation(cmd *domain.OrgInvitationListCmd) (ap
 }
 
 func (impl *inviteRepoImpl) AddInvite(o *domain.Approve) (new domain.Approve, err error) {
+	// Build query to check for an existing invitation
+	query := impl.DB().Model(&Approve{}).
+		Where(impl.EqualQuery(fieldUser), o.Username).
+		Where(impl.EqualQuery(fieldOrg), o.OrgName).
+		Where(impl.EqualQuery(fieldInviter), o.Inviter).
+		Where(impl.EqualQuery(fieldStatus), o.Status)
+
+	// Attempt to find an existing record
+	var existingInvite Approve
+	err = query.First(&existingInvite).Error
+	if err == nil {
+		// Found an existing record, delete it
+		if deleteErr := impl.DB().Delete(&existingInvite).Error; deleteErr != nil {
+			return domain.Approve{}, deleteErr
+		}
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// An error occurred other than "record not found", return the error
+		return domain.Approve{}, err
+	}
+
+	// Record not found or deleted, proceed to add new one
 	o.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toApproveDoc(o)
 
 	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
 	if err != nil {
-		return
+		return domain.Approve{}, err
 	}
 
 	new = toApprove(&do)
-
 	return
 }
 

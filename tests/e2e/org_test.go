@@ -98,6 +98,18 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Nil(s.T(), err)
 }
 
+// 创建一个组织昵称必填
+func (s *SuiteOrg) TestOrgCreateFail() {
+	d := swagger.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: "",
+	}
+
+	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), 400, r.StatusCode, "org fullname can't be empty")
+	assert.NotNil(s.T(), err)
+}
+
 // // 创建组织失败
 // 未登录用户
 func (s *SuiteOrg) TestOrgCreateFailedNoToken() {

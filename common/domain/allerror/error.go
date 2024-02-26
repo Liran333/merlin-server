@@ -37,6 +37,8 @@ const (
 	ErrorCodeBranchInavtive     = "branch_inactive"
 	ErrorCodeBaseBranchNotFound = "base_branch_not_found"
 
+	ErrorCodeOrgExistModel = "org_model_exist"
+
 	errorCodeInvalidParam = "invalid_param"
 
 	ErrorEmailError             = "email_error"
