@@ -6,8 +6,8 @@ package repositoryimpl
 
 import (
 	"errors"
-	"gorm.io/gorm"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"

@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	// README represents the constant value for the README file.
 	README = "README"
 	readme = "readme"
 )

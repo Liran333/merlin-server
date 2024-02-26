@@ -25,6 +25,8 @@ type SpaceappInternalAppService interface {
 	NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error
 }
 
+// NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
+// with the provided message and repository.
 func NewSpaceappInternalAppService(
 	msg message.SpaceAppMessage,
 	repo repository.Repository,

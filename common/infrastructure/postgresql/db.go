@@ -6,12 +6,13 @@ package postgresql
 
 import (
 	"errors"
+	"log"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"os"
 )
 
 var (

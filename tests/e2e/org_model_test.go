@@ -97,7 +97,8 @@ func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 
 	// 删除组织失败
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "can't delete the organization, while some repos still existed")
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
+		"can't delete the organization, while some repos still existed")
 	assert.NotNil(s.T(), err)
 
 	// 清空Model

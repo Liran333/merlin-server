@@ -10,50 +10,90 @@ import "strings"
 const (
 	errorCodeNoPermission = "no_permission"
 
+	// ErrorCodeUserNotFound is const
 	ErrorCodeUserNotFound = "user_not_found"
 
+	// ErrorCodeModelNotFound is const
 	ErrorCodeModelNotFound = "model_not_found"
 
+	// ErrorCodeSpaceNotFound is const
 	ErrorCodeSpaceNotFound = "space_not_found"
 
+	// ErrorCodeTokenNotFound is const
 	ErrorCodeTokenNotFound = "token_not_found"
 
+	// ErrorCodeRepoNotFound is const
 	ErrorCodeRepoNotFound = "repo_not_found"
 
+	// ErrorCodeOrganizationNotFound is const
 	ErrorCodeOrganizationNotFound = "organization_not_found"
 
+	// ErrorCodeCountExceeded is const
 	ErrorCodeCountExceeded = "count_exceeded"
 
 	// ErrorCodeSpaceAppNotFound space app
-	ErrorCodeSpaceAppNotFound        = "space_app_not_found"
+	ErrorCodeSpaceAppNotFound = "space_app_not_found"
+
+	// ErrorCodeSpaceAppUnmatchedStatus is const
 	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
 
 	// ErrorCodeAccessTokenInvalid This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 
-	ErrorCodeLoginIdInvalid    = "login_id_invalid"
-	ErrorCodeLoginIdMissing    = "login_id_missing"
-	ErrorCodeLoginIdNotFound   = "login_id_not_found"
-	ErrorCodeCSRFTokenMissing  = "csrf_token_missing"   // #nosec G101
-	ErrorCodeCSRFTokenInvalid  = "csrf_token_invalid"   // #nosec G101
+	// ErrorCodeLoginIdInvalid is const
+	ErrorCodeLoginIdInvalid = "login_id_invalid"
+
+	// ErrorCodeLoginIdMissing is const
+	ErrorCodeLoginIdMissing = "login_id_missing"
+
+	// ErrorCodeLoginIdNotFound is const
+	ErrorCodeLoginIdNotFound = "login_id_not_found"
+
+	// ErrorCodeCSRFTokenMissing is const
+	ErrorCodeCSRFTokenMissing = "csrf_token_missing" // #nosec G101
+
+	// ErrorCodeCSRFTokenInvalid is const
+	ErrorCodeCSRFTokenInvalid = "csrf_token_invalid" // #nosec G101
+
+	// ErrorCodeCSRFTokenNotFound is const
 	ErrorCodeCSRFTokenNotFound = "csrf_token_not_found" // #nosec G101
 
-	ErrorCodeBranchExist        = "branch_exist"
-	ErrorCodeBranchInavtive     = "branch_inactive"
+	// ErrorCodeBranchExist is const
+	ErrorCodeBranchExist = "branch_exist"
+
+	// ErrorCodeBranchInavtive is const
+	ErrorCodeBranchInavtive = "branch_inactive"
+
+	// ErrorCodeBaseBranchNotFound is const
 	ErrorCodeBaseBranchNotFound = "base_branch_not_found"
 
+	// ErrorCodeOrgExistModel is const
 	ErrorCodeOrgExistModel = "org_model_exist"
 
 	errorCodeInvalidParam = "invalid_param"
 
-	ErrorEmailError             = "email_error"
-	ErrorEmailCodeError         = "email_verify_code_error"
-	ErrorEmailCodeInvalid       = "email_verify_code_invalid"
-	ErrorCodeNeedBindEmail      = "user_no_email"
-	ErrorCodeUserDuplicateBind  = "user_duplicate_bind"
+	// ErrorEmailError is const
+	ErrorEmailError = "email_error"
+
+	// ErrorEmailCodeError is const
+	ErrorEmailCodeError = "email_verify_code_error"
+
+	// ErrorEmailCodeInvalid is const
+	ErrorEmailCodeInvalid = "email_verify_code_invalid"
+
+	// ErrorCodeNeedBindEmail is const
+	ErrorCodeNeedBindEmail = "user_no_email"
+
+	// ErrorCodeUserDuplicateBind is const
+	ErrorCodeUserDuplicateBind = "user_duplicate_bind"
+
+	// ErrorCodeEmailDuplicateBind is const
 	ErrorCodeEmailDuplicateBind = "email_duplicate_bind"
+
+	// ErrorCodeEmailDuplicateSend is const
 	ErrorCodeEmailDuplicateSend = "email_duplicate_send"
 
+	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 )
 

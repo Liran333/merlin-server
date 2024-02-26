@@ -28,14 +28,14 @@ const (
 	tokenPermDenied               = "token permission denied"
 	tokenInvalid                  = "token invalid"
 	tokenExpired                  = "token expired"
-	OrgRoleContributor   OrgRole  = "contributor" // in contributor team
-	OrgRoleReader        OrgRole  = "read"        // in read team
-	OrgRoleWriter        OrgRole  = "write"       // in write team
-	OrgRoleAdmin         OrgRole  = "admin"       // in owner team
-	UserTypeUser         UserType = 0
-	UserTypeOrganization UserType = 1
+	OrgRoleContributor   OrgRole  = "contributor" // OrgRoleContributor is the value of the contributor
+	OrgRoleReader        OrgRole  = "read"        // OrgRoleReader in read team
+	OrgRoleWriter        OrgRole  = "write"       // OrgRoleWriter in write team
+	OrgRoleAdmin         OrgRole  = "admin"       // OrgRoleAdmin in owner team
+	UserTypeUser         UserType = 0             // UserTypeUser is const
+	UserTypeOrganization UserType = 1             // UserTypeOrganization is const
 	iter                          = 10000
-	keyLen                        = 32
+	keyLen                        = 32 // keyLen is const
 )
 
 // User is a struct representing a user.

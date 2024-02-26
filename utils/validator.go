@@ -14,13 +14,23 @@ import (
 )
 
 const (
-	RePositiveInterger           = "^[1-9]\\d*$"
-	RePositiveScientificNotation = "^(\\d+(.{0}|.\\d+))[Ee]{1}([\\+|-]?\\d+)$"
-	RePositiveFloatPoint         = "^(?:[1-9][0-9]*\\.[0-9]+|0\\.(?!0+$)[0-9]+)$"
+	// RePositiveInterger represents the regular expression pattern for matching positive integers.
+	RePositiveInterger = "^[1-9]\\d*$"
 
-	ReURL      = "[\\w-]+(/[\\w-./?%&=]*)?"
+	// RePositiveScientificNotation represents the regular expression pattern
+	// for matching positive numbers in scientific notation.
+	RePositiveScientificNotation = "^(\\d+(.{0}|.\\d+))[Ee]{1}([\\+|-]?\\d+)$"
+
+	// RePositiveFloatPoint represents the regular expression pattern for matching positive floating-point numbers.
+	RePositiveFloatPoint = "^(?:[1-9][0-9]*\\.[0-9]+|0\\.(?!0+$)[0-9]+)$"
+
+	// ReURL represents the regular expression pattern for matching URLs.
+	ReURL = "[\\w-]+(/[\\w-./?%&=]*)?"
+
+	// ReFileName represents the regular expression pattern for matching valid file names.
 	ReFileName = "^[a-zA-Z0-9-_\\.]+$"
 
+	// ReChinesePhone represents the regular expression pattern for matching Chinese phone numbers.
 	ReChinesePhone = "^1\\d{10}$"
 )
 

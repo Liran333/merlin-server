@@ -92,7 +92,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	}
 }
 
-// check mail middleware
+// CheckMail check mail middleware
 func CheckMail(m middleware.UserMiddleWare, us app.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := m.GetUserAndExitIfFailed(ctx)

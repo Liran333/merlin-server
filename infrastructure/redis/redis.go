@@ -12,6 +12,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+const timeout = 10
+
 // RedisClient is an interface that defines methods for interacting with Redis.
 type RedisClient interface {
 	Create(context.Context, string, interface{}) *redis.StatusCmd
@@ -24,7 +26,7 @@ type RedisClient interface {
 func WithContext(f func(context.Context) error) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		10*time.Second,
+		time.Duration(timeout)*time.Second,
 	)
 	defer cancel()
 

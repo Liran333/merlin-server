@@ -5,13 +5,14 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package e2e
 
 import (
-	swagger "e2e/client"
 	"net/http"
 	"testing"
 
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swagger "e2e/client"
 )
 
 // SuiteInvite used for testing
@@ -109,8 +110,7 @@ func (s *SuiteInvite) TearDownSuite() {
 
 }
 
-//	TestInviteSuccess used for testing
-//
+// TestInviteSuccess used for testing
 // 创建邀请成功
 func (s *SuiteInvite) TestInviteSuccess() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -169,7 +169,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		Msg:     "invite me ASAP",
 	})
 
-	assert.Equalf(s.T(), 201, r2.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusCreated, r2.StatusCode, data.Msg)
 	assert.Nil(s.T(), err2)
 
 	DupInvite := getData(s.T(), DupData.Data)
@@ -191,7 +191,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		Invitee: optional.NewString(s.invitee),
 	})
 
-	assert.Equalf(s.T(), 200, r3.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusOK, r3.StatusCode, data.Msg)
 	assert.Nil(s.T(), err3)
 
 	notifications := getArrary(s.T(), data2.Data)
@@ -203,7 +203,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		}
 	}
 
-	assert.Equal(s.T(), 1, countNtf)
+	assert.Equal(s.T(), countOne, countNtf)
 
 	// 被邀请人接受邀请
 	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
@@ -242,7 +242,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 		Msg:     "invite me",
 	})
 
-	assert.Equalf(s.T(), 400, r4.StatusCode, "the user is already a member of the org")
+	assert.Equalf(s.T(), http.StatusBadRequest, r4.StatusCode, "the user is already a member of the org")
 	assert.NotNil(s.T(), err4)
 
 	members := getArrary(s.T(), data.Data)

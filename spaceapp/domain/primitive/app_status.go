@@ -22,11 +22,22 @@ const (
 )
 
 var (
-	AppStatusInit              = appStatus(appInit)
-	AppStatusServing           = appStatus(serving)
-	AppStatusBuilding          = appStatus(building)
-	AppStatusBuildFailed       = appStatus(buildFailed)
-	AppStatusStartFailed       = appStatus(startFailed)
+	// AppStatusInit represents the application status when it is in the initialization phase.
+	AppStatusInit = appStatus(appInit)
+
+	// AppStatusServing represents the application status when it is serving requests.
+	AppStatusServing = appStatus(serving)
+
+	// AppStatusBuilding represents the application status when it is being built.
+	AppStatusBuilding = appStatus(building)
+
+	// AppStatusBuildFailed represents the application status when the build process fails.
+	AppStatusBuildFailed = appStatus(buildFailed)
+
+	// AppStatusStartFailed represents the application status when the start process fails.
+	AppStatusStartFailed = appStatus(startFailed)
+
+	// AppStatusBuildSuccessfully represents the application status when the build process is successful.
 	AppStatusBuildSuccessfully = appStatus(buildSuccessfully)
 )
 

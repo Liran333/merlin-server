@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	MaxRetries = 3
+	MaxRetries = 3 // MaxRetries represents the maximum number of retries
 	timeout    = 10
 )
 

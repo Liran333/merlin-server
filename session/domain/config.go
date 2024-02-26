@@ -17,7 +17,8 @@ func Init(cfg *Config) {
 	config = *cfg
 }
 
-// Config is a struct that holds the configuration for max session num, csrf token timeout and csrf token timeout to reset.
+// Config is a struct that holds the configuration for max session num,
+// csrf token timeout and csrf token timeout to reset.
 type Config struct {
 	MaxSessionNum           int   `json:"max_session_num"`
 	CSRFTokenTimeout        int64 `json:"csrf_token_timeout"`

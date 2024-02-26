@@ -24,7 +24,10 @@ type OrgRole = string
 type Organization = user.User
 
 const (
-	InviteTypeInvite  InviteType = "invite"
+	// InviteTypeInvite represents the invite type for invitations.
+	InviteTypeInvite InviteType = "invite"
+
+	// InviteTypeRequest represents the invite type for requests.
 	InviteTypeRequest InviteType = "request"
 )
 
@@ -172,8 +175,13 @@ func ToApprove(member OrgMember, expiry int64, inviter primitive.Account) Approv
 type ApproveStatus = string
 
 const (
-	ApproveStatusPending  ApproveStatus = "pending"
+	// ApproveStatusPending represents the pending status for approval.
+	ApproveStatusPending ApproveStatus = "pending"
+
+	// ApproveStatusApproved represents the approved status for approval.
 	ApproveStatusApproved ApproveStatus = "approved"
+
+	// ApproveStatusRejected represents the rejected status for approval.
 	ApproveStatusRejected ApproveStatus = "rejected"
 )
 
