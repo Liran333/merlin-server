@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package internalservice
 
 import (
@@ -15,6 +19,7 @@ const tokenHeader = "TOKEN" // #nosec G101
 
 var noUserError = errors.New("no user")
 
+// NewAPIMiddleware creates a new instance of internalServiceAPIMiddleware.
 func NewAPIMiddleware(securityLog middleware.SecurityLog) *internalServiceAPIMiddleware {
 	return &internalServiceAPIMiddleware{
 		securityLog: securityLog,
@@ -26,14 +31,17 @@ type internalServiceAPIMiddleware struct {
 	securityLog middleware.SecurityLog
 }
 
+// Write method for internalServiceAPIMiddleware.
 func (m *internalServiceAPIMiddleware) Write(ctx *gin.Context) {
 	m.must(ctx)
 }
 
+// Read method for internalServiceAPIMiddleware.
 func (m *internalServiceAPIMiddleware) Read(ctx *gin.Context) {
 	m.must(ctx)
 }
 
+// Optional method for internalServiceAPIMiddleware.
 func (m *internalServiceAPIMiddleware) Optional(ctx *gin.Context) {
 	if v := ctx.GetHeader(tokenHeader); v == "" {
 		ctx.Next()
@@ -53,10 +61,12 @@ func (m *internalServiceAPIMiddleware) must(ctx *gin.Context) {
 	}
 }
 
+// GetUser method for internalServiceAPIMiddleware.
 func (m *internalServiceAPIMiddleware) GetUser(ctx *gin.Context) primitive.Account {
 	return nil
 }
 
+// GetUserAndExitIfFailed method for internalServiceAPIMiddleware.
 func (m *internalServiceAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account {
 	commonctl.SendError(ctx, noUserError)
 

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -13,6 +17,7 @@ import (
 	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
+// NewPermService creates a new PermService instance with the given configuration and org member.
 func NewPermService(cfg *perm.Config, org repository.OrgMember) *permService {
 	p := &permService{
 		org: org,
@@ -46,13 +51,15 @@ func checkAction(bitmap uint64, action primitive.Action) bool {
 }
 
 func isValidRole(role string) bool {
-	if role == string(user.OrgRoleAdmin) || role == string(user.OrgRoleWriter) || role == string(user.OrgRoleContributor) || role == string(user.OrgRoleReader) {
+	if role == string(user.OrgRoleAdmin) || role == string(user.OrgRoleWriter) ||
+		role == string(user.OrgRoleContributor) || role == string(user.OrgRoleReader) {
 		return true
 	}
 
 	return false
 }
 
+// Init initializes the permission service with the given configuration.
 func (p *permService) Init(cfg *perm.Config) {
 	p.permissions = make(map[primitive.ObjType]map[orgdomain.OrgRole]uint64)
 	for _, permission := range cfg.Permissions {
@@ -98,6 +105,7 @@ func (p *permService) checkInOrg(
 	return p.doCheck(user, obj, objType, op, nil)
 }
 
+// Check checks if the user has the permission to perform the operation on the object.
 // subject: a user session or a token sessioin
 // object: model, dataset, space, system
 // op: write, read

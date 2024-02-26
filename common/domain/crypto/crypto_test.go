@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package crypto
 
 import (
@@ -5,6 +9,7 @@ import (
 	"testing"
 )
 
+// TestEncDec tests the encryption and decryption process with a 32-byte key.
 func TestEncDec(t *testing.T) {
 	// init a 32byte key
 	enc := NewEncryption([]byte("12345678123456781234567812345678"))
@@ -35,6 +40,7 @@ func TestEncDec(t *testing.T) {
 	}
 }
 
+// TestLenPlain tests the decryption process with an invalid length of encrypted data.
 func TestLenPlain(t *testing.T) {
 	enc := NewEncryption([]byte("12345678123456781234567812345678"))
 	// 准备测试数据

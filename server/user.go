@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package server
 
 import (
@@ -21,9 +25,11 @@ func initUser(cfg *config.Config, services *allServices) {
 
 	token := userrepoimpl.NewTokenRepo(postgresql.DAO(cfg.User.Tables.Token))
 
-	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key))
+	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User),
+		crypto.NewEncryption(cfg.User.Key))
 
-	services.userApp = app.NewUserService(services.userRepo, git, token, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
+	services.userApp = app.NewUserService(services.userRepo, git, token,
+		loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 }
 
 func setRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {

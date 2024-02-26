@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryadapter
 
 import (
@@ -58,6 +62,7 @@ type spaceappDO struct {
 	Version int `gorm:"column:version"`
 }
 
+// TableName returns the name of the table for the spaceappDO struct.
 func (do *spaceappDO) TableName() string {
 	return spaceappTableName
 }

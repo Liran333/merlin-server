@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package domain provides domain models and functionality for managing space apps.
 package domain
 
 import (
@@ -6,11 +11,13 @@ import (
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
 
+// SpaceAppIndex represents the index for a space app.
 type SpaceAppIndex struct {
 	SpaceId  primitive.Identity
 	CommitId string
 }
 
+// SpaceApp represents a space app.
 type SpaceApp struct {
 	Id int64
 
@@ -27,6 +34,7 @@ type SpaceApp struct {
 	Version int
 }
 
+// StartBuilding starts the building process for the space app and sets the build log URL.
 func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 	if !app.Status.IsInit() {
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not init")
@@ -38,6 +46,7 @@ func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 	return nil
 }
 
+// SetBuildIsDone sets the build status of the space app based on the success parameter.
 func (app *SpaceApp) SetBuildIsDone(success bool) error {
 	if !app.Status.IsBuilding() {
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not building")
@@ -52,6 +61,7 @@ func (app *SpaceApp) SetBuildIsDone(success bool) error {
 	return nil
 }
 
+// StartService starts the service for the space app with the specified app URL and log URL.
 func (app *SpaceApp) StartService(appURL, logURL primitive.URL) error {
 	if !app.Status.IsBuildSuccessful() {
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not build successful")

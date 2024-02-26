@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package postgresql provides functionality for interacting with PostgreSQL databases.
 package postgresql
 
 import (
@@ -5,6 +10,7 @@ import (
 	"time"
 )
 
+// Config represents the configuration for PostgreSQL.
 type Config struct {
 	Host    string    `json:"host"     required:"true"`
 	User    string    `json:"user"     required:"true"`
@@ -18,6 +24,7 @@ type Config struct {
 	Code    errorCode `json:"error_code"`
 }
 
+// SetDefault sets the default values for the Config.
 func (p *Config) SetDefault() {
 	if p.MaxConn <= 0 {
 		p.MaxConn = 500
@@ -32,6 +39,7 @@ func (p *Config) SetDefault() {
 	}
 }
 
+// ConfigItems returns the configuration items for the Config.
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.Code,
@@ -60,6 +68,7 @@ type errorCode struct {
 	UniqueConstraint string `json:"unique_constraint"`
 }
 
+// SetDefault sets the default values for the errorCode.
 func (cfg *errorCode) SetDefault() {
 	if cfg.UniqueConstraint == "" {
 		cfg.UniqueConstraint = "23505"

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package server
 
 import (
@@ -23,6 +27,10 @@ const (
 	waitServerStart = 3 // 3s
 )
 
+// StartWebServer starts a web server with the given configuration.
+// It initializes the services, sets up the routers for different APIs, and starts the server.
+// If TLS key and certificate are provided, it will use HTTPS.
+// If removeCfg is true, it will remove the key and certificate files after starting the server.
 func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Duration, cfg *config.Config) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())

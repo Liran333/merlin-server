@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -7,6 +11,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// ToCmdToFile converts the given gin.Context into an app.CmdToFile object, extracting owner, name, ref,
+// and path from the context's parameters and query values.
 func ToCmdToFile(ctx *gin.Context) (*app.CmdToFile, error) {
 	owner, err := primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryimpl
 
 import (
@@ -13,6 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 )
 
+// NewInviteRepo creates a new instance of inviteRepoImpl.
 func NewInviteRepo(db postgresql.Impl) repository.Approve {
 	if err := postgresql.DB().Table(db.TableName()).AutoMigrate(&Approve{}); err != nil {
 		return nil
@@ -25,6 +30,7 @@ type inviteRepoImpl struct {
 	postgresql.Impl
 }
 
+// ListInvitation lists the invitations based on the provided command.
 func (impl *inviteRepoImpl) ListInvitation(cmd *domain.OrgInvitationListCmd) (approves []domain.Approve, err error) {
 	var v []Approve
 
@@ -60,6 +66,7 @@ func (impl *inviteRepoImpl) ListInvitation(cmd *domain.OrgInvitationListCmd) (ap
 
 }
 
+// AddInvite adds a new invite to the database.
 func (impl *inviteRepoImpl) AddInvite(o *domain.Approve) (new domain.Approve, err error) {
 	// Build query to check for an existing invitation
 	query := impl.DB().Model(&Approve{}).
@@ -94,6 +101,7 @@ func (impl *inviteRepoImpl) AddInvite(o *domain.Approve) (new domain.Approve, er
 	return
 }
 
+// SaveInvite saves an existing invite in the database.
 func (impl *inviteRepoImpl) SaveInvite(o *domain.Approve) (new domain.Approve, err error) {
 	do := toApproveDoc(o)
 	do.Version += 1
@@ -122,10 +130,12 @@ func (impl *inviteRepoImpl) SaveInvite(o *domain.Approve) (new domain.Approve, e
 	return
 }
 
+// DeleteInviteAndReqByOrg deletes invite and request records associated with the given organization account.
 func (impl *inviteRepoImpl) DeleteInviteAndReqByOrg(acc primitive.Account) error {
 	return impl.DB().Where(impl.EqualQuery(fieldOrg), acc.Account()).Delete(&Approve{}).Error
 }
 
+// AddRequest adds a new member request and returns the created request.
 func (impl *inviteRepoImpl) AddRequest(r *domain.MemberRequest) (new domain.MemberRequest, err error) {
 	r.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toRequestDoc(r)
@@ -140,6 +150,7 @@ func (impl *inviteRepoImpl) AddRequest(r *domain.MemberRequest) (new domain.Memb
 	return
 }
 
+// SaveRequest updates an existing member request and returns the updated request.
 func (impl *inviteRepoImpl) SaveRequest(r *domain.MemberRequest) (new domain.MemberRequest, err error) {
 	do := toRequestDoc(r)
 	do.Version += 1
@@ -168,6 +179,7 @@ func (impl *inviteRepoImpl) SaveRequest(r *domain.MemberRequest) (new domain.Mem
 
 }
 
+// ListRequests lists member requests based on the provided command criteria.
 func (impl *inviteRepoImpl) ListRequests(cmd *domain.OrgMemberReqListCmd) (rs []domain.MemberRequest, err error) {
 	var v []Approve
 

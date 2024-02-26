@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package redis provides a Redis client interface and utility functions for working with Redis.
 package redis
 
 import (
@@ -7,6 +12,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// RedisClient is an interface that defines methods for interacting with Redis.
 type RedisClient interface {
 	Create(context.Context, string, interface{}) *redis.StatusCmd
 	Get(context.Context, string) *redis.StringCmd
@@ -14,10 +20,11 @@ type RedisClient interface {
 	Expire(context.Context, string, time.Duration) *redis.BoolCmd
 }
 
+// WithContext is a utility function that executes a function with a context.
 func WithContext(f func(context.Context) error) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		10*time.Second, // TODO use config
+		10*time.Second,
 	)
 	defer cancel()
 

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package csrftokenrepositoryadapter
 
 import (
@@ -26,6 +30,7 @@ func (do *csrfTokenDO) MarshalBinary() ([]byte, error) {
 	return json.Marshal(do)
 }
 
+// UnmarshalBinary unmarshals the binary data into the csrfTokenDO struct.
 func (do *csrfTokenDO) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, do)
 }

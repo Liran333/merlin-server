@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -26,30 +30,39 @@ var stub1Member = &orgdomain.OrgMember{
 	Role:     user.OrgRoleWriter,
 }
 
+// Add adds a new organization member and returns it without any errors.
 func (s *stubOrg) Add(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
 	return *o, nil
 }
 
+// Save saves the given organization member and returns it without any errors.
 func (s *stubOrg) Save(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
 	return *o, nil
 }
 
+// Delete deletes the given organization member without returning any errors.
 func (s *stubOrg) Delete(*orgdomain.OrgMember) error {
 	return nil
 }
 
+// DeleteByOrg deletes all organization members of the specified organization without returning any errors.
 func (s *stubOrg) DeleteByOrg(primitive.Account) error {
 	return nil
 }
 
+// GetByOrg retrieves all organization members of the specified organization and returns them without any errors.
 func (s *stubOrg) GetByOrg(u string) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember, *stub1Member}, nil
 }
 
+// GetByOrgAndRole retrieves all organization members of the specified organization with the specified role
+// and returns them without any errors.
 func (s *stubOrg) GetByOrgAndRole(u string, r orgdomain.OrgRole) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember}, nil
 }
 
+// GetByOrgAndUser retrieves the organization member of the specified organization and user
+// and returns it without any errors.
 func (s *stubOrg) GetByOrgAndUser(org, user string) (orgdomain.OrgMember, error) {
 	if org == "org" && user == "XXXX" {
 		return *stubMember, nil
@@ -59,11 +72,13 @@ func (s *stubOrg) GetByOrgAndUser(org, user string) (orgdomain.OrgMember, error)
 	return orgdomain.OrgMember{}, fmt.Errorf("not found")
 }
 
+// GetByUser retrieves all organization members of the specified user and returns them without any errors.
 func (s *stubOrg) GetByUser(string) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember}, nil
 
 }
 
+// TestPermCheck is a test function for the permission check functionality.
 func TestPermCheck(t *testing.T) {
 	type testdata struct {
 		user    primitive.Account

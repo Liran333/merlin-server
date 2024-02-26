@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package main is the entry point for the application.
 package main
 
 import (
@@ -118,7 +123,7 @@ func main() {
 		return
 	}
 
-	//redis
+	// redis
 	if err := redisdb.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
 
@@ -127,7 +132,7 @@ func main() {
 
 	defer redisdb.Close()
 
-	//kafka
+	// kafka
 	if err := kafka.Init(&cfg.Kafka, logrus.NewEntry(logrus.StandardLogger()), o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init kafka failed, err:%s", err.Error())
 

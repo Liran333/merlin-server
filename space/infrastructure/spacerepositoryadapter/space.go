@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package spacerepositoryadapter
 
 import (
@@ -21,15 +25,16 @@ type spaceAdapter struct {
 	daoImpl
 }
 
+// Add adds a new space to the database and returns an error if any occurs.
 func (adapter *spaceAdapter) Add(space *domain.Space) error {
 	do := toSpaceDO(space)
 
 	v := adapter.db().Create(&do)
-	// TODO check if the space exists
 
 	return v.Error
 }
 
+// FindByName finds a space by its name and returns it along with an error if any occurs.
 func (adapter *spaceAdapter) FindByName(index *domain.SpaceIndex) (domain.Space, error) {
 	do := spaceDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
@@ -40,6 +45,7 @@ func (adapter *spaceAdapter) FindByName(index *domain.SpaceIndex) (domain.Space,
 	return do.toSpace(), nil
 }
 
+// FindById finds a space by its ID and returns it along with an error if any occurs.
 func (adapter *spaceAdapter) FindById(spaceId primitive.Identity) (domain.Space, error) {
 	do := spaceDO{Id: spaceId.Integer()}
 
@@ -50,12 +56,14 @@ func (adapter *spaceAdapter) FindById(spaceId primitive.Identity) (domain.Space,
 	return do.toSpace(), nil
 }
 
+// Delete deletes a space from the database by its ID and returns an error if any occurs.
 func (adapter *spaceAdapter) Delete(spaceId primitive.Identity) error {
 	return adapter.DeleteByPrimaryKey(
 		&spaceDO{Id: spaceId.Integer()},
 	)
 }
 
+// Save updates a space in the database and returns an error if any occurs.
 func (adapter *spaceAdapter) Save(space *domain.Space) error {
 	do := toSpaceDO(space)
 	do.Version += 1
@@ -79,6 +87,8 @@ func (adapter *spaceAdapter) Save(space *domain.Space) error {
 	return nil
 }
 
+// List is a method of spaceAdapter that takes a ListOption pointer as input
+// and returns a slice of SpaceSummary, total count, and an error if any occurs.
 func (adapter *spaceAdapter) List(opt *repository.ListOption) ([]repository.SpaceSummary, int, error) {
 	query := adapter.toQuery(opt)
 
@@ -118,6 +128,8 @@ func (adapter *spaceAdapter) List(opt *repository.ListOption) ([]repository.Spac
 	return r, int(total), nil
 }
 
+// Count is a method of spaceAdapter that takes a ListOption pointer as input
+// and returns the total count of spaces and an error if any occurs.
 func (adapter *spaceAdapter) Count(opt *repository.ListOption) (int, error) {
 	var total int64
 	err := adapter.toQuery(opt).Count(&total).Error
@@ -185,8 +197,6 @@ func order(t primitive.SortType) string {
 
 	case primitive.SortByRecentlyCreated:
 		return orderByDesc(fieldCreatedAt)
-
-	// TODO other type
 
 	default:
 		return ""

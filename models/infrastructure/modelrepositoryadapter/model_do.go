@@ -1,6 +1,8 @@
-package modelrepositoryadapter
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
 
-// "gorm.io/plugin/optimisticlock"
+package modelrepositoryadapter
 
 import (
 	"github.com/lib/pq"
@@ -75,12 +77,13 @@ type modelDO struct {
 	UpdatedAt  int64  `gorm:"column:updated_at"`
 	Version    int    `gorm:"column:version"`
 
-	//labels
+	// labels
 	Task       string         `gorm:"column:task;index:task"`
 	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
 	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
 }
 
+// TableName returns the table name of the model.
 func (do *modelDO) TableName() string {
 	return modelTableName
 }

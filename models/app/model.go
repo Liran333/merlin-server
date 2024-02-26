@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -18,6 +22,7 @@ var (
 	errorModelCountExceeded = allerror.NewCountExceeded("model count exceed")
 )
 
+// ModelAppService is an interface for the model application service.
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
 	Delete(primitive.Account, primitive.Identity) (string, error)
@@ -26,6 +31,7 @@ type ModelAppService interface {
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 }
 
+// NewModelAppService creates a new instance of the model application service.
 func NewModelAppService(
 	permission commonapp.ResourcePermissionAppService,
 	codeRepoApp coderepoapp.CodeRepoAppService,
@@ -44,6 +50,7 @@ type modelAppService struct {
 	repoAdapter repository.ModelRepositoryAdapter
 }
 
+// Create creates a new model.
 func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) (string, error) {
 	if err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeModel); err != nil {
 		return "", err
@@ -70,10 +77,9 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 	})
 
 	return coderepo.Id.Identity(), err
-
-	// TODO send model created event in order to add activity and operation log
 }
 
+// Delete deletes a model.
 func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Identity) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
@@ -105,11 +111,10 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return
 	}
 
-	// TODO send model deleted event
-
 	return
 }
 
+// Update updates a model.
 func (s *modelAppService) Update(
 	user primitive.Account, modelId primitive.Identity, cmd *CmdToUpdateModel,
 ) (action string, err error) {
@@ -147,11 +152,10 @@ func (s *modelAppService) Update(
 
 	err = s.repoAdapter.Save(&model)
 
-	// send model updated event to add activity
-
 	return
 }
 
+// GetByName retrieves a model by its name.
 func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelIndex) (ModelDTO, error) {
 	var dto ModelDTO
 
@@ -175,6 +179,7 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 	return toModelDTO(&model), nil
 }
 
+// List retrieves a list of models.
 func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 	ModelsDTO, error,
 ) {

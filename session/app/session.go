@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -10,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// SessionAppService is an interface for session application service.
 type SessionAppService interface {
 	Login(*CmdToLogin) (dto SessionDTO, user UserDTO, err error)
 	Logout(primitive.UUID) (string, error)
@@ -17,6 +22,7 @@ type SessionAppService interface {
 	CheckAndRefresh(*CmdToCheck) (primitive.Account, string, error)
 }
 
+// NewSessionAppService creates a new instance of sessionAppService.
 func NewSessionAppService(
 	oidc repository.OIDCAdapter,
 	userApp userapp.UserService,
@@ -42,6 +48,7 @@ type sessionAppService struct {
 	csrfTokenRepo repository.CSRFTokenRepositoryAdapter
 }
 
+// Login logs in a user and returns the session DTO, user DTO, and error.
 func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO, err error) {
 	login, err := s.oidc.GetByCode(cmd.Code, cmd.RedirectURI)
 	if err != nil {
@@ -87,6 +94,7 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 	return
 }
 
+// Logout logs out a user and returns the ID token and error.
 func (s *sessionAppService) Logout(loginId primitive.UUID) (string, error) {
 	login, err := s.loginRepo.Find(loginId)
 	if err != nil {

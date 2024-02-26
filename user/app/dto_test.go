@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -7,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
+// TestCreateCmdValidate is a test function for validating the CreateCmd struct.
 func TestCreateCmdValidate(t *testing.T) {
 	validAcc := primitive.CreateAccount("xxx")
 	validEmail, _ := primitive.NewEmail("yyy")

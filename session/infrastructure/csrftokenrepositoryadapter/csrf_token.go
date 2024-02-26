@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package csrftokenrepositoryadapter provides an adapter for the CSRF token repository.
 package csrftokenrepositoryadapter
 
 import (
@@ -14,6 +19,7 @@ type dao interface {
 	IsKeyNotExists(err error) bool
 }
 
+// NewCSRFTokenAdapter creates a new instance of the CSRF token adapter with the given DAO.
 func NewCSRFTokenAdapter(d dao) *csrfTokenAdapter {
 	return &csrfTokenAdapter{
 		dao: d,
@@ -24,6 +30,7 @@ type csrfTokenAdapter struct {
 	dao dao
 }
 
+// Add adds a CSRF token to the repository.
 func (adapter *csrfTokenAdapter) Add(t *domain.CSRFToken) error {
 	v := toCSRFTokenDO(t)
 
@@ -31,10 +38,12 @@ func (adapter *csrfTokenAdapter) Add(t *domain.CSRFToken) error {
 	return adapter.dao.SetWithExpiry(t.Id.String(), &v, t.LifeTime())
 }
 
+// Save saves a CSRF token to the repository.
 func (adapter *csrfTokenAdapter) Save(t *domain.CSRFToken) error {
 	return adapter.Add(t)
 }
 
+// Find finds a CSRF token in the repository by its ID.
 func (adapter *csrfTokenAdapter) Find(tid primitive.UUID) (domain.CSRFToken, error) {
 	var do csrfTokenDO
 

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -10,6 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// SuiteInvite used for testing
 type SuiteInvite struct {
 	suite.Suite
 	name         string
@@ -26,6 +31,7 @@ type SuiteInvite struct {
 	inviteeId    string
 }
 
+// SetupSuite used for testing
 func (s *SuiteInvite) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
@@ -71,6 +77,7 @@ func (s *SuiteInvite) SetupSuite() {
 	s.orgId = getString(s.T(), o["id"])
 }
 
+// TearDownSuite used for testing
 func (s *SuiteInvite) TearDownSuite() {
 	data, r, err := Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
@@ -102,6 +109,8 @@ func (s *SuiteInvite) TearDownSuite() {
 
 }
 
+//	TestInviteSuccess used for testing
+//
 // 创建邀请成功
 func (s *SuiteInvite) TestInviteSuccess() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -137,6 +146,7 @@ func (s *SuiteInvite) TestInviteSuccess() {
 	assert.Nil(s.T(), err)
 }
 
+// TestInviteAprove used for testing
 // 接受邀请
 func (s *SuiteInvite) TestInviteAprove() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -293,6 +303,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Nil(s.T(), err)
 }
 
+// TestInviteInvalidPerm used for testing
 // 无效的权限
 func (s *SuiteInvite) TestInviteInvalidPerm() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -306,6 +317,7 @@ func (s *SuiteInvite) TestInviteInvalidPerm() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestInviteInvalidOrgname used for testing
 // 无效的名字
 func (s *SuiteInvite) TestInviteInvalidOrgname() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -329,6 +341,7 @@ func (s *SuiteInvite) TestInviteInvalidOrgname() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestInviteInvalidUser used for testing
 // 无效的用户名
 func (s *SuiteInvite) TestInviteInvalidUser() {
 	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
@@ -352,6 +365,7 @@ func (s *SuiteInvite) TestInviteInvalidUser() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestInvite used for testing
 func TestInvite(t *testing.T) {
 	suite.Run(t, new(SuiteInvite))
 }

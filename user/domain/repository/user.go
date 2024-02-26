@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repository
 
 import (
@@ -6,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
+// ListOption is a struct for defining options when listing resources.
 type ListOption struct {
 	// can't define Name as domain.ResourceName
 	// because the Name can be subpart of the real resource name
@@ -26,8 +31,8 @@ type ListOption struct {
 	CountPerPage int
 }
 
+// User is an interface for user-related operations.
 type User interface {
-	// user
 	AddUser(*domain.User) (domain.User, error)
 	SaveUser(*domain.User) (domain.User, error)
 	DeleteUser(*domain.User) error
@@ -35,7 +40,7 @@ type User interface {
 	GetUserAvatarId(domain.Account) (primitive.AvatarId, error)
 	GetUsersAvatarId([]string) ([]domain.User, error)
 	GetUserFullname(domain.Account) (string, error)
-	// org
+
 	AddOrg(*org.Organization) (org.Organization, error)
 	SaveOrg(*org.Organization) (org.Organization, error)
 	DeleteOrg(*org.Organization) error
@@ -43,6 +48,6 @@ type User interface {
 	GetOrgByName(primitive.Account) (org.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
 	GetOrgCountByOwner(primitive.Account) (int64, error)
-	// list
+
 	ListAccount(*ListOption) ([]domain.User, int, error)
 }

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import (
@@ -13,6 +17,7 @@ var (
 	node        *snowflake.Node
 )
 
+// Init initializes the configuration with the given Config struct.
 func Init(cfg *Config) (err error) {
 	msdConfig = cfg.MSDConfig
 
@@ -33,14 +38,14 @@ func Init(cfg *Config) (err error) {
 	return
 }
 
-// Config
+// Config represents the main configuration structure.
 type Config struct {
 	MSDConfig
 
 	Licenses []string `json:"licenses" required:"true"`
 }
 
-// MSDConfig
+// MSDConfig represents the configuration for MSD.
 type MSDConfig struct {
 	MaxNameLength     int      `json:"max_name_length"`
 	MinNameLength     int      `json:"min_name_length"`
@@ -50,6 +55,7 @@ type MSDConfig struct {
 	reservedAccounts  sets.Set[string]
 }
 
+// SetDefault sets default values for MSDConfig if they are not provided.
 func (cfg *MSDConfig) SetDefault() {
 	if cfg.MaxNameLength <= 0 {
 		cfg.MaxNameLength = 50

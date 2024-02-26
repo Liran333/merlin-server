@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package main is the entry point for the application.
 package main
 
 import (
@@ -636,7 +641,6 @@ func init() {
 	orgCmd.AddCommand(orgCheckCmd)
 	orgCmd.AddCommand(memberAcceptCmd)
 	orgCmd.AddCommand(requestCmd)
-	// 添加命令行参数
 
 	orgAddCmd.Flags().StringP("name", "n", "", "org name")
 	orgAddCmd.Flags().StringP("website", "w", "", "org website")

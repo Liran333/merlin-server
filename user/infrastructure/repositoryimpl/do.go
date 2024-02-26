@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package repositoryimpl provides the implementation of repository interfaces for user and token entities.
 package repositoryimpl
 
 import (
@@ -28,6 +33,7 @@ var (
 	userTableName  string
 )
 
+// UserDO represents the database model for the User entity.
 type UserDO struct {
 	postgresql.CommonModel
 	Desc              string `gorm:"column:desc"`
@@ -218,10 +224,12 @@ func (u *UserDO) toOrg(e crypto.Encrypter) (o org.Organization, err error) {
 	return
 }
 
+// TableName returns the table name for the UserDO struct in the database.
 func (do *UserDO) TableName() string {
 	return userTableName
 }
 
+// TokenDO represents the database model for the Token entity.
 type TokenDO struct {
 	postgresql.CommonModel
 
@@ -236,6 +244,7 @@ type TokenDO struct {
 	Permission string `gorm:"column:permission"`
 }
 
+// TableName returns the table name for the TokenDO struct in the database.
 func (do *TokenDO) TableName() string {
 	return tokenTableName
 }

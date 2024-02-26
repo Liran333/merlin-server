@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -12,6 +16,7 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteOrg used for testing
 type SuiteOrg struct {
 	suite.Suite
 	name         string
@@ -25,6 +30,7 @@ type SuiteOrg struct {
 	owerId       string
 }
 
+// SetupSuite used for testing
 func (s *SuiteOrg) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
@@ -46,10 +52,12 @@ func (s *SuiteOrg) SetupSuite() {
 	s.T().Logf("owerId: %s", s.owerId)
 }
 
+// TearDownSuite used for testing
 func (s *SuiteOrg) TearDownSuite() {
 
 }
 
+// TestOrgCreate used for testing
 // 正常创建一个组织
 func (s *SuiteOrg) TestOrgCreate() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -98,6 +106,7 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgCreateFail used for testing
 // 创建一个组织昵称必填
 func (s *SuiteOrg) TestOrgCreateFail() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -106,11 +115,12 @@ func (s *SuiteOrg) TestOrgCreateFail() {
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
-	assert.Equal(s.T(), 400, r.StatusCode, "org fullname can't be empty")
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "org fullname can't be empty")
 	assert.NotNil(s.T(), err)
 }
 
-// // 创建组织失败
+// TestOrgCreateFailedNoToken used for testing
+// 创建组织失败
 // 未登录用户
 func (s *SuiteOrg) TestOrgCreateFailedNoToken() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -123,6 +133,7 @@ func (s *SuiteOrg) TestOrgCreateFailedNoToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidNameLen used for testing
 // 无效的组织名：名字过长
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -134,6 +145,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidNameConflict used for testing
 // 组织名已存在
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -154,6 +166,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidNameReserved used for testing
 // 组织名是保留名称
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameReserved() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -166,6 +179,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameReserved() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedEmptyFullname used for testing
 // 空fullname
 func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -186,6 +200,7 @@ func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidAvatarid used for testing
 // 无效的avatarid
 func (s *SuiteOrg) TestOrgCreateFailedInvalidAvatarid() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -199,6 +214,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidAvatarid() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidDesc used for testing
 // 无效的desc
 func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -212,6 +228,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgCreateFailedInvalidWebsite used for testing
 // 无效的website
 func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 	d := swagger.ControllerOrgCreateRequest{
@@ -225,6 +242,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgListEmpty used for testing
 // 名下无组织时，查询个人组织返回一个空列表
 func (s *SuiteOrg) TestOrgListEmpty() {
 	// make sure the org is not exist
@@ -292,6 +310,7 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 	assert.Equal(s.T(), 0, count)
 }
 
+// TestOrgNonexist used for testing
 // 查询不存在的组织
 func (s *SuiteOrg) TestOrgNonexist() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameGet(Auth, "nonexist")
@@ -303,6 +322,7 @@ func (s *SuiteOrg) TestOrgNonexist() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgOwnerSearch used for testing
 // 用户可以批量查询某个用户所拥有的组织
 func (s *SuiteOrgModel) TestOrgOwnerSearch() {
 	// list all
@@ -314,6 +334,7 @@ func (s *SuiteOrgModel) TestOrgOwnerSearch() {
 	assert.NotEmpty(s.T(), data.Data)
 }
 
+// TestOrgMemberSearch used for testing
 // 用户可以批量查询某个用户所属的组织
 func (s *SuiteOrgModel) TestOrgMemberSearch() {
 	// list all
@@ -325,6 +346,7 @@ func (s *SuiteOrgModel) TestOrgMemberSearch() {
 	assert.NotEmpty(s.T(), data.Data)
 }
 
+// TestOrgCreateFailedInvalidNameChars used for testing
 // 无效的组织名, 名字过长, 为空
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 	// Slice of invalid names
@@ -342,11 +364,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 
 		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 		// Expect a 400 Bad Request response due to invalid name
-		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+name)
+		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
+			"Expected a 400 Bad Request response for invalid name: "+name)
 		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+name)
 	}
 }
 
+// TestOrgCreateFailedInvalidFullNameChars used for testing
 // 无效的组织昵称, 名字过长, 为空
 func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 	// Slice of invalid names
@@ -364,11 +388,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 
 		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 		// Expect a 400 Bad Request response due to invalid name
-		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "Expected a 400 Bad Request response for invalid name: "+fullname)
+		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
+			"Expected a 400 Bad Request response for invalid name: "+fullname)
 		assert.NotNil(s.T(), err, "Expected an error due to invalid name: "+fullname)
 	}
 }
 
+// TestOrg used for testing
 func TestOrg(t *testing.T) {
 	suite.Run(t, new(SuiteOrg))
 }

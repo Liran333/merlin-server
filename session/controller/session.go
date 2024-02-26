@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -17,6 +21,7 @@ const (
 	cookieCSRFToken = "csrf_token"
 )
 
+// AddRouterForSessionController adds routes for session controller to the given router group.
 func AddRouterForSessionController(
 	rg *gin.RouterGroup,
 	s app.SessionAppService,
@@ -31,6 +36,7 @@ func AddRouterForSessionController(
 	rg.PUT("/v1/session", m.Write, l.Write, pc.Logout)
 }
 
+// SessionController is a struct that holds the session app service.
 type SessionController struct {
 	s app.SessionAppService
 }

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -9,6 +13,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// AddRouteForSpaceRestfulController adds routes to the given router group for the SpaceRestfulController.
 func AddRouteForSpaceRestfulController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
@@ -30,6 +35,7 @@ func AddRouteForSpaceRestfulController(
 	r.GET("/v1/space", m.Optional, ctl.List)
 }
 
+// SpaceRestfulController is a struct that holds the necessary dependencies for handling space-related operations.
 type SpaceRestfulController struct {
 	SpaceController
 }

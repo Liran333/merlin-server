@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -10,6 +14,7 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteOrgModify used for testing
 type SuiteOrgModify struct {
 	suite.Suite
 	name         string
@@ -23,6 +28,7 @@ type SuiteOrgModify struct {
 	owerId       string
 }
 
+// SetupSuite used for testing
 func (s *SuiteOrgModify) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
@@ -44,10 +50,12 @@ func (s *SuiteOrgModify) SetupSuite() {
 	s.T().Logf("owerId: %s", s.owerId)
 }
 
+// TearDownSuite used for testing
 func (s *SuiteOrgModify) TearDownSuite() {
 
 }
 
+// TestOrgCreate used for testing
 // 组织管理员修改组织的名称
 func (s *SuiteOrgModify) TestOrgCreate() {
 	//创建组织
@@ -74,6 +82,7 @@ func (s *SuiteOrgModify) TestOrgCreate() {
 	assert.Nil(s.T(), err3)
 }
 
+// TestOrgDeleteFail used for testing
 // 其他人无法删除组织
 func (s *SuiteOrgModify) TestOrgDeleteFail() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth2, s.name)
@@ -81,6 +90,7 @@ func (s *SuiteOrgModify) TestOrgDeleteFail() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestOrgModify used for testing
 func TestOrgModify(t *testing.T) {
 	suite.Run(t, new(SuiteOrgModify))
 }

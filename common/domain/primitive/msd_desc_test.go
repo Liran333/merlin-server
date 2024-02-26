@@ -1,7 +1,12 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import "testing"
 
+// TestMSDDescEqual tests the equality of two MSDDesc instances.
 func TestMSDDescEqual(t *testing.T) {
 	var desc1 MSDDesc
 	var desc2 MSDDesc

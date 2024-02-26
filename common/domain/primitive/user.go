@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import (
@@ -12,11 +16,12 @@ var (
 	regUserName = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 )
 
-// Account
+// Account is an interface that represents an account.
 type Account interface {
 	Account() string
 }
 
+// NewAccount creates a new account with the given name.
 func NewAccount(v string) (Account, error) {
 	if v == "" {
 		return nil, errors.New("empty name")
@@ -28,7 +33,8 @@ func NewAccount(v string) (Account, error) {
 
 	n := len(v)
 	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
-		return nil, fmt.Errorf("invalid name length, should between %d and %d", msdConfig.MinNameLength, msdConfig.MaxNameLength)
+		return nil, fmt.Errorf("invalid name length, should between %d and %d",
+			msdConfig.MinNameLength, msdConfig.MaxNameLength)
 	}
 
 	if !regUserName.MatchString(v) {
@@ -45,15 +51,17 @@ func CreateAccount(v string) Account {
 
 type dpAccount string
 
+// Account returns the account name.
 func (r dpAccount) Account() string {
 	return string(r)
 }
 
-// Account
+// TokenName is an interface that represents a token name.
 type TokenName interface {
 	TokenName() string
 }
 
+// NewTokenName creates a new token name with the given name.
 func NewTokenName(v string) (TokenName, error) {
 	if v == "" {
 		return nil, errors.New("empty token name")
@@ -61,7 +69,8 @@ func NewTokenName(v string) (TokenName, error) {
 
 	n := len(v)
 	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
-		return nil, fmt.Errorf("invalid token name length, should between %d and %d", msdConfig.MinNameLength, msdConfig.MaxNameLength)
+		return nil, fmt.Errorf("invalid token name length, should between %d and %d",
+			msdConfig.MinNameLength, msdConfig.MaxNameLength)
 	}
 
 	if !regUserName.MatchString(v) {
@@ -75,13 +84,14 @@ func NewTokenName(v string) (TokenName, error) {
 	return dpTokenName(v), nil
 }
 
-// CreateAccount is usually called internally, such as repository.
+// CreateTokenName is usually called internally, such as repository.
 func CreateTokenName(v string) TokenName {
 	return dpTokenName(v)
 }
 
 type dpTokenName string
 
+// TokenName returns the token name.
 func (r dpTokenName) TokenName() string {
 	return string(r)
 }

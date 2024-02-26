@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package e2e provides end-to-end testing functionality for the application.
 package e2e
 
 import (
@@ -22,6 +27,7 @@ var (
 	InteralApi *swagger.APIClient
 )
 
+// LoadFromYaml used for testing
 func LoadFromYaml(path string, cfg *swagger.Configuration) error {
 	b, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
@@ -64,6 +70,7 @@ func getToken() []string {
 	return res
 }
 
+// TestMain used for testing
 func TestMain(m *testing.M) {
 	api := swagger.NewConfiguration()
 	if err := LoadFromYaml("./api.yaml", api); err != nil {

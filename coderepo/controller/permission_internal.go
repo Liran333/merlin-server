@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -15,6 +19,7 @@ import (
 
 var errorNoPermission = allerror.NewNoPermission("no permission")
 
+// AddRouteForCodeRepoPermissionInternalController adds routes for CodeRepoPermissionInternalController.
 func AddRouteForCodeRepoPermissionInternalController(
 	r *gin.RouterGroup,
 	s commonapp.ResourcePermissionAppService,
@@ -31,6 +36,7 @@ func AddRouteForCodeRepoPermissionInternalController(
 	r.POST(`/v1/coderepo/permission/read`, m.Write, ctl.Read)
 }
 
+// PermissionInternalController is a struct that holds the necessary services and adapters for handling permission-related operations.
 type PermissionInternalController struct {
 	ps   commonapp.ResourcePermissionAppService
 	repo resourceadapter.ResourceAdapter

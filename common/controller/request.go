@@ -1,6 +1,10 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
-// reqToListUserModels
+// CommonListRequest is a struct that holds common parameters for list requests.
 type CommonListRequest struct {
 	SortBy       string `form:"sort_by"`
 	Count        bool   `form:"count"`

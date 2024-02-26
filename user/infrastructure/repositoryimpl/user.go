@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryimpl
 
 import (
@@ -15,6 +19,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+// NewUserRepo creates a new user repository with the given database implementation and encryption utility.
 func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 	userTableName = db.TableName()
 
@@ -30,6 +35,7 @@ type userRepoImpl struct {
 	e crypto.Encrypter
 }
 
+// AddOrg adds a new organization to the repository and returns it.
 func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err error) {
 	o.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toOrgDO(o)
@@ -42,6 +48,7 @@ func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err
 	return do.toOrg(impl.e)
 }
 
+// SaveOrg saves an existing organization in the repository and returns it.
 func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, err error) {
 	do := toOrgDO(o)
 	do.Version += 1
@@ -69,6 +76,7 @@ func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, er
 	return tmpDo.toOrg(impl.e)
 }
 
+// DeleteOrg deletes an organization from the repository by its primary key.
 func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
 	tmpDo := &UserDO{}
 	tmpDo.ID = o.Id.Integer()
@@ -78,6 +86,7 @@ func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
 	)
 }
 
+// CheckName checks if the given name exists in the database.
 // check if the name is available
 // return true mean the name is available
 // return false mean the name is not available
@@ -92,6 +101,7 @@ func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
 	return false
 }
 
+// GetOrgByName retrieves an organization by its name.
 func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organization, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
@@ -104,6 +114,7 @@ func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organiz
 	return tmpDo.toOrg(impl.e)
 }
 
+// GetOrgByOwner retrieves organizations owned by the given account.
 func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Organization, err error) {
 	query := impl.DB().Where(
 		impl.EqualQuery(fieldOwner), account.Account(),
@@ -127,6 +138,7 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 	return
 }
 
+// GetOrgCountByOwner retrieves the count of organizations owned by the given account.
 func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total int64, err error) {
 	err = impl.DB().
 		Where(impl.EqualQuery(fieldOwner), account.Account()).
@@ -136,6 +148,7 @@ func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total i
 	return
 }
 
+// AddUser adds a new user to the database.
 func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 	u.Id = primitive.CreateIdentity(primitive.GetId())
 	do, err := toUserDO(u, impl.e)
@@ -152,6 +165,7 @@ func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 	return do.toUser(impl.e)
 }
 
+// SaveUser saves the given user to the database and returns the updated user.
 func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) {
 	do, err := toUserDO(u, impl.e)
 	if err != nil {
@@ -183,6 +197,7 @@ func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) 
 	return tmpDo.toUser(impl.e)
 }
 
+// DeleteUser deletes the given user from the database.
 func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
 	tmpDo := &UserDO{}
 	tmpDo.ID = u.Id.Integer()
@@ -192,6 +207,7 @@ func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
 	)
 }
 
+// GetByAccount retrieves a user by their account information.
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
@@ -204,6 +220,7 @@ func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, e
 	return tmpDo.toUser(impl.e)
 }
 
+// GetUserFullname retrieves the full name of a user by their account information.
 func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
@@ -215,6 +232,7 @@ func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname stri
 	return tmpDo.Fullname, nil
 }
 
+// GetUserAvatarId retrieves the avatar ID of a user by their account information.
 func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id primitive.AvatarId, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
@@ -226,6 +244,7 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id primitive.
 	return primitive.CreateAvatarId(tmpDo.AvatarId), nil
 }
 
+// GetUsersAvatarId retrieves the avatar IDs of multiple users by their names.
 func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User, err error) {
 	query := impl.DB().Where(
 		impl.InFilter(fieldName), names,
@@ -249,6 +268,7 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 	return
 }
 
+// ListAccount lists users based on the provided ListOption.
 func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domain.User, count int, err error) {
 	query := impl.DB()
 
@@ -307,8 +327,6 @@ func (impl *userRepoImpl) order(t primitive.SortType) string {
 
 	case primitive.SortByRecentlyCreated:
 		return impl.OrderByDesc(fieldCreatedAt)
-
-	// TODO other type
 
 	default:
 		return ""

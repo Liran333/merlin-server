@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -21,10 +25,12 @@ var (
 	errorSpaceCountExceeded = allerror.NewCountExceeded("space count exceed")
 )
 
+// Permission is an interface for checking permissions.
 type Permission interface {
 	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
 }
 
+// SpaceAppService is an interface for space application services.
 type SpaceAppService interface {
 	Create(primitive.Account, *CmdToCreateSpace) (string, error)
 	Delete(primitive.Account, primitive.Identity) (string, error)
@@ -33,6 +39,7 @@ type SpaceAppService interface {
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 }
 
+// NewSpaceAppService creates a new instance of SpaceAppService.
 func NewSpaceAppService(
 	permission commonapp.ResourcePermissionAppService,
 	msgAdapter message.SpaceMessage,
@@ -54,6 +61,7 @@ type spaceAppService struct {
 	repoAdapter repository.SpaceRepositoryAdapter
 }
 
+// Create creates a new space with the given command and returns the ID of the created space.
 func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) (string, error) {
 	err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeSpace)
 	if err != nil {
@@ -83,10 +91,9 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	})
 
 	return coderepo.Id.Identity(), err
-
-	// TODO send space created event in order to add activity and operation log
 }
 
+// Delete deletes the space with the given space ID and returns the action performed.
 func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Identity) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
@@ -126,6 +133,7 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 	return
 }
 
+// Update updates the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceAppService) Update(
 	user primitive.Account, spaceId primitive.Identity, cmd *CmdToUpdateSpace,
 ) (action string, err error) {
@@ -171,6 +179,7 @@ func (s *spaceAppService) Update(
 	return
 }
 
+// GetByName retrieves a space by its name and returns the corresponding SpaceDTO.
 func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceIndex) (SpaceDTO, error) {
 	var dto SpaceDTO
 
@@ -194,6 +203,7 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 	return toSpaceDTO(&space), nil
 }
 
+// List retrieves a list of spaces based on the provided command parameters and returns the corresponding SpacesDTO.
 func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 	SpacesDTO, error,
 ) {

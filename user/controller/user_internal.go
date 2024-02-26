@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/app"
 )
 
+// AddRouterForUserInternalController adds routes for user internal controller to the given router group.
 func AddRouterForUserInternalController(
 	rg *gin.RouterGroup,
 	us app.UserService,
@@ -23,6 +28,7 @@ func AddRouterForUserInternalController(
 
 }
 
+// UserInernalController is a struct that holds references to user service and user middleware.
 type UserInernalController struct {
 	s app.UserService
 	m middleware.UserMiddleWare

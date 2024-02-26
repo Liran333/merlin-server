@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -13,6 +17,7 @@ var (
 	errorSpaceAppNotFound = allerror.NewNotFound(allerror.ErrorCodeSpaceAppNotFound, "not found")
 )
 
+// SpaceappInternalAppService is an interface that defines the methods for creating and managing a SpaceApp.
 type SpaceappInternalAppService interface {
 	Create(cmd *CmdToCreateApp) error
 	NotifyBuildIsStarted(cmd *CmdToNotifyBuildIsStarted) error
@@ -36,10 +41,8 @@ type spaceappInternalAppService struct {
 	repo repository.Repository
 }
 
-// Create
+// Create creates a new SpaceApp in the spaceappInternalAppService.
 func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
-	// TODO check if it is the space repo
-	// TODO check if it is the newest commit
 
 	v := domain.SpaceApp{
 		Status:        appprimitive.AppStatusInit,
@@ -55,7 +58,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	return s.msg.SendSpaceAppCreatedEvent(&e)
 }
 
-// NotifyBuildIsStarted
+// NotifyBuildIsStarted notifies that the build process of a SpaceApp has started.
 func (s *spaceappInternalAppService) NotifyBuildIsStarted(cmd *CmdToNotifyBuildIsStarted) error {
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
@@ -73,7 +76,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsStarted(cmd *CmdToNotifyBuildI
 	return s.repo.Save(&v)
 }
 
-// NotifyBuildIsDone
+// NotifyBuildIsDone notifies that the build process of a SpaceApp has finished.
 func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error {
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
@@ -91,7 +94,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDo
 	return s.repo.Save(&v)
 }
 
-// NotifyServiceIsStarted
+// NotifyServiceIsStarted notifies that a service of a SpaceApp has started.
 func (s *spaceappInternalAppService) NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error {
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {

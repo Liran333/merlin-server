@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package repository provides interfaces for interacting with models and model labels in the domain.
 package repository
 
 import (
@@ -5,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain"
 )
 
+// ModelSummary represents a summary of a model.
 type ModelSummary struct {
 	Id            string `json:"id"`
 	Name          string `json:"name"`
@@ -17,6 +23,7 @@ type ModelSummary struct {
 	DownloadCount int    `json:"download_count"`
 }
 
+// ListOption represents options for listing models.
 type ListOption struct {
 	// can't define Name as domain.ResourceName
 	// because the Name can be subpart of the real resource name
@@ -43,6 +50,7 @@ type ListOption struct {
 	CountPerPage int
 }
 
+// Pagination calculates the offset for pagination.
 func (opt *ListOption) Pagination() (bool, int) {
 	if opt.PageNum > 0 && opt.CountPerPage > 0 {
 		return true, (opt.PageNum - 1) * opt.CountPerPage
@@ -51,6 +59,7 @@ func (opt *ListOption) Pagination() (bool, int) {
 	return false, 0
 }
 
+// ModelRepositoryAdapter represents an interface for managing models.
 type ModelRepositoryAdapter interface {
 	Add(*domain.Model) error
 	FindByName(*domain.ModelIndex) (domain.Model, error)
@@ -61,6 +70,7 @@ type ModelRepositoryAdapter interface {
 	Count(*ListOption) (int, error)
 }
 
+// ModelLabelsRepoAdapter represents an interface for managing model labels.
 type ModelLabelsRepoAdapter interface {
 	Save(primitive.Identity, *domain.ModelLabels) error
 }

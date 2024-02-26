@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import (
@@ -10,8 +14,13 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// InviteType represents the type of invitation.
 type InviteType = string
+
+// OrgRole represents the role of a user in an organization.
 type OrgRole = string
+
+// Organization represents a user's organization.
 type Organization = user.User
 
 const (
@@ -19,6 +28,7 @@ const (
 	InviteTypeRequest InviteType = "request"
 )
 
+// OrgCreatedCmd represents the command for creating an organization.
 type OrgCreatedCmd struct {
 	Name        primitive.Account     `json:"name"`
 	FullName    primitive.MSDFullname `json:"fullname"`
@@ -28,11 +38,13 @@ type OrgCreatedCmd struct {
 	Owner       primitive.Account     `json:"owner"`
 }
 
+// OrgDeletedCmd represents the command for deleting an organization.
 type OrgDeletedCmd struct {
 	Actor primitive.Account
 	Name  primitive.Account
 }
 
+// Validate validates the OrgDeletedCmd fields.
 func (cmd OrgDeletedCmd) Validate() error {
 	if cmd.Name == nil {
 		return allerror.NewInvalidParam("invalid org name")
@@ -45,6 +57,7 @@ func (cmd OrgDeletedCmd) Validate() error {
 	return nil
 }
 
+// OrgUpdatedBasicInfoCmd represents the command for updating basic information of an organization.
 type OrgUpdatedBasicInfoCmd struct {
 	Actor        primitive.Account
 	OrgName      primitive.Account
@@ -56,6 +69,7 @@ type OrgUpdatedBasicInfoCmd struct {
 	AvatarId     string
 }
 
+// Validate validates the OrgUpdatedBasicInfoCmd fields.
 func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 	if cmd.Website != "" && !utils.IsUrl(cmd.Website) {
 		return allerror.NewInvalidParam("invalid website")
@@ -69,13 +83,16 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 		return allerror.NewInvalidParam("org name is nil")
 	}
 
-	if cmd.DefaultRole != "" && cmd.DefaultRole != string(user.OrgRoleAdmin) && cmd.DefaultRole != string(user.OrgRoleReader) && cmd.DefaultRole != string(user.OrgRoleWriter) && cmd.DefaultRole != string(user.OrgRoleContributor) {
+	if cmd.DefaultRole != "" && cmd.DefaultRole != string(user.OrgRoleAdmin) &&
+		cmd.DefaultRole != string(user.OrgRoleReader) && cmd.DefaultRole != string(user.OrgRoleWriter) &&
+		cmd.DefaultRole != string(user.OrgRoleContributor) {
 		return allerror.NewInvalidParam("invalid default role")
 	}
 
 	return nil
 }
 
+// ToOrg updates the Organization object with the values from the OrgUpdatedBasicInfoCmd.
 func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error) {
 	if cmd.AvatarId != o.AvatarId.AvatarId() {
 		o.AvatarId, err = primitive.NewAvatarId(cmd.AvatarId)
@@ -114,6 +131,7 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 	return
 }
 
+// ToOrg creates a new Organization object based on the values in the OrgCreatedCmd.
 func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
 	if cmd.FullName == nil {
 		err = allerror.NewInvalidParam("org fullname is empty")
@@ -133,11 +151,13 @@ func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
 	return
 }
 
+// OrgListOptions represents the options for listing organizations.
 type OrgListOptions struct {
-	Username string // filter by member user name
+	Username string // filter by member username
 	Owner    string // filter by owner name
 }
 
+// ToApprove converts an OrgMember, expiry time, and inviter account to an Approval struct.
 func ToApprove(member OrgMember, expiry int64, inviter primitive.Account) Approve {
 	return Approve{
 		OrgName:  member.OrgName,
@@ -148,6 +168,7 @@ func ToApprove(member OrgMember, expiry int64, inviter primitive.Account) Approv
 	}
 }
 
+// ApproveStatus represents the status of an approval for a member to join an organization.
 type ApproveStatus = string
 
 const (
@@ -156,6 +177,7 @@ const (
 	ApproveStatusRejected ApproveStatus = "rejected"
 )
 
+// OrgMember represents an organization member with its details.
 type OrgMember struct {
 	Id        primitive.Identity `json:"id"`
 	Username  primitive.Account  `json:"user_name"`
@@ -169,6 +191,7 @@ type OrgMember struct {
 	Version   int
 }
 
+// MemberRequest represents a request to manage organization membership.
 type MemberRequest struct {
 	Id primitive.Identity `json:"id"`
 
@@ -185,6 +208,7 @@ type MemberRequest struct {
 	Version   int
 }
 
+// Approve represents an approval for a member to join an organization.
 type Approve struct {
 	Id primitive.Identity `json:"id"`
 
@@ -204,6 +228,7 @@ type Approve struct {
 	Version   int
 }
 
+// ToMember converts an Approve struct to an OrgMember struct.
 func (a Approve) ToMember() OrgMember {
 	return OrgMember{
 		Username: a.Username,
@@ -214,6 +239,7 @@ func (a Approve) ToMember() OrgMember {
 	}
 }
 
+// Validate validates the fields of the OrgInviteMemberCmd struct.
 func (cmd OrgInviteMemberCmd) Validate() error {
 	if cmd.Role != string(user.OrgRoleContributor) &&
 		cmd.Role != string(user.OrgRoleReader) &&
@@ -236,6 +262,7 @@ func (cmd OrgInviteMemberCmd) Validate() error {
 	return nil
 }
 
+// OrgRemoveMemberCmd represents a command to remove a member from an organization.
 type OrgRemoveMemberCmd struct {
 	Actor   primitive.Account
 	Account primitive.Account
@@ -243,6 +270,7 @@ type OrgRemoveMemberCmd struct {
 	Msg     string
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgRemoveMemberCmd) Validate() error {
 	if cmd.Account == nil {
 		return allerror.NewInvalidParam("invalid account")
@@ -259,6 +287,7 @@ func (cmd OrgRemoveMemberCmd) Validate() error {
 	return nil
 }
 
+// ToMember converts the command to an OrgMember.
 func (cmd OrgRemoveMemberCmd) ToMember() OrgMember {
 	return OrgMember{
 		Username: cmd.Account,
@@ -266,12 +295,15 @@ func (cmd OrgRemoveMemberCmd) ToMember() OrgMember {
 	}
 }
 
+// OrgEditMemberCmd represents a command to edit a member's role in an organization.
 type OrgEditMemberCmd struct {
 	Actor   primitive.Account
 	Account primitive.Account
 	Org     primitive.Account
 	Role    string
 }
+
+// OrgInviteMemberCmd represents a command to invite a member to an organization.
 type OrgInviteMemberCmd struct {
 	Actor   primitive.Account
 	Account primitive.Account
@@ -280,6 +312,7 @@ type OrgInviteMemberCmd struct {
 	Msg     string
 }
 
+// ToApprove converts the command to an Approval.
 func (cmd OrgInviteMemberCmd) ToApprove(expire int64) *Approve {
 	return &Approve{
 		OrgName:  cmd.Org,
@@ -292,6 +325,7 @@ func (cmd OrgInviteMemberCmd) ToApprove(expire int64) *Approve {
 	}
 }
 
+// OrgAddMemberCmd represents a command to add a member to an organization.
 type OrgAddMemberCmd struct {
 	User   primitive.Account
 	UserId primitive.Identity
@@ -302,6 +336,7 @@ type OrgAddMemberCmd struct {
 	Msg    string
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgAddMemberCmd) Validate() error {
 	if cmd.User == nil {
 		return allerror.NewInvalidParam("invalid user")
@@ -314,6 +349,7 @@ func (cmd OrgAddMemberCmd) Validate() error {
 	return nil
 }
 
+// ToMember converts the command to an OrgMember.
 func (cmd OrgAddMemberCmd) ToMember() OrgMember {
 	return OrgMember{
 		Username: cmd.User,
@@ -325,13 +361,16 @@ func (cmd OrgAddMemberCmd) ToMember() OrgMember {
 	}
 }
 
+// OrgRemoveInviteCmd represents a command to remove an invite from an organization.
 type OrgRemoveInviteCmd = OrgRemoveMemberCmd
 
+// OrgRequestMemberCmd represents a command to request membership in an organization.
 type OrgRequestMemberCmd struct {
 	OrgNormalCmd
 	Msg string
 }
 
+// ToMemberRequest converts the command to a MemberRequest.
 func (o *OrgRequestMemberCmd) ToMemberRequest(role OrgRole) *MemberRequest {
 	return &MemberRequest{
 		Username: o.Actor,
@@ -342,6 +381,7 @@ func (o *OrgRequestMemberCmd) ToMemberRequest(role OrgRole) *MemberRequest {
 	}
 }
 
+// OrgCancelRequestMemberCmd represents a command to cancel a membership request in an organization.
 type OrgCancelRequestMemberCmd struct {
 	Actor     primitive.Account
 	Requester primitive.Account
@@ -349,6 +389,7 @@ type OrgCancelRequestMemberCmd struct {
 	Msg       string
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgCancelRequestMemberCmd) Validate() error {
 	if cmd.Requester == nil {
 		return allerror.NewInvalidParam("invalid requester")
@@ -365,9 +406,13 @@ func (cmd OrgCancelRequestMemberCmd) Validate() error {
 	return nil
 }
 
+// OrgApproveRequestMemberCmd represents a command to approve a membership request in an organization.
 type OrgApproveRequestMemberCmd = OrgCancelRequestMemberCmd
+
+// OrgAcceptInviteCmd represents a command to accept an invitation to join an organization.
 type OrgAcceptInviteCmd = OrgRemoveInviteCmd
 
+// ToListReqCmd converts the command to a list of member requests.
 func (cmd OrgApproveRequestMemberCmd) ToListReqCmd() *OrgMemberReqListCmd {
 	return &OrgMemberReqListCmd{
 		OrgNormalCmd: OrgNormalCmd{
@@ -379,6 +424,7 @@ func (cmd OrgApproveRequestMemberCmd) ToListReqCmd() *OrgMemberReqListCmd {
 	}
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgNormalCmd) Validate() error {
 	if cmd.Actor == nil {
 		return allerror.NewInvalidParam("invalid actor")
@@ -391,26 +437,28 @@ func (cmd OrgNormalCmd) Validate() error {
 	return nil
 }
 
+// OrgNormalCmd represents a normal command with actor and org fields.
 type OrgNormalCmd struct {
 	Actor primitive.Account
 	Org   primitive.Account
 }
 
+// OrgInvitationListCmd represents a command to list invitations in an organization.
 type OrgInvitationListCmd struct {
-	//TODO add sort and paginate
 	OrgNormalCmd
 	Inviter primitive.Account
 	Invitee primitive.Account
 	Status  ApproveStatus
 }
 
+// OrgMemberReqListCmd represents a command to list member requests in an organization.
 type OrgMemberReqListCmd struct {
-	//TODO add sort and paginate
 	OrgNormalCmd
 	Requester primitive.Account
 	Status    ApproveStatus
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgMemberReqListCmd) Validate() error {
 	if cmd.Actor == nil {
 		return allerror.NewInvalidParam("invalid actor")
@@ -420,13 +468,15 @@ func (cmd OrgMemberReqListCmd) Validate() error {
 		return allerror.NewInvalidParam("When list member requests, org_name/requester can't be all empty")
 	}
 
-	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status != ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
+	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
+		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
 		return allerror.NewInvalidParam("invalid status")
 	}
 
 	return nil
 }
 
+// Validate checks if the command is valid.
 func (cmd OrgInvitationListCmd) Validate() error {
 	if cmd.Actor == nil {
 		return allerror.NewInvalidParam("invalid actor")
@@ -436,13 +486,15 @@ func (cmd OrgInvitationListCmd) Validate() error {
 		return allerror.NewInvalidParam("When list invitation, org_name/invitee/inviter can't be all empty")
 	}
 
-	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status != ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
+	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
+		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
 		return allerror.NewInvalidParam("invalid status")
 	}
 
 	return nil
 }
 
+// ToMember converts the command to an organization member.
 func (cmd OrgInviteMemberCmd) ToMember() OrgMember {
 	return OrgMember{
 		Username: cmd.Account,

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -26,6 +30,7 @@ func addRouteForSpaceController(
 	r.PUT("/v1/space/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, ctl.Update)
 }
 
+// SpaceController is a struct that contains the necessary dependencies for handling space-related operations.
 type SpaceController struct {
 	appService     app.SpaceAppService
 	userMiddleWare middleware.UserMiddleWare

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -7,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 )
 
+// CmdToCreateModel is a struct that represents a command to create a model.
 type CmdToCreateModel struct {
 	coderepoapp.CmdToCreateRepo
 
@@ -14,6 +19,7 @@ type CmdToCreateModel struct {
 	Fullname primitive.MSDFullname
 }
 
+// CmdToUpdateModel is a struct that represents a command to update a model.
 type CmdToUpdateModel struct {
 	coderepoapp.CmdToUpdateRepo
 
@@ -35,6 +41,7 @@ func (cmd *CmdToUpdateModel) toModel(model *domain.Model) (b bool) {
 	return
 }
 
+// ModelDTO is a struct that represents a data transfer object for a model.
 type ModelDTO struct {
 	Id            string         `json:"id"`
 	Name          string         `json:"name"`
@@ -49,6 +56,7 @@ type ModelDTO struct {
 	DownloadCount int            `json:"download_count"`
 }
 
+// ModelLabelsDTO is a struct that represents a data transfer object for model labels.
 type ModelLabelsDTO struct {
 	Task       string   `json:"task"`
 	Others     []string `json:"others"`
@@ -91,11 +99,14 @@ func toModelDTO(model *domain.Model) ModelDTO {
 	return dto
 }
 
+// ModelsDTO is a struct that represents a data transfer object for a list of models.
 type ModelsDTO struct {
 	Total  int                       `json:"total"`
 	Models []repository.ModelSummary `json:"models"`
 }
 
+// CmdToListModels is a type alias for repository.ListOption, representing a command to list models.
 type CmdToListModels = repository.ListOption
 
+// CmdToResetLabels is a type alias for domain.ModelLabels, representing a command to reset model labels.
 type CmdToResetLabels = domain.ModelLabels

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/app"
 )
 
+// AddRouterForSpaceInternalController adds routes to the given router group for the SpaceInternalController.
 func AddRouterForSpaceInternalController(
 	r *gin.RouterGroup,
 	s app.SpaceInternalAppService,
@@ -21,6 +26,7 @@ func AddRouterForSpaceInternalController(
 	r.GET("/v1/space/:id", m.Write, ctl.Get)
 }
 
+// SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
 type SpaceInternalController struct {
 	appService app.SpaceInternalAppService
 }

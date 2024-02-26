@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package git provides functionality for interacting with the Git service.
 package git
 
 import (
@@ -13,11 +18,13 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// BaseAuthClient provides the basic authentication client for interacting with the Git service.
 type BaseAuthClient struct {
 	username string
 	client   *gitea.Client
 }
 
+// NewBaseAuthClient creates a new instance of BaseAuthClient.
 func NewBaseAuthClient(username, password string) (*BaseAuthClient, error) {
 	client, err := common.NewClient(username, password)
 	if err != nil {
@@ -30,15 +37,18 @@ func NewBaseAuthClient(username, password string) (*BaseAuthClient, error) {
 	}, nil
 }
 
+// TokenInfo represents the information about a token.
 type TokenInfo struct {
 	Token     string
 	CreatedAt int64
 }
 
+// TokenCreatedCmd represents the command for creating a token.
 type TokenCreatedCmd struct {
 	Name string
 }
 
+// CreateToken creates a new token.
 func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.PlatformToken, err error) {
 	if cmd == nil {
 		err = fmt.Errorf("create token param is empty")
@@ -46,7 +56,8 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 	}
 
 	if cmd.Account.Account() != c.username {
-		err = fmt.Errorf("username mismatched, requested user: %s, client user: %s", cmd.Account.Account(), c.username)
+		err = fmt.Errorf("username mismatched, requested user: %s, client user: %s",
+			cmd.Account.Account(), c.username)
 		return
 	}
 
@@ -75,13 +86,15 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 	return
 }
 
+// DeleteToken deletes a token.
 func (c *BaseAuthClient) DeleteToken(cmd *domain.TokenDeletedCmd) (err error) {
 	if cmd == nil {
 		return allerror.NewInvalidParam("nil cmd")
 	}
 
 	if cmd.Account.Account() != c.username {
-		return allerror.NewNoPermission(fmt.Sprintf("username mismatched, requested user: %s, client user: %s", cmd.Account.Account(), c.username))
+		return allerror.NewNoPermission(fmt.Sprintf("username mismatched, requested user: %s, client user: %s",
+			cmd.Account.Account(), c.username))
 	}
 
 	_, err = c.client.DeleteAccessToken(cmd.Name.TokenName())
@@ -89,6 +102,7 @@ func (c *BaseAuthClient) DeleteToken(cmd *domain.TokenDeletedCmd) (err error) {
 	return
 }
 
+// CreateOrg creates a new organization.
 func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 	if cmd == nil {
 		err = fmt.Errorf("nil cmd")
@@ -185,6 +199,7 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 	return
 }
 
+// DeleteOrg deletes an organization.
 func (c *BaseAuthClient) DeleteOrg(name primitive.Account) (err error) {
 	repos, _, err := c.client.ListOrgRepos(name.Account(), gitea.ListOrgReposOptions{})
 	if err != nil {
@@ -201,6 +216,7 @@ func (c *BaseAuthClient) DeleteOrg(name primitive.Account) (err error) {
 	return
 }
 
+// AddMember adds a member to an organization.
 func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (err error) {
 	if o == nil {
 		return fmt.Errorf("nil cmd")
@@ -225,6 +241,7 @@ func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (
 	return err
 }
 
+// RemoveMember removes a member from an organization.
 func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember) (err error) {
 	if o == nil {
 		return fmt.Errorf("nil cmd")
@@ -250,6 +267,7 @@ func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember
 	return err
 }
 
+// CanDelete checks if an organization can be deleted.
 func (c *BaseAuthClient) CanDelete(name primitive.Account) (can bool, err error) {
 	repos, _, err := c.client.ListOrgRepos(name.Account(), gitea.ListOrgReposOptions{})
 	if err != nil {
@@ -264,6 +282,7 @@ func (c *BaseAuthClient) CanDelete(name primitive.Account) (can bool, err error)
 	return
 }
 
+// EditMemberRole edits the role of a member in an organization.
 func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, now *org.OrgMember) (err error) {
 	switch orig {
 	case domain.OrgRoleContributor:

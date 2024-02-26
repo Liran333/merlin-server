@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package spacerepositoryadapter
 
 import "gorm.io/gorm"
@@ -7,6 +11,7 @@ var (
 	spaceLabelsAdapterInstance *spaceLabelsAdapter
 )
 
+// Init initializes the database and sets up the necessary adapters.
 func Init(db *gorm.DB, tables *Tables) error {
 	// must set spaceTableName before migrating
 	spaceTableName = tables.Space
@@ -25,10 +30,12 @@ func Init(db *gorm.DB, tables *Tables) error {
 	return nil
 }
 
+// SpaceAdapter returns the instance of the space adapter.
 func SpaceAdapter() *spaceAdapter {
 	return spaceAdapterInstance
 }
 
+// SpaceLabelsAdapter returns the instance of the space labels adapter.
 func SpaceLabelsAdapter() *spaceLabelsAdapter {
 	return spaceLabelsAdapterInstance
 }

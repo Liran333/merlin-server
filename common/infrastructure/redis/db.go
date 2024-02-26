@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package redis
 
 import (
@@ -14,6 +18,7 @@ var (
 	client *redis.Client
 )
 
+// Init initializes the Redis client with the given configuration and certificate.
 func Init(cfg *Config, remove bool) error {
 	var tlsConfig *tls.Config
 

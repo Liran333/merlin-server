@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -5,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// CmdToFile is a struct representing a command to create or update a file.
 type CmdToFile struct {
 	Owner    primitive.Account
 	Name     primitive.MSDName

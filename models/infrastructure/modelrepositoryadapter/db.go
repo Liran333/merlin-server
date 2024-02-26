@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package modelrepositoryadapter
 
 import "gorm.io/gorm"
@@ -7,6 +11,7 @@ var (
 	modelLabelsAdapterInstance *modelLabelsAdapter
 )
 
+// Init initializes the model module by performing necessary setup and migrations.
 func Init(db *gorm.DB, tables *Tables) error {
 	// must set modelTableName before migrating
 	modelTableName = tables.Model
@@ -25,10 +30,12 @@ func Init(db *gorm.DB, tables *Tables) error {
 	return nil
 }
 
+// ModelAdapter returns the instance of modelAdapter.
 func ModelAdapter() *modelAdapter {
 	return modelAdapterInstance
 }
 
+// ModelLabelsAdapter returns the instance of modelLabelsAdapter.
 func ModelLabelsAdapter() *modelLabelsAdapter {
 	return modelLabelsAdapterInstance
 }

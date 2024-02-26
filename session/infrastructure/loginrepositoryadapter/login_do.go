@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package loginrepositoryadapter
 
 import (
@@ -27,15 +31,17 @@ func toLoginDO(m *domain.Login) loginDO {
 }
 
 type loginDO struct {
-	Id        primitive.UUID `gorm:"column:id;type:uuid;primaryKey"`
-	IP        string         `gorm:"column:ip"`
-	User      string         `gorm:"column:account;index:login_user"` // column'name can't be user, because it is a buildin name of pg.
-	IdToken   string         `gorm:"column:id_token"`
-	UserAgent string         `gorm:"column:user_agent"`
-	CreatedAt int64          `gorm:"column:created_at"`
-	UserId    string         `gorm:"column:user_id"` // user id in OIDC provider
+	Id primitive.UUID `gorm:"column:id;type:uuid;primaryKey"`
+	IP string         `gorm:"column:ip"`
+	// column'name can't be user, because it is a buildin name of pg.
+	User      string `gorm:"column:account;index:login_user"`
+	IdToken   string `gorm:"column:id_token"`
+	UserAgent string `gorm:"column:user_agent"`
+	CreatedAt int64  `gorm:"column:created_at"`
+	UserId    string `gorm:"column:user_id"` // user id in OIDC provider
 }
 
+// TableName returns the table name for the loginDO struct.
 func (do *loginDO) TableName() string {
 	return loginTableName
 }

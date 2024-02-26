@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package coderepoadapter provides an adapter for interacting with a code repository service.
 package coderepoadapter
 
 import (
@@ -10,10 +15,12 @@ type codeRepoAdapter struct {
 	client *gitea.Client
 }
 
+// NewRepoAdapter creates a new instance of the codeRepoAdapter.
 func NewRepoAdapter(c *gitea.Client) *codeRepoAdapter {
 	return &codeRepoAdapter{client: c}
 }
 
+// Add adds a new code repository to the code repository service.
 func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) error {
 	defaultRef := primitive.InitCodeFileRef().FileRef()
 
@@ -34,19 +41,17 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 		repo.Id = primitive.CreateIdentity(obj.ID)
 	}
 
-	// TODO check if duplicate create
-
 	return err
 }
 
+// Delete deletes a code repository from the code repository service.
 func (adapter *codeRepoAdapter) Delete(index *domain.CodeRepoIndex) error {
 	_, err := adapter.client.DeleteRepo(index.Owner.Account(), index.Name.MSDName())
 
-	// TODO check if delete the unavailable repo
-
 	return err
 }
 
+// Save saves updates to a code repository in the code repository service.
 func (adapter *codeRepoAdapter) Save(index *domain.CodeRepoIndex, repo *domain.CodeRepo) error {
 	opt := gitea.EditRepoOption{}
 

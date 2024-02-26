@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -8,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
+// CmdToCreateSpace is a struct used to create a space.
 type CmdToCreateSpace struct {
 	coderepoapp.CmdToCreateRepo
 
@@ -17,6 +22,7 @@ type CmdToCreateSpace struct {
 	Hardware spaceprimitive.Hardware
 }
 
+// CmdToUpdateSpace is a struct used to update a space.
 type CmdToUpdateSpace struct {
 	coderepoapp.CmdToUpdateRepo
 
@@ -50,6 +56,7 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 	return
 }
 
+// SpaceDTO is a struct used to represent a space data transfer object.
 type SpaceDTO struct {
 	Id            string         `json:"id"`
 	SDK           string         `json:"sdk"`
@@ -66,6 +73,7 @@ type SpaceDTO struct {
 	DownloadCount int            `json:"download_count"`
 }
 
+// SpaceLabelsDTO is a struct used to represent labels of a space.
 type SpaceLabelsDTO struct {
 	Task       string   `json:"task"`
 	Others     []string `json:"others"`
@@ -110,13 +118,16 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 	return dto
 }
 
+// SpacesDTO represents the data transfer object for spaces.
 type SpacesDTO struct {
 	Total  int                       `json:"total"`
 	Spaces []repository.SpaceSummary `json:"spaces"`
 }
 
+// CmdToListSpaces is a command to list spaces with repository.ListOption options.
 type CmdToListSpaces = repository.ListOption
 
+// SpaceMetaDTO represents the data transfer object for space metadata.
 type SpaceMetaDTO struct {
 	Id       string `json:"id"`
 	SDK      string `json:"sdk"`

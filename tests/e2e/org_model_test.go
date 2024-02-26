@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -10,6 +14,7 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteOrgModel used for testing
 type SuiteOrgModel struct {
 	suite.Suite
 	name         string
@@ -24,6 +29,7 @@ type SuiteOrgModel struct {
 	owerId       string
 }
 
+// SetupSuite used for testing
 func (s *SuiteOrgModel) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
@@ -69,12 +75,14 @@ func (s *SuiteOrgModel) SetupSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// TearDownSuite used for testing
 func (s *SuiteOrgModel) TearDownSuite() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
+// TestDeleteOrgContainsModel used for testing
 // 当组织下有model时，删除组织失败
 func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
@@ -84,22 +92,23 @@ func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 删除组织失败
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 400, r.StatusCode, "can't delete the organization, while some repos still existed")
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "can't delete the organization, while some repos still existed")
 	assert.NotNil(s.T(), err)
 
 	// 清空Model
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgReadMemberCantCreateUpdateDeleteModel used for testing
 // 拥有read权限的用户不能创建模型，不能修改和删除他人模型
 func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -156,6 +165,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgWriteCreateDeleteModel used for testing
 // 拥有write权限的用户可以创建和删除模型
 func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
@@ -175,6 +185,7 @@ func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgWriteUpdateDeleteOthersModel used for testing
 // 拥有write权限的用户可以修改和删除他人的模型
 func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
@@ -201,6 +212,7 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgAdminUpdateDeleteOthersModel used for testing
 // 拥有admin权限的用户可以修改和删除他人的模型
 func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
@@ -227,6 +239,7 @@ func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgContributorCreateUpdateDelete used for testing
 // 拥有contribute权限的用户可以创建修改和删除自己的模型
 func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -266,6 +279,7 @@ func (s *SuiteOrgModel) TestOrgContributorCreateUpdateDelete() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgContributorCantUpdateDeleteOthersModel used for testing
 // 拥有contribute权限的用户不可以修改或删除他人模型
 func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -317,6 +331,8 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
+
+// TestOrgModel used for testing
 func TestOrgModel(t *testing.T) {
 	suite.Run(t, new(SuiteOrgModel))
 }

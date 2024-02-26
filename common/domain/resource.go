@@ -1,8 +1,12 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import "github.com/openmerlin/merlin-server/common/domain/primitive"
 
-// Resource
+// Resource represents an interface for a resource with various methods.
 type Resource interface {
 	IsPublic() bool
 	IsCreatedBy(user primitive.Account) bool
@@ -11,6 +15,7 @@ type Resource interface {
 	OwnedByPerson() bool
 }
 
+// CodeRepoIndex represents a code repository index with a name and owner.
 type CodeRepoIndex struct {
 	Name  primitive.MSDName
 	Owner primitive.Account

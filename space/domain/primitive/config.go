@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package primitive provides a set of common primitive types and utilities.
 package primitive
 
 import "strings"
@@ -7,11 +12,13 @@ var (
 	allHardware map[string]bool
 )
 
+// Config represents the configuration structure for initialization.
 type Config struct {
 	SDK      []string `json:"sdk"      required:"true"`
 	Hardware []string `json:"hardware" required:"true"`
 }
 
+// Init initializes the system with the provided configuration.
 func Init(cfg *Config) {
 	if cfg == nil {
 		return

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repository
 
 import (
@@ -5,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
 
+// OrgMember interface defines the methods for managing organization members.
 type OrgMember interface {
 	Add(*domain.OrgMember) (domain.OrgMember, error)
 	Save(*domain.OrgMember) (domain.OrgMember, error)

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -8,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 )
 
+// AddRouterForCodeRepoFileController adds routes for CodeRepoFileController to the given router group.
 func AddRouterForCodeRepoFileController(
 	rg *gin.RouterGroup,
 	cr app.CodeRepoFileAppService,
@@ -23,11 +28,13 @@ func AddRouterForCodeRepoFileController(
 
 }
 
+// CodeRepoFileController is a struct that holds code repo file and user middleware for file operations.
 type CodeRepoFileController struct {
 	codeRepoFile   app.CodeRepoFileAppService
 	userMiddleWare middleware.UserMiddleWare
 }
 
+// List handles the request to list files in a repository.
 func (ctl *CodeRepoFileController) List(ctx *gin.Context) {
 	codeRepoFile, err := ToCmdToFile(ctx)
 	if err != nil {
@@ -41,6 +48,7 @@ func (ctl *CodeRepoFileController) List(ctx *gin.Context) {
 	}
 }
 
+// Get handles the request to get a specific file in a repository.
 func (ctl *CodeRepoFileController) Get(ctx *gin.Context) {
 	codeRepoFile, err := ToCmdToFile(ctx)
 	if err != nil {
@@ -56,6 +64,7 @@ func (ctl *CodeRepoFileController) Get(ctx *gin.Context) {
 
 }
 
+// Download handles the request to download a specific file from a repository.
 func (ctl *CodeRepoFileController) Download(ctx *gin.Context) {
 	codeRepoFile, err := ToCmdToFile(ctx)
 	if err != nil {

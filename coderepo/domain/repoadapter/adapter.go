@@ -1,13 +1,17 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package repoadapter provides interfaces for adapting code repository operations.
 package repoadapter
 
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 )
 
+// RepoAdapter is an interface that defines methods for code repository operations.
 type RepoAdapter interface {
 	Add(*domain.CodeRepo, bool) error
-	// TODO delete by id
 	Delete(*domain.CodeRepoIndex) error
-	// TODO change domain.CodeRepoIndex to id
 	Save(*domain.CodeRepoIndex, *domain.CodeRepo) error
 }

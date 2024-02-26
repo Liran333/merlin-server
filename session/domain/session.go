@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import (
@@ -10,7 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-// Login
+// Login is a struct that represents a login event.
 type Login struct {
 	Id        primitive.UUID
 	IP        string
@@ -21,18 +25,22 @@ type Login struct {
 	UserId    string
 }
 
+// IsSameLogin checks if the login event is associated with the specified IP address.
 func (login *Login) IsSameLogin(ip string) bool {
 	return login.IP == ip
 }
 
+// Invalidate invalidates the login event by resetting the IP address field.
 func (login *Login) Invalidate() {
 	login.IP = ""
 }
 
+// Invalid checks if the login event is invalid.
 func (login *Login) Invalid() bool {
 	return login.IP == ""
 }
 
+// Validate validates the login event against the provided IP address and user agent.
 func (login *Login) Validate(ip string, userAgent primitive.UserAgent) error {
 	if ip != login.IP || userAgent != login.UserAgent {
 		logrus.Warnf("request ip %s ua %s differ from login ip %s ua %s", ip, userAgent, login.IP, login.UserAgent)
@@ -42,7 +50,7 @@ func (login *Login) Validate(ip string, userAgent primitive.UserAgent) error {
 	return nil
 }
 
-// CSRFToken
+// CSRFToken is a struct that represents a CSRF token.
 type CSRFToken struct {
 	Id      primitive.UUID
 	Expiry  int64
@@ -50,6 +58,7 @@ type CSRFToken struct {
 	LoginId primitive.UUID
 }
 
+// LifeTime calculates the remaining lifetime of the CSRF token.
 func (t *CSRFToken) LifeTime() time.Duration {
 	n := t.Expiry - utils.Now()
 	if n <= 0 {
@@ -59,6 +68,7 @@ func (t *CSRFToken) LifeTime() time.Duration {
 	return time.Duration(n) * time.Second
 }
 
+// Reset resets the CSRF token.
 func (token *CSRFToken) Reset() bool {
 	if token.HasUsed {
 		return false
@@ -70,6 +80,7 @@ func (token *CSRFToken) Reset() bool {
 	return true
 }
 
+// Validate validates the CSRF token against the provided login ID.
 func (token *CSRFToken) Validate(loginId primitive.UUID) error {
 	if token.Expiry < utils.Now() {
 		return allerror.New(allerror.ErrorCodeCSRFTokenInvalid, "expired")
@@ -82,7 +93,7 @@ func (token *CSRFToken) Validate(loginId primitive.UUID) error {
 	return nil
 }
 
-// NewCSRFToken
+// NewCSRFToken creates a new instance of a CSRF token with the provided login ID.
 func NewCSRFToken(loginId primitive.UUID) CSRFToken {
 	return CSRFToken{
 		Id:      primitive.CreateUUID(),

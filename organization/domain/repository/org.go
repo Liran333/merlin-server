@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repository
 
 import (
@@ -5,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain"
 )
 
+// Organization interface defines the methods for managing organizations.
 type Organization interface {
 	AddOrg(*domain.Organization) (domain.Organization, error)
 	SaveOrg(*domain.Organization) (domain.Organization, error)

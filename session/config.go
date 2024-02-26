@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package session
 
 import (
@@ -7,7 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 )
 
-// Config
+// Config is a struct that represents the overall configuration for the application.
 type Config struct {
 	OIDC       oidcimpl.Config               `json:"oidc"`
 	Login      loginrepositoryadapter.Tables `json:"login"`
@@ -15,6 +19,7 @@ type Config struct {
 	Controller controller.Config             `json:"controller"`
 }
 
+// ConfigItems returns a slice of interface{} containing pointers to the configuration items in the Config struct.
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.OIDC,
@@ -24,6 +29,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 	}
 }
 
+// Init initializes the application using the configuration settings provided in the Config struct.
 func (cfg *Config) Init() error {
 	domain.Init(&cfg.Domain)
 	oidcimpl.Init(&cfg.OIDC)

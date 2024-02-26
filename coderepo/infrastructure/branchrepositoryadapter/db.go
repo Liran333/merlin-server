@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package branchrepositoryadapter
 
 import (
@@ -10,6 +14,7 @@ var (
 	branchAdapterInstance *branchAdapter
 )
 
+// Init initializes the branch module by performing necessary setup and migrations.
 func Init(db *gorm.DB, tables *Tables) error {
 	// must set branchTableName before migrating
 	branchTableName = tables.Branch
@@ -25,6 +30,7 @@ func Init(db *gorm.DB, tables *Tables) error {
 	return nil
 }
 
+// BranchAdapter returns an instance of the branchAdapter.
 func BranchAdapter() *branchAdapter {
 	return branchAdapterInstance
 }

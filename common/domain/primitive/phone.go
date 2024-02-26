@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import (
@@ -12,6 +16,7 @@ type Phone interface {
 	PhoneNumber() string
 }
 
+// NewPhone creates a new Phone instance with the given string value.
 func NewPhone(v string) (Phone, error) {
 	if v == "" {
 		return nil, errors.New("empty phone number")
@@ -24,12 +29,14 @@ func NewPhone(v string) (Phone, error) {
 	return phoneNumber(v), nil
 }
 
+// CreatePhoneNumber creates a new Phone instance with the given string value without validation.
 func CreatePhoneNumber(v string) Phone {
 	return phoneNumber(v)
 }
 
 type phoneNumber string
 
+// PhoneNumber returns the string representation of the phone number.
 func (r phoneNumber) PhoneNumber() string {
 	return string(r)
 }

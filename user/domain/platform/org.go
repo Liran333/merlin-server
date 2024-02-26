@@ -1,3 +1,9 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package platform provides interfaces for interacting
+// with the platform's authentication and organization functionality.
 package platform
 
 import (
@@ -6,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
+// BaseAuthClient is an interface that defines the methods required for authentication and organization management.
 type BaseAuthClient interface {
 	CreateToken(*domain.TokenCreatedCmd) (domain.PlatformToken, error)
 	DeleteToken(*domain.TokenDeletedCmd) error

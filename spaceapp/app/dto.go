@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -5,26 +9,31 @@ import (
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 )
 
+// CmdToCreateApp is a command to create an app.
 type CmdToCreateApp = domain.SpaceAppIndex
 
+// CmdToNotifyBuildIsStarted is a command to notify that the build has started.
 type CmdToNotifyBuildIsStarted struct {
 	domain.SpaceAppIndex
 
 	LogURL primitive.URL
 }
 
+// CmdToNotifyBuildIsDone is a command to notify that the build has finished.
 type CmdToNotifyBuildIsDone struct {
 	domain.SpaceAppIndex
 
 	Success bool
 }
 
+// CmdToNotifyServiceIsStarted is a command to notify that the service has started.
 type CmdToNotifyServiceIsStarted struct {
 	CmdToNotifyBuildIsStarted
 
 	AppURL primitive.URL
 }
 
+// SpaceAppDTO is a data transfer object for space app.
 type SpaceAppDTO struct {
 	Id          int64  `json:"id"`
 	Status      string `json:"status"`

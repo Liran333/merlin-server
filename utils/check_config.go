@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package utils provides utility functions for various purposes.
 package utils
 
 import (
@@ -29,13 +34,14 @@ type errMissingInput struct {
 	errArgument string
 }
 
+// Error returns a string representation of the errMissingInput error.
 func (e errMissingInput) Error() string {
 	e.defaultErrString = fmt.Sprintf("Missing input for argument [%s]", e.errArgument)
 
 	return e.choseErrString()
 }
 
-// CheckConfig
+// CheckConfig checks if the required fields in a struct are provided.
 func CheckConfig(opts interface{}, parent string) error {
 	optsValue := reflect.ValueOf(opts)
 	if optsValue.Kind() == reflect.Ptr {
@@ -48,7 +54,7 @@ func CheckConfig(opts interface{}, parent string) error {
 	}
 
 	if optsValue.Kind() != reflect.Struct {
-		return fmt.Errorf("Options type is not a struct.")
+		return fmt.Errorf("options type is not a struct")
 	}
 
 	fieldChain := func(s string) string {

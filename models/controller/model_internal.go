@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/app"
 )
 
+// AddRouterForModelInternalController adds a router for the ModelInternalController with the given middleware.
 func AddRouterForModelInternalController(
 	r *gin.RouterGroup,
 	s app.ModelInternalAppService,
@@ -21,6 +26,7 @@ func AddRouterForModelInternalController(
 	r.PUT("/v1/model/:id/label", m.Write, ctl.ResetLabel)
 }
 
+// ModelInternalController is a struct that holds the app service for model internal operations.
 type ModelInternalController struct {
 	appService app.ModelInternalAppService
 }

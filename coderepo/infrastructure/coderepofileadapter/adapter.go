@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package coderepofileadapter provides an adapter implementation for interacting with code repository files.
 package coderepofileadapter
 
 import (
@@ -15,6 +20,7 @@ type codeRepoFileAdapter struct {
 	client *gitea.Client
 }
 
+// NewCodeRepoFileAdapter creates a new instance of codeRepoFileAdapter.
 func NewCodeRepoFileAdapter(c *gitea.Client) *codeRepoFileAdapter {
 	return &codeRepoFileAdapter{client: c}
 }
@@ -84,6 +90,7 @@ func (adapter *codeRepoFileAdapter) getLastCommit(codeRepoFile *domain.CodeRepoF
 
 }
 
+// List returns a list of files and directories in a code repository.
 func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*domain.ListFileInfo, error) {
 	crl, resp, err := adapter.client.ListCommitContents(
 		codeRepoFile.Owner.Account(),
@@ -188,6 +195,7 @@ func (adapter *codeRepoFileAdapter) List(codeRepoFile *domain.CodeRepoFile) (*do
 
 }
 
+// Get retrieves the detailed file information for a given code repository file.
 func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*domain.DetailFileInfo, error) {
 	crl, resp, err := adapter.client.GetCommitContents(
 		codeRepoFile.Owner.Account(),
@@ -257,6 +265,7 @@ func (adapter *codeRepoFileAdapter) Get(codeRepoFile *domain.CodeRepoFile) (*dom
 
 }
 
+// Download downloads the content of a code repository file and returns the download file information.
 func (adapter *codeRepoFileAdapter) Download(codeRepoFile *domain.CodeRepoFile) (*domain.DownLoadFileInfo, error) {
 	fileInfo, err := adapter.Get(codeRepoFile)
 

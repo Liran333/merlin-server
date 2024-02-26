@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -11,11 +15,13 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteUser used for testing
 type SuiteUser struct {
 	suite.Suite
 	phone string
 }
 
+// SetupSuite used for testing
 func (s *SuiteUser) SetupSuite() {
 	s.phone = "13333333334"
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
@@ -29,6 +35,7 @@ func (s *SuiteUser) SetupSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// TestGetUser used for testing
 // 正常登录的用户可以获取用户信息
 func (s *SuiteUser) TestGetUser() {
 
@@ -48,6 +55,7 @@ func (s *SuiteUser) TestGetUser() {
 	assert.Equal(s.T(), s.phone, user["phone"])
 }
 
+// TestGetOtherUser used for testing
 func (s *SuiteUser) TestGetOtherUser() {
 
 	data, r, err := Api.OrganizationApi.V1AccountNameGet(Auth, "test2")
@@ -65,6 +73,7 @@ func (s *SuiteUser) TestGetOtherUser() {
 	assert.Equal(s.T(), "", user["phone"])
 }
 
+// TestGetUserNoToken used for testing
 // 未登录用户无法获取个人信息
 func (s *SuiteUser) TestGetUserNoToken() {
 
@@ -73,6 +82,7 @@ func (s *SuiteUser) TestGetUserNoToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestGetOtherUserNoToken used for testing
 // 未登录用户获取其他人信息
 func (s *SuiteUser) TestGetOtherUserNoToken() {
 
@@ -88,6 +98,7 @@ func (s *SuiteUser) TestGetOtherUserNoToken() {
 	assert.Equal(s.T(), "", user["phone"])
 }
 
+// TestUser used for testing
 func TestUser(t *testing.T) {
 	suite.Run(t, new(SuiteUser))
 }

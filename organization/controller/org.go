@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package controller provides the controllers for handling HTTP requests and managing the application's business logic.
 package controller
 
 import (
@@ -15,6 +20,7 @@ import (
 	userctl "github.com/openmerlin/merlin-server/user/controller"
 )
 
+// AddRouterForOrgController adds routes for organization-related operations to the given router group.
 func AddRouterForOrgController(
 	rg *gin.RouterGroup,
 	org orgapp.OrgService,
@@ -53,6 +59,7 @@ func AddRouterForOrgController(
 	rg.GET("/v1/account/:name", m.Optional, ctl.GetUser)
 }
 
+// OrgController is a struct that contains the necessary dependencies for organization-related operations.
 type OrgController struct {
 	m    middleware.UserMiddleWare
 	org  orgapp.OrgService
@@ -154,7 +161,6 @@ func (ctl *OrgController) GetUser(ctx *gin.Context) {
 // @Failure  409  "name is invalid"
 // @Router   /v1/name [head]
 func (ctl *OrgController) Check(ctx *gin.Context) {
-	// TODO why head method
 
 	var req reqToCheckName
 
@@ -657,7 +663,6 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 		return
 	}
 
-	// TODO  pagination is not working
 	cmd, err := req.toCmd(user)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)

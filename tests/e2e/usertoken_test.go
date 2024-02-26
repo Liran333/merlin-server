@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -11,11 +15,13 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteUserToken used for testing
 type SuiteUserToken struct {
 	suite.Suite
 	id string
 }
 
+// SetupSuite used for testing
 func (s *SuiteUserToken) SetupSuite() {
 	data, r, err := Api.UserApi.V1UserGet(Auth)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
@@ -56,6 +62,7 @@ func (s *SuiteUserToken) SetupSuite() {
 	assert.Equal(s.T(), s.id, m["owner_id"])
 }
 
+// TearDownSuite used for testing
 func (s *SuiteUserToken) TearDownSuite() {
 	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "testread")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -66,7 +73,7 @@ func (s *SuiteUserToken) TearDownSuite() {
 	assert.Nil(s.T(), err)
 }
 
-// verify token
+// TestVerifyToken verify token
 func (s *SuiteUserToken) TestVerifyToken() {
 	d := swagger.ControllerTokenCreateRequest{
 		Name: "testverify",
@@ -95,7 +102,7 @@ func (s *SuiteUserToken) TestVerifyToken() {
 	assert.Nil(s.T(), err)
 }
 
-// verify invalid token
+// TestVerifyInvalidToken verify invalid token
 func (s *SuiteUserToken) TestVerifyInvalidToken() {
 
 	t := swagger.ControllerTokenVerifyRequest{
@@ -113,6 +120,7 @@ func (s *SuiteUserToken) TestVerifyInvalidToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestCreateDuplicateToken used for testing
 // 无法创建同名token
 func (s *SuiteUserToken) TestCreateDuplicateToken() {
 	d := swagger.ControllerTokenCreateRequest{
@@ -126,6 +134,7 @@ func (s *SuiteUserToken) TestCreateDuplicateToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestGetUserTokenWithNoToken used for testing
 // 未登录用户无法查询用户的token信息
 func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 
@@ -134,6 +143,7 @@ func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestGetUserToken used for testing
 // 正常登录的用户可以查询toke信息
 func (s *SuiteUserToken) TestGetUserToken() {
 
@@ -177,6 +187,7 @@ func (s *SuiteUserToken) TestGetUserToken() {
 	assert.True(s.T(), writeFound)
 }
 
+// TestTokenCreateTokenInvalidName used for testing
 // 无效的token权限会导致创建token失败
 func (s *SuiteUserToken) TestTokenCreateTokenInvalidName() {
 	// test a read permission token
@@ -190,6 +201,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidName() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestTokenCreateTokenInvalidNameChar used for testing
 // token名只能包括[a-zA-Z0-9_-]
 func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
 	invalidChar := string("!@#$%^&*(){}[]")
@@ -206,6 +218,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
 	}
 }
 
+// TestTokenCreateTokenNameCantBeInt used for testing
 // token名不能是纯数字
 func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 	// test a read permission token
@@ -219,6 +232,7 @@ func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestTokenCreateToken used for testing
 // 创建token成功
 // read权限无权删除token
 func (s *SuiteUserToken) TestTokenCreateToken() {
@@ -284,6 +298,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	assert.Nil(s.T(), err)
 }
 
+// TestTokenDeleteToken used for testing
 // 删除不存在的token报404
 func (s *SuiteUserToken) TestTokenDeleteToken() {
 	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "nonexist")
@@ -291,6 +306,7 @@ func (s *SuiteUserToken) TestTokenDeleteToken() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestUserToken used for testing
 func TestUserToken(t *testing.T) {
 	suite.Run(t, new(SuiteUserToken))
 }

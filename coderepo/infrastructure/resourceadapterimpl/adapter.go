@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package resourceadapterimpl provides an implementation of the resource adapter interface.
 package resourceadapterimpl
 
 import (
@@ -10,6 +15,7 @@ import (
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
+// NewResourceAdapterImpl creates a new instance of the resourceAdapterImpl.
 func NewResourceAdapterImpl(
 	model modelrepo.ModelRepositoryAdapter,
 	space spacerepo.SpaceRepositoryAdapter,
@@ -26,6 +32,7 @@ type resourceAdapterImpl struct {
 	space spacerepo.SpaceRepositoryAdapter
 }
 
+// GetByName retrieves a resource by name.
 func (adapter *resourceAdapterImpl) GetByName(index *domain.CodeRepoIndex) (domain.Resource, error) {
 	r, err := adapter.model.FindByName(index)
 	if err == nil {
@@ -40,7 +47,9 @@ func (adapter *resourceAdapterImpl) GetByName(index *domain.CodeRepoIndex) (doma
 	return &space, err
 }
 
-func (adapter *resourceAdapterImpl) GetByType(t primitive.RepoType, index *domain.CodeRepoIndex) (domain.Resource, error) {
+// GetByType retrieves a resource by type and name.
+func (adapter *resourceAdapterImpl) GetByType(t primitive.RepoType,
+	index *domain.CodeRepoIndex) (domain.Resource, error) {
 	if t.IsModel() {
 		r, err := adapter.model.FindByName(index)
 

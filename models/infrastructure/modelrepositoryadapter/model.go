@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package modelrepositoryadapter
 
 import (
@@ -21,15 +25,16 @@ type modelAdapter struct {
 	daoImpl
 }
 
+// Add adds a new model to the database.
 func (adapter *modelAdapter) Add(model *domain.Model) error {
 	do := toModelDO(model)
 
 	v := adapter.db().Create(&do)
-	// TODO check if the model exists
 
 	return v.Error
 }
 
+// FindByName finds a model by its name.
 func (adapter *modelAdapter) FindByName(index *domain.ModelIndex) (domain.Model, error) {
 	do := modelDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
@@ -40,6 +45,7 @@ func (adapter *modelAdapter) FindByName(index *domain.ModelIndex) (domain.Model,
 	return do.toModel(), nil
 }
 
+// FindById finds a model by its ID.
 func (adapter *modelAdapter) FindById(modelId primitive.Identity) (domain.Model, error) {
 	do := modelDO{Id: modelId.Integer()}
 
@@ -50,12 +56,14 @@ func (adapter *modelAdapter) FindById(modelId primitive.Identity) (domain.Model,
 	return do.toModel(), nil
 }
 
+// Delete deletes a model by its ID.
 func (adapter *modelAdapter) Delete(modelId primitive.Identity) error {
 	return adapter.DeleteByPrimaryKey(
 		&modelDO{Id: modelId.Integer()},
 	)
 }
 
+// Save updates an existing model in the database.
 func (adapter *modelAdapter) Save(model *domain.Model) error {
 	do := toModelDO(model)
 	do.Version += 1
@@ -79,6 +87,7 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 	return nil
 }
 
+// List retrieves a list of models based on the provided options.
 func (adapter *modelAdapter) List(opt *repository.ListOption) ([]repository.ModelSummary, int, error) {
 	query := adapter.toQuery(opt)
 
@@ -118,6 +127,7 @@ func (adapter *modelAdapter) List(opt *repository.ListOption) ([]repository.Mode
 	return r, int(total), nil
 }
 
+// Count counts the number of models based on the provided options.
 func (adapter *modelAdapter) Count(opt *repository.ListOption) (int, error) {
 	var total int64
 	err := adapter.toQuery(opt).Count(&total).Error
@@ -185,8 +195,6 @@ func order(t primitive.SortType) string {
 
 	case primitive.SortByRecentlyCreated:
 		return orderByDesc(fieldCreatedAt)
-
-	// TODO other type
 
 	default:
 		return ""

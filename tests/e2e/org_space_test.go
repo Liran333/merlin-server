@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -10,6 +14,7 @@ import (
 	swagger "e2e/client"
 )
 
+// SuiteOrgSpace used for testing
 type SuiteOrgSpace struct {
 	suite.Suite
 	name         string
@@ -24,6 +29,7 @@ type SuiteOrgSpace struct {
 	owerId       string
 }
 
+// SetupSuite used for testing
 func (s *SuiteOrgSpace) SetupSuite() {
 	s.name = "testorg"
 	s.fullname = "testorgfull"
@@ -69,12 +75,14 @@ func (s *SuiteOrgSpace) SetupSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// TearDownSuite used for testing
 func (s *SuiteOrgSpace) TearDownSuite() {
 	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
+// TestDeleteSpaceContainsModel used for testing
 // 当组织下有Space，组织卡片时，删除组织失败
 func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
@@ -89,22 +97,23 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 		Visibility: "public",
 	})
 
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 删除组织失败
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
-	assert.Equal(s.T(), 400, r.StatusCode, "can't delete the organization, while some spaces still existed")
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "can't delete the organization, while some spaces still existed")
 	assert.NotNil(s.T(), err)
 
 	// 清空Space
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgReadMemberCantCreateUpdateDeleteSpace used for testing
 // 拥有read权限的用户不能创建Space，不能修改和删除他人Space
 func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -177,6 +186,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgWriteCreateDeleteSpace used for testing
 // 拥有write权限的用户可以创建和删除Space
 func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
@@ -201,6 +211,7 @@ func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgWriteUpdateDeleteOthersSpace used for testing
 // 拥有write权限的用户可以修改和删除他人的Space
 func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
@@ -237,6 +248,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgAdminUpdateDeleteOthersSpace used for testing
 // 拥有admin权限的用户可以修改和删除他人的Space
 func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
@@ -273,6 +285,7 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgContributorCreateUpdateDelete used for testing
 // 拥有contribute权限的用户可以创建修改和删除自己的Space
 func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -322,6 +335,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCreateUpdateDelete() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgContributorCantUpdateDeleteOthersModel used for testing
 // 拥有contribute权限的用户不可以修改或删除他人Space
 func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -384,6 +398,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgSpace used for testing
 func TestOrgSpace(t *testing.T) {
 	suite.Run(t, new(SuiteOrgSpace))
 }

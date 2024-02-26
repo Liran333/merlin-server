@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -10,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 )
 
+// AddRouteForBranchRestfulController adds routes for BranchRestfulController to the given router group.
 func AddRouteForBranchRestfulController(
 	r *gin.RouterGroup,
 	s app.BranchAppService,
@@ -25,6 +30,7 @@ func AddRouteForBranchRestfulController(
 	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Write, l.Write, ctl.Delete)
 }
 
+// BranchRestfulController is a struct that holds user middleware and app service for branch operations.
 type BranchRestfulController struct {
 	userMiddleWare middleware.UserMiddleWare
 	appService     app.BranchAppService

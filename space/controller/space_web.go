@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -10,6 +14,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// AddRouteForSpaceWebController adds routes to the given router group for the SpaceWebController.
 func AddRouteForSpaceWebController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
@@ -32,6 +37,7 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space", m.Optional, ctl.ListGlobal)
 }
 
+// SpaceWebController is a struct that holds the necessary dependencies for handling space-related operations in web controller.
 type SpaceWebController struct {
 	SpaceController
 }

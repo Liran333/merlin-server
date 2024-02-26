@@ -1,5 +1,11 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package redis provides functionality for interacting with Redis.
 package redis
 
+// Config represents the configuration for Redis.
 type Config struct {
 	IdleSize int    `json:"idle_size"`
 	NetWork  string `json:"network"`
@@ -11,6 +17,7 @@ type Config struct {
 	DBCert   string `json:"db_cert"`
 }
 
+// SetDefault sets the default values for the Config.
 func (p *Config) SetDefault() {
 	if p.IdleSize <= 0 {
 		p.IdleSize = 20

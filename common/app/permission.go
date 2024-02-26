@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides application services for resource permission management.
 package app
 
 import (
@@ -8,14 +13,14 @@ import (
 
 var errorNoPermission = allerror.NewNoPermission("no permission")
 
-// NewResourcePermissionAppService
+// NewResourcePermissionAppService creates a new instance of the resourcePermissionAppService.
 func NewResourcePermissionAppService(
 	org orgResourcePermissionValidator,
 ) *resourcePermissionAppService {
 	return &resourcePermissionAppService{org: org}
 }
 
-// ResourcePermissionAppService
+// ResourcePermissionAppService defines methods for checking resource permissions.
 type ResourcePermissionAppService interface {
 	CanRead(user primitive.Account, r domain.Resource) error
 	CanUpdate(user primitive.Account, r domain.Resource) error
@@ -34,12 +39,14 @@ type resourcePermissionAppService struct {
 	org orgResourcePermissionValidator
 }
 
+// CanListOrgResource checks if the user has permission to list organization resources of a specific type.
 func (impl *resourcePermissionAppService) CanListOrgResource(
 	user, owner primitive.Account, t primitive.ObjType,
 ) error {
 	return impl.org.Check(user, owner, t, primitive.ActionRead, false)
 }
 
+// CanRead checks if the user has permission to read the specified resource.
 func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r domain.Resource) error {
 	if r.IsPublic() {
 		return nil
@@ -63,14 +70,17 @@ func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r doma
 	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead, false)
 }
 
+// CanUpdate checks if the user has permission to update the specified resource.
 func (impl *resourcePermissionAppService) CanUpdate(user primitive.Account, r domain.Resource) error {
 	return impl.canModify(user, r, primitive.ActionWrite)
 }
 
+// CanDelete checks if the user has permission to delete the specified resource.
 func (impl *resourcePermissionAppService) CanDelete(user primitive.Account, r domain.Resource) error {
 	return impl.canModify(user, r, primitive.ActionDelete)
 }
 
+// CanCreate checks if the user has permission to create a resource of the specified type, owned by the specified owner.
 func (impl *resourcePermissionAppService) CanCreate(user, owner primitive.Account, t primitive.ObjType) error {
 	if user == owner {
 		return nil

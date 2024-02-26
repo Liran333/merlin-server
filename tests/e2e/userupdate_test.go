@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -17,10 +21,12 @@ const (
 	length     = 51
 )
 
+// SuiteUserUpdate used for testing
 type SuiteUserUpdate struct {
 	suite.Suite
 }
 
+// TestUpdateUserInfoValidData used for testing
 // 用户可以正常更新个人信息
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 
@@ -40,6 +46,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
 }
 
+// TestUpdateUserInfoEmptyFullname used for testing
 // fullname不能为空
 func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 
@@ -51,6 +58,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestUpdateUserInfoValidFullname used for testing
 // fullname更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
 
@@ -62,6 +70,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode, "Expected success for fullname update")
 }
 
+// TestUpdateUserInfoInvalidFullname used for testing
 // 无效的fullname会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 
@@ -73,6 +82,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestUpdateUserInfoValidDesc used for testing
 // desc更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 
@@ -84,6 +94,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 	assert.Nil(s.T(), err)
 }
 
+// TestUpdateUserInfoInvalidDesc used for testing
 // 无效的desc会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 
@@ -95,6 +106,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestUpdateUserInfoInvalidAvatar used for testing
 // 无效的avatar会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
 
@@ -106,6 +118,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestUpdateUserInfoValidAvatar used for testing
 // 有效的avatar会导致更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
 
@@ -121,6 +134,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
 	assert.Equal(s.T(), "https://avatars.githubusercontent.com/u/2853724?v=4", user["avatar_id"])
 }
 
+// TearDownSuite used for testing
 func (s *SuiteUserUpdate) TearDownSuite() {
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "testfullname",
@@ -132,6 +146,7 @@ func (s *SuiteUserUpdate) TearDownSuite() {
 	assert.Nil(s.T(), err)
 }
 
+// TestUserUpdate used for testing
 func TestUserUpdate(t *testing.T) {
 	suite.Run(t, new(SuiteUserUpdate))
 }

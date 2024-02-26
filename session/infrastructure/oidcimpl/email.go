@@ -1,3 +1,9 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package oidcimpl provides implementation for OpenID Connect (OIDC) related functionality
+// such as sending and verifying email messages.
 package oidcimpl
 
 import (
@@ -74,6 +80,7 @@ func (impl *user) getManagerToken() (token string, err error) {
 	return
 }
 
+// SendBindEmail sends a bind email request with the provided email and captcha.
 func (impl *user) SendBindEmail(email, capt string) (err error) {
 	token, err := impl.getManagerToken()
 	if err != nil {
@@ -189,6 +196,7 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 	return
 }
 
+// VerifyBindEmail verifies the bind email with the provided email, passCode, and userid.
 func (impl *user) VerifyBindEmail(email, passCode, userid string) (err error) {
 	token, err := impl.getManagerToken()
 	if err != nil {

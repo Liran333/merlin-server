@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -10,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/app"
 )
 
+// AddRouterForSessionInternalController adds routes for session internal controller to the given router group.
 func AddRouterForSessionInternalController(
 	rg *gin.RouterGroup,
 	s app.SessionAppService,
@@ -23,6 +28,7 @@ func AddRouterForSessionInternalController(
 	rg.PUT("/v1/session/check", m.Write, l.Write, pc.CheckAndRefresh)
 }
 
+// SessionInternalController is a struct that holds the session app service.
 type SessionInternalController struct {
 	s app.SessionAppService
 }

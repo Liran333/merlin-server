@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides the application layer for the space app service.
 package app
 
 import (
@@ -9,7 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
-// SpaceappAppService
+// SpaceappAppService is the interface for the space app service.
 type SpaceappAppService interface {
 	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
 }
@@ -24,7 +29,7 @@ type permissionValidator interface {
 	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
 }
 
-// NewSpaceappAppService
+// NewSpaceappAppService creates a new instance of the space app service.
 func NewSpaceappAppService(
 	repo repository.Repository,
 	spaceRepo spaceRepository,
@@ -44,7 +49,7 @@ type spaceappAppService struct {
 	permission commonapp.ResourcePermissionAppService
 }
 
-// GetByName
+// GetByName retrieves the space app by name.
 func (s *spaceappAppService) GetByName(
 	user primitive.Account, index *spacedomain.SpaceIndex,
 ) (SpaceAppDTO, error) {
@@ -66,8 +71,6 @@ func (s *spaceappAppService) GetByName(
 
 		return dto, err
 	}
-
-	// TODO it should find by newest commit
 
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {

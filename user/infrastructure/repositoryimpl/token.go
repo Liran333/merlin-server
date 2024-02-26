@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryimpl
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+// NewTokenRepo creates a new token repository with the given database implementation.
 func NewTokenRepo(db postgresql.Impl) repository.Token {
 	tokenTableName = db.TableName()
 
@@ -23,6 +28,7 @@ type tokenRepoImpl struct {
 	postgresql.Impl
 }
 
+// Add adds a new platform token to the repository and returns it.
 func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToken, err error) {
 	u.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toTokenDO(u)
@@ -37,10 +43,13 @@ func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToke
 	return
 }
 
+// Delete deletes a token from the repository based on the account and name.
 func (impl *tokenRepoImpl) Delete(acc primitive.Account, name primitive.TokenName) (err error) {
-	return impl.DB().Where(impl.EqualQuery(fieldName), name.TokenName()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
+	return impl.DB().Where(impl.EqualQuery(fieldName),
+		name.TokenName()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
 }
 
+// GetByAccount retrieves all tokens owned by the given account.
 func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.PlatformToken, err error) {
 	query := impl.DB().Where(
 		impl.EqualQuery(fieldOwner), account.Account(),
@@ -61,6 +70,7 @@ func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.Plat
 	return
 }
 
+// GetByLastEight retrieves all tokens that match the given last eight characters.
 func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.PlatformToken, err error) {
 	query := impl.DB().Where(
 		impl.EqualQuery(fieldLastEight), LastEight,
@@ -81,7 +91,9 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 	return
 }
 
-func (impl *tokenRepoImpl) GetByName(acc primitive.Account, name primitive.TokenName) (r domain.PlatformToken, err error) {
+// GetByName retrieves a token by its name and owner.
+func (impl *tokenRepoImpl) GetByName(acc primitive.Account,
+	name primitive.TokenName) (r domain.PlatformToken, err error) {
 	tmpDo := &TokenDO{}
 	tmpDo.Name = name.TokenName()
 	tmpDo.Owner = acc.Account()

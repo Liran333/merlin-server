@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package main
 
 import (
@@ -18,6 +22,7 @@ var configFile string
 var actor string
 var cfg *config.Config
 
+// Error is a function that logs the error message when executing a command with arguments.
 func Error(cmd *cobra.Command, args []string, err error) {
 	logrus.Fatalf("execute %s args:%v error:%v\n", cmd.Name(), args, err)
 }
@@ -46,7 +51,7 @@ func initServer(configFile string) {
 		logrus.Fatalf("load config, err:%s", err.Error())
 	}
 
-	//redis
+	// redis
 	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Fatalf("init redis failed, err:%s", err.Error())
 	}

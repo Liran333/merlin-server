@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -6,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ResponseData is a struct that holds the response data for an API request.
 type ResponseData struct {
 	Code string      `json:"code"`
 	Msg  string      `json:"msg"`
@@ -32,7 +37,7 @@ func newResponseCodeMsg(code, msg string) ResponseData {
 	}
 }
 
-// SendBadRequestBody
+// SendBadRequestBody sends a bad request body error response.
 func SendBadRequestBody(ctx *gin.Context, err error) {
 	if _, ok := err.(errorCode); ok {
 		SendError(ctx, err)
@@ -44,6 +49,7 @@ func SendBadRequestBody(ctx *gin.Context, err error) {
 	}
 }
 
+// SendBadRequestParam sends a bad request parameter error response.
 func SendBadRequestParam(ctx *gin.Context, err error) {
 	if _, ok := err.(errorCode); ok {
 		SendError(ctx, err)
@@ -55,6 +61,7 @@ func SendBadRequestParam(ctx *gin.Context, err error) {
 	}
 }
 
+// SendRespOfPut sends a successful PUT response with data if provided.
 func SendRespOfPut(ctx *gin.Context, data interface{}) {
 	if data == nil {
 		ctx.JSON(http.StatusAccepted, newResponseCodeMsg("", "success"))
@@ -63,10 +70,12 @@ func SendRespOfPut(ctx *gin.Context, data interface{}) {
 	}
 }
 
+// SendRespOfGet sends a successful GET response with data.
 func SendRespOfGet(ctx *gin.Context, data interface{}) {
 	ctx.JSON(http.StatusOK, newResponseData(data))
 }
 
+// SendRespOfPost sends a successful POST response with data if provided.
 func SendRespOfPost(ctx *gin.Context, data interface{}) {
 	if data == nil {
 		ctx.JSON(http.StatusCreated, newResponseCodeMsg("", "success"))
@@ -75,10 +84,12 @@ func SendRespOfPost(ctx *gin.Context, data interface{}) {
 	}
 }
 
+// SendRespOfDelete sends a successful DELETE response.
 func SendRespOfDelete(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, newResponseCodeMsg("", "success"))
 }
 
+// SendError sends an error response based on the given error.
 func SendError(ctx *gin.Context, err error) {
 	sc, code := httpError(err)
 	ctx.AbortWithError(sc, err)

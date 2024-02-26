@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package e2e
 
 import (
@@ -20,6 +24,7 @@ func (m *MockSessionController) Login(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
 }
 
+// TestSessionLogin used for testing
 func TestSessionLogin(t *testing.T) {
 	// Initialize the mock controller
 	mockCtrl := new(MockSessionController)

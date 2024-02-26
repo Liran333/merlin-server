@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import (
@@ -14,7 +18,10 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// OrgRole is a type alias for string.
 type OrgRole = string
+
+// UserType is a type alias for int.
 type UserType = int
 
 const (
@@ -31,14 +38,14 @@ const (
 	keyLen                        = 32
 )
 
-// user
+// User is a struct representing a user.
 type User struct {
 	Id                primitive.Identity
 	Email             primitive.Email
 	Phone             primitive.Phone
 	Account           Account
 	Fullname          primitive.MSDFullname
-	PlatformPwd       string //password for git user
+	PlatformPwd       string // password for git user
 	PlatformId        int64  // id in gitea
 	Website           string
 	Owner             primitive.Account
@@ -57,28 +64,31 @@ type User struct {
 	Version           int
 }
 
+// IsOrganization checks if the user is an organization.
 func (u User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
 }
 
+// ClearSenstiveData clears sensitive data of the user.
 func (u *User) ClearSenstiveData() {
 	u.Email = nil
 	u.Phone = nil
 }
 
+// UserInfo represents additional information about a user.
 type UserInfo struct {
 	Account  Account
 	AvatarId primitive.AvatarId
 }
 
+// PlatformToken represents a token associated with a platform account.
 type PlatformToken struct {
-	Id      primitive.Identity
-	Token   string
-	Name    primitive.TokenName
-	Account Account            // owner name
-	OwnerId primitive.Identity // owner id
-	// TODO: expire not honor by gitea
-	Expire     int64 // timeout in seconds
+	Id         primitive.Identity
+	Token      string
+	Name       primitive.TokenName
+	Account    Account            // owner name
+	OwnerId    primitive.Identity // owner id
+	Expire     int64              // timeout in seconds
 	CreatedAt  int64
 	UpdatedAt  int64
 	Permission primitive.TokenPerm
@@ -91,6 +101,7 @@ func (t PlatformToken) isExpired() bool {
 	return t.Expire != 0 && t.Expire < utils.Now()
 }
 
+// Check checks if the given token is valid and has the required permission.
 func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
 	if t.isExpired() {
 		return allerror.NewNoPermission(tokenExpired)
@@ -107,6 +118,7 @@ func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
 	return nil
 }
 
+// Match checks if the given token matches the stored token.
 func (t PlatformToken) Match(token string) bool {
 	saltBtye, err := base64.RawStdEncoding.DecodeString(t.Salt)
 	if err != nil {
@@ -123,6 +135,7 @@ func (t PlatformToken) Match(token string) bool {
 	return bytes.Equal(srcBtye, derivedKey)
 }
 
+// EncryptToken encrypts the given token using a randomly generated salt.
 func EncryptToken(token string) (enc, salt string, err error) {
 	saltBtye := make([]byte, keyLen)
 	_, err = rand.Read(saltBtye)
@@ -137,6 +150,7 @@ func EncryptToken(token string) (enc, salt string, err error) {
 	return
 }
 
+// ToPerms converts the given TokenPerm to a slice of strings representing the permissions.
 func ToPerms(t primitive.TokenPerm) []string {
 	switch t.TokenPerm() {
 	case primitive.TokenPermWrite:
@@ -148,7 +162,7 @@ func ToPerms(t primitive.TokenPerm) []string {
 	}
 }
 
-// user
+// UserCreateCmd is a struct for creating a user.
 type UserCreateCmd struct {
 	Email    primitive.Email
 	Account  Account
@@ -158,6 +172,7 @@ type UserCreateCmd struct {
 	Phone    primitive.Phone
 }
 
+// TokenCreatedCmd is a struct for creating a token.
 type TokenCreatedCmd struct {
 	Account    Account             // user name
 	Name       primitive.TokenName // name of the token
@@ -165,6 +180,7 @@ type TokenCreatedCmd struct {
 	Permission primitive.TokenPerm
 }
 
+// Validate validates the TokenCreatedCmd.
 func (cmd TokenCreatedCmd) Validate() error {
 	if cmd.Name == nil {
 		return allerror.NewInvalidParam("missing name when creating token")
@@ -177,11 +193,13 @@ func (cmd TokenCreatedCmd) Validate() error {
 	return nil
 }
 
+// TokenDeletedCmd is a struct for deleting a token.
 type TokenDeletedCmd struct {
-	Account Account             // actor user name
+	Account Account             // actor username
 	Name    primitive.TokenName // name of the token
 }
 
+// Validate validates the TokenDeletedCmd.
 func (cmd TokenDeletedCmd) Validate() error {
 	if cmd.Account == nil {
 		return allerror.NewInvalidParam("missing account when delete token")
@@ -194,11 +212,13 @@ func (cmd TokenDeletedCmd) Validate() error {
 	return nil
 }
 
+// FollowerInfo is a struct for storing follower information.
 type FollowerInfo struct {
 	User     Account
 	Follower Account
 }
 
+// FollowerUserInfo is a struct for storing follower user information.
 type FollowerUserInfo struct {
 	Account    Account
 	AvatarId   primitive.AvatarId
@@ -206,6 +226,7 @@ type FollowerUserInfo struct {
 	IsFollower bool
 }
 
+// Validate validates the UserCreateCmd.
 func (cmd *UserCreateCmd) Validate() error {
 	b := cmd.Email != nil &&
 		cmd.Account != nil &&
@@ -219,6 +240,7 @@ func (cmd *UserCreateCmd) Validate() error {
 	return nil
 }
 
+// ToUser converts UserCreateCmd to User.
 func (cmd *UserCreateCmd) ToUser() User {
 	return User{
 		Email:    cmd.Email,

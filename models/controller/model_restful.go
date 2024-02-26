@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -9,6 +13,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// AddRouteForModelRestfulController adds a router for the ModelRestfulController with the given middleware.
 func AddRouteForModelRestfulController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
@@ -30,6 +35,7 @@ func AddRouteForModelRestfulController(
 	r.GET("/v1/model", m.Optional, ctl.List)
 }
 
+// ModelRestfulController is a struct that holds the app service for model restful operations.
 type ModelRestfulController struct {
 	ModelController
 }

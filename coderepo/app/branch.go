@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides application services for creating and managing branches.
 package app
 
 import (
@@ -11,11 +16,13 @@ import (
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
+// BranchAppService defines the interface for a branch application service.
 type BranchAppService interface {
 	Create(primitive.Account, *CmdToCreateBranch) (BranchCreateDTO, error)
 	Delete(primitive.Account, *CmdToDeleteBranch) error
 }
 
+// NewBranchAppService creates a new instance of the BranchAppService.
 func NewBranchAppService(
 	permission commonapp.ResourcePermissionAppService,
 	branchAdapter repository.BranchRepositoryAdapter,
@@ -37,6 +44,7 @@ type branchAppService struct {
 	branchClientAdapter repository.BranchClientAdapter
 }
 
+// Create creates a new branch based on the provided command and returns the created branch DTO.
 func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch) (
 	dto BranchCreateDTO, err error,
 ) {
@@ -59,6 +67,7 @@ func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch
 	return
 }
 
+// Delete deletes a branch based on the provided command.
 func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch) error {
 	index := cmd.RepoIndex()
 	if err := s.canModify(user, cmd.RepoType, &index); err != nil {

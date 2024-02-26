@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package controller provides the controllers for handling HTTP requests and managing the application's business logic.
 package controller
 
 import (
@@ -10,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
+// AddRouterForSpaceappWebController adds a router for the SpaceAppWebController to the given gin.RouterGroup.
 func AddRouterForSpaceappWebController(
 	r *gin.RouterGroup,
 	s app.SpaceappAppService,
@@ -23,6 +29,7 @@ func AddRouterForSpaceappWebController(
 	r.GET("/v1/space-app/:owner/:name", m.Optional, ctl.Get)
 }
 
+// SpaceAppWebController is a struct that represents the web controller for the space app.
 type SpaceAppWebController struct {
 	appService     app.SpaceappAppService
 	userMiddleWare middleware.UserMiddleWare

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -19,6 +23,7 @@ const (
 
 var noUserError = errors.New("no user")
 
+// WebAPIMiddleware creates a new instance of webAPIMiddleware with the given session and securityLog.
 func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog) *webAPIMiddleware {
 	return &webAPIMiddleware{
 		session:     session,
@@ -31,14 +36,17 @@ type webAPIMiddleware struct {
 	securityLog middleware.SecurityLog
 }
 
+// Write is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Write(ctx *gin.Context) {
 	m.must(ctx)
 }
 
+// Read is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Read(ctx *gin.Context) {
 	m.must(ctx)
 }
 
+// Optional is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 	if v := ctx.GetHeader(csrfTokenHeader); v == "" {
 		ctx.Next()
@@ -58,6 +66,7 @@ func (m *webAPIMiddleware) must(ctx *gin.Context) {
 	}
 }
 
+// GetUser retrieves the user account from the context.
 func (m *webAPIMiddleware) GetUser(ctx *gin.Context) primitive.Account {
 	v, ok := ctx.Get(userIdParsed)
 	if !ok {
@@ -71,6 +80,7 @@ func (m *webAPIMiddleware) GetUser(ctx *gin.Context) primitive.Account {
 	return nil
 }
 
+// GetUserAndExitIfFailed retrieves the user account from the context and exits if the user is not found.
 func (m *webAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account {
 	if v := m.GetUser(ctx); v != nil {
 		return v

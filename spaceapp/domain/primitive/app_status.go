@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package primitive provides primitive types and functionality for managing application statuses.
 package primitive
 
 import (
@@ -25,7 +30,7 @@ var (
 	AppStatusBuildSuccessfully = appStatus(buildSuccessfully)
 )
 
-// AppStatus
+// AppStatus is an interface that defines methods for working with application statuses.
 type AppStatus interface {
 	IsInit() bool
 	AppStatus() string
@@ -33,7 +38,7 @@ type AppStatus interface {
 	IsBuildSuccessful() bool
 }
 
-// NewAppStatus
+// NewAppStatus creates a new instance of AppStatus based on the provided value.
 func NewAppStatus(v string) (AppStatus, error) {
 	v = strings.ToLower(v)
 
@@ -52,7 +57,7 @@ func NewAppStatus(v string) (AppStatus, error) {
 	return appStatus(v), nil
 }
 
-// CreateAppStatus
+// CreateAppStatus creates a new instance of AppStatus with the provided value.
 func CreateAppStatus(v string) AppStatus {
 	return appStatus(v)
 }
@@ -60,18 +65,22 @@ func CreateAppStatus(v string) AppStatus {
 // appStatus
 type appStatus string
 
+// AppStatus returns the string representation of the appStatus.
 func (r appStatus) AppStatus() string {
 	return string(r)
 }
 
+// IsInit checks if the appStatus is equal to appInit.
 func (r appStatus) IsInit() bool {
 	return string(r) == appInit
 }
 
+// IsBuilding checks if the appStatus is equal to building.
 func (r appStatus) IsBuilding() bool {
 	return string(r) == building
 }
 
+// IsBuildSuccessful checks if the appStatus is equal to buildSuccessfully.
 func (r appStatus) IsBuildSuccessful() bool {
 	return string(r) == buildSuccessfully
 }

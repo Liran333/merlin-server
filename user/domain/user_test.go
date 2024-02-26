@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import (
@@ -14,6 +18,7 @@ const (
 	secondExpire        = 9704334556
 )
 
+// TestPermCheck is unit test
 func TestPermCheck(t *testing.T) {
 	pt := PlatformToken{
 		Account:    primitive.CreateAccount("test"),
@@ -86,7 +91,8 @@ func TestPermCheck(t *testing.T) {
 	for _, tc := range tests {
 		pt.Expire = tc.expire
 		pt.Permission = tc.has
-		if result := pt.Check(tc.t, tc.expect); (result == nil && tc.result != "") || (result != nil && result.Error() != tc.result) {
+		if result := pt.Check(tc.t, tc.expect); (result == nil && tc.result != "") ||
+			(result != nil && result.Error() != tc.result) {
 			t.Errorf("user  perm check failed, expect %s, result is %s", tc.result, result)
 		}
 	}

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -26,6 +30,7 @@ func addRouteForModelController(
 	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Update)
 }
 
+// ModelController is a controller for handling model-related requests.
 type ModelController struct {
 	user           userapp.UserService
 	appService     app.ModelAppService

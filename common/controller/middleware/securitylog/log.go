@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package securitylog provides functionality for logging security-related information.
 package securitylog
 
 import (
@@ -11,6 +16,7 @@ const (
 	prefix = "MF_SECURITY_LOG"
 )
 
+// SecurityLog creates a new instance of the securityLog struct.
 func SecurityLog() *securityLog {
 	return &securityLog{}
 }
@@ -18,6 +24,7 @@ func SecurityLog() *securityLog {
 type securityLog struct {
 }
 
+// Info logs an informational security message.
 func (log *securityLog) Info(ctx *gin.Context, msg ...interface{}) {
 
 	temp := fmt.Sprintf("%v | Operation record", prefix)
@@ -38,6 +45,7 @@ func (log *securityLog) Info(ctx *gin.Context, msg ...interface{}) {
 
 }
 
+// Warn logs a warning message for intercepted illegal requests.
 func (log *securityLog) Warn(ctx *gin.Context, msg ...interface{}) {
 
 	temp := fmt.Sprintf("%v | Illegal requests are intercepted", prefix)

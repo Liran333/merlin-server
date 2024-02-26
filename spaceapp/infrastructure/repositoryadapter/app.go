@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package repositoryadapter provides an adapter implementation for working with the repository of space applications.
 package repositoryadapter
 
 import (
@@ -22,6 +27,7 @@ type appRepositoryAdapter struct {
 	dao dao
 }
 
+// Add adds a space application to the repository.
 func (adapter *appRepositoryAdapter) Add(m *domain.SpaceApp) error {
 	if err := adapter.remove(m.SpaceId); err != nil {
 		return err
@@ -48,6 +54,7 @@ func (adapter *appRepositoryAdapter) remove(spaceId primitive.Identity) error {
 	).Error
 }
 
+// FindBySpaceId finds a space application in the repository based on the space ID.
 func (adapter *appRepositoryAdapter) FindBySpaceId(spaceId primitive.Identity) (domain.SpaceApp, error) {
 	do := spaceappDO{SpaceId: spaceId.Integer()}
 
@@ -61,6 +68,7 @@ func (adapter *appRepositoryAdapter) FindBySpaceId(spaceId primitive.Identity) (
 	return result.toSpaceApp(), nil
 }
 
+// Find finds a space application in the repository based on the space app index.
 func (adapter *appRepositoryAdapter) Find(index *domain.SpaceAppIndex) (domain.SpaceApp, error) {
 	do := spaceappDO{SpaceId: index.SpaceId.Integer(), CommitId: index.CommitId}
 
@@ -74,6 +82,7 @@ func (adapter *appRepositoryAdapter) Find(index *domain.SpaceAppIndex) (domain.S
 	return result.toSpaceApp(), nil
 }
 
+// Save saves a space application in the repository.
 func (adapter *appRepositoryAdapter) Save(m *domain.SpaceApp) error {
 	do := toSpaceAppDO(m)
 	do.Version += 1

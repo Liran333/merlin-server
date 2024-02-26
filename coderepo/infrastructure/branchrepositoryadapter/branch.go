@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package branchrepositoryadapter provides an adapter for the branch repository using GORM.
 package branchrepositoryadapter
 
 import (
@@ -17,6 +22,7 @@ type branchAdapter struct {
 	dao
 }
 
+// Add adds a branch to the repository.
 func (adapter *branchAdapter) Add(branch *domain.Branch) error {
 	do := toBranchDO(branch)
 	v := adapter.DB().Create(&do)
@@ -24,12 +30,14 @@ func (adapter *branchAdapter) Add(branch *domain.Branch) error {
 	return v.Error
 }
 
+// Delete deletes a branch from the repository by its ID.
 func (adapter *branchAdapter) Delete(id primitive.Identity) error {
 	return adapter.DeleteByPrimaryKey(
 		&branchDO{Id: id.Integer()},
 	)
 }
 
+// FindByIndex finds a branch in the repository by its index.
 func (adapter *branchAdapter) FindByIndex(index *domain.BranchIndex) (domain.Branch, error) {
 	do := branchDO{
 		Owner:  index.Owner.Account(),

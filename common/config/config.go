@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package config provides functionality for managing application configuration.
 package config
 
 type configValidate interface {
@@ -12,6 +17,8 @@ type configItems interface {
 	ConfigItems() []interface{}
 }
 
+// SetDefault sets the default values in a configuration by calling the SetDefault method
+// on the configSetDefault interface.
 func SetDefault(cfg interface{}) {
 	if f, ok := cfg.(configSetDefault); ok {
 		f.SetDefault()
@@ -26,6 +33,7 @@ func SetDefault(cfg interface{}) {
 	}
 }
 
+// Validate validates a configuration by calling the Validate method on the configValidate interface.
 func Validate(cfg interface{}) error {
 	if f, ok := cfg.(configValidate); ok {
 		if err := f.Validate(); err != nil {

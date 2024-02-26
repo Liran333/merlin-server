@@ -1,3 +1,9 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package middleware provides a set of middleware functions for Gin framework
+// that handle user authentication and authorization.
 package middleware
 
 import (
@@ -6,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// UserMiddleWare is an interface that defines methods for user authentication and authorization.
 type UserMiddleWare interface {
 	// 1. The token must be exist and valid and has write role,
 	// otherwise abort directly and send allerror.ErrorCodeAccessTokenInvalid

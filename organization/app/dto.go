@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides functionality for handling organization-related operations.
 package app
 
 import (
@@ -8,6 +13,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// OrganizationDTO represents the data transfer object for an organization.
 type OrganizationDTO struct {
 	Id           string `json:"id"`
 	Name         string `json:"account"`
@@ -23,6 +29,7 @@ type OrganizationDTO struct {
 	AllowRequest bool   `json:"allow_request"`
 }
 
+// ApproveDTO represents the data transfer object for an approval request.
 type ApproveDTO struct {
 	Id        string `json:"id"`
 	OrgName   string `json:"org_name"`
@@ -40,6 +47,7 @@ type ApproveDTO struct {
 	UpdatedAt int64  `json:"updated_at"`
 }
 
+// ToApproveDTO converts a domain.Approve object to an ApproveDTO object.
 func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	var fullname string
 	u, err := user.GetByAccount(nil, m.Username)
@@ -67,6 +75,7 @@ func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	}
 }
 
+// MemberRequestDTO represents the data transfer object for a member request.
 type MemberRequestDTO struct {
 	Id        string `json:"id"`
 	Username  string `json:"username"`
@@ -82,6 +91,7 @@ type MemberRequestDTO struct {
 	UpdatedAt int64  `json:"updated_at"`
 }
 
+// ToMemberRequestDTO converts a domain.MemberRequest object to a MemberRequestDTO object.
 func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) MemberRequestDTO {
 	var fullname string
 	u, err := user.GetByAccount(nil, m.Username)
@@ -107,6 +117,7 @@ func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) Membe
 	}
 }
 
+// MemberDTO represents the data transfer object for a member of an organization.
 type MemberDTO struct {
 	Id          string `json:"id"`
 	OrgName     string `json:"org_name"`
@@ -119,6 +130,7 @@ type MemberDTO struct {
 	UpdatedAt   int64  `json:"updated_at"`
 }
 
+// OrgListOptions represents the options for listing organizations.
 type OrgListOptions struct {
 	Page     int
 	PageSize int
@@ -126,10 +138,12 @@ type OrgListOptions struct {
 	Member   primitive.Account
 }
 
+// ToDTO converts a domain.Organization object to a userapp.UserDTO object.
 func ToDTO(org *domain.Organization) userapp.UserDTO {
 	return userapp.NewUserDTO(org)
 }
 
+// ToMemberDTO converts a domain.OrgMember object to a MemberDTO object.
 func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 	return MemberDTO{
 		Id:        member.Id.Identity(),

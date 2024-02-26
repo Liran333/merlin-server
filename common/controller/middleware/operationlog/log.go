@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package operationlog provides functionality for logging operation-related information.
 package operationlog
 
 import (
@@ -16,6 +21,7 @@ const (
 	prefix = "MF_OPERATION_LOG"
 )
 
+// OperationLog creates a new instance of the operationLog struct.
 func OperationLog(u middleware.UserMiddleWare) *operationLog {
 	return &operationLog{user: u}
 }
@@ -24,6 +30,7 @@ type operationLog struct {
 	user middleware.UserMiddleWare
 }
 
+// Write logs the operation details to the log file.
 func (log *operationLog) Write(ctx *gin.Context) {
 	startTime := utils.Time()
 

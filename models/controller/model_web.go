@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -10,6 +14,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// AddRouteForModelWebController adds a router for the ModelWebController with the given middleware.
 func AddRouteForModelWebController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
@@ -32,6 +37,7 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
 }
 
+// ModelWebController is a struct that holds the app service for model web operations.
 type ModelWebController struct {
 	ModelController
 }

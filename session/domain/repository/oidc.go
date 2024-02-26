@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package repository provides interfaces and types for user-related functionality.
 package repository
 
 import (
@@ -6,13 +11,23 @@ import (
 )
 
 const (
-	ErrorCodeError          = "email_code_error"
-	ErrorCodeInvalid        = "email_code_invalid"
-	ErrorUserDuplicateBind  = "email_user_duplicate_bind"
+	// ErrorCodeError represents the error code for email code errors.
+	ErrorCodeError = "email_code_error"
+
+	// ErrorCodeInvalid represents the error code for invalid email codes.
+	ErrorCodeInvalid = "email_code_invalid"
+
+	// ErrorUserDuplicateBind represents the error code for duplicate user bindings.
+	ErrorUserDuplicateBind = "email_user_duplicate_bind"
+
+	// ErrorEmailDuplicateBind represents the error code for duplicate email bindings.
 	ErrorEmailDuplicateBind = "email_email_duplicate_bind"
+
+	// ErrorEmailDuplicateSend represents the error code for duplicate email sending.
 	ErrorEmailDuplicateSend = "email_email_duplicate_send"
 )
 
+// UserInfo represents the user information structure.
 type UserInfo struct {
 	Desc     primitive.MSDDesc
 	Name     domain.Account
@@ -23,6 +38,7 @@ type UserInfo struct {
 	UserId   string
 }
 
+// Login represents the login structure containing user information and tokens.
 type Login struct {
 	UserInfo
 
@@ -30,6 +46,7 @@ type Login struct {
 	AccessToken string
 }
 
+// OIDCAdapter is an interface for OpenID Connect adapters.
 type OIDCAdapter interface {
 	GetByCode(code, redirectURI string) (Login, error)
 

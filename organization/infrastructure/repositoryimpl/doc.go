@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryimpl
 
 import (
@@ -21,6 +25,7 @@ const (
 	fieldStatus   = "status"
 )
 
+// Member represents a member in the database.
 type Member struct {
 	postgresql.CommonModel
 	Username string `gorm:"column:user_name;index:username_index"`
@@ -32,7 +37,7 @@ type Member struct {
 	Version  int    `gorm:"column:version"`
 }
 
-// both request and approve use the same DO
+// Approve both request and approve use the same DO
 type Approve struct {
 	postgresql.CommonModel
 

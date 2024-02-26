@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides application-level functionality for the user domain.
 package app
 
 import (
@@ -6,13 +11,18 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+// CmdToCreateUser represents the command to create a user.
 type CmdToCreateUser = domain.UserCreateCmd
+
+// CmdToListModels represents the command to list models.
 type CmdToListModels = repository.ListOption
 
+// UserInfoDTO represents the data transfer object for user information.
 type UserInfoDTO struct {
 	UserDTO
 }
 
+// UserDTO represents the data transfer object for a user.
 type UserDTO struct {
 	Id           string  `json:"id"`
 	Name         string  `json:"account"`
@@ -31,6 +41,7 @@ type UserDTO struct {
 	DefaultRole  string  `json:"default_role,omitempty"`
 }
 
+// NewUserDTO creates a new UserDTO based on the given domain.User object.
 func NewUserDTO(u *domain.User) (dto UserDTO) {
 	return newUserDTO(u)
 }
@@ -78,6 +89,7 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 	return
 }
 
+// TokenDTO represents the data transfer object for a token.
 type TokenDTO struct {
 	Id         string `json:"id"`
 	CreatedAt  int64  `json:"created_at"`
@@ -105,21 +117,25 @@ func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 
 }
 
+// AvatarDTO represents the data transfer object for an avatar.
 type AvatarDTO struct {
 	AvatarId string `json:"avatar_id"`
 	Name     string `json:"name"`
 }
 
+// ToAvatarDTO converts a domain.User object to an AvatarDTO.
 func ToAvatarDTO(a *domain.User) (dto AvatarDTO) {
 	dto.AvatarId = a.AvatarId.AvatarId()
 	dto.Name = a.Account.Account()
 	return
 }
 
+// ToUserDTO is an interface for creating a new UserDTO.
 type ToUserDTO interface {
 	NewUserDTO() UserDTO
 }
 
+// UpdateUserBasicInfoCmd represents the command to update basic user information.
 type UpdateUserBasicInfoCmd struct {
 	Desc            primitive.MSDDesc
 	AvatarId        primitive.AvatarId
@@ -150,12 +166,14 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 	return
 }
 
+// CmdToSendBindEmail represents the command to send a bind email.
 type CmdToSendBindEmail struct {
 	User  primitive.Account
 	Email primitive.Email
 	Capt  string
 }
 
+// CmdToVerifyBindEmail represents the command to verify a bind email.
 type CmdToVerifyBindEmail struct {
 	User     primitive.Account
 	Email    primitive.Email

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -16,6 +20,7 @@ import (
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+// AddRouterForUserController adds routes for user-related operations to the given router group.
 func AddRouterForUserController(
 	rg *gin.RouterGroup,
 	us app.UserService,
@@ -42,6 +47,7 @@ func AddRouterForUserController(
 	rg.PUT("/v1/user/privacy", m.Write, l.Write, ctl.PrivacyRevoke)
 }
 
+// UserController is a struct that holds references to user repository, user service, and user middleware.
 type UserController struct {
 	repo userrepo.User
 	s    app.UserService

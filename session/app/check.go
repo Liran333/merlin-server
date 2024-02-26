@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package app provides the application layer functionality for managing sessions and authentication.
 package app
 
 import (
@@ -7,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/domain"
 )
 
+// CheckAndRefresh checks and refreshes the session for a given command.
 func (s *sessionAppService) CheckAndRefresh(cmd *CmdToCheck) (primitive.Account, string, error) {
 	user, err := s.check(cmd)
 	if err != nil {

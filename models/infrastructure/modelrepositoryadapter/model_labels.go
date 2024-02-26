@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package modelrepositoryadapter
 
 import (
@@ -12,6 +16,7 @@ type modelLabelsAdapter struct {
 	daoImpl
 }
 
+// Save saves the model labels to the database.
 func (adapter *modelLabelsAdapter) Save(modelId primitive.Identity, labels *domain.ModelLabels) error {
 	do := toLabelsDO(labels)
 

@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package controller provides controllers for handling HTTP requests and implementing business logic.
 package controller
 
 import (
@@ -21,6 +26,7 @@ const (
 
 var errNoUserError = errors.New("no user")
 
+// RestfulAPI creates a new instance of the restfulAPI controller.
 func RestfulAPI(app userapp.UserService, securityLog middleware.SecurityLog) *restfulAPI {
 	return &restfulAPI{
 		s:           app,
@@ -34,14 +40,17 @@ type restfulAPI struct {
 	securityLog middleware.SecurityLog
 }
 
+// Write handles the write request.
 func (m *restfulAPI) Write(ctx *gin.Context) {
 	m.check(ctx, false, primitive.NewWritePerm())
 }
 
+// Read handles the read request.
 func (m *restfulAPI) Read(ctx *gin.Context) {
 	m.check(ctx, false, primitive.NewReadPerm())
 }
 
+// Optional handles the optional request.
 func (m *restfulAPI) Optional(ctx *gin.Context) {
 	m.check(ctx, true, primitive.NewReadPerm())
 }
@@ -74,6 +83,7 @@ func (m *restfulAPI) check(ctx *gin.Context, ignore bool, permission primitive.T
 	}
 }
 
+// GetUser retrieves the user information from the authentication token.
 func (m *restfulAPI) GetUser(ctx *gin.Context) primitive.Account {
 	u, ok := ctx.Get(authTokenKey)
 	if !ok {
@@ -88,6 +98,8 @@ func (m *restfulAPI) GetUser(ctx *gin.Context) primitive.Account {
 	return primitive.CreateAccount(t)
 }
 
+// GetUserAndExitIfFailed retrieves the user information from the authentication token and sends an error response if
+// the user information is not available.
 func (m *restfulAPI) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account {
 	if v := m.GetUser(ctx); v != nil {
 		return v

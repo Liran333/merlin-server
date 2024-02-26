@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package postgresql
 
 import (
@@ -25,6 +29,7 @@ var serverLogger = logger.New(
 	},
 )
 
+// Init initializes the database connection and configuration.
 func Init(cfg *Config, removeCfg bool) error {
 	dbInstance, err := gorm.Open(
 		postgres.New(postgres.Config{
@@ -62,10 +67,12 @@ func Init(cfg *Config, removeCfg bool) error {
 	return nil
 }
 
+// DB returns the current database instance.
 func DB() *gorm.DB {
 	return db
 }
 
+// AutoMigrate automatically migrates the given table.
 func AutoMigrate(table interface{}) error {
 	// pointer non-nil check
 	if db == nil {

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import (
@@ -6,11 +10,12 @@ import (
 	"regexp"
 )
 
-// Email
+// Email is an interface that represents an email address.
 type Email interface {
 	Email() string
 }
 
+// NewEmail creates a new Email instance with the given value.
 func NewEmail(v string) (Email, error) {
 	if v != "" {
 		if err := ValidateEmail(v); err != nil {
@@ -21,12 +26,14 @@ func NewEmail(v string) (Email, error) {
 	return dpEmail(v), nil
 }
 
+// CreateEmail creates a new Email instance without validating the email address.
 func CreateEmail(v string) Email {
 	return dpEmail(v)
 }
 
 type dpEmail string
 
+// Email returns the email address as a string.
 func (r dpEmail) Email() string {
 	return string(r)
 }

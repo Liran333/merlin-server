@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package crypto provides encryption and decryption functionality using AES-GCM encryption mode.
 package crypto
 
 import (
@@ -10,6 +15,7 @@ import (
 
 const noneLen = 12
 
+// Encrypter is an interface that defines methods for encrypting and decrypting text.
 type Encrypter interface {
 	Encrypt(text string) (string, error)
 	Decrypt(text string) (string, error)
@@ -19,10 +25,12 @@ type encryption struct {
 	key []byte
 }
 
+// NewEncryption creates a new instance of an Encrypter with the provided encryption key.
 func NewEncryption(key []byte) Encrypter {
 	return &encryption{key: key}
 }
 
+// Encrypt is used to encrypt text
 func (e *encryption) Encrypt(text string) (string, error) {
 	block, err := aes.NewCipher(e.key)
 	if err != nil {
@@ -45,6 +53,7 @@ func (e *encryption) Encrypt(text string) (string, error) {
 	return hex.EncodeToString(ciphertext), nil
 }
 
+// Decrypt is used to decrypt text
 func (e *encryption) Decrypt(text string) (string, error) {
 	if text == "" {
 		return "", nil

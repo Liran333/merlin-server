@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package primitive
 
 import (
@@ -21,11 +25,12 @@ var (
 	SortTypeRecentlyCreated = sortType(SortByRecentlyCreated)
 )
 
-// SortType
+// SortType is an interface that defines a method to return the sort type as a string.
 type SortType interface {
 	SortType() string
 }
 
+// NewSortType creates a new SortType based on the input string.
 func NewSortType(v string) (SortType, error) {
 	switch strings.ToLower(v) {
 	case SortByMostLikes:
@@ -50,6 +55,7 @@ func NewSortType(v string) (SortType, error) {
 
 type sortType string
 
+// SortType returns the sortType value as a string.
 func (s sortType) SortType() string {
 	return string(s)
 }

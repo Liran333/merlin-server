@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package branchclientadapter provides an adapter implementation for interacting with the Gitea branch client.
 package branchclientadapter
 
 import (
@@ -17,10 +22,12 @@ type branchClientAdapter struct {
 	client *gitea.Client
 }
 
+// NewBranchClientAdapter creates a new instance of branchClientAdapter with the given gitea.Client.
 func NewBranchClientAdapter(c *gitea.Client) *branchClientAdapter {
 	return &branchClientAdapter{client: c}
 }
 
+// CreateBranch creates a new branch in the repository using the provided branch information.
 func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n string, err error) {
 	opt := gitea.CreateBranchOption{}
 	opt.BranchName = branch.Branch.BranchName()
@@ -38,6 +45,7 @@ func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n strin
 	return
 }
 
+// DeleteBranch deletes the specified branch from the repository.
 func (adapter *branchClientAdapter) DeleteBranch(branch *domain.BranchIndex) error {
 	_, _, err := adapter.client.DeleteRepoBranch(
 		branch.Owner.Account(), branch.Repo.MSDName(), branch.Branch.BranchName(),
@@ -55,6 +63,7 @@ func parseCreateError(c int, err error) error {
 	case statusCodeInactive:
 		return allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive")
 	default:
-		return allerror.New(allerror.ErrorBaseCase, "unexpected error when creating branch") // default case modified to return 500
+		// default case modified to return 500
+		return allerror.New(allerror.ErrorBaseCase, "unexpected error when creating branch")
 	}
 }

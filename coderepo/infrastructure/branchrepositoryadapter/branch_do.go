@@ -1,6 +1,8 @@
-package branchrepositoryadapter
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
 
-// "gorm.io/plugin/optimisticlock"
+package branchrepositoryadapter
 
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
@@ -33,6 +35,7 @@ func toBranchDO(m *domain.Branch) branchDO {
 	}
 }
 
+// TableName returns the table name for the branchDO struct.
 func (do *branchDO) TableName() string {
 	return branchTableName
 }

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -33,8 +37,8 @@ func errTokenNotFound(msg string) error {
 	return allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, msg)
 }
 
+// UserService is an interface for user-related operations.
 type UserService interface {
-	// user
 	Create(*domain.UserCreateCmd) (UserDTO, error)
 	Delete(domain.Account) error
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
@@ -55,14 +59,13 @@ type UserService interface {
 	GetToken(domain.Account, primitive.TokenName) (TokenDTO, error)
 	VerifyToken(string, primitive.TokenPerm) (TokenDTO, error)
 
-	// email
 	SendBindEmail(*CmdToSendBindEmail) error
 	VerifyBindEmail(*CmdToVerifyBindEmail) error
 
 	PrivacyRevoke(user primitive.Account) error
 }
 
-// ps: platform user service
+// NewUserService creates a new UserService instance with the provided dependencies.
 func NewUserService(
 	repo repository.User,
 	git git.User,
@@ -87,6 +90,7 @@ type userService struct {
 	oidc    session.OIDCAdapter
 }
 
+// Create creates a new user in the system.
 func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
 	if cmd == nil {
 		err = errUserNotFound("input param is empty")
@@ -129,6 +133,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 	return
 }
 
+// UpdateBasicInfo updates the basic information of a user in the system.
 func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasicInfoCmd) (dto UserDTO, err error) {
 	user, err := s.repo.GetByAccount(account)
 	if err != nil {
@@ -165,6 +170,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 	return
 }
 
+// GetPlatformUser retrieves the platform user for the given account.
 func (s userService) GetPlatformUser(account domain.Account) (token platform.BaseAuthClient, err error) {
 	if account == nil {
 		err = allerror.NewInvalidParam("account is nil")
@@ -186,6 +192,7 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 	)
 }
 
+// HasUser checks if a user with the given account exists in the system.
 func (s userService) HasUser(acc primitive.Account) bool {
 	if acc == nil {
 		logrus.Errorf("username invalid")
@@ -201,6 +208,7 @@ func (s userService) HasUser(acc primitive.Account) bool {
 	return true
 }
 
+// Delete deletes a user from the system.
 func (s userService) Delete(account domain.Account) (err error) {
 	u, err := s.repo.GetByAccount(account)
 	if err != nil {
@@ -230,6 +238,7 @@ func (s userService) Delete(account domain.Account) (err error) {
 	return
 }
 
+// UserInfo returns the user information for the given actor and account.
 func (s userService) UserInfo(actor, account domain.Account) (dto UserInfoDTO, err error) {
 	if dto.UserDTO, err = s.GetByAccount(actor, account); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -242,6 +251,7 @@ func (s userService) UserInfo(actor, account domain.Account) (dto UserInfoDTO, e
 	return
 }
 
+// GetByAccount retrieves the user information by the given account.
 func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, err error) {
 	// get user
 	u, err := s.repo.GetByAccount(account)
@@ -264,6 +274,7 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 	return
 }
 
+// ListUsers returns a list of users.
 func (s userService) ListUsers() (dtos []UserDTO, err error) {
 	// get user
 	t := domain.UserTypeUser
@@ -281,6 +292,7 @@ func (s userService) ListUsers() (dtos []UserDTO, err error) {
 	return
 }
 
+// GetUserAvatarId returns the avatar ID for the given user.
 func (s userService) GetUserAvatarId(user domain.Account) (
 	AvatarDTO, error,
 ) {
@@ -300,6 +312,7 @@ func (s userService) GetUserAvatarId(user domain.Account) (
 	}, nil
 }
 
+// GetUsersAvatarId returns the avatar IDs for the given users.
 func (s userService) GetUsersAvatarId(users []domain.Account) (
 	dtos []AvatarDTO, err error,
 ) {
@@ -325,6 +338,7 @@ func (s userService) GetUsersAvatarId(users []domain.Account) (
 	return
 }
 
+// GetUserFullname returns the full name of the given user.
 func (s userService) GetUserFullname(user domain.Account) (
 	string, error,
 ) {
@@ -340,7 +354,9 @@ func (s userService) GetUserFullname(user domain.Account) (
 	return name, nil
 }
 
-func (s userService) CreateToken(cmd *domain.TokenCreatedCmd, client platform.BaseAuthClient) (token TokenDTO, err error) {
+// CreateToken creates a token for the given command and client.
+func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
+	client platform.BaseAuthClient) (token TokenDTO, err error) {
 	if err = cmd.Validate(); err != nil {
 		return
 	}
@@ -385,6 +401,7 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd, client platform.Ba
 	return
 }
 
+// DeleteToken deletes a token for the given account and name.
 func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.BaseAuthClient) (err error) {
 	if err = cmd.Validate(); err != nil {
 		return
@@ -415,6 +432,7 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 	return
 }
 
+// ListTokens lists all tokens for the given account.
 func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error) {
 	if u == nil {
 		err = allerror.NewInvalidParam("username is empty")
@@ -437,6 +455,7 @@ func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error)
 	return
 }
 
+// VerifyToken verifies a token with the given permission.
 func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto TokenDTO, err error) {
 	if token == "" {
 		err = allerror.New(allerror.ErrorCodeAccessTokenInvalid, "empty token")
@@ -470,6 +489,7 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 	return
 }
 
+// GetToken gets a token by account and name.
 func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (TokenDTO, error) {
 	token, err := s.token.GetByName(acc, name)
 	if err != nil {
@@ -488,10 +508,12 @@ func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (Tok
 	return newTokenDTO(&token), nil
 }
 
+// SendBindEmail sends an email to bind the account.
 func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) error {
 	return s.oidc.SendBindEmail(cmd.Email.Email(), cmd.Capt)
 }
 
+// VerifyBindEmail verifies the email binding for a user.
 func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	userId, err := s.getUserIdOfLogin(cmd.User)
 	if err != nil {
@@ -575,6 +597,7 @@ func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, er
 	return
 }
 
+// PrivacyRevoke revokes the privacy settings for a user.
 func (s userService) PrivacyRevoke(user primitive.Account) error {
 	userId, err := s.getUserIdOfLogin(user)
 	if err != nil {

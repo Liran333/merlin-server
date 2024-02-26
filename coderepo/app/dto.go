@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -7,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// CmdToCreateRepo is a struct representing the command to create a repository.
 type CmdToCreateRepo struct {
 	Name       primitive.MSDName
 	Owner      primitive.Account
@@ -24,6 +29,7 @@ func (cmd *CmdToCreateRepo) toCodeRepo() domain.CodeRepo {
 	}
 }
 
+// CmdToUpdateRepo is a struct representing the command to update a repository.
 type CmdToUpdateRepo struct {
 	Name       primitive.MSDName
 	Visibility primitive.Visibility
@@ -43,6 +49,7 @@ func (cmd *CmdToUpdateRepo) toRepo(repo *domain.CodeRepo) (b bool) {
 	return
 }
 
+// CmdToCreateBranch is a struct representing the command to create a branch.
 type CmdToCreateBranch struct {
 	domain.BranchIndex
 
@@ -61,6 +68,7 @@ func (cmd *CmdToCreateBranch) toBranch() domain.Branch {
 	return branch
 }
 
+// BranchCreateDTO is a struct representing the data transfer object for creating a branch.
 type BranchCreateDTO struct {
 	Name string `json:"branch_name"`
 }
@@ -71,6 +79,7 @@ func toBranchCreateDTO(v string) BranchCreateDTO {
 	}
 }
 
+// CmdToDeleteBranch is a struct representing the command to delete a branch.
 type CmdToDeleteBranch struct {
 	domain.BranchIndex
 

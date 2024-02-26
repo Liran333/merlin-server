@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package giteauser provides functionality for interacting with user accounts in a Gitea instance.
 package giteauser
 
 import (
@@ -13,11 +18,13 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain"
 )
 
+// UserCreateCmd represents the command to create a user.
 type UserCreateCmd struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
 
+// UserUpdateCmd represents the command to update a user.
 type UserUpdateCmd = domain.UserCreateCmd
 
 func genPasswd() (string, error) {
@@ -56,17 +63,19 @@ func toUser(u *gitea.User) (user domain.User, err error) {
 	return
 }
 
+// GetClient returns a UserClient with the provided gitea client.
 func GetClient(c *gitea.Client) *UserClient {
 	return &UserClient{
 		client: c,
 	}
 }
 
-// Client admin client
+// UserClient represents the admin client for user management.
 type UserClient struct {
 	client *gitea.Client
 }
 
+// CreateUser creates a new user with the provided command.
 func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
 	changePwd := false
 	pwd, err := genPasswd()
@@ -92,12 +101,14 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 	return
 }
 
+// DeleteUser deletes the user with the specified name.
 func (c *UserClient) DeleteUser(name string) (err error) {
 	_, err = c.client.AdminDeleteUser(name)
 
 	return
 }
 
+// UpdateUser updates the user with the provided command.
 func (c *UserClient) UpdateUser(cmd *UserUpdateCmd) (err error) {
 	if cmd == nil {
 		return fmt.Errorf("cmd is nil")

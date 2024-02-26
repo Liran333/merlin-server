@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -150,6 +154,7 @@ func (req *orgMemberRemoveRequest) toCmd(orgName string, user primitive.Account)
 	return
 }
 
+// OrgListInviteRequest is a struct for handling organization invite requests.
 type OrgListInviteRequest struct {
 	controller.CommonListRequest
 	Inviter string `form:"inviter"`
@@ -181,6 +186,7 @@ func (req *OrgListInviteRequest) toCmd(user primitive.Account) (cmd domain.OrgIn
 
 }
 
+// OrgListMemberReqRequest is a struct for handling organization member request list requests.
 type OrgListMemberReqRequest struct {
 	controller.CommonListRequest
 	Requester string `form:"requester"`
@@ -209,6 +215,7 @@ func (req *OrgListMemberReqRequest) toCmd(user primitive.Account) (cmd domain.Or
 
 }
 
+// OrgMemberEditRequest is a struct for handling organization member editing requests.
 type OrgMemberEditRequest struct {
 	Role string `json:"role" binding:"required"`
 	User string `json:"user" binding:"required"`
@@ -231,6 +238,7 @@ func (req *OrgMemberEditRequest) toCmd(orgName string, user primitive.Account) (
 	return
 }
 
+// OrgInviteMemberRequest is a struct for handling organization member invite requests.
 type OrgInviteMemberRequest struct {
 	Role    string `json:"role" binding:"required"`
 	User    string `json:"user" binding:"required"`
@@ -260,6 +268,7 @@ func (req *OrgInviteMemberRequest) toCmd(user primitive.Account) (
 	return
 }
 
+// OrgAcceptMemberRequest is a struct for handling organization member acceptance requests.
 type OrgAcceptMemberRequest struct {
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
@@ -283,6 +292,7 @@ func (req *OrgAcceptMemberRequest) toCmd(user primitive.Account) (
 	return
 }
 
+// OrgApproveMemberRequest is a struct for handling organization member approval requests.
 type OrgApproveMemberRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
@@ -310,6 +320,7 @@ func (req *OrgApproveMemberRequest) toCmd(user primitive.Account) (
 	return
 }
 
+// OrgReqMemberRequest is a struct for handling organization member request creation requests.
 type OrgReqMemberRequest struct {
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
@@ -332,6 +343,7 @@ func (req *OrgReqMemberRequest) toCmd(user primitive.Account) (
 	return
 }
 
+// OrgRevokeInviteRequest is a struct for handling organization invite revocation requests.
 type OrgRevokeInviteRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
@@ -363,6 +375,7 @@ func (req *OrgRevokeInviteRequest) toCmd(user primitive.Account) (
 	return
 }
 
+// OrgRevokeMemberReqRequest is a struct for handling organization member request revocation requests.
 type OrgRevokeMemberReqRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`

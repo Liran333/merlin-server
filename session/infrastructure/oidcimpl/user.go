@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package oidcimpl
 
 import (
@@ -22,12 +26,14 @@ const (
 
 var userInstance *user
 
+// Config represents the configuration for the authentication service.
 type Config struct {
 	APPId    string `json:"app_id"        required:"true"`
 	Secret   string `json:"secret"        required:"true"`
 	Endpoint string `json:"endpoint"      required:"true"`
 }
 
+// Init initializes the user instance with the provided configuration.
 func Init(v *Config) {
 	userInstance = &user{
 		cfg:                *v,
@@ -40,6 +46,7 @@ func Init(v *Config) {
 	}
 }
 
+// NewAuthingUser creates a new instance of the user.
 func NewAuthingUser() *user {
 	return userInstance
 }
@@ -54,6 +61,7 @@ type user struct {
 	privacyRevokeUrl   string
 }
 
+// GetByAccessToken retrieves user information by access token.
 func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.UserInfo, err error) {
 	if accessToken == "" {
 		err = errors.New("no access token")
@@ -104,6 +112,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 	return
 }
 
+// GetByCode retrieves login information by code and redirectURI.
 func (impl *user) GetByCode(code, redirectURI string) (login repository.Login, err error) {
 	var v struct {
 		AccessToken string `json:"access_token"`
@@ -169,6 +178,7 @@ func (impl *user) getUserInfoByAccessToken(accessToken string, result interface{
 	return sendHttpRequest(req, result)
 }
 
+// PrivacyRevoke sends a request to revoke privacy for the given user ID.
 func (impl *user) PrivacyRevoke(userid string) error {
 	var v = struct {
 		UserId string `json:"userId"`

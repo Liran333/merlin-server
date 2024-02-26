@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package loginrepositoryadapter
 
 import (
@@ -19,6 +23,7 @@ type loginAdapter struct {
 	dao
 }
 
+// Add adds a new login to the database.
 func (adapter *loginAdapter) Add(login *domain.Login) error {
 	do := toLoginDO(login)
 
@@ -27,12 +32,14 @@ func (adapter *loginAdapter) Add(login *domain.Login) error {
 	return v.Error
 }
 
+// Delete deletes a login from the database by its ID.
 func (adapter *loginAdapter) Delete(loginId primitive.UUID) error {
 	return adapter.DeleteByPrimaryKey(
 		&loginDO{Id: loginId},
 	)
 }
 
+// Find finds a login in the database by its ID.
 func (adapter *loginAdapter) Find(loginId primitive.UUID) (domain.Login, error) {
 	do := loginDO{Id: loginId}
 
@@ -43,6 +50,7 @@ func (adapter *loginAdapter) Find(loginId primitive.UUID) (domain.Login, error) 
 	return do.toLogin(), nil
 }
 
+// FindByUser finds all logins in the database associated with a user.
 func (adapter *loginAdapter) FindByUser(user primitive.Account) ([]domain.Login, error) {
 	query := adapter.DB().Where(
 		adapter.EqualQuery(fieldUser), user.Account(),

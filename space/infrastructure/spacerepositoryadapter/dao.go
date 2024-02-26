@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package spacerepositoryadapter
 
 import (
@@ -25,6 +29,8 @@ func (dao *daoImpl) db() *gorm.DB {
 	return dbInstance.Table(dao.table)
 }
 
+// GetRecord retrieves a single record from the database based on the provided filter
+// and stores it in the result parameter.
 func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 	err := dao.db().Where(filter).First(result).Error
 
@@ -35,6 +41,8 @@ func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 	return err
 }
 
+// GetByPrimaryKey retrieves a single record from the database based on the primary key
+// and stores it in the row parameter.
 func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
 	err := dao.db().First(row).Error
 
@@ -45,6 +53,7 @@ func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
 	return err
 }
 
+// DeleteByPrimaryKey deletes a single record from the database based on the primary key provided in the row parameter.
 func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
 	err := dao.db().Delete(row).Error
 
