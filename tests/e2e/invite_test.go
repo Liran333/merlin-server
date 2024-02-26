@@ -277,6 +277,14 @@ func (s *SuiteInvite) TestInviteAprove() {
 		}
 	}
 
+	// owner不能离开组织
+	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
+		User: s.owner,
+	}, s.name)
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
 	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
 		User: s.invitee,
 	}, s.name)
