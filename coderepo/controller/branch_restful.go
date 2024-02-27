@@ -44,6 +44,7 @@ type BranchRestfulController struct {
 // @Param    repo  path  string  true  "name of space/model"
 // @Param    body     body restfulReqToCreateBranch true  "restfulReqToCreateBranch"
 // @Accept   json
+// @Security Bearer
 // @Success  201   {object}  app.BranchCreateDTO
 // @Router   /v1/branch/{type}/{owner}/{repo} [post]
 func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
@@ -81,6 +82,7 @@ func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 // @Param    repo  path  string  true  "repo name"
 // @Param    branch  path  string  true  "branch name"
 // @Accept   json
+// @Security Bearer
 // @Success  204
 // @Router   /v1/branch/{type}/{owner}/{repo}/{branch} [delete]
 func (ctl *BranchRestfulController) Delete(ctx *gin.Context) {

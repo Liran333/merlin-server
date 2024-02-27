@@ -89,6 +89,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - ./deploy/app.ini:/etc/gitea/app.ini
+      - ./tests/gitea-deploy/options:/var/lib/gitea/custom/options
     env_file:
       deploy/.env
     healthcheck:
