@@ -55,7 +55,7 @@ func SetCookie(ctx *gin.Context, key, val string, httpOnly bool, expiry *time.Ti
 func GetCookie(ctx *gin.Context, key string) (string, error) {
 	cookie, err := ctx.Request.Cookie(key)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return cookie.Value, nil
