@@ -31,24 +31,19 @@ type csrfTokenAdapter struct {
 }
 
 // Add adds a CSRF token to the repository.
-func (adapter *csrfTokenAdapter) Add(t *domain.CSRFToken) error {
+func (adapter *csrfTokenAdapter) Add(id primitive.RandomId, t *domain.CSRFToken) error {
 	v := toCSRFTokenDO(t)
 
 	// must pass *csrfTokenDO, because it implements the interface of MarshalBinary
-	return adapter.dao.SetWithExpiry(t.Id.String(), &v, t.LifeTime())
-}
-
-// Save saves a CSRF token to the repository.
-func (adapter *csrfTokenAdapter) Save(t *domain.CSRFToken) error {
-	return adapter.Add(t)
+	return adapter.dao.SetWithExpiry(id.RandomId(), &v, t.LifeTime())
 }
 
 // Find finds a CSRF token in the repository by its ID.
-func (adapter *csrfTokenAdapter) Find(tid primitive.UUID) (domain.CSRFToken, error) {
+func (adapter *csrfTokenAdapter) Find(tid primitive.RandomId) (domain.CSRFToken, error) {
 	var do csrfTokenDO
 
 	// note the *csrfTokenDO implements interface of UnmarshalBinary
-	if err := adapter.dao.Get(tid.String(), &do); err != nil {
+	if err := adapter.dao.Get(tid.RandomId(), &do); err != nil {
 		if adapter.dao.IsKeyNotExists(err) {
 			err = commonrepo.NewErrorResourceNotExists(err)
 		}
@@ -56,5 +51,5 @@ func (adapter *csrfTokenAdapter) Find(tid primitive.UUID) (domain.CSRFToken, err
 		return domain.CSRFToken{}, err
 	}
 
-	return do.toCSRFToken(tid), nil
+	return do.toCSRFToken(), nil
 }

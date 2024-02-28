@@ -24,7 +24,7 @@ type loginAdapter struct {
 }
 
 // Add adds a new login to the database.
-func (adapter *loginAdapter) Add(login *domain.Login) error {
+func (adapter *loginAdapter) Add(login *domain.Session) error {
 	do := toLoginDO(login)
 
 	v := adapter.DB().Create(&do)
@@ -33,25 +33,25 @@ func (adapter *loginAdapter) Add(login *domain.Login) error {
 }
 
 // Delete deletes a login from the database by its ID.
-func (adapter *loginAdapter) Delete(loginId primitive.UUID) error {
+func (adapter *loginAdapter) Delete(loginId primitive.RandomId) error {
 	return adapter.DeleteByPrimaryKey(
-		&loginDO{Id: loginId},
+		&loginDO{Id: loginId.RandomId()},
 	)
 }
 
 // Find finds a login in the database by its ID.
-func (adapter *loginAdapter) Find(loginId primitive.UUID) (domain.Login, error) {
-	do := loginDO{Id: loginId}
+func (adapter *loginAdapter) Find(loginId primitive.RandomId) (domain.Session, error) {
+	do := loginDO{Id: loginId.RandomId()}
 
 	if err := adapter.GetRecord(&do, &do); err != nil {
-		return domain.Login{}, err
+		return domain.Session{}, err
 	}
 
 	return do.toLogin(), nil
 }
 
 // FindByUser finds all logins in the database associated with a user.
-func (adapter *loginAdapter) FindByUser(user primitive.Account) ([]domain.Login, error) {
+func (adapter *loginAdapter) FindByUser(user primitive.Account) ([]domain.Session, error) {
 	query := adapter.DB().Where(
 		adapter.EqualQuery(fieldUser), user.Account(),
 	).Order(fieldCreatedAt)
@@ -63,7 +63,7 @@ func (adapter *loginAdapter) FindByUser(user primitive.Account) ([]domain.Login,
 		return nil, nil
 	}
 
-	r := make([]domain.Login, len(dos))
+	r := make([]domain.Session, len(dos))
 	for i := range dos {
 		r[i] = dos[i].toLogin()
 	}

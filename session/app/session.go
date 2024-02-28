@@ -17,7 +17,7 @@ import (
 // SessionAppService is an interface for session application service.
 type SessionAppService interface {
 	Login(*CmdToLogin) (dto SessionDTO, user UserDTO, err error)
-	Logout(primitive.UUID) (string, error)
+	Logout(primitive.RandomId) (string, error)
 
 	CheckAndRefresh(*CmdToCheck) (primitive.Account, string, error)
 }
@@ -27,25 +27,28 @@ func NewSessionAppService(
 	oidc repository.OIDCAdapter,
 	userApp userapp.UserService,
 	maxLogin int,
-	loginRepo repository.LoginRepositoryAdapter,
+	sessionRepo repository.SessionRepositoryAdapter,
 	csrfTokenRepo repository.CSRFTokenRepositoryAdapter,
+	sessionFastRepo repository.SessionFastRepositoryAdapter,
 ) SessionAppService {
 	return &sessionAppService{
-		oidc:          oidc,
-		userApp:       userApp,
-		maxLogin:      maxLogin,
-		loginRepo:     loginRepo,
-		csrfTokenRepo: csrfTokenRepo,
+		oidc:            oidc,
+		userApp:         userApp,
+		maxLogin:        maxLogin,
+		sessionRepo:     sessionRepo,
+		csrfTokenRepo:   csrfTokenRepo,
+		sessionFastRepo: sessionFastRepo,
 	}
 }
 
 type sessionAppService struct {
 	maxLogin int
 
-	oidc          repository.OIDCAdapter
-	userApp       userapp.UserService
-	loginRepo     repository.LoginRepositoryAdapter
-	csrfTokenRepo repository.CSRFTokenRepositoryAdapter
+	oidc            repository.OIDCAdapter
+	userApp         userapp.UserService
+	sessionRepo     repository.SessionRepositoryAdapter
+	csrfTokenRepo   repository.CSRFTokenRepositoryAdapter
+	sessionFastRepo repository.SessionFastRepositoryAdapter
 }
 
 // Login logs in a user and returns the session DTO, user DTO, and error.
@@ -70,33 +73,41 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 		return
 	}
 
-	v := domain.Login{
-		Id:        primitive.CreateUUID(),
-		IP:        cmd.IP,
-		User:      login.Name,
-		IdToken:   login.IDToken,
-		CreatedAt: utils.Now(),
-		UserAgent: cmd.UserAgent,
-		UserId:    login.UserId,
-	}
-
-	if err = s.loginRepo.Add(&v); err != nil {
+	if dto.SessionId, err = primitive.NewRandomId(); err != nil {
 		return
 	}
 
-	csrfToken := domain.NewCSRFToken(v.Id)
-
-	if err = s.csrfTokenRepo.Add(&csrfToken); err == nil {
-		dto.LoginId = csrfToken.LoginId
-		dto.CSRFToken = csrfToken.Id
+	if dto.CSRFToken, err = primitive.NewRandomId(); err != nil {
+		return
 	}
+
+	session := domain.Session{
+		Id:        dto.SessionId,
+		IP:        cmd.IP,
+		User:      login.Name,
+		UserId:    login.UserId,
+		IdToken:   login.IDToken,
+		UserAgent: cmd.UserAgent,
+		CreatedAt: utils.Now(),
+	}
+
+	if err = s.sessionRepo.Add(&session); err != nil {
+		return
+	}
+
+	if err = s.sessionFastRepo.Add(&session); err != nil {
+		return
+	}
+
+	csrfToken := session.NewCSRFToken()
+	err = s.csrfTokenRepo.Add(dto.CSRFToken, &csrfToken)
 
 	return
 }
 
 // Logout logs out a user and returns the ID token and error.
-func (s *sessionAppService) Logout(loginId primitive.UUID) (string, error) {
-	login, err := s.loginRepo.Find(loginId)
+func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error) {
+	session, err := s.sessionFastRepo.Find(sessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -105,11 +116,15 @@ func (s *sessionAppService) Logout(loginId primitive.UUID) (string, error) {
 		return "", err
 	}
 
-	if err := s.loginRepo.Delete(loginId); err != nil {
+	if err := s.sessionRepo.Delete(session.Id); err != nil {
 		return "", err
 	}
 
-	return login.IdToken, nil
+	if err = s.sessionFastRepo.Delete(sessionId); err != nil {
+		return "", err
+	}
+
+	return session.IdToken, nil
 }
 
 func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error) {
@@ -124,15 +139,23 @@ func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error)
 }
 
 func (s *sessionAppService) clearLogin(name primitive.Account, ip string) error {
-	logins, err := s.loginRepo.FindByUser(name)
+	logins, err := s.sessionRepo.FindByUser(name)
 	if err != nil || len(logins) == 0 {
 		return err
+	}
+
+	deleteSession := func(sessionId primitive.RandomId) error {
+		if err := s.sessionFastRepo.Delete(sessionId); err != nil {
+			return err
+		}
+
+		return s.sessionRepo.Delete(sessionId)
 	}
 
 	n := len(logins)
 	for i := range logins {
 		if item := &logins[i]; item.IsSameLogin(ip) {
-			if err = s.loginRepo.Delete(item.Id); err != nil {
+			if err = deleteSession(item.Id); err != nil {
 				return err
 			}
 
@@ -146,11 +169,11 @@ func (s *sessionAppService) clearLogin(name primitive.Account, ip string) error 
 	}
 
 	for i := range logins {
-		if logins[i].Invalid() {
+		if logins[i].IsInvalid() {
 			continue
 		}
 
-		if err = s.loginRepo.Delete(logins[i].Id); err != nil {
+		if err = deleteSession(logins[i].Id); err != nil {
 			return err
 		}
 

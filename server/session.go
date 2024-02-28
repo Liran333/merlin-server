@@ -14,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/csrftokenrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
+	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
 )
 
 // initSession depends on initUser
@@ -24,6 +25,7 @@ func initSession(cfg *config.Config, services *allServices) {
 		cfg.Session.Domain.MaxSessionNum,
 		loginrepositoryadapter.LoginAdapter(),
 		csrftokenrepositoryadapter.NewCSRFTokenAdapter(redisdb.DAO()),
+		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
 	)
 }
 

@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	msdConfig   MSDConfig
-	allLicenses map[string]bool
-	node        *snowflake.Node
+	node           *snowflake.Node
+	msdConfig      MSDConfig
+	allLicenses    map[string]bool
+	passwordLength int
+	randomIdLength int
 )
 
 // Init initializes the configuration with the given Config struct.
@@ -31,6 +33,9 @@ func Init(cfg *Config) (err error) {
 	// TODO: node id should be same with replica id
 	node, err = snowflake.NewNode(1)
 
+	passwordLength = cfg.PasswordLength
+	randomIdLength = cfg.RandomIdLength
+
 	if len(msdConfig.ReservedAccounts) > 0 {
 		msdConfig.reservedAccounts = sets.New[string]()
 		msdConfig.reservedAccounts.Insert(msdConfig.ReservedAccounts...)
@@ -42,7 +47,9 @@ func Init(cfg *Config) (err error) {
 type Config struct {
 	MSDConfig
 
-	Licenses []string `json:"licenses" required:"true"`
+	Licenses       []string `json:"licenses" required:"true"`
+	RandomIdLength int      `json:"random_id_length"`
+	PasswordLength int      `json:"password_length"`
 }
 
 // MSDConfig represents the configuration for MSD.
@@ -56,7 +63,7 @@ type MSDConfig struct {
 }
 
 // SetDefault sets default values for MSDConfig if they are not provided.
-func (cfg *MSDConfig) SetDefault() {
+func (cfg *Config) SetDefault() {
 	if cfg.MaxNameLength <= 0 {
 		cfg.MaxNameLength = 50
 	}
@@ -71,5 +78,13 @@ func (cfg *MSDConfig) SetDefault() {
 
 	if cfg.MaxFullnameLength <= 0 {
 		cfg.MaxFullnameLength = 200
+	}
+
+	if cfg.RandomIdLength <= 0 {
+		cfg.RandomIdLength = 24
+	}
+
+	if cfg.PasswordLength <= 0 {
+		cfg.PasswordLength = 32
 	}
 }

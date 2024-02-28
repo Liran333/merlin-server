@@ -6,14 +6,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package giteauser
 
 import (
-	"bytes"
-	"crypto/rand"
 	"fmt"
-	"math/big"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/go-sdk/gitea"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 )
@@ -26,26 +22,6 @@ type UserCreateCmd struct {
 
 // UserUpdateCmd represents the command to update a user.
 type UserUpdateCmd = domain.UserCreateCmd
-
-func genPasswd() (string, error) {
-	var container string
-	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!#$%&()*,./:;?@[]^_`{|}~+<=>"
-	b := bytes.NewBufferString(str)
-	length := b.Len()
-	bigInt := big.NewInt(int64(length))
-	// gen 32 bytes password
-	for i := 0; i < 32; i++ {
-		randomInt, err := rand.Int(rand.Reader, bigInt)
-		if err != nil {
-			logrus.Errorf("internal error, rand.Int: %s", err.Error())
-
-			return "", err
-		}
-
-		container += string(str[randomInt.Int64()])
-	}
-	return container, nil
-}
 
 func toUser(u *gitea.User) (user domain.User, err error) {
 	user.Account, err = primitive.NewAccount(u.UserName)
@@ -78,7 +54,8 @@ type UserClient struct {
 // CreateUser creates a new user with the provided command.
 func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error) {
 	changePwd := false
-	pwd, err := genPasswd()
+
+	pwd, err := primitive.NewPassword()
 	if err != nil {
 		return
 	}
@@ -86,7 +63,7 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 	o := gitea.CreateUserOption{
 		Username:           cmd.Username,
 		Email:              cmd.Email,
-		Password:           pwd,
+		Password:           pwd.Password(),
 		MustChangePassword: &changePwd,
 	}
 
@@ -96,7 +73,7 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 	}
 
 	user, err = toUser(u)
-	user.PlatformPwd = pwd
+	user.PlatformPwd = pwd.Password()
 
 	return
 }

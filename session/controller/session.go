@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	cookieLoginId   = "login_id"
 	cookieCSRFToken = "csrf_token"
+	cookieSessionId = "session_id"
 )
 
 // AddRouterForSessionController adds routes for session controller to the given router group.
@@ -75,10 +75,11 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, fmt.Sprintf("%s login", user.Name))
 
-	setCookieOfLoginId(ctx, session.LoginId.String(), nil)
+	sessionExpiry := config.sessionCookieExpiry()
+	setCookieOfSessionId(ctx, session.SessionId.RandomId(), &sessionExpiry)
 
 	expiry := config.csrfTokenCookieExpiry()
-	setCookieOfCSRFToken(ctx, session.CSRFToken.String(), &expiry)
+	setCookieOfCSRFToken(ctx, session.CSRFToken.RandomId(), &expiry)
 
 	commonctl.SendRespOfGet(ctx, user)
 }
@@ -90,7 +91,7 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 // @Success  202  {object}  logoutInfo
 // @Router   /v1/session [put]
 func (ctl *SessionController) Logout(ctx *gin.Context) {
-	v, err := commonctl.GetCookie(ctx, cookieLoginId)
+	v, err := commonctl.GetCookie(ctx, cookieSessionId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -99,14 +100,14 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, "logout")
 
-	loginId, err := primitive.NewUUID(v)
+	sessionId, err := primitive.ToRandomId(v)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	idToken, err := ctl.s.Logout(loginId)
+	idToken, err := ctl.s.Logout(sessionId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -114,16 +115,16 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 	}
 
 	expiry := time.Now().AddDate(0, 0, -1)
-	setCookieOfLoginId(ctx, "", &expiry)
+	setCookieOfSessionId(ctx, "", &expiry)
 	setCookieOfCSRFToken(ctx, "", &expiry)
 
 	commonctl.SendRespOfPut(ctx, logoutInfo{IdToken: idToken})
 }
 
-func setCookieOfLoginId(ctx *gin.Context, value string, expiry *time.Time) {
-	commonctl.SetCookie(ctx, cookieLoginId, value, true, expiry)
-}
-
 func setCookieOfCSRFToken(ctx *gin.Context, value string, expiry *time.Time) {
 	commonctl.SetCookie(ctx, cookieCSRFToken, value, false, expiry)
+}
+
+func setCookieOfSessionId(ctx *gin.Context, value string, expiry *time.Time) {
+	commonctl.SetCookie(ctx, cookieSessionId, value, true, expiry)
 }

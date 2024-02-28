@@ -97,7 +97,7 @@ func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
 		return err
 	}
 
-	loginId, err := m.parseLoginId(ctx)
+	sessionId, err := m.parseSessionId(ctx)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
 
 	user, newCSRF, err := m.session.CheckAndRefresh(&app.CmdToCheck{
 		SessionDTO: app.SessionDTO{
-			LoginId:   loginId,
+			SessionId: sessionId,
 			CSRFToken: csrfToken,
 		},
 		IP:        ip,
@@ -132,32 +132,27 @@ func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
 	return nil
 }
 
-func (m *webAPIMiddleware) parseCSRFToken(ctx *gin.Context) (primitive.UUID, error) {
+func (m *webAPIMiddleware) parseCSRFToken(ctx *gin.Context) (primitive.RandomId, error) {
 	v := ctx.GetHeader(csrfTokenHeader)
 	if v == "" {
-		return primitive.UUID{}, allerror.New(
+		return nil, allerror.New(
 			allerror.ErrorCodeCSRFTokenMissing, "no csrf token",
 		)
 	}
 
-	csrfToken, err := primitive.NewUUID(v)
-	if err != nil {
-		err = allerror.New(allerror.ErrorCodeCSRFTokenInvalid, "not uuid")
-	}
-
-	return csrfToken, err
+	return primitive.ToRandomId(v)
 }
 
-func (m *webAPIMiddleware) parseLoginId(ctx *gin.Context) (primitive.UUID, error) {
-	v, err := commonctl.GetCookie(ctx, cookieLoginId)
+func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId, error) {
+	v, err := commonctl.GetCookie(ctx, cookieSessionId)
 	if err != nil {
-		return primitive.UUID{}, err
+		return nil, err
 	}
 
-	loginId, err := primitive.NewUUID(v)
+	sessionId, err := primitive.ToRandomId(v)
 	if err != nil {
-		err = allerror.New(allerror.ErrorCodeLoginIdInvalid, "not uuid")
+		err = allerror.New(allerror.ErrorCodeSessionIdInvalid, "not session id")
 	}
 
-	return loginId, err
+	return sessionId, err
 }

@@ -16,16 +16,25 @@ func Init(cfg *Config) {
 
 // Config is a struct that holds the configuration for CSRF token cookie expiry.
 type Config struct {
+	SessionCookieExpiry   int64 `json:"session_cookie_expiry"`
 	CSRFTokenCookieExpiry int64 `json:"csrf_token_cookie_expiry"`
 }
 
 // SetDefault sets default values for the Config struct.
 func (cfg *Config) SetDefault() {
 	if cfg.CSRFTokenCookieExpiry <= 0 {
-		cfg.CSRFTokenCookieExpiry = 5 * 60 // second
+		cfg.CSRFTokenCookieExpiry = 3600 // second
+	}
+
+	if cfg.SessionCookieExpiry <= 0 {
+		cfg.SessionCookieExpiry = 3600 // second
 	}
 }
 
 func (cfg *Config) csrfTokenCookieExpiry() time.Time {
 	return time.Now().Add(time.Duration(cfg.CSRFTokenCookieExpiry) * time.Second)
+}
+
+func (cfg *Config) sessionCookieExpiry() time.Time {
+	return time.Now().Add(time.Duration(cfg.SessionCookieExpiry) * time.Second)
 }

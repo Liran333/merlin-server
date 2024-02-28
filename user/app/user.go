@@ -70,7 +70,7 @@ func NewUserService(
 	repo repository.User,
 	git git.User,
 	token repository.Token,
-	session session.LoginRepositoryAdapter,
+	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
 ) UserService {
 	return userService{
@@ -86,7 +86,7 @@ type userService struct {
 	repo    repository.User
 	git     git.User
 	token   repository.Token
-	session session.LoginRepositoryAdapter
+	session session.SessionRepositoryAdapter
 	oidc    session.OIDCAdapter
 }
 

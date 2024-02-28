@@ -30,6 +30,6 @@ type CmdToLogin struct {
 
 // SessionDTO represents the session data transfer object containing login ID and CSRF token.
 type SessionDTO struct {
-	LoginId   primitive.UUID
-	CSRFToken primitive.UUID
+	SessionId primitive.RandomId
+	CSRFToken primitive.RandomId
 }

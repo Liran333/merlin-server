@@ -13,55 +13,69 @@ import (
 )
 
 // CheckAndRefresh checks and refreshes the session for a given command.
-func (s *sessionAppService) CheckAndRefresh(cmd *CmdToCheck) (primitive.Account, string, error) {
-	user, err := s.check(cmd)
+func (s *sessionAppService) CheckAndRefresh(cmd *CmdToCheck) (
+	user primitive.Account, token string, err error,
+) {
+	session, refreshToken, err := s.check(cmd)
 	if err != nil {
-		return nil, "", err
+		return
 	}
 
-	csrfToken := domain.NewCSRFToken(cmd.LoginId)
+	user = session.User
 
-	if err := s.csrfTokenRepo.Add(&csrfToken); err != nil {
-		return nil, "", err
+	if !refreshToken {
+		return
 	}
 
-	return user, csrfToken.Id.String(), nil
+	tokenId, err := primitive.NewRandomId()
+	if err != nil {
+		return
+	}
+
+	csrfToken := session.NewCSRFToken()
+	if err = s.csrfTokenRepo.Add(tokenId, &csrfToken); err != nil {
+		return
+	}
+
+	token = tokenId.RandomId()
+
+	return
 }
 
-func (s *sessionAppService) check(cmd *CmdToCheck) (primitive.Account, error) {
-	// check csrf token
+func (s *sessionAppService) check(cmd *CmdToCheck) (
+	session domain.Session, refreshToken bool, err error,
+) {
+	session, err = s.sessionFastRepo.Find(cmd.SessionId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.New(allerror.ErrorCodeSessionIdInvalid, "no session id")
+		}
+
+		return
+	}
+
 	csrfToken, err := s.csrfTokenRepo.Find(cmd.CSRFToken)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.New(allerror.ErrorCodeCSRFTokenNotFound, "no csrf token")
 		}
 
-		return nil, err
+		return
 	}
 
-	if err := csrfToken.Validate(cmd.LoginId); err != nil {
-		return nil, err
+	if err = csrfToken.Validate(cmd.SessionId); err != nil {
+		return
 	}
 
-	if csrfToken.Reset() {
-		if err := s.csrfTokenRepo.Save(&csrfToken); err != nil {
-			return nil, err
-		}
+	if err = session.Validate(cmd.IP, cmd.UserAgent); err != nil {
+		return
 	}
 
-	// check login
-	login, err := s.loginRepo.Find(cmd.LoginId)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeLoginIdNotFound, "no login")
-		}
-
-		return nil, err
+	if err = s.sessionFastRepo.Save(&session); err != nil {
+		return
 	}
 
-	if err := login.Validate(cmd.IP, cmd.UserAgent); err != nil {
-		return nil, err
-	}
+	refreshToken = csrfToken.IsExpired()
 
-	return login.User, nil
+	return
 }

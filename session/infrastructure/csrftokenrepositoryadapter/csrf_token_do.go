@@ -13,16 +13,14 @@ import (
 
 func toCSRFTokenDO(v *domain.CSRFToken) csrfTokenDO {
 	return csrfTokenDO{
-		Expiry:  v.Expiry,
-		HasUsed: v.HasUsed,
-		LoginId: v.LoginId,
+		Expiry:    v.Expiry,
+		SessionId: v.SessionId.RandomId(),
 	}
 }
 
 type csrfTokenDO struct {
-	Expiry  int64          `json:"expiry"`
-	HasUsed bool           `json:"has_used"`
-	LoginId primitive.UUID `json:"login_id"`
+	Expiry    int64  `json:"expiry"`
+	SessionId string `json:"session_id"`
 }
 
 // MarshalBinary in order to store struct directly in redis
@@ -35,11 +33,9 @@ func (do *csrfTokenDO) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, do)
 }
 
-func (do *csrfTokenDO) toCSRFToken(tid primitive.UUID) domain.CSRFToken {
+func (do *csrfTokenDO) toCSRFToken() domain.CSRFToken {
 	return domain.CSRFToken{
-		Id:      tid,
-		Expiry:  do.Expiry,
-		HasUsed: do.HasUsed,
-		LoginId: do.LoginId,
+		Expiry:    do.Expiry,
+		SessionId: primitive.CreateRandomId(do.SessionId),
 	}
 }

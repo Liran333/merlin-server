@@ -58,6 +58,18 @@ const (
 	// ErrorCodeCSRFTokenNotFound is const
 	ErrorCodeCSRFTokenNotFound = "csrf_token_not_found" // #nosec G101
 
+	// ErrorCodeSessionInvalid is const
+	ErrorCodeSessionInvalid = "session_invalid"
+
+	// ErrorCodeSessionIdInvalid is const
+	ErrorCodeSessionIdInvalid = "session_id_invalid"
+
+	// ErrorCodeSessionIdMissing is const
+	ErrorCodeSessionIdMissing = "session_id_missing"
+
+	// ErrorCodeSessionNotFound is const
+	ErrorCodeSessionNotFound = "session_id_not_found"
+
 	// ErrorCodeBranchExist is const
 	ErrorCodeBranchExist = "branch_exist"
 

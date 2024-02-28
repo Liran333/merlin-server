@@ -18,9 +18,9 @@ const (
 	fieldCreatedAt = "created_at"
 )
 
-func toLoginDO(m *domain.Login) loginDO {
+func toLoginDO(m *domain.Session) loginDO {
 	return loginDO{
-		Id:        m.Id,
+		Id:        m.Id.RandomId(),
 		IP:        m.IP,
 		User:      m.User.Account(),
 		IdToken:   m.IdToken,
@@ -31,8 +31,8 @@ func toLoginDO(m *domain.Login) loginDO {
 }
 
 type loginDO struct {
-	Id primitive.UUID `gorm:"column:id;type:uuid;primaryKey"`
-	IP string         `gorm:"column:ip"`
+	Id string `gorm:"column:id;primaryKey"`
+	IP string `gorm:"column:ip"`
 	// column'name can't be user, because it is a buildin name of pg.
 	User      string `gorm:"column:account;index:login_user"`
 	IdToken   string `gorm:"column:id_token"`
@@ -46,9 +46,9 @@ func (do *loginDO) TableName() string {
 	return loginTableName
 }
 
-func (do *loginDO) toLogin() domain.Login {
-	return domain.Login{
-		Id:        do.Id,
+func (do *loginDO) toLogin() domain.Session {
+	return domain.Session{
+		Id:        primitive.CreateRandomId(do.Id),
 		IP:        do.IP,
 		User:      primitive.CreateAccount(do.User),
 		IdToken:   do.IdToken,
