@@ -6,7 +6,6 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package operationlog
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +13,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/utils"
-)
-
-const (
-	prefix = "MF_OPERATION_LOG"
 )
 
 // OperationLog creates a new instance of the operationLog struct.
@@ -32,38 +28,26 @@ type operationLog struct {
 
 // Write logs the operation details to the log file.
 func (log *operationLog) Write(ctx *gin.Context) {
-	startTime := utils.Time()
+	record := domain.OperationLogRecord{}
+
+	record.Time = utils.Time()
 
 	ctx.Next()
 
-	action := middleware.GetAction(ctx)
-	if action == "" {
+	record.Action = middleware.GetAction(ctx)
+	if record.Action == "" {
 		// It is meaningless to record operation log if action is missing.
 		return
 	}
 
-	user := ""
-	if v := log.user.GetUser(ctx); v != nil {
-		user = v.Account()
-	}
+	record.User = log.user.GetUser(ctx)
 
-	ip, _ := controller.GetIp(ctx)
+	record.IP, _ = controller.GetIp(ctx)
 
-	result := "success"
-	if v := ctx.Writer.Status(); v < http.StatusOK || v >= http.StatusMultipleChoices {
-		result = "failed"
-	}
+	v := ctx.Writer.Status()
+	record.Success = v >= http.StatusOK && v < http.StatusMultipleChoices
 
-	str := fmt.Sprintf(
-		"%s | %s | %s | %s | %s | %v | %s",
-		prefix,
-		startTime,
-		user,
-		ip,
-		ctx.Request.Method,
-		action,
-		result,
-	)
+	record.Method = ctx.Request.Method
 
-	logrus.Info(str)
+	logrus.Info(record.String())
 }
