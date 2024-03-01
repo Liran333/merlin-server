@@ -179,3 +179,9 @@ type CmdToVerifyBindEmail struct {
 	Email    primitive.Email
 	PassCode string
 }
+
+// PlatformInfo represents the data transfer object for a git platform user.
+type PlatformInfo struct {
+	Password string `json:"password"`
+	Name     string `json:"name"`
+}

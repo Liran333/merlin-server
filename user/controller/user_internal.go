@@ -9,6 +9,7 @@ import (
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 )
@@ -25,6 +26,7 @@ func AddRouterForUserInternalController(
 	}
 
 	rg.POST("/v1/user/token/verify", m.Write, ctl.VerifyToken)
+	rg.GET("/v1/user/:name/platform", m.Write, ctl.GetPlatformUser)
 
 }
 
@@ -50,7 +52,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 	var req tokenVerifyRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, allerror.NewInvalidParam(err.Error()))
 		return
 	}
 
@@ -60,5 +62,27 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 		commonctl.SendRespOfPost(ctx, tokenVerifyResp{
 			Account: v.Account,
 		})
+	}
+}
+
+// @Summary  Get platform user info
+// @Description  Get platform user info
+// @Tags     User
+// @Accept   json
+// @Param    name  path  string  true  "name of the user"
+// @Security Internal
+// @Success  200  {object}  commonctl.ResponseData
+// @Router   /v1/user/{name}/platform [get]
+func (ctl *UserInernalController) GetPlatformUser(ctx *gin.Context) {
+	username, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error()))
+		return
+	}
+
+	if v, err := ctl.s.GetPlatformInfo(username); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, v)
 	}
 }
