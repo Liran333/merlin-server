@@ -141,7 +141,7 @@ type OrgListOptions struct {
 
 // ToDTO converts a domain.Organization object to a userapp.UserDTO object.
 func ToDTO(org *domain.Organization) userapp.UserDTO {
-	return userapp.NewUserDTO(org)
+	return userapp.NewUserDTO(org, nil)
 }
 
 // ToMemberDTO converts a domain.OrgMember object to a MemberDTO object.

@@ -7,6 +7,7 @@ package giteauser
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/openmerlin/go-sdk/gitea"
 
@@ -79,10 +80,23 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 }
 
 // DeleteUser deletes the user with the specified name.
-func (c *UserClient) DeleteUser(name string) (err error) {
-	_, err = c.client.AdminDeleteUser(name)
+func (c *UserClient) DeleteUser(name string) error {
+	resp, err := c.client.AdminDeleteUser(name)
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
 
-	return
+	return err
+}
+
+// DeleteOrg delete the org with the specified name.
+func (c *UserClient) DeleteOrg(name string) error {
+	resp, err := c.client.AdminDeleteOrg(name)
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+
+	return err
 }
 
 // UpdateUser updates the user with the provided command.

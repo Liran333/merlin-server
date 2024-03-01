@@ -79,8 +79,8 @@ const (
 	// ErrorCodeBaseBranchNotFound is const
 	ErrorCodeBaseBranchNotFound = "base_branch_not_found"
 
-	// ErrorCodeOrgExistModel is const
-	ErrorCodeOrgExistModel = "org_model_exist"
+	// ErrorCodeOrgExistResource is const
+	ErrorCodeOrgExistResource = "org_resource_exist"
 
 	errorCodeInvalidParam = "invalid_param"
 

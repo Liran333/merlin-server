@@ -73,7 +73,7 @@ func httpError(err error) (int, string) {
 			case allerror.ErrorCodeCSRFTokenNotFound:
 				sc = http.StatusUnauthorized
 
-			case allerror.ErrorCodeOrgExistModel:
+			case allerror.ErrorCodeOrgExistResource:
 				sc = http.StatusBadRequest
 
 			default:

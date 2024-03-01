@@ -17,6 +17,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
+	"github.com/openmerlin/merlin-server/user/infrastructure/git"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -34,7 +35,7 @@ type OrgService interface {
 	Delete(*domain.OrgDeletedCmd) error
 	UpdateBasicInfo(*domain.OrgUpdatedBasicInfoCmd) (userapp.UserDTO, error)
 	GetByAccount(primitive.Account) (userapp.UserDTO, error)
-	GetOrgOrUser(primitive.Account) (userapp.UserDTO, error)
+	GetOrgOrUser(primitive.Account, primitive.Account) (userapp.UserDTO, error)
 	ListAccount(*userrepo.ListOption) ([]userapp.UserDTO, error)
 
 	CheckName(primitive.Account) bool
@@ -64,6 +65,7 @@ func NewOrgService(
 	invite repository.Approve,
 	perm *permService,
 	cfg *domain.Config,
+	git git.User,
 ) OrgService {
 	return &orgService{
 		user:             user,
@@ -74,6 +76,7 @@ func NewOrgService(
 		defaultRole:      domain.OrgRole(cfg.DefaultRole),
 		inviteExpiry:     cfg.InviteExpiry,
 		MaxCountPerOwner: cfg.MaxCountPerOwner,
+		git:              git,
 	}
 }
 
@@ -86,6 +89,7 @@ type orgService struct {
 	member           repository.OrgMember
 	invite           repository.Approve
 	perm             *permService
+	git              git.User
 }
 
 // Create creates a new organization with the given command and returns the created organization as a UserDTO.
@@ -181,20 +185,19 @@ func (org *orgService) GetByAccount(acc primitive.Account) (dto userapp.UserDTO,
 }
 
 // GetOrgOrUser retrieves either an organization or a user by their account and returns it as a UserDTO.
-func (org *orgService) GetOrgOrUser(acc primitive.Account) (dto userapp.UserDTO, err error) {
+func (org *orgService) GetOrgOrUser(actor, acc primitive.Account) (dto userapp.UserDTO, err error) {
 	u, err := org.repo.GetByAccount(acc)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		return
 	} else if err == nil {
-		u.ClearSenstiveData()
-		dto = userapp.NewUserDTO(&u)
+		dto = userapp.NewUserDTO(&u, actor)
 		return
 	}
 
 	o, err := org.repo.GetOrgByName(acc)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeUserNotFound, fmt.Sprintf("user %s not found", acc.Account()))
+			err = allerror.New(allerror.ErrorCodeUserNotFound, fmt.Sprintf("org %s not found", acc.Account()))
 		}
 
 		return
@@ -226,31 +229,41 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return fmt.Errorf("failed to get platform user, %w", err)
+		logrus.Error(err)
+
+		return allerror.NewInvalidParam("failed to get platform user")
 	}
 
 	can, err := pl.CanDelete(cmd.Name)
 	if err != nil {
-		return fmt.Errorf("failed to check platform user, %w", err)
+		logrus.Error(err)
+
+		return allerror.NewInvalidParam(fmt.Sprintf("%s can't delete the org", cmd.Name.Account()))
 	}
 
 	if !can {
-		return allerror.New(allerror.ErrorCodeOrgExistModel, "can't delete the organization, while some repos still existed")
+		return allerror.New(allerror.ErrorCodeOrgExistResource, "can't delete the organization, while some repos still existed")
 	}
 
 	err = org.member.DeleteByOrg(o.Account)
 	if err != nil {
-		logrus.Errorf("failed to delete org member, %s", err)
+		logrus.Error(err)
+
+		return allerror.New(allerror.ErrorBaseCase, "failed to delete org member")
 	}
 
 	err = org.invite.DeleteInviteAndReqByOrg(o.Account)
 	if err != nil {
-		logrus.Errorf("failed to delete org invite, %s", err)
+		logrus.Error(err)
+
+		return allerror.New(allerror.ErrorBaseCase, "failed to delete org invite")
 	}
 
-	err = pl.DeleteOrg(cmd.Name)
+	err = org.git.DeleteOrg(o.Account)
 	if err != nil {
-		logrus.Errorf("failed to delete git org, %s", err)
+		logrus.Error(err)
+
+		return allerror.New(allerror.ErrorBaseCase, "failed to delete git org")
 	}
 
 	return org.repo.DeleteOrg(&o)
@@ -528,7 +541,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	err = org.canRemoveMember(cmd)
 	if err != nil {
-		return err
+		return allerror.NewInvalidParam(err.Error())
 	}
 
 	o, err := org.repo.GetOrgByName(cmd.Org)

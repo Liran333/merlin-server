@@ -36,7 +36,7 @@ func AddRouterForOrgController(
 	rg.PUT("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Update)
 	rg.POST("/v1/organization", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Create)
 	rg.GET("/v1/organization/:name", m.Optional, ctl.Get)
-	rg.GET("/v1/organization", m.Read, ctl.List)
+	rg.GET("/v1/organization", m.Optional, ctl.List)
 	rg.POST("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Leave)
 	rg.DELETE("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Delete)
 	rg.HEAD("/v1/name", m.Read, ctl.Check)
@@ -52,7 +52,7 @@ func AddRouterForOrgController(
 	rg.DELETE("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveRequest)
 
 	rg.DELETE("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveMember)
-	rg.GET("/v1/organization/:name/member", m.Read, ctl.ListMember)
+	rg.GET("/v1/organization/:name/member", m.Optional, ctl.ListMember)
 	rg.PUT("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.EditMember)
 
 	rg.GET("/v1/account/:name", m.Optional, ctl.GetUser)
@@ -143,7 +143,9 @@ func (ctl *OrgController) GetUser(ctx *gin.Context) {
 		return
 	}
 
-	if o, err := ctl.org.GetOrgOrUser(name); err != nil {
+	user := ctl.m.GetUser(ctx)
+
+	if o, err := ctl.org.GetOrgOrUser(user, name); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, o)
@@ -203,10 +205,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 		return
 	}
 
-	me := ctl.m.GetUserAndExitIfFailed(ctx)
-	if me == nil {
-		return
-	}
+	me := ctl.m.GetUser(ctx)
 
 	owner, user, err := req.toCmd()
 	if err != nil {

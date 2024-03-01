@@ -49,7 +49,7 @@ type UserService interface {
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
 	HasUser(primitive.Account) bool
 
-	ListUsers() ([]UserDTO, error)
+	ListUsers(primitive.Account) ([]UserDTO, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
 	GetPlatformInfo(domain.Account) (PlatformInfo, error)
@@ -129,7 +129,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 	}
 
 	u.PlatformPwd = ""
-	dto = newUserDTO(&u)
+	dto = newUserDTO(&u, cmd.Account)
 
 	return
 }
@@ -142,7 +142,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 	}
 
 	if b := cmd.toUser(&user); !b {
-		dto = newUserDTO(&user)
+		dto = newUserDTO(&user, account)
 		return
 	}
 
@@ -166,7 +166,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		}
 	}
 
-	dto = newUserDTO(&user)
+	dto = newUserDTO(&user, account)
 
 	return
 }
@@ -242,7 +242,7 @@ func (s userService) Delete(account domain.Account) (err error) {
 
 	if u.Email != nil && u.Email.Email() != "" {
 		// delete git user when email is valid
-		err = s.git.Delete(&u)
+		err = s.git.Delete(u.Account)
 		if err != nil {
 			err = allerror.NewInvalidParam(fmt.Sprintf("failed to delete user in git server: %s", err))
 		}
@@ -277,18 +277,15 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 		return
 	}
 
-	if actor == nil || actor.Account() != u.Account.Account() {
-		u.ClearSenstiveData()
-	}
 	u.PlatformPwd = ""
 
-	dto = newUserDTO(&u)
+	dto = newUserDTO(&u, actor)
 
 	return
 }
 
 // ListUsers returns a list of users.
-func (s userService) ListUsers() (dtos []UserDTO, err error) {
+func (s userService) ListUsers(actor primitive.Account) (dtos []UserDTO, err error) {
 	// get user
 	t := domain.UserTypeUser
 	u, _, err := s.repo.ListAccount(&repository.ListOption{Type: &t})
@@ -299,7 +296,7 @@ func (s userService) ListUsers() (dtos []UserDTO, err error) {
 
 	dtos = make([]UserDTO, len(u))
 	for i := range u {
-		dtos[i] = newUserDTO(&u[i])
+		dtos[i] = newUserDTO(&u[i], actor)
 	}
 
 	return

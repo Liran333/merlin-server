@@ -179,7 +179,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), "read", DupInvite["role"])
 	assert.Equal(s.T(), "invite me ASAP", DupInvite["msg"])
 
-	// 恢复初始通知
+	// 恢复初始角色
 	_, _, _ = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    s.invitee,
@@ -287,12 +287,12 @@ func (s *SuiteInvite) TestInviteAprove() {
 		}
 	}
 
-	// owner不能离开组织
+	// 唯一的owner不能离开组织
 	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
 		User: s.owner,
 	}, s.name)
 
-	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
@@ -363,6 +363,104 @@ func (s *SuiteInvite) TestInviteInvalidUser() {
 
 	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
+}
+
+// TestInviteAprove used for testing
+// Owner 可以被移除组织
+func (s *SuiteInvite) TestRemoveOwner() {
+	name := "testorg2"
+	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+		Name:        name,
+		Fullname:    name,
+		AvatarId:    s.avatarid,
+		Website:     s.website,
+		Description: s.desc,
+	})
+
+	o := getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEqual(s.T(), "", o["id"])
+	s.orgId = getString(s.T(), o["id"])
+
+	// 邀请另一个admin
+	DupData, r2, err2 := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: name,
+		User:    s.invitee,
+		Role:    "admin",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), http.StatusCreated, r2.StatusCode, data.Msg)
+	assert.Nil(s.T(), err2)
+
+	DupInvite := getData(s.T(), DupData.Data)
+
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), DupInvite["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), DupInvite["updated_at"]))
+	assert.Equal(s.T(), "admin", DupInvite["role"])
+	assert.Equal(s.T(), "invite me ASAP", DupInvite["msg"])
+
+	// 被邀请人接受邀请
+	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+		OrgName: name,
+		Msg:     "ok",
+	})
+
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	invite := getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), name, invite["org_name"])
+	assert.Equal(s.T(), s.orgId, invite["org_id"])
+	assert.Equal(s.T(), s.invitee, invite["user_name"])
+	assert.Equal(s.T(), s.inviteeId, invite["user_id"])
+	assert.NotEqual(s.T(), "", invite["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["updated_at"]))
+	assert.Equal(s.T(), "admin", invite["role"])
+	assert.Equal(s.T(), s.owner, invite["inviter"])
+	assert.Equal(s.T(), s.invitee, invite["by"])
+	assert.Equal(s.T(), "ok", invite["msg"])
+	assert.Equal(s.T(), "approved", invite["status"])
+
+	// 移除原本的owner
+	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth2, swagger.ControllerOrgMemberRemoveRequest{
+		User: s.owner,
+	}, name)
+
+	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	// 新的管理员可以删除组织
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth2, name)
+
+	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	// 再次创建组织成功
+	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+		Name:        name,
+		Fullname:    name,
+		AvatarId:    s.avatarid,
+		Website:     s.website,
+		Description: s.desc,
+	})
+
+	o = getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEqual(s.T(), "", o["id"])
+	s.orgId = getString(s.T(), o["id"])
+
+	// 清理组织
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, name)
+
+	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
 }
 
 // TestInvite used for testing

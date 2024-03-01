@@ -53,7 +53,7 @@ func initorg() {
 		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
 
 	orgAppService = orgapp.NewOrgService(
-		userAppService, user, member, invite, p, &cfg.Org)
+		userAppService, user, member, invite, p, &cfg.Org, git)
 }
 
 var orgCmd = &cobra.Command{

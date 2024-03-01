@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/lib/pq v1.10.9
-	github.com/openmerlin/go-sdk/gitea v0.0.0-20231227092419-677da2d9d0b2
+	github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458
 	github.com/openmerlin/merlin-sdk v0.0.0-20240212054011-bf415f182ddb
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771
 	github.com/opensourceways/kafka-lib v0.0.0-20231114071554-b2af9944cf3a
@@ -22,7 +22,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.20.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 	k8s.io/apimachinery v0.28.4
@@ -99,8 +99,8 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect

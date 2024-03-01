@@ -69,12 +69,6 @@ func (u User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
 }
 
-// ClearSenstiveData clears sensitive data of the user.
-func (u *User) ClearSenstiveData() {
-	u.Email = nil
-	u.Phone = nil
-}
-
 // UserInfo represents additional information about a user.
 type UserInfo struct {
 	Account  Account

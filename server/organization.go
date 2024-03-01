@@ -9,11 +9,14 @@ import (
 
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
+	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/controller"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
+	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
 
@@ -29,9 +32,11 @@ func initOrg(cfg *config.Config, services *allServices) {
 
 	services.permissionApp = commonapp.NewResourcePermissionAppService(permission)
 
+	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
+
 	services.orgApp = app.NewOrgService(
 		services.userApp, org, orgMember,
-		invitation, permission, &cfg.Org,
+		invitation, permission, &cfg.Org, git,
 	)
 }
 

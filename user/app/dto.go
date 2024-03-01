@@ -42,11 +42,11 @@ type UserDTO struct {
 }
 
 // NewUserDTO creates a new UserDTO based on the given domain.User object.
-func NewUserDTO(u *domain.User) (dto UserDTO) {
-	return newUserDTO(u)
+func NewUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
+	return newUserDTO(u, actor)
 }
 
-func newUserDTO(u *domain.User) (dto UserDTO) {
+func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	dto.Name = u.Account.Account()
 	if u.AvatarId != nil {
 		dto.AvatarId = u.AvatarId.AvatarId()
@@ -68,13 +68,13 @@ func newUserDTO(u *domain.User) (dto UserDTO) {
 		dto.DefaultRole = u.DefaultRole
 	} else {
 		email := ""
-		if u.Email != nil {
+		if u.Email != nil && actor == u.Account {
 			email = u.Email.Email()
 		}
 		dto.Email = &email
 
 		phone := ""
-		if u.Phone != nil {
+		if u.Phone != nil && actor == u.Account {
 			phone = u.Phone.PhoneNumber()
 		}
 		dto.Phone = &phone
