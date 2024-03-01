@@ -174,3 +174,28 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 
 	return
 }
+
+// GetByUserAndRoles retrieves members by user and roles.
+func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account, roles []string) (members []domain.OrgMember, err error) {
+	if user == nil {
+		return
+	}
+	var v []Member
+
+	query := impl.DB().Where(impl.EqualQuery(fieldUser), user.Account())
+	if len(roles) > 0 {
+		query = query.Where(impl.InFilter(fieldRole), roles)
+	}
+
+	err = query.Find(&v).Error
+	if err != nil || len(v) == 0 {
+		return
+	}
+
+	members = make([]domain.OrgMember, len(v))
+	for i := range v {
+		members[i] = toOrgMember(&v[i])
+	}
+
+	return
+}

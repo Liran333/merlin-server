@@ -31,6 +31,12 @@ type ListOption struct {
 	CountPerPage int
 }
 
+// ListOrgOption is a struct for defining options when listing organization resources.
+type ListOrgOption struct {
+	OrgIDs []int64
+	Owner  primitive.Account
+}
+
 // User is an interface for user-related operations.
 type User interface {
 	AddUser(*domain.User) (domain.User, error)
@@ -47,6 +53,7 @@ type User interface {
 	CheckName(primitive.Account) bool
 	GetOrgByName(primitive.Account) (org.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
+	GetOrgList(*ListOrgOption) ([]org.Organization, error)
 	GetOrgCountByOwner(primitive.Account) (int64, error)
 
 	ListAccount(*ListOption) ([]domain.User, int, error)

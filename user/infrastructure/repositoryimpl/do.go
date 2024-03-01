@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	fieldID         = "id"
 	fieldName       = "name"
 	fieldCount      = "count"
 	fieldPlatformId = "platform_id"

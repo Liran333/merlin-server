@@ -138,6 +138,33 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 	return
 }
 
+// GetOrgList retrieves organizations owned by organization id array or owner.
+func (impl *userRepoImpl) GetOrgList(opt *repository.ListOrgOption) (os []org.Organization, err error) {
+	query := impl.DB()
+	if len(opt.OrgIDs) > 0 {
+		query = query.Where(impl.InFilter(fieldID), opt.OrgIDs)
+	}
+	if opt.Owner != nil {
+		query = query.Where(impl.EqualQuery(fieldOwner), opt.Owner.Account())
+	}
+
+	var dos []UserDO
+	err = query.Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization).Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, err
+	}
+
+	os = make([]org.Organization, len(dos))
+	for i := range dos {
+		os[i], err = dos[i].toOrg(impl.e)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 // GetOrgCountByOwner retrieves the count of organizations owned by the given account.
 func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total int64, err error) {
 	err = impl.DB().

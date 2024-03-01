@@ -136,6 +136,7 @@ type OrgListOptions struct {
 	PageSize int
 	Owner    primitive.Account
 	Member   primitive.Account
+	Roles    []string
 }
 
 // ToDTO converts a domain.Organization object to a userapp.UserDTO object.

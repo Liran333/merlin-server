@@ -346,6 +346,50 @@ func (s *SuiteOrgModel) TestOrgMemberSearch() {
 	assert.NotEmpty(s.T(), data.Data)
 }
 
+// TestOrgRolesSearch used for testing
+// 用户可以批量查询某个用户所拥有权限的组织
+func (s *SuiteOrgModel) TestOrgRolesSearch() {
+	// list all
+	d := swagger.OrganizationApiV1OrganizationGetOpts{
+		Username: optional.NewString("test1"),
+		Roles:    optional.NewInterface("admin"),
+	}
+	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEmpty(s.T(), data.Data)
+}
+
+// TestOrgInvalidRolesSearch used for testing
+// 用户可以批量查询某个用户所拥有权限的组织，参数不合法验证失败
+func (s *SuiteOrgModel) TestOrgInvalidRolesSearch() {
+	// list all
+	d := swagger.OrganizationApiV1OrganizationGetOpts{
+		Username: optional.NewString("test1"),
+		Roles:    optional.NewInterface("invalid"),
+	}
+	_, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err, "invalid role value")
+}
+
+// TestOrgEmptyRolesSearch used for testing
+// 用户可以批量查询某个用户所拥有权限的组织，查询结果为空
+func (s *SuiteOrgModel) TestOrgEmptyRolesSearch() {
+	// list all
+	d := swagger.OrganizationApiV1OrganizationGetOpts{
+		Username: optional.NewString("test1"),
+		Roles:    optional.NewInterface("read"),
+	}
+	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.Empty(s.T(), data.Data)
+}
+
 // TestOrgCreateFailedInvalidNameChars used for testing
 // 无效的组织名, 名字过长, 为空
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {

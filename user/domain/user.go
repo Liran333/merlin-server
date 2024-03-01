@@ -252,3 +252,15 @@ func (cmd *UserCreateCmd) ToUser() User {
 		Phone:    cmd.Phone,
 	}
 }
+
+// RoleValidate validates the role.
+func RoleValidate(role OrgRole) error {
+	validRoles := []OrgRole{OrgRoleContributor, OrgRoleReader, OrgRoleWriter, OrgRoleAdmin}
+	for _, val := range validRoles {
+		if role == val {
+			return nil
+		}
+	}
+	return errors.New("invalid role value")
+
+}

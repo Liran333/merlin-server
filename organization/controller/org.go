@@ -10,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -189,6 +188,7 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Tags     Organization
 // @Param    owner     query  string  false  "filter by owner"
 // @Param    username  query  string  false  "filter by username"
+// @Param    roles     query  []string  false  "filter by roles"
 // @Accept   json
 // @Security Bearer
 // @Success  200  {object}  commonctl.ResponseData
@@ -215,21 +215,16 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 		return
 	}
 
-	if owner != nil {
-		if os, err := ctl.org.GetByOwner(me, owner); err != nil {
-			commonctl.SendError(ctx, err)
-		} else {
-			commonctl.SendRespOfGet(ctx, os)
-		}
-
-		return
-	}
-
 	if user == nil {
 		user = me
 	}
 
-	if os, err := ctl.org.GetByUser(me, user); err != nil {
+	listOption := &orgapp.OrgListOptions{
+		Owner:  owner,
+		Member: user,
+		Roles:  req.Roles,
+	}
+	if os, err := ctl.org.List(listOption); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, os)

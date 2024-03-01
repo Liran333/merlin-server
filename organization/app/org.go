@@ -40,6 +40,7 @@ type OrgService interface {
 	CheckName(primitive.Account) bool
 	GetByOwner(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
 	GetByUser(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
+	List(*OrgListOptions) ([]userapp.UserDTO, error)
 	InviteMember(*domain.OrgInviteMemberCmd) (ApproveDTO, error)
 	RequestMember(*domain.OrgRequestMemberCmd) (MemberRequestDTO, error)
 	CancelReqMember(*domain.OrgCancelRequestMemberCmd) (MemberRequestDTO, error)
@@ -352,8 +353,21 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 	if l == nil {
 		return nil, fmt.Errorf("list options is nil")
 	}
+	orgs = []userapp.UserDTO{}
 
-	os, err := org.repo.GetOrgByOwner(l.Owner)
+	var orgIDs []int64
+	if l.Member != nil {
+		orgIDs, err = org.getOrgIDsByUserAndRoles(l.Member, l.Roles)
+		if err != nil || len(orgIDs) == 0 {
+			return
+		}
+	}
+
+	listOption := &userrepo.ListOrgOption{
+		OrgIDs: orgIDs,
+		Owner:  l.Owner,
+	}
+	os, err := org.repo.GetOrgList(listOption)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -365,6 +379,22 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 	orgs = make([]userapp.UserDTO, len(os))
 	for i := range os {
 		orgs[i] = ToDTO(&os[i])
+	}
+
+	return
+}
+
+func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account, roles []string) (orgIDs []int64, err error) {
+	members, err := org.member.GetByUserAndRoles(user, roles)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
+		return
+	}
+
+	for _, mem := range members {
+		orgIDs = append(orgIDs, mem.OrgId.Integer())
 	}
 
 	return

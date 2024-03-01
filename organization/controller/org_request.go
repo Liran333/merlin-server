@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	userdomain "github.com/openmerlin/merlin-server/user/domain"
 )
 
 type orgBasicInfoUpdateRequest struct {
@@ -71,8 +72,9 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 }
 
 type orgListRequest struct {
-	Owner    string `form:"owner"`
-	Username string `form:"username"`
+	Owner    string   `form:"owner"`
+	Username string   `form:"username"`
+	Roles    []string `form:"roles"`
 }
 
 func (req *orgListRequest) toCmd() (owner, user primitive.Account, err error) {
@@ -85,6 +87,14 @@ func (req *orgListRequest) toCmd() (owner, user primitive.Account, err error) {
 	if req.Username != "" {
 		if user, err = primitive.NewAccount(req.Username); err != nil {
 			return
+		}
+	}
+
+	if len(req.Roles) > 0 {
+		for _, val := range req.Roles {
+			if err = userdomain.RoleValidate(val); err != nil {
+				return
+			}
 		}
 	}
 
