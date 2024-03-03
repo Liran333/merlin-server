@@ -18,7 +18,6 @@ const (
 	fieldName       = "name"
 	fieldCount      = "count"
 	fieldPlatformId = "platform_id"
-	fieldAccount    = "account"
 	fieldType       = "type"
 	fieldAvatarId   = "avatar_id"
 	fieldFullname   = "fullname"

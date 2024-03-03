@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
@@ -237,10 +238,19 @@ func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
 // GetByAccount retrieves a user by their account information.
 func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
 	tmpDo := &UserDO{}
-	tmpDo.Name = account.Account()
-	tmpDo.Type = domain.UserTypeUser
+	// note: gorm struct query will ignore zero value field
+	// so using Where instead of impl.GetRecord
+	query := impl.DB().Where(
+		impl.EqualQuery(fieldName), account.Account(),
+	).Where(impl.EqualQuery(fieldType), domain.UserTypeUser)
 
-	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+	err = query.First(&tmpDo).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = commonrepo.NewErrorResourceNotExists(errors.New("user not found"))
+			return
+		}
+
 		return
 	}
 

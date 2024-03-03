@@ -463,6 +463,64 @@ func (s *SuiteInvite) TestRemoveOwner() {
 	assert.Nil(s.T(), err)
 }
 
+// TestInviteOrg used for testing
+// 组织邀请只能邀请用户，不能邀请组织
+func (s *SuiteInvite) TestInviteOrg() {
+	org := "testorg2"
+	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+		Name:        org,
+		Fullname:    org,
+		AvatarId:    s.avatarid,
+		Website:     s.website,
+		Description: s.desc,
+	})
+
+	o := getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEqual(s.T(), "", o["id"])
+
+	// 邀请另一个组织作为admin
+	_, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    org,
+		Role:    "admin",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+
+	// 邀请另一个组织作为write
+	_, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    org,
+		Role:    "write",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+
+	// 邀请另一个read
+	_, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    org,
+		Role:    "read",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), http.StatusNotFound, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+
+	// 清理组织
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, org)
+
+	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+}
+
 // TestInvite used for testing
 func TestInvite(t *testing.T) {
 	suite.Run(t, new(SuiteInvite))
