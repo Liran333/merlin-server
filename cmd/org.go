@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 
+	redisdb "github.com/opensourceways/redis-lib"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,8 +22,10 @@ import (
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
+	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
+	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
@@ -49,8 +52,13 @@ func initorg() {
 	)
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
+	session := sessionapp.NewSessionClearAppService(
+		loginrepositoryadapter.LoginAdapter(),
+		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
+	)
+
 	userAppService := userapp.NewUserService(
-		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
+		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session)
 
 	orgAppService = orgapp.NewOrgService(
 		userAppService, user, member, invite, p, &cfg.Org, git)

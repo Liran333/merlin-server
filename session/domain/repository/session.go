@@ -15,6 +15,8 @@ type SessionRepositoryAdapter interface {
 
 	Delete(primitive.RandomId) error
 
+	DeleteByUser(primitive.Account) error
+
 	// FindByUser sort by created_at aesc
 	FindByUser(primitive.Account) ([]domain.Session, error)
 
@@ -30,6 +32,6 @@ type CSRFTokenRepositoryAdapter interface {
 type SessionFastRepositoryAdapter interface {
 	Add(*domain.Session) error
 	Save(*domain.Session) error
-	Find(loginId primitive.RandomId) (domain.Session, error)
-	Delete(loginId primitive.RandomId) error
+	Find(primitive.RandomId) (domain.Session, error)
+	Delete(primitive.RandomId) error
 }

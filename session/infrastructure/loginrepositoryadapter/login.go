@@ -39,6 +39,12 @@ func (adapter *loginAdapter) Delete(loginId primitive.RandomId) error {
 	)
 }
 
+func (adapter *loginAdapter) DeleteByUser(user primitive.Account) error {
+	return adapter.DB().
+		Where(adapter.EqualQuery(fieldUser), user.Account()).
+		Delete(&loginDO{}).Error
+}
+
 // Find finds a login in the database by its ID.
 func (adapter *loginAdapter) Find(loginId primitive.RandomId) (domain.Session, error) {
 	do := loginDO{Id: loginId.RandomId()}

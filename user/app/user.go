@@ -37,6 +37,10 @@ func errTokenNotFound(msg string) error {
 	return allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, msg)
 }
 
+type SessionClearAppService interface {
+	ClearAllSession(user primitive.Account) error
+}
+
 // UserService is an interface for user-related operations.
 type UserService interface {
 	Create(*domain.UserCreateCmd) (UserDTO, error)
@@ -73,22 +77,25 @@ func NewUserService(
 	token repository.Token,
 	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
+	sc SessionClearAppService,
 ) UserService {
 	return userService{
-		repo:    repo,
-		git:     git,
-		token:   token,
-		session: session,
-		oidc:    oidc,
+		repo:         repo,
+		git:          git,
+		oidc:         oidc,
+		token:        token,
+		session:      session,
+		sessionClear: sc,
 	}
 }
 
 type userService struct {
-	repo    repository.User
-	git     git.User
-	token   repository.Token
-	session session.SessionRepositoryAdapter
-	oidc    session.OIDCAdapter
+	repo         repository.User
+	git          git.User
+	oidc         session.OIDCAdapter
+	token        repository.Token
+	session      session.SessionRepositoryAdapter
+	sessionClear SessionClearAppService
 }
 
 // Create creates a new user in the system.
@@ -584,6 +591,7 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	return err
 }
 
+// getUserIdOfLogin get user id of login
 func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, err error) {
 	loginInfo, err := s.session.FindByUser(user)
 	if err != nil {
@@ -609,10 +617,18 @@ func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, er
 
 // PrivacyRevoke revokes the privacy settings for a user.
 func (s userService) PrivacyRevoke(user primitive.Account) error {
-	userId, err := s.getUserIdOfLogin(user)
+	sessions, err := s.session.FindByUser(user)
 	if err != nil {
 		return err
 	}
 
-	return s.oidc.PrivacyRevoke(userId)
+	if len(sessions) == 0 || sessions[0].UserId == "" {
+		return fmt.Errorf("user id not found")
+	}
+
+	if err = s.oidc.PrivacyRevoke(sessions[0].UserId); err != nil {
+		return err
+	}
+
+	return s.sessionClear.ClearAllSession(user)
 }

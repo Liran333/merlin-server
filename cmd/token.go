@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	redisdb "github.com/opensourceways/redis-lib"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,8 +18,10 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
+	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
+	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
@@ -39,8 +42,14 @@ func inittoken() {
 	t := userrepoimpl.NewTokenRepo(
 		postgresql.DAO(cfg.User.Tables.Token),
 	)
+
+	session := sessionapp.NewSessionClearAppService(
+		loginrepositoryadapter.LoginAdapter(),
+		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
+	)
+
 	userAppService = userapp.NewUserService(
-		userrepo, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser())
+		userrepo, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session)
 }
 
 var tokenCmd = &cobra.Command{
