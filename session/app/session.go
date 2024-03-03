@@ -5,6 +5,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
+	"github.com/sirupsen/logrus"
+
+	commondomain "github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -18,6 +23,7 @@ import (
 type SessionAppService interface {
 	Login(*CmdToLogin) (dto SessionDTO, user UserDTO, err error)
 	Logout(primitive.RandomId) (string, error)
+	Clear(primitive.RandomId) error
 
 	CheckAndRefresh(*CmdToCheck) (primitive.Account, string, error)
 }
@@ -125,6 +131,32 @@ func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error)
 	}
 
 	return session.IdToken, nil
+}
+
+func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
+	_, err := s.sessionRepo.Find(sessionId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = nil
+		}
+
+		return err
+	}
+
+	err = s.sessionRepo.Delete(sessionId)
+
+	r := commondomain.OperationLogRecord{
+		Time:    utils.Time(),
+		User:    primitive.CreateAccount("service"),
+		IP:      "local",
+		Method:  "Auto",
+		Action:  fmt.Sprintf("clear expired session automatically by id: %s", sessionId.RandomId()),
+		Success: err == nil,
+	}
+
+	logrus.Info(r.String())
+
+	return err
 }
 
 func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error) {

@@ -27,6 +27,7 @@ func AddRouterForSessionInternalController(
 	}
 
 	rg.PUT("/v1/session/check", m.Write, l.Write, pc.CheckAndRefresh)
+	rg.DELETE("/v1/session/clear", m.Write, l.Write, pc.Clear)
 }
 
 // SessionInternalController is a struct that holds the session app service.
@@ -63,6 +64,35 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 			User:      user.Account(),
 			CSRFToken: token,
 		})
+	}
+}
+
+// @Summary  Clear
+// @Description  Clear session when it expired
+// @Tags     Session
+// @Accept   json
+// @Success  204
+// @Router   /v1/session/clear [delete]
+func (ctl *SessionInternalController) Clear(ctx *gin.Context) {
+	var req sdk.RequestToClear
+
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	sessionId, err := primitive.ToRandomId(req.SessionId)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if err = ctl.s.Clear(sessionId); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfDelete(ctx)
 	}
 }
 
