@@ -36,8 +36,9 @@ func (do *sessionDO) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, do)
 }
 
-func (do *sessionDO) toSession() domain.Session {
+func (do *sessionDO) toSession(id primitive.RandomId) domain.Session {
 	return domain.Session{
+		Id:        id,
 		IP:        do.IP,
 		User:      primitive.CreateAccount(do.User),
 		UserId:    do.UserId,

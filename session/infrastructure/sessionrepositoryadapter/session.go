@@ -50,7 +50,7 @@ func (adapter *sessionAdapter) Find(id primitive.RandomId) (domain.Session, erro
 		return domain.Session{}, err
 	}
 
-	return do.toSession(), nil
+	return do.toSession(id), nil
 }
 
 func (adapter *sessionAdapter) Delete(id primitive.RandomId) error {
