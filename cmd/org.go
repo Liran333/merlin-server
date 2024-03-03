@@ -234,7 +234,10 @@ var inviteSendCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
-		role := viper.GetString("invite.add.role")
+		role, err := primitive.NewRole(viper.GetString("invite.add.role"))
+		if err != nil {
+			logrus.Fatalf("invalid user role :%s", err.Error())
+		}
 
 		_, err = orgAppService.InviteMember(&domain.OrgInviteMemberCmd{
 			Actor:   primitive.CreateAccount(actor),
@@ -441,7 +444,10 @@ var memberEditCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
-		role := viper.GetString("member.edit.role")
+		role, err := primitive.NewRole(viper.GetString("member.edit.role"))
+		if err != nil {
+			logrus.Fatalf("invalid user role :%s", err.Error())
+		}
 
 		_, err = orgAppService.EditMember(&domain.OrgEditMemberCmd{
 			Actor:   primitive.CreateAccount(actor),
@@ -607,7 +613,11 @@ var orgEditCmd = &cobra.Command{
 			updateCmd.Description = desc
 		}
 		*updateCmd.AllowRequest = viper.GetBool("org.edit.allowrequest")
-		updateCmd.DefaultRole = viper.GetString("org.edit.defaultrole")
+		updateCmd.DefaultRole, err = primitive.NewRole(viper.GetString("org.edit.defaultrole"))
+		if err != nil {
+			logrus.Fatalf("edit org failed :%s", err.Error())
+		}
+
 		updateCmd.Actor = primitive.CreateAccount(actor)
 		updateCmd.OrgName = acc
 		_, err = orgAppService.UpdateBasicInfo(&updateCmd)

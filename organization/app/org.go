@@ -15,7 +15,6 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 	userapp "github.com/openmerlin/merlin-server/user/app"
-	userdomain "github.com/openmerlin/merlin-server/user/domain"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
 	"github.com/openmerlin/merlin-server/utils"
@@ -73,7 +72,7 @@ func NewOrgService(
 		member:           member,
 		perm:             perm,
 		invite:           invite,
-		defaultRole:      domain.OrgRole(cfg.DefaultRole),
+		defaultRole:      primitive.CreateRole(cfg.DefaultRole),
 		inviteExpiry:     cfg.InviteExpiry,
 		MaxCountPerOwner: cfg.MaxCountPerOwner,
 		git:              git,
@@ -83,7 +82,7 @@ func NewOrgService(
 type orgService struct {
 	MaxCountPerOwner int64
 	inviteExpiry     int64
-	defaultRole      domain.OrgRole
+	defaultRole      primitive.Role
 	user             userapp.UserService
 	repo             userrepo.User
 	member           repository.OrgMember
@@ -143,7 +142,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 		OrgId:    orgTemp.Id,
 		Username: cmd.Owner,
 		UserId:   owner.Id,
-		Role:     userdomain.OrgRoleAdmin,
+		Role:     primitive.NewAdminRole(),
 	})
 	if err != nil {
 		err = allerror.NewInvalidParam(fmt.Sprintf("failed to save org member, %s", err))
@@ -397,7 +396,7 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 	return
 }
 
-func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account, roles []string) (orgIDs []int64, err error) {
+func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account, roles []primitive.Role) (orgIDs []int64, err error) {
 	members, err := org.member.GetByUserAndRoles(user, roles)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -507,7 +506,7 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 	removeOwner := false
 	can := false
 	for _, m := range members {
-		if m.Role == userdomain.OrgRoleAdmin {
+		if m.Role == primitive.Admin {
 			ownerCount++
 			if m.Username == member.Username {
 				removeOwner = true
@@ -643,9 +642,9 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 		return
 	}
 
-	if m.Role != domain.OrgRole(cmd.Role) {
+	if m.Role != cmd.Role {
 		origRole := m.Role
-		m.Role = domain.OrgRole(cmd.Role)
+		m.Role = cmd.Role
 		err = pl.EditMemberRole(&o, origRole, &m)
 		if err != nil {
 			err = fmt.Errorf("failed to edit git member, %w", err)
@@ -780,11 +779,6 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 	if !o.AllowRequest {
 		err = allerror.NewInvalidParam("org not allow request member")
 		return
-	}
-
-	if o.DefaultRole == "" {
-		o.DefaultRole = org.defaultRole
-		_, _ = org.repo.SaveOrg(&o)
 	}
 
 	request := cmd.ToMemberRequest(o.DefaultRole)

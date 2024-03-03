@@ -17,9 +17,6 @@ import (
 // InviteType represents the type of invitation.
 type InviteType = string
 
-// OrgRole represents the role of a user in an organization.
-type OrgRole = string
-
 // Organization represents a user's organization.
 type Organization = user.User
 
@@ -65,7 +62,7 @@ type OrgUpdatedBasicInfoCmd struct {
 	Actor        primitive.Account
 	OrgName      primitive.Account
 	AllowRequest *bool
-	DefaultRole  string
+	DefaultRole  primitive.Role
 	FullName     string
 	Description  string
 	Website      string
@@ -84,12 +81,6 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 
 	if cmd.OrgName == nil {
 		return allerror.NewInvalidParam("org name is nil")
-	}
-
-	if cmd.DefaultRole != "" && cmd.DefaultRole != string(user.OrgRoleAdmin) &&
-		cmd.DefaultRole != string(user.OrgRoleReader) && cmd.DefaultRole != string(user.OrgRoleWriter) &&
-		cmd.DefaultRole != string(user.OrgRoleContributor) {
-		return allerror.NewInvalidParam("invalid default role")
 	}
 
 	return nil
@@ -126,8 +117,8 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error
 		change = true
 	}
 
-	if cmd.DefaultRole != "" && cmd.DefaultRole != string(o.DefaultRole) {
-		o.DefaultRole = OrgRole(cmd.DefaultRole)
+	if cmd.DefaultRole != nil && cmd.DefaultRole != o.DefaultRole {
+		o.DefaultRole = primitive.Role(cmd.DefaultRole)
 		change = true
 	}
 
@@ -192,7 +183,7 @@ type OrgMember struct {
 	UserId    primitive.Identity `json:"user_id"`
 	OrgName   primitive.Account  `json:"org_name"`
 	OrgId     primitive.Identity `json:"org_id"`
-	Role      OrgRole            `json:"role"`
+	Role      primitive.Role     `json:"role"`
 	Type      InviteType         `json:"type"`
 	CreatedAt int64              `json:"created_at"`
 	UpdatedAt int64              `json:"updated_at"`
@@ -207,7 +198,7 @@ type MemberRequest struct {
 	UserId    primitive.Identity `json:"user_id"`
 	OrgName   primitive.Account  `json:"org_name"`
 	OrgId     primitive.Identity `json:"org_id"`
-	Role      OrgRole            `json:"role"`
+	Role      primitive.Role     `json:"role"`
 	Status    ApproveStatus      `json:"status"`
 	By        string             `json:"by"`
 	Msg       string             `json:"msg"`
@@ -224,7 +215,7 @@ type Approve struct {
 	UserId    primitive.Identity `json:"user_id"`
 	OrgName   primitive.Account  `json:"org_name"`
 	OrgId     primitive.Identity `json:"org_id"`
-	Role      OrgRole            `json:"role"`
+	Role      primitive.Role     `json:"role"`
 	ExpireAt  int64              `json:"expire_at"`
 	Inviter   primitive.Account  `json:"Inviter"`
 	InviterId primitive.Identity `json:"InviterId"`
@@ -249,13 +240,6 @@ func (a Approve) ToMember() OrgMember {
 
 // Validate validates the fields of the OrgInviteMemberCmd struct.
 func (cmd OrgInviteMemberCmd) Validate() error {
-	if cmd.Role != string(user.OrgRoleContributor) &&
-		cmd.Role != string(user.OrgRoleReader) &&
-		cmd.Role != string(user.OrgRoleWriter) &&
-		cmd.Role != string(user.OrgRoleAdmin) {
-		return allerror.NewInvalidParam(fmt.Sprintf("invalid role: %s", cmd.Role))
-	}
-
 	if cmd.Account == nil {
 		return allerror.NewInvalidParam("invalid account")
 	}
@@ -308,7 +292,7 @@ type OrgEditMemberCmd struct {
 	Actor   primitive.Account
 	Account primitive.Account
 	Org     primitive.Account
-	Role    string
+	Role    primitive.Role
 }
 
 // OrgInviteMemberCmd represents a command to invite a member to an organization.
@@ -316,7 +300,7 @@ type OrgInviteMemberCmd struct {
 	Actor   primitive.Account
 	Account primitive.Account
 	Org     primitive.Account
-	Role    string
+	Role    primitive.Role
 	Msg     string
 }
 
@@ -340,7 +324,7 @@ type OrgAddMemberCmd struct {
 	Org    primitive.Account
 	OrgId  primitive.Identity
 	Type   InviteType
-	Role   OrgRole
+	Role   primitive.Role
 	Msg    string
 }
 
@@ -364,7 +348,7 @@ func (cmd OrgAddMemberCmd) ToMember() OrgMember {
 		UserId:   cmd.UserId,
 		OrgName:  cmd.Org,
 		OrgId:    cmd.OrgId,
-		Role:     OrgRole(cmd.Role),
+		Role:     primitive.Role(cmd.Role),
 		Type:     cmd.Type,
 	}
 }
@@ -379,7 +363,7 @@ type OrgRequestMemberCmd struct {
 }
 
 // ToMemberRequest converts the command to a MemberRequest.
-func (o *OrgRequestMemberCmd) ToMemberRequest(role OrgRole) *MemberRequest {
+func (o *OrgRequestMemberCmd) ToMemberRequest(role primitive.Role) *MemberRequest {
 	return &MemberRequest{
 		Username: o.Actor,
 		OrgName:  o.Org,
@@ -506,7 +490,7 @@ func (cmd OrgInvitationListCmd) Validate() error {
 func (cmd OrgInviteMemberCmd) ToMember() OrgMember {
 	return OrgMember{
 		Username: cmd.Account,
-		Role:     OrgRole(cmd.Role),
+		Role:     primitive.Role(cmd.Role),
 		OrgName:  cmd.Org,
 	}
 }

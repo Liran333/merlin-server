@@ -11,7 +11,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
-	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
 type stubOrg struct{}
@@ -20,14 +19,14 @@ var stubMember = &orgdomain.OrgMember{
 	Id:       primitive.CreateIdentity(1),
 	OrgName:  primitive.CreateAccount("org"),
 	Username: primitive.CreateAccount("XXXX"),
-	Role:     user.OrgRoleAdmin,
+	Role:     primitive.NewAdminRole(),
 }
 
 var stub1Member = &orgdomain.OrgMember{
 	Id:       primitive.CreateIdentity(1),
 	OrgName:  primitive.CreateAccount("member"),
 	Username: primitive.CreateAccount("ffff"),
-	Role:     user.OrgRoleWriter,
+	Role:     primitive.NewWriteRole(),
 }
 
 // Add adds a new organization member and returns it without any errors.
@@ -57,7 +56,7 @@ func (s *stubOrg) GetByOrg(u string) ([]orgdomain.OrgMember, error) {
 
 // GetByOrgAndRole retrieves all organization members of the specified organization with the specified role
 // and returns them without any errors.
-func (s *stubOrg) GetByOrgAndRole(u string, r orgdomain.OrgRole) ([]orgdomain.OrgMember, error) {
+func (s *stubOrg) GetByOrgAndRole(u string, r primitive.Role) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember}, nil
 }
 
@@ -79,7 +78,7 @@ func (s *stubOrg) GetByUser(string) ([]orgdomain.OrgMember, error) {
 }
 
 // GetByUserAndRoles retrieves all organization members of the specified user and returns them without any errors.
-func (s *stubOrg) GetByUserAndRoles(primitive.Account, []string) ([]orgdomain.OrgMember, error) {
+func (s *stubOrg) GetByUserAndRoles(primitive.Account, []primitive.Role) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember}, nil
 }
 
@@ -159,7 +158,7 @@ func TestPermCheck(t *testing.T) {
 			ObjectType: string(primitive.ObjTypeOrg),
 			Rules: []permission.Rule{
 				{
-					Role:      string(user.OrgRoleAdmin),
+					Role:      primitive.NewAdminRole().Role(),
 					Operation: []string{"write", "read", "create", "delete"},
 				},
 			},
@@ -168,7 +167,7 @@ func TestPermCheck(t *testing.T) {
 			ObjectType: string(primitive.ObjTypeMember),
 			Rules: []permission.Rule{
 				{
-					Role:      string(user.OrgRoleWriter),
+					Role:      primitive.NewWriteRole().Role(),
 					Operation: []string{"write", "read"},
 				},
 			},

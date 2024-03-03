@@ -21,5 +21,5 @@ type BaseAuthClient interface {
 	CanDelete(primitive.Account) (bool, error)
 	AddMember(*org.Organization, *org.OrgMember) error
 	RemoveMember(*org.Organization, *org.OrgMember) error
-	EditMemberRole(*org.Organization, org.OrgRole, *org.OrgMember) error
+	EditMemberRole(*org.Organization, primitive.Role, *org.OrgMember) error
 }

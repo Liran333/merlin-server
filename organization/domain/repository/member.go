@@ -16,8 +16,8 @@ type OrgMember interface {
 	Delete(*domain.OrgMember) error
 	DeleteByOrg(primitive.Account) error
 	GetByOrg(string) ([]domain.OrgMember, error)
-	GetByOrgAndRole(string, domain.OrgRole) ([]domain.OrgMember, error)
+	GetByOrgAndRole(string, primitive.Role) ([]domain.OrgMember, error)
 	GetByOrgAndUser(org, user string) (domain.OrgMember, error)
 	GetByUser(string) ([]domain.OrgMember, error)
-	GetByUserAndRoles(primitive.Account, []string) ([]domain.OrgMember, error)
+	GetByUserAndRoles(primitive.Account, []primitive.Role) ([]domain.OrgMember, error)
 }

@@ -63,7 +63,7 @@ func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 		OrgId:     m.OrgId.Identity(),
 		UserName:  m.Username.Account(),
 		UserId:    m.UserId.Identity(),
-		Role:      m.Role,
+		Role:      m.Role.Role(),
 		ExpiresAt: m.ExpireAt, // will expire in 14 days
 		Inviter:   m.Inviter.Account(),
 		Status:    string(m.Status),
@@ -105,7 +105,7 @@ func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) Membe
 		Id:        m.Id.Identity(),
 		Username:  m.Username.Account(),
 		UserId:    m.UserId.Identity(),
-		Role:      m.Role,
+		Role:      m.Role.Role(),
 		OrgName:   m.OrgName.Account(),
 		OrgId:     m.OrgId.Identity(),
 		Status:    string(m.Status),
@@ -136,7 +136,7 @@ type OrgListOptions struct {
 	PageSize int
 	Owner    primitive.Account
 	Member   primitive.Account
-	Roles    []string
+	Roles    []primitive.Role
 }
 
 // ToDTO converts a domain.Organization object to a userapp.UserDTO object.
@@ -150,7 +150,7 @@ func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 		Id:        member.Id.Identity(),
 		UserName:  member.Username.Account(),
 		UserId:    member.UserId.Identity(),
-		Role:      string(member.Role),
+		Role:      member.Role.Role(),
 		OrgName:   member.OrgName.Account(),
 		OrgId:     member.OrgId.Identity(),
 		CreatedAt: member.CreatedAt,

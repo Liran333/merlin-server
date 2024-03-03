@@ -49,9 +49,6 @@ permission:
           - create
           - read
           - delete
-        - role: contributor
-          operation:
-          - read
         - role: write
           operation:
           - read
@@ -73,9 +70,6 @@ permission:
           - write
           - read
           - delete
-        - role: contributor
-          operation:
-          - read
         - role: write
           operation:
           - read
@@ -90,10 +84,6 @@ permission:
           - create
           - read
           - delete
-        - role: contributor
-          operation:
-          - create
-          - read
         - role: write
           operation:
           - write
@@ -111,10 +101,6 @@ permission:
           - create
           - read
           - delete
-        - role: contributor
-          operation:
-          - create
-          - read
         - role: write
           operation:
           - write

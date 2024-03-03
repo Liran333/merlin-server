@@ -2,8 +2,9 @@ package e2e
 
 import (
 	swagger "e2e/client"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -152,86 +153,6 @@ func (s *SuiteSpaceBranch) TestOrgAdminCreateDeleteBranch() {
 
 	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth, "space", s.name, "testspace", branchName)
 	assert.Equal(s.T(), 204, r.StatusCode)
-	assert.Nil(s.T(), err)
-}
-
-// 拥有contributor权限的用户不能在他人仓库创建和删除分支
-func (s *SuiteSpaceBranch) TestOrgContributorCantCreateDeleteBranch() {
-	branchName := "newbranch5"
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
-		User: "test2",
-		Role: "contributor",
-	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth, "space", s.name, "testspace", swagger.ControllerRestfulReqToCreateBranch{
-		BaseBranch: "main",
-		Branch:     branchName,
-	})
-
-	assert.Equal(s.T(), 201, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth, "space", s.name, "testspace", branchName)
-	assert.Equal(s.T(), 204, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
-		User: "test2",
-		Role: "write",
-	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
-	assert.Nil(s.T(), err)
-}
-
-// 拥有contributor权限的用户可以在自己的组织仓库创建和删除分支
-func (s *SuiteSpaceBranch) TestOrgContributorCanCreateDeleteBranch() {
-	branchName := "newbranch6"
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
-		User: "test2",
-		Role: "contributor",
-	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
-		Desc:       "space desc",
-		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
-		InitReadme: true,
-		License:    "mit",
-		Name:       "test2space",
-		Owner:      s.name,
-		Sdk:        "gradio",
-		Visibility: "public",
-	})
-
-	assert.Equal(s.T(), 201, r.StatusCode)
-	assert.Nil(s.T(), err)
-	id := getString(s.T(), data.Data)
-
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "test2space", swagger.ControllerRestfulReqToCreateBranch{
-		BaseBranch: "main",
-		Branch:     branchName,
-	})
-
-	assert.Equal(s.T(), 201, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "space", s.name, "test2space", branchName)
-	assert.Equal(s.T(), 204, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
-		User: "test2",
-		Role: "write",
-	}, s.name)
-	assert.Equal(s.T(), 202, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 

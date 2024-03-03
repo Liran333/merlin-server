@@ -152,20 +152,6 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 	cmd.OwnerTeamId = teams[0].ID
 
 	team, _, err := c.client.CreateTeam(cmd.Account.Account(), gitea.CreateTeamOption{
-		Name:                    "contributor",
-		Description:             "contributor team",
-		Permission:              gitea.AccessModeRead,
-		CanCreateOrgRepo:        true,
-		IncludesAllRepositories: true,
-		Units:                   []gitea.RepoUnitType{gitea.RepoUnitCode},
-	})
-	if err != nil {
-		_, _ = c.client.DeleteOrg(cmd.Account.Account())
-		return
-	}
-	cmd.ContributorTeamId = team.ID
-
-	team, _, err = c.client.CreateTeam(cmd.Account.Account(), gitea.CreateTeamOption{
 		Name:                    "write",
 		Description:             "write team",
 		Permission:              gitea.AccessModeWrite,
@@ -226,14 +212,12 @@ func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (
 	}
 
 	switch member.Role {
-	case domain.OrgRoleContributor:
-		_, err = c.client.AddTeamMember(o.ContributorTeamId, member.Username.Account())
-	case domain.OrgRoleReader:
-		_, err = c.client.AddTeamMember(o.ReadTeamId, member.Username.Account())
-	case domain.OrgRoleWriter:
-		_, err = c.client.AddTeamMember(o.WriteTeamId, member.Username.Account())
-	case domain.OrgRoleAdmin:
+	case primitive.Admin:
 		_, err = c.client.AddTeamMember(o.OwnerTeamId, member.Username.Account())
+	case primitive.Write:
+		_, err = c.client.AddTeamMember(o.WriteTeamId, member.Username.Account())
+	case primitive.Read:
+		_, err = c.client.AddTeamMember(o.ReadTeamId, member.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
 	}
@@ -252,13 +236,11 @@ func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember
 	}
 
 	switch member.Role {
-	case domain.OrgRoleContributor:
-		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, member.Username.Account())
-	case domain.OrgRoleReader:
+	case primitive.Read:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, member.Username.Account())
-	case domain.OrgRoleWriter:
+	case primitive.Write:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, member.Username.Account())
-	case domain.OrgRoleAdmin:
+	case primitive.Admin:
 		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, member.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
@@ -283,15 +265,13 @@ func (c *BaseAuthClient) CanDelete(name primitive.Account) (can bool, err error)
 }
 
 // EditMemberRole edits the role of a member in an organization.
-func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, now *org.OrgMember) (err error) {
+func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig primitive.Role, now *org.OrgMember) (err error) {
 	switch orig {
-	case domain.OrgRoleContributor:
-		_, err = c.client.RemoveTeamMember(o.ContributorTeamId, now.Username.Account())
-	case domain.OrgRoleReader:
+	case primitive.Read:
 		_, err = c.client.RemoveTeamMember(o.ReadTeamId, now.Username.Account())
-	case domain.OrgRoleWriter:
+	case primitive.Write:
 		_, err = c.client.RemoveTeamMember(o.WriteTeamId, now.Username.Account())
-	case domain.OrgRoleAdmin:
+	case primitive.Admin:
 		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)
@@ -302,13 +282,11 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig org.OrgRole, n
 	}
 
 	switch now.Role {
-	case domain.OrgRoleContributor:
-		_, err = c.client.AddTeamMember(o.ContributorTeamId, now.Username.Account())
-	case domain.OrgRoleReader:
+	case primitive.Read:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, now.Username.Account())
-	case domain.OrgRoleWriter:
+	case primitive.Write:
 		_, err = c.client.AddTeamMember(o.WriteTeamId, now.Username.Account())
-	case domain.OrgRoleAdmin:
+	case primitive.Admin:
 		_, err = c.client.AddTeamMember(o.OwnerTeamId, now.Username.Account())
 	default:
 		return fmt.Errorf("member role %s is not supported", now.Role)

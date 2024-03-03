@@ -11,7 +11,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
-	userdomain "github.com/openmerlin/merlin-server/user/domain"
 )
 
 type orgBasicInfoUpdateRequest struct {
@@ -55,7 +54,10 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 	}
 
 	if req.DefaultRole != "" {
-		cmd.DefaultRole = req.DefaultRole
+		if cmd.DefaultRole, err = primitive.NewRole(req.DefaultRole); err != nil {
+			return
+		}
+
 		empty = false
 	}
 
@@ -77,7 +79,7 @@ type orgListRequest struct {
 	Roles    []string `form:"roles"`
 }
 
-func (req *orgListRequest) toCmd() (owner, user primitive.Account, err error) {
+func (req *orgListRequest) toCmd() (owner, user primitive.Account, roles []primitive.Role, err error) {
 	if req.Owner != "" {
 		if owner, err = primitive.NewAccount(req.Owner); err != nil {
 			return
@@ -91,9 +93,14 @@ func (req *orgListRequest) toCmd() (owner, user primitive.Account, err error) {
 	}
 
 	if len(req.Roles) > 0 {
+		roles = make([]primitive.Role, 0, len(req.Roles))
+		var r primitive.Role
+
 		for _, val := range req.Roles {
-			if err = userdomain.RoleValidate(val); err != nil {
+			if r, err = primitive.NewRole(val); err != nil {
 				return
+			} else {
+				roles = append(roles, r)
 			}
 		}
 	}
@@ -242,8 +249,11 @@ func (req *OrgMemberEditRequest) toCmd(orgName string, user primitive.Account) (
 		return
 	}
 
+	if cmd.Role, err = primitive.NewRole(req.Role); err != nil {
+		return
+	}
+
 	cmd.Actor = user
-	cmd.Role = req.Role
 
 	return
 }
@@ -271,8 +281,11 @@ func (req *OrgInviteMemberRequest) toCmd(user primitive.Account) (
 		return
 	}
 
+	if cmd.Role, err = primitive.NewRole(req.Role); err != nil {
+		return
+	}
+
 	cmd.Actor = user
-	cmd.Role = req.Role
 	cmd.Msg = req.Msg
 
 	return

@@ -146,6 +146,20 @@ func (s *SuiteInvite) TestInviteSuccess() {
 	assert.Nil(s.T(), err)
 }
 
+// TestInviteSuccess used for testing
+// 无效的邀请：角色不合法
+func (s *SuiteInvite) TestInviteInvalidRole() {
+	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "contributor",
+		Msg:     "invite me",
+	})
+
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+}
+
 // TestInviteAprove used for testing
 // 接受邀请
 func (s *SuiteInvite) TestInviteAprove() {

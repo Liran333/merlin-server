@@ -133,12 +133,15 @@ func (impl *memberRepoImpl) GetByOrgAndUser(org, user string) (
 }
 
 // GetByOrgAndRole retrieves members by organization and role.
-func (impl *memberRepoImpl) GetByOrgAndRole(org string, role domain.OrgRole) (members []domain.OrgMember, err error) {
+func (impl *memberRepoImpl) GetByOrgAndRole(org string, role primitive.Role) (members []domain.OrgMember, err error) {
+	if role == nil {
+		return
+	}
 	var v []Member
 
 	query := Member{}
 	query.Orgname = org
-	query.Role = role
+	query.Role = role.Role()
 
 	err = impl.DB().Where(&query).Find(&v).Error
 	if err != nil || len(v) == 0 {
@@ -176,15 +179,22 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 }
 
 // GetByUserAndRoles retrieves members by user and roles.
-func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account, roles []string) (members []domain.OrgMember, err error) {
+func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account, roles []primitive.Role) (members []domain.OrgMember, err error) {
 	if user == nil {
 		return
+	}
+
+	var rs []string
+	for _, r := range roles {
+		if r != nil {
+			rs = append(rs, r.Role())
+		}
 	}
 	var v []Member
 
 	query := impl.DB().Where(impl.EqualQuery(fieldUser), user.Account())
-	if len(roles) > 0 {
-		query = query.Where(impl.InFilter(fieldRole), roles)
+	if len(rs) > 0 {
+		query = query.Where(impl.InFilter(fieldRole), rs)
 	}
 
 	err = query.Find(&v).Error

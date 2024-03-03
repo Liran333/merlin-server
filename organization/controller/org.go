@@ -207,7 +207,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 
 	me := ctl.m.GetUser(ctx)
 
-	owner, user, err := req.toCmd()
+	owner, user, roles, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
 
@@ -221,7 +221,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 	listOption := &orgapp.OrgListOptions{
 		Owner:  owner,
 		Member: user,
-		Roles:  req.Roles,
+		Roles:  roles,
 	}
 	if os, err := ctl.org.List(listOption); err != nil {
 		commonctl.SendError(ctx, err)

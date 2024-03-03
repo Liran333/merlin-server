@@ -28,40 +28,35 @@ const (
 	tokenPermDenied               = "token permission denied"
 	tokenInvalid                  = "token invalid"
 	tokenExpired                  = "token expired"
-	OrgRoleContributor   OrgRole  = "contributor" // OrgRoleContributor is the value of the contributor
-	OrgRoleReader        OrgRole  = "read"        // OrgRoleReader in read team
-	OrgRoleWriter        OrgRole  = "write"       // OrgRoleWriter in write team
-	OrgRoleAdmin         OrgRole  = "admin"       // OrgRoleAdmin in owner team
-	UserTypeUser         UserType = 0             // UserTypeUser is const
-	UserTypeOrganization UserType = 1             // UserTypeOrganization is const
+	UserTypeUser         UserType = 0 // UserTypeUser is const
+	UserTypeOrganization UserType = 1 // UserTypeOrganization is const
 	iter                          = 10000
 	keyLen                        = 32 // keyLen is const
 )
 
 // User is a struct representing a user.
 type User struct {
-	Id                primitive.Identity
-	Email             primitive.Email
-	Phone             primitive.Phone
-	Account           Account
-	Fullname          primitive.MSDFullname
-	PlatformPwd       string // password for git user
-	PlatformId        int64  // id in gitea
-	Website           string
-	Owner             primitive.Account
-	OwnerId           primitive.Identity
-	WriteTeamId       int64
-	ReadTeamId        int64
-	OwnerTeamId       int64
-	ContributorTeamId int64
-	CreatedAt         int64
-	UpdatedAt         int64
-	Desc              primitive.MSDDesc
-	AvatarId          primitive.AvatarId
-	Type              UserType
-	DefaultRole       OrgRole
-	AllowRequest      bool
-	Version           int
+	Id           primitive.Identity
+	Email        primitive.Email
+	Phone        primitive.Phone
+	Account      Account
+	Fullname     primitive.MSDFullname
+	PlatformPwd  string // password for git user
+	PlatformId   int64  // id in gitea
+	Website      string
+	Owner        primitive.Account
+	OwnerId      primitive.Identity
+	WriteTeamId  int64
+	ReadTeamId   int64
+	OwnerTeamId  int64
+	CreatedAt    int64
+	UpdatedAt    int64
+	Desc         primitive.MSDDesc
+	AvatarId     primitive.AvatarId
+	Type         UserType
+	DefaultRole  primitive.Role
+	AllowRequest bool
+	Version      int
 }
 
 // IsOrganization checks if the user is an organization.
@@ -245,16 +240,4 @@ func (cmd *UserCreateCmd) ToUser() User {
 		Type:     UserTypeUser,
 		Phone:    cmd.Phone,
 	}
-}
-
-// RoleValidate validates the role.
-func RoleValidate(role OrgRole) error {
-	validRoles := []OrgRole{OrgRoleContributor, OrgRoleReader, OrgRoleWriter, OrgRoleAdmin}
-	for _, val := range validRoles {
-		if role == val {
-			return nil
-		}
-	}
-	return errors.New("invalid role value")
-
 }

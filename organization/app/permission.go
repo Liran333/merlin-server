@@ -11,10 +11,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	perm "github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
-	user "github.com/openmerlin/merlin-server/user/domain"
 )
 
 // NewPermService creates a new PermService instance with the given configuration and org member.
@@ -50,26 +48,18 @@ func checkAction(bitmap uint64, action primitive.Action) bool {
 	return bitmap&(1<<action) != 0
 }
 
-func isValidRole(role string) bool {
-	if role == string(user.OrgRoleAdmin) || role == string(user.OrgRoleWriter) ||
-		role == string(user.OrgRoleContributor) || role == string(user.OrgRoleReader) {
-		return true
-	}
-
-	return false
-}
-
 // Init initializes the permission service with the given configuration.
 func (p *permService) Init(cfg *perm.Config) {
-	p.permissions = make(map[primitive.ObjType]map[orgdomain.OrgRole]uint64)
+	p.permissions = make(map[primitive.ObjType]map[primitive.Role]uint64)
 	for _, permission := range cfg.Permissions {
-		r := make(map[orgdomain.OrgRole]uint64)
+		r := make(map[primitive.Role]uint64)
 		for _, rule := range permission.Rules {
-			if !isValidRole(rule.Role) {
+			role, err := primitive.NewRole(rule.Role)
+			if err != nil {
 				logrus.Fatalf("invalid role: %s", rule.Role)
 			}
 
-			r[orgdomain.OrgRole(rule.Role)] = initActioin(rule.Operation)
+			r[role] = initActioin(rule.Operation)
 		}
 
 		p.permissions[primitive.ObjType(permission.ObjectType)] = r
@@ -77,14 +67,13 @@ func (p *permService) Init(cfg *perm.Config) {
 }
 
 type permService struct {
-	permissions map[primitive.ObjType]map[orgdomain.OrgRole]uint64
+	permissions map[primitive.ObjType]map[primitive.Role]uint64
 
 	org repository.OrgMember
 }
 
-func (p *permService) doCheckPerm(role string, objType primitive.ObjType, op primitive.Action) bool {
-
-	if v, ok := p.permissions[objType][orgdomain.OrgRole(role)]; ok {
+func (p *permService) doCheckPerm(role primitive.Role, objType primitive.ObjType, op primitive.Action) bool {
+	if v, ok := p.permissions[objType][role]; ok {
 		if checkAction(v, op) {
 			return true
 		}
@@ -160,7 +149,7 @@ func (p *permService) doCheck(
 		return nil
 	}
 
-	ok := p.doCheckPerm(string(m.Role), objType, op)
+	ok := p.doCheckPerm(m.Role, objType, op)
 	res := "cannot"
 	if ok {
 		res = "can"

@@ -65,7 +65,7 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 		dto.Owner = &owner
 		dto.OwnerId = &ownerId
 		dto.AllowRequest = &allow
-		dto.DefaultRole = u.DefaultRole
+		dto.DefaultRole = u.DefaultRole.Role()
 	} else {
 		email := ""
 		if u.Email != nil && actor == u.Account {
