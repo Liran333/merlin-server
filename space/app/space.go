@@ -109,10 +109,12 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	if err = s.permission.CanDelete(user, &space); err != nil {
-		if allerror.IsNoPermission(err) {
-			err = errorSpaceNotFound
-		}
+	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
+	if err != nil {
+		return
+	}
+	if notFound {
+		err = errorSpaceNotFound
 
 		return
 	}
@@ -151,10 +153,12 @@ func (s *spaceAppService) Update(
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	if err = s.permission.CanUpdate(user, &space); err != nil {
-		if allerror.IsNoPermission(err) {
-			err = errorSpaceNotFound
-		}
+	notFound, err := commonapp.CanUpdateOrNotFound(user, &space, s.permission)
+	if err != nil {
+		return
+	}
+	if notFound {
+		err = errorSpaceNotFound
 
 		return
 	}

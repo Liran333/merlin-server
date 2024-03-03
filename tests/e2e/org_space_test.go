@@ -167,11 +167,11 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -365,7 +365,7 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
@@ -378,12 +378,12 @@ func (s *SuiteOrgSpace) TestOrgContributorCantUpdateDeleteOthersModel() {
 	})
 
 	// 拥有contribute权限的用户不可以修改他人Space
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 拥有contribute权限的用户不可以删除他人Space
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)

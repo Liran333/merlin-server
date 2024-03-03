@@ -95,10 +95,12 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	if err = s.permission.CanDelete(user, &model); err != nil {
-		if allerror.IsNoPermission(err) {
-			err = errorModelNotFound
-		}
+	notFound, err := commonapp.CanDeleteOrNotFound(user, &model, s.permission)
+	if err != nil {
+		return
+	}
+	if notFound {
+		err = errorModelNotFound
 
 		return
 	}
@@ -132,10 +134,12 @@ func (s *modelAppService) Update(
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	if err = s.permission.CanUpdate(user, &model); err != nil {
-		if allerror.IsNoPermission(err) {
-			err = errorModelNotFound
-		}
+	notFound, err := commonapp.CanUpdateOrNotFound(user, &model, s.permission)
+	if err != nil {
+		return
+	}
+	if notFound {
+		err = errorModelNotFound
 
 		return
 	}

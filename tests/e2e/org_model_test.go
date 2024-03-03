@@ -146,11 +146,11 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
@@ -304,7 +304,7 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
@@ -312,12 +312,12 @@ func (s *SuiteOrgModel) TestOrgContributorCantUpdateDeleteOthersModel() {
 	})
 
 	// 拥有contribute权限的用户不可以修改他人模型
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 拥有contribute权限的用户不可以删除他人模型
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
