@@ -97,7 +97,7 @@ func (ctl *SessionInternalController) Clear(ctx *gin.Context) {
 }
 
 func cmdToCheck(req *sdk.RequestToCheckAndRefresh) (cmd app.CmdToCheck, err error) {
-	if cmd.SessionId, err = primitive.ToRandomId(req.LoginId); err != nil {
+	if cmd.SessionId, err = primitive.ToRandomId(req.SessionId); err != nil {
 		return
 	}
 
