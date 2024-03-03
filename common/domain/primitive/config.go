@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	node           *snowflake.Node
-	msdConfig      MSDConfig
-	allLicenses    map[string]bool
-	passwordLength int
-	randomIdLength int
+	node             *snowflake.Node
+	msdConfig        MSDConfig
+	allLicenses      map[string]bool
+	randomIdLength   int
+	passwordInstance *passwordImpl
 )
 
 // Init initializes the configuration with the given Config struct.
@@ -33,8 +33,8 @@ func Init(cfg *Config) (err error) {
 	// TODO: node id should be same with replica id
 	node, err = snowflake.NewNode(1)
 
-	passwordLength = cfg.PasswordLength
 	randomIdLength = cfg.RandomIdLength
+	passwordInstance = newPasswordImpl(cfg.PasswordConfig)
 
 	if len(msdConfig.ReservedAccounts) > 0 {
 		msdConfig.reservedAccounts = sets.New[string]()
@@ -47,9 +47,24 @@ func Init(cfg *Config) (err error) {
 type Config struct {
 	MSDConfig
 
-	Licenses       []string `json:"licenses" required:"true"`
-	RandomIdLength int      `json:"random_id_length"`
-	PasswordLength int      `json:"password_length"`
+	Licenses       []string       `json:"licenses" required:"true"`
+	RandomIdLength int            `json:"random_id_length"`
+	PasswordConfig PasswordConfig `json:"password_config"`
+}
+
+// SetDefault sets default values for Config if they are not provided.
+func (cfg *Config) SetDefault() {
+	if cfg.RandomIdLength <= 0 {
+		cfg.RandomIdLength = 24
+	}
+}
+
+// ConfigItems returns a slice of interface{} containing pointers to the configuration items.
+func (cfg *Config) ConfigItems() []interface{} {
+	return []interface{}{
+		&cfg.MSDConfig,
+		&cfg.PasswordConfig,
+	}
 }
 
 // MSDConfig represents the configuration for MSD.
@@ -63,7 +78,7 @@ type MSDConfig struct {
 }
 
 // SetDefault sets default values for MSDConfig if they are not provided.
-func (cfg *Config) SetDefault() {
+func (cfg *MSDConfig) SetDefault() {
 	if cfg.MaxNameLength <= 0 {
 		cfg.MaxNameLength = 50
 	}
@@ -79,12 +94,31 @@ func (cfg *Config) SetDefault() {
 	if cfg.MaxFullnameLength <= 0 {
 		cfg.MaxFullnameLength = 200
 	}
+}
 
-	if cfg.RandomIdLength <= 0 {
-		cfg.RandomIdLength = 24
+// PasswordConfig represents the configuration for password.
+type PasswordConfig struct {
+	MinLength                int `json:"min_length"`
+	MaxLength                int `json:"max_length"`
+	MinNumOfCharKind         int `json:"min_num_of_char_kind"`
+	MinNumOfConsecutiveChars int `json:"min_num_of_consecutive_chars"`
+}
+
+// SetDefault sets default values for PasswordConfig if they are not provided.
+func (cfg *PasswordConfig) SetDefault() {
+	if cfg.MinLength <= 0 {
+		cfg.MinLength = 8
 	}
 
-	if cfg.PasswordLength <= 0 {
-		cfg.PasswordLength = 32
+	if cfg.MaxLength <= 0 {
+		cfg.MaxLength = 20
+	}
+
+	if cfg.MinNumOfCharKind <= 0 {
+		cfg.MinNumOfCharKind = 3
+	}
+
+	if cfg.MinNumOfConsecutiveChars <= 0 {
+		cfg.MinNumOfConsecutiveChars = 2
 	}
 }

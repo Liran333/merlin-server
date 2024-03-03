@@ -60,6 +60,7 @@ func (c *UserClient) CreateUser(cmd *UserCreateCmd) (user domain.User, err error
 	if err != nil {
 		return
 	}
+	defer pwd.Clear()
 
 	o := gitea.CreateUserOption{
 		Username:           cmd.Username,
