@@ -22,6 +22,7 @@ func (s *sessionAppService) CheckAndRefresh(cmd *CmdToCheck) (
 	}
 
 	user = session.User
+	token = cmd.CSRFToken.RandomId()
 
 	if !refreshToken {
 		return

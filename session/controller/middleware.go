@@ -18,7 +18,7 @@ import (
 
 const (
 	userIdParsed    = "user_id"
-	csrfTokenHeader = "CSRF-TOKEN" // #nosec G101
+	csrfTokenHeader = "Csrf-Token" // #nosec G101
 )
 
 var noUserError = errors.New("no user")
