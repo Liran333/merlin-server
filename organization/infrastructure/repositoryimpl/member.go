@@ -179,7 +179,8 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 }
 
 // GetByUserAndRoles retrieves members by user and roles.
-func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account, roles []primitive.Role) (members []domain.OrgMember, err error) {
+func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account,
+	roles []primitive.Role) (members []domain.OrgMember, err error) {
 	if user == nil {
 		return
 	}

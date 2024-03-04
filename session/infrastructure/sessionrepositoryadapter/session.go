@@ -1,3 +1,9 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package sessionrepositoryadapter provides an adapter for the session repository,
+// implementing the necessary methods to interact with the session data storage.
 package sessionrepositoryadapter
 
 import (
@@ -17,6 +23,7 @@ type dao interface {
 	IsKeyNotExists(err error) bool
 }
 
+// NewSessionAdapter creates a new session adapter with the provided DAO and returns a pointer to it.
 func NewSessionAdapter(d dao) *sessionAdapter {
 	return &sessionAdapter{
 		dao: d,

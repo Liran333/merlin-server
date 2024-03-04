@@ -38,6 +38,7 @@ func errTokenNotFound(msg string) error {
 	return allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, msg)
 }
 
+// SessionClearAppService defines the application service interface for clearing sessions.
 type SessionClearAppService interface {
 	ClearAllSession(user primitive.Account) error
 }
