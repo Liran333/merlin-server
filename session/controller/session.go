@@ -19,6 +19,8 @@ import (
 const (
 	cookieCSRFToken = "csrf_token"
 	cookieSessionId = "session_id"
+	oneidUT         = "_U_T_"
+	oneidYG         = "_Y_G_"
 )
 
 // AddRouterForSessionController adds routes for session controller to the given router group.
