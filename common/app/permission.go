@@ -31,7 +31,7 @@ type ResourcePermissionAppService interface {
 
 // orgResourcePermissionValidator
 type orgResourcePermissionValidator interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action, bool) error
+	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
 }
 
 // resourcePermissionAppService
@@ -43,7 +43,7 @@ type resourcePermissionAppService struct {
 func (impl *resourcePermissionAppService) CanListOrgResource(
 	user, owner primitive.Account, t primitive.ObjType,
 ) error {
-	return impl.org.Check(user, owner, t, primitive.ActionRead, false)
+	return impl.org.Check(user, owner, t, primitive.ActionRead)
 }
 
 // CanRead checks if the user has permission to read the specified resource.
@@ -67,7 +67,7 @@ func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r doma
 		return errorNoPermission
 	}
 
-	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead, false)
+	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead)
 }
 
 // CanUpdate checks if the user has permission to update the specified resource.
@@ -86,7 +86,7 @@ func (impl *resourcePermissionAppService) CanCreate(user, owner primitive.Accoun
 		return nil
 	}
 
-	return impl.org.Check(user, owner, t, primitive.ActionCreate, false)
+	return impl.org.Check(user, owner, t, primitive.ActionCreate)
 }
 
 func (impl *resourcePermissionAppService) canModify(
@@ -107,5 +107,5 @@ func (impl *resourcePermissionAppService) canModify(
 		return errorNoPermission
 	}
 
-	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), action, r.IsCreatedBy(user))
+	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), action)
 }

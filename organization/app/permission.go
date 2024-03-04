@@ -82,71 +82,28 @@ func (p *permService) doCheckPerm(role primitive.Role, objType primitive.ObjType
 	return false
 }
 
-// subject: a user session or a token sessioin
-// object: org
-// op: write, read
-func (p *permService) checkInOrg(
-	user primitive.Account,
-	obj primitive.Account,
-	objType primitive.ObjType,
-	op primitive.Action,
-) error {
-	return p.doCheck(user, obj, objType, op, nil)
-}
-
-// Check checks if the user has the permission to perform the operation on the object.
-// subject: a user session or a token sessioin
-// object: model, dataset, space, system
-// op: write, read
+// Check checks if user can operate on organization's resource of a specified type.
 func (p *permService) Check(
 	user primitive.Account,
-	obj primitive.Account,
+	org primitive.Account,
 	objType primitive.ObjType,
 	op primitive.Action,
-	createdByUser bool,
-) error {
-	if op.IsModification() {
-		return p.doCheck(user, obj, objType, op, func() bool {
-			return createdByUser
-		})
-	}
-
-	return p.doCheck(user, obj, objType, op, nil)
-}
-
-// subject: a user session or a token sessioin
-// object: model, dataset, space, system
-// op: write, read
-func (p *permService) doCheck(
-	user primitive.Account,
-	obj primitive.Account,
-	objType primitive.ObjType,
-	op primitive.Action,
-	judgeInAdvance func() bool,
 ) error {
 	if user == nil {
 		return allerror.NewNoPermission("user is nil")
 	}
 
-	if obj == nil {
+	if org == nil {
 		return allerror.NewNoPermission("object is nil")
 	}
 
-	if user == obj {
-		return nil
-	}
-
-	m, err := p.org.GetByOrgAndUser(obj.Account(), user.Account())
+	m, err := p.org.GetByOrgAndUser(org.Account(), user.Account())
 	if err != nil {
 		logrus.Errorf("get member failed: %s", err)
 
 		return allerror.NewNoPermission(fmt.Sprintf(
-			"%s does not have a valid role in %s", user.Account(), obj.Account(),
+			"%s does not have a valid role in %s", user.Account(), org.Account(),
 		))
-	}
-
-	if judgeInAdvance != nil && judgeInAdvance() {
-		return nil
 	}
 
 	ok := p.doCheckPerm(m.Role, objType, op)
@@ -157,7 +114,7 @@ func (p *permService) doCheck(
 
 	logrus.Debugf(
 		"user %s (role %s) %s do %d on %s:%s",
-		user.Account(), m.Role, res, op, obj.Account(), objType,
+		user.Account(), m.Role, res, op, org.Account(), objType,
 	)
 
 	if !ok {

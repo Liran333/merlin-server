@@ -176,7 +176,7 @@ func TestPermCheck(t *testing.T) {
 	app := NewPermService(&cfg, &stubOrg{})
 
 	for i, test := range tests {
-		err := app.checkInOrg(test.user, test.org, test.objType, test.op)
+		err := app.Check(test.user, test.org, test.objType, test.op)
 		if (err == nil) != results[i] {
 			t.Errorf("case num %d valid result is %v ", i, err)
 		}
