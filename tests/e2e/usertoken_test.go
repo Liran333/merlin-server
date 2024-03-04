@@ -90,12 +90,31 @@ func (s *SuiteUserToken) TestVerifyToken() {
 	assert.Equal(s.T(), s.id, m["owner_id"])
 
 	t := swagger.ControllerTokenVerifyRequest{
-		Token: getString(s.T(), m["token"]),
+		Token:  getString(s.T(), m["token"]),
+		Action: "read",
 	}
 
 	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
+
+	t = swagger.ControllerTokenVerifyRequest{
+		Token:  getString(s.T(), m["token"]),
+		Action: "write",
+	}
+
+	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	t = swagger.ControllerTokenVerifyRequest{
+		Token:  getString(s.T(), m["token"]),
+		Action: "invalidperm",
+	}
+
+	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testverify")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -106,7 +125,8 @@ func (s *SuiteUserToken) TestVerifyToken() {
 func (s *SuiteUserToken) TestVerifyInvalidToken() {
 
 	t := swagger.ControllerTokenVerifyRequest{
-		Token: getString(s.T(), "2233445notok"),
+		Token:  getString(s.T(), "2233445notok"),
+		Action: "read",
 	}
 
 	_, r, err := InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)

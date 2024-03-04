@@ -56,7 +56,14 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 		return
 	}
 
-	if v, err := ctl.s.VerifyToken(req.Token, primitive.NewReadPerm()); err != nil {
+	token, perm, err := req.ToCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error()))
+
+		return
+	}
+
+	if v, err := ctl.s.VerifyToken(token, perm); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, tokenVerifyResp{

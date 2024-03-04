@@ -169,7 +169,17 @@ func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEm
 }
 
 type tokenVerifyRequest struct {
-	Token string `json:"token" binding:"required"`
+	Token  string `json:"token" binding:"required"`
+	Action string `json:"action" binding:"required"`
+}
+
+func (req *tokenVerifyRequest) ToCmd() (string, primitive.TokenPerm, error) {
+	perm, err := primitive.NewTokenPerm(req.Action)
+	if err != nil {
+		return "", nil, fmt.Errorf("invalid action: %w", err)
+	}
+
+	return req.Token, perm, nil
 }
 
 type tokenVerifyResp struct {
