@@ -5,6 +5,18 @@ set -o pipefail
 BASEDIR=$(dirname "$0")
 ROOTDIR=$(cd $BASEDIR/..; pwd)
 
+REDIS_PASS=$(uuidgen | tr -d '-')
+echo "REDIS_PASS is $REDIS_PASS"
+sed -i "s/REDIS_PASS=.*/REDIS_PASS=$REDIS_PASS/" .env
+
+PG_PASS=$(uuidgen | tr -d '-')
+echo "PG_PASS is $PG_PASS"
+sed -i "s/PG_PASS=.*/PG_PASS=$PG_PASS/" .env
+
+INTERNAL_TOKEN=123456
+echo "INTERNAL TOKEN is $INTERNAL_TOKEN"
+python3 ./scripts/generation.py $INTERNAL_TOKEN
+
 docker compose > /dev/null 2>&1
 if [ $? -ne 0 ]
 then
