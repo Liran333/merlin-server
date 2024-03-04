@@ -13,9 +13,10 @@ import (
 )
 
 type userBasicInfoUpdateRequest struct {
-	AvatarId *string `json:"avatar_id"`
-	Desc     *string `json:"description"`
-	Fullname *string `json:"fullname"`
+	AvatarId     *string `json:"avatar_id"`
+	Desc         *string `json:"description"`
+	Fullname     *string `json:"fullname"`
+	RevokeDelete *bool   `json:"revoke_delete"`
 }
 
 func (req *userBasicInfoUpdateRequest) toCmd() (
@@ -40,7 +41,11 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		}
 	}
 
-	if req.AvatarId == nil && req.Desc == nil && req.Fullname == nil {
+	if req.RevokeDelete != nil {
+		cmd.RevokeDelete = true
+	}
+
+	if req.AvatarId == nil && req.Desc == nil && req.Fullname == nil && req.RevokeDelete == nil {
 		err = fmt.Errorf("all param are empty")
 		return
 	}

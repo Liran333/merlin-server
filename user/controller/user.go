@@ -36,6 +36,7 @@ func AddRouterForUserController(
 
 	rg.PUT("/v1/user", m.Write, l.Write, ctl.Update)
 	rg.GET("/v1/user", m.Read, ctl.Get)
+	rg.DELETE("/v1/user", m.Write, l.Write, ctl.RequestDelete)
 
 	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.CreatePlatformToken)
 	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.DeletePlatformToken)
@@ -78,12 +79,12 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 		return
 	}
 
-	middleware.SetAction(ctx, "update user basic info")
-
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
 	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("update user:%s's basic info", user.Account()))
 
 	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -335,5 +336,27 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  Request Delete User info
+// @Description  delete
+// @Tags     User
+// @Accept   json
+// @Security Bearer
+// @Success  204
+// @Router   /v1/user [delete]
+func (ctl *UserController) RequestDelete(ctx *gin.Context) {
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("request delete user:%s's info", user.Account()))
+
+	if err := ctl.s.RequestDelete(user); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfDelete(ctx)
 	}
 }

@@ -42,6 +42,115 @@
                 }
             }
         },
+        "/v1/branch/{type}/{owner}/{repo}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create repo branch",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BranchRestful"
+                ],
+                "summary": "CreateBranch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "type of space/model",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner of space/model",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space/model",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "restfulReqToCreateBranch",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.restfulReqToCreateBranch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/app.BranchCreateDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/branch/{type}/{owner}/{repo}/{branch}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete repo branch",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BranchRestful"
+                ],
+                "summary": "DeleteBranch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "repo type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "repo owner",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "repo name",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "branch name",
+                        "name": "branch",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v1/coderepo/permission/read": {
             "post": {
                 "security": [
@@ -652,6 +761,16 @@
                         "description": "filter by username",
                         "name": "username",
                         "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "filter by roles",
+                        "name": "roles",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1170,6 +1289,23 @@
                 }
             }
         },
+        "/v1/session/clear": {
+            "delete": {
+                "description": "Clear session when it expired",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Clear",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v1/space": {
             "get": {
                 "description": "list global public space",
@@ -1684,6 +1820,26 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Request Delete User info",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
             }
         },
         "/v1/user/email/bind": {
@@ -1933,101 +2089,36 @@
                 }
             }
         },
-        "/v2/branch/{type}/{owner}/{repo}": {
-            "post": {
-                "description": "create repo branch",
+        "/v1/user/{name}/platform": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "Get platform user info",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "BranchRestful"
+                    "User"
                 ],
-                "summary": "CreateBranch",
+                "summary": "Get platform user info",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "type of space/model",
-                        "name": "type",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "owner of space/model",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "name of space/model",
-                        "name": "repo",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "restfulReqToCreateBranch",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.restfulReqToCreateBranch"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/app.BranchCreateDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/v2/branch/{type}/{owner}/{repo}/{branch}": {
-            "delete": {
-                "description": "delete repo branch",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "BranchRestful"
-                ],
-                "summary": "DeleteBranch",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "repo type",
-                        "name": "type",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "repo owner",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "repo name",
-                        "name": "repo",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "branch name",
-                        "name": "branch",
+                        "description": "name of the user",
+                        "name": "name",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
@@ -3128,9 +3219,13 @@
         "controller.tokenVerifyRequest": {
             "type": "object",
             "required": [
+                "action",
                 "token"
             ],
             "properties": {
+                "action": {
+                    "type": "string"
+                },
                 "token": {
                     "type": "string"
                 }
@@ -3147,6 +3242,9 @@
                 },
                 "fullname": {
                     "type": "string"
+                },
+                "revoke_delete": {
+                    "type": "boolean"
                 }
             }
         },
@@ -3228,6 +3326,12 @@
                 },
                 "phone": {
                     "type": "string"
+                },
+                "request_delete": {
+                    "type": "boolean"
+                },
+                "request_delete_at": {
+                    "type": "integer"
                 },
                 "type": {
                     "type": "integer"

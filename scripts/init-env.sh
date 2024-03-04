@@ -13,7 +13,7 @@ PG_PASS=$(uuidgen | tr -d '-')
 echo "PG_PASS is $PG_PASS"
 sed -i "s/PG_PASS=.*/PG_PASS=$PG_PASS/" .env
 
-INTERNAL_TOKEN=123456
+INTERNAL_TOKEN=12345
 echo "INTERNAL TOKEN is $INTERNAL_TOKEN"
 python3 ./scripts/generation.py $INTERNAL_TOKEN
 

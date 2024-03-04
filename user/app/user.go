@@ -17,6 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 const tokenLen = 8
@@ -45,6 +46,7 @@ type SessionClearAppService interface {
 type UserService interface {
 	Create(*domain.UserCreateCmd) (UserDTO, error)
 	Delete(domain.Account) error
+	RequestDelete(domain.Account) error
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
 	UserInfo(domain.Account, domain.Account) (UserInfoDTO, error)
 	GetByAccount(domain.Account, domain.Account) (UserDTO, error)
@@ -149,6 +151,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 	}
 
 	if b := cmd.toUser(&user); !b {
+		logrus.Warn("nothing changed")
 		dto = newUserDTO(&user, account)
 		return
 	}
@@ -256,6 +259,28 @@ func (s userService) Delete(account domain.Account) (err error) {
 	}
 
 	return
+}
+
+func (s userService) RequestDelete(user domain.Account) error {
+	u, err := s.repo.GetByAccount(user)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errUserNotFound(fmt.Sprintf("user %s not found", user.Account()))
+		}
+
+		return err
+	}
+
+	if u.RequestDelete {
+		return allerror.NewInvalidParam("user already requested to be delete")
+	}
+
+	u.RequestDelete = true
+	u.RequestDeleteAt = utils.Now()
+
+	_, err = s.repo.SaveUser(&u)
+
+	return err
 }
 
 // UserInfo returns the user information for the given actor and account.

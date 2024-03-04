@@ -98,6 +98,43 @@ func (s *SuiteUser) TestGetOtherUserNoToken() {
 	assert.Equal(s.T(), "", user["phone"])
 }
 
+// TestRequestDelete used for testing
+func (s *SuiteUser) TestRequestDelete() {
+	r, err := Api.UserApi.V1UserDelete(context.Background())
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.UserApi.V1UserDelete(Auth)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data, r, err := Api.UserApi.V1UserGet(Auth)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	user := getData(s.T(), data.Data)
+
+	assert.Equalf(s.T(), user["request_delete"], bool(true), "request delete not equal")
+	assert.NotEqualf(s.T(), getInt64(s.T(), user["request_delete_at"]), int64(0), "request delete at not equal")
+
+	r, err = Api.UserApi.V1UserDelete(Auth)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	d := swagger.ControllerUserBasicInfoUpdateRequest{
+		RevokeDelete: true,
+	}
+
+	data, r, err = Api.UserApi.V1UserPut(Auth, d)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err, data.Msg)
+
+	user = getData(s.T(), data.Data)
+
+	assert.Equalf(s.T(), user["request_delete"], bool(false), "request delete not equal")
+	assert.Equalf(s.T(), getInt64(s.T(), user["request_delete_at"]), int64(0), "request delete at not equal")
+}
+
 // TestUser used for testing
 func TestUser(t *testing.T) {
 	suite.Run(t, new(SuiteUser))

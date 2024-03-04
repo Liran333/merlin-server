@@ -36,27 +36,29 @@ const (
 
 // User is a struct representing a user.
 type User struct {
-	Id           primitive.Identity
-	Email        primitive.Email
-	Phone        primitive.Phone
-	Account      Account
-	Fullname     primitive.MSDFullname
-	PlatformPwd  string // password for git user
-	PlatformId   int64  // id in gitea
-	Website      string
-	Owner        primitive.Account
-	OwnerId      primitive.Identity
-	WriteTeamId  int64
-	ReadTeamId   int64
-	OwnerTeamId  int64
-	CreatedAt    int64
-	UpdatedAt    int64
-	Desc         primitive.MSDDesc
-	AvatarId     primitive.AvatarId
-	Type         UserType
-	DefaultRole  primitive.Role
-	AllowRequest bool
-	Version      int
+	Id              primitive.Identity
+	Email           primitive.Email
+	Phone           primitive.Phone
+	Account         Account
+	Fullname        primitive.MSDFullname
+	PlatformPwd     string // password for git user
+	PlatformId      int64  // id in gitea
+	Website         string
+	Owner           primitive.Account
+	OwnerId         primitive.Identity
+	WriteTeamId     int64
+	ReadTeamId      int64
+	OwnerTeamId     int64
+	CreatedAt       int64
+	UpdatedAt       int64
+	Desc            primitive.MSDDesc
+	AvatarId        primitive.AvatarId
+	Type            UserType
+	DefaultRole     primitive.Role
+	AllowRequest    bool
+	RequestDelete   bool
+	RequestDeleteAt int64
+	Version         int
 }
 
 // IsOrganization checks if the user is an organization.

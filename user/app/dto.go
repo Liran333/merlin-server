@@ -24,21 +24,23 @@ type UserInfoDTO struct {
 
 // UserDTO represents the data transfer object for a user.
 type UserDTO struct {
-	Id           string  `json:"id"`
-	Name         string  `json:"account"`
-	Fullname     string  `json:"fullname"`
-	AvatarId     string  `json:"avatar_id"`
-	Email        *string `json:"email,omitempty"`
-	Phone        *string `json:"phone,omitempty"`
-	Description  string  `json:"description"`
-	CreatedAt    int64   `json:"created_at"`
-	UpdatedAt    int64   `json:"updated_at"`
-	Website      *string `json:"website,omitempty"`
-	Owner        *string `json:"owner,omitempty"`
-	OwnerId      *string `json:"owner_id,omitempty"`
-	Type         int     `json:"type"`
-	AllowRequest *bool   `json:"allow_request,omitempty"`
-	DefaultRole  string  `json:"default_role,omitempty"`
+	Id              string  `json:"id"`
+	Name            string  `json:"account"`
+	Fullname        string  `json:"fullname"`
+	AvatarId        string  `json:"avatar_id"`
+	Email           *string `json:"email,omitempty"`
+	Phone           *string `json:"phone,omitempty"`
+	Description     string  `json:"description"`
+	CreatedAt       int64   `json:"created_at"`
+	UpdatedAt       int64   `json:"updated_at"`
+	Website         *string `json:"website,omitempty"`
+	Owner           *string `json:"owner,omitempty"`
+	OwnerId         *string `json:"owner_id,omitempty"`
+	Type            int     `json:"type"`
+	AllowRequest    *bool   `json:"allow_request,omitempty"`
+	RequestDelete   bool    `json:"request_delete"`
+	RequestDeleteAt int64   `json:"request_delete_at"`
+	DefaultRole     string  `json:"default_role,omitempty"`
 }
 
 // NewUserDTO creates a new UserDTO based on the given domain.User object.
@@ -78,6 +80,8 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 			phone = u.Phone.PhoneNumber()
 		}
 		dto.Phone = &phone
+		dto.RequestDelete = u.RequestDelete
+		dto.RequestDeleteAt = u.RequestDeleteAt
 	}
 
 	dto.Type = u.Type
@@ -143,6 +147,7 @@ type UpdateUserBasicInfoCmd struct {
 	descChanged     bool
 	avatarChanged   bool
 	fullNameChanged bool
+	RevokeDelete    bool
 }
 
 func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
@@ -161,7 +166,12 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 		cmd.fullNameChanged = true
 	}
 
-	changed = cmd.avatarChanged || cmd.descChanged || cmd.fullNameChanged
+	if cmd.RevokeDelete {
+		u.RequestDelete = false
+		u.RequestDeleteAt = 0
+	}
+
+	changed = cmd.avatarChanged || cmd.descChanged || cmd.fullNameChanged || cmd.RevokeDelete
 
 	return
 }

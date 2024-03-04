@@ -539,9 +539,12 @@ definitions:
     type: object
   controller.tokenVerifyRequest:
     properties:
+      action:
+        type: string
       token:
         type: string
     required:
+    - action
     - token
     type: object
   controller.userBasicInfoUpdateRequest:
@@ -552,6 +555,8 @@ definitions:
         type: string
       fullname:
         type: string
+      revoke_delete:
+        type: boolean
     type: object
   controller.userModelsInfo:
     properties:
@@ -605,6 +610,10 @@ definitions:
         type: string
       phone:
         type: string
+      request_delete:
+        type: boolean
+      request_delete_at:
+        type: integer
       type:
         type: integer
       updated_at:
@@ -682,6 +691,77 @@ paths:
       summary: User or organization info
       tags:
       - Organization
+  /v1/branch/{type}/{owner}/{repo}:
+    post:
+      consumes:
+      - application/json
+      description: create repo branch
+      parameters:
+      - description: type of space/model
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: owner of space/model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space/model
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: restfulReqToCreateBranch
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.restfulReqToCreateBranch'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app.BranchCreateDTO'
+      security:
+      - Bearer: []
+      summary: CreateBranch
+      tags:
+      - BranchRestful
+  /v1/branch/{type}/{owner}/{repo}/{branch}:
+    delete:
+      consumes:
+      - application/json
+      description: delete repo branch
+      parameters:
+      - description: repo type
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: repo owner
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: repo name
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: branch name
+        in: path
+        name: branch
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: DeleteBranch
+      tags:
+      - BranchRestful
   /v1/coderepo/permission/read:
     post:
       consumes:
@@ -1069,6 +1149,13 @@ paths:
         in: query
         name: username
         type: string
+      - collectionFormat: csv
+        description: filter by roles
+        in: query
+        items:
+          type: string
+        name: roles
+        type: array
       responses:
         "200":
           description: OK
@@ -1398,6 +1485,17 @@ paths:
       summary: CheckAndRefresh
       tags:
       - Session
+  /v1/session/clear:
+    delete:
+      consumes:
+      - application/json
+      description: Clear session when it expired
+      responses:
+        "204":
+          description: No Content
+      summary: Clear
+      tags:
+      - Session
   /v1/space:
     get:
       consumes:
@@ -1692,6 +1790,18 @@ paths:
       tags:
       - SpaceWeb
   /v1/user:
+    delete:
+      consumes:
+      - application/json
+      description: delete
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Request Delete User info
+      tags:
+      - User
     get:
       consumes:
       - application/json
@@ -1725,6 +1835,27 @@ paths:
       security:
       - Bearer: []
       summary: Update
+      tags:
+      - User
+  /v1/user/{name}/platform:
+    get:
+      consumes:
+      - application/json
+      description: Get platform user info
+      parameters:
+      - description: name of the user
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Get platform user info
       tags:
       - User
   /v1/user/email/bind:
@@ -1879,73 +2010,6 @@ paths:
       summary: Verify token
       tags:
       - User
-  /v2/branch/{type}/{owner}/{repo}:
-    post:
-      consumes:
-      - application/json
-      description: create repo branch
-      parameters:
-      - description: type of space/model
-        in: path
-        name: type
-        required: true
-        type: string
-      - description: owner of space/model
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of space/model
-        in: path
-        name: repo
-        required: true
-        type: string
-      - description: restfulReqToCreateBranch
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.restfulReqToCreateBranch'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/app.BranchCreateDTO'
-      summary: CreateBranch
-      tags:
-      - BranchRestful
-  /v2/branch/{type}/{owner}/{repo}/{branch}:
-    delete:
-      consumes:
-      - application/json
-      description: delete repo branch
-      parameters:
-      - description: repo type
-        in: path
-        name: type
-        required: true
-        type: string
-      - description: repo owner
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: repo name
-        in: path
-        name: repo
-        required: true
-        type: string
-      - description: branch name
-        in: path
-        name: branch
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      summary: DeleteBranch
-      tags:
-      - BranchRestful
   /v2/model:
     get:
       consumes:
