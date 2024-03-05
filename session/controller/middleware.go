@@ -171,6 +171,6 @@ func clearCookie(ctx *gin.Context) {
 	setCookieOfSessionId(ctx, "", &expiry)
 	setCookieOfCSRFToken(ctx, "", &expiry)
 
-	commonctl.SetCookie(ctx, oneidUT, "", true, &expiry)
+	commonctl.SetCookie(ctx, oneidUT, "", false, &expiry)
 	commonctl.SetCookie(ctx, oneidYG, "", true, &expiry)
 }
