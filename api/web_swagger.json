@@ -42,6 +42,42 @@
                 }
             }
         },
+        "/v1/exists/:owner/:name": {
+            "get": {
+                "description": "check whether the repo exists",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CodeRepo"
+                ],
+                "summary": "Check",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of repo",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of repo",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/invite": {
             "get": {
                 "security": [

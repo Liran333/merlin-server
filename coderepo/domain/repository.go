@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
+	"github.com/openmerlin/go-sdk/gitea"
+
 	commondomain "github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
@@ -44,3 +46,5 @@ type CodeRepoIndex struct {
 
 // Resource represents a common resource.
 type Resource = commondomain.Resource
+
+type Repository = gitea.Repository

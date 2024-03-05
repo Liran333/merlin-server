@@ -549,6 +549,30 @@ paths:
       summary: User or organization info
       tags:
       - Organization
+  /v1/exists/:owner/:name:
+    get:
+      consumes:
+      - application/json
+      description: check whether the repo exists
+      parameters:
+      - description: owner of repo
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of repo
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+      summary: Check
+      tags:
+      - CodeRepo
   /v1/invite:
     delete:
       consumes:

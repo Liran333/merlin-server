@@ -38,6 +38,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfCodeRepoFile(rg, services)
 
+	setRouterOfCodeRepo(rg, services)
+
 	api.SwaggerInfoweb.Title = apiTitle
 	api.SwaggerInfoweb.Version = version
 	api.SwaggerInfoweb.Description = apiDesc

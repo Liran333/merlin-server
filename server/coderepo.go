@@ -47,6 +47,14 @@ func setRouterOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
 	)
 }
 
+func setRouterOfCodeRepo(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouterForCodeRepoController(
+		rg,
+		services.codeRepoApp,
+		services.userMiddleWare,
+	)
+}
+
 func setRouterOfBranchRestful(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForBranchRestfulController(
 		rg,

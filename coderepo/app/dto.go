@@ -85,3 +85,5 @@ type CmdToDeleteBranch struct {
 
 	RepoType repoprimitive.RepoType
 }
+
+type CmdToCheckRepoExists = domain.CodeRepoIndex
