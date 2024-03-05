@@ -33,6 +33,7 @@ type allServices struct {
 	operationLog   middleware.OperationLog
 	securityLog    middleware.SecurityLog
 	userMiddleWare middleware.UserMiddleWare
+	rateLimiterMiddleWare middleware.RateLimiter
 
 	modelApp modelapp.ModelAppService
 

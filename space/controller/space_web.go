@@ -20,17 +20,19 @@ func AddRouteForSpaceWebController(
 	s app.SpaceAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
+	rl middleware.RateLimiter,
 	u userapp.UserService,
 ) {
 	ctl := SpaceWebController{
 		SpaceController: SpaceController{
 			appService:     s,
 			userMiddleWare: m,
+			rateLimitMiddleWare: rl,
 			user:           u,
 		},
 	}
 
-	addRouteForSpaceController(r, &ctl.SpaceController, l)
+	addRouteForSpaceController(r, &ctl.SpaceController, l, rl)
 
 	r.GET("/v1/space/:owner/:name", m.Optional, ctl.Get)
 	r.GET("/v1/space/:owner", m.Optional, ctl.List)

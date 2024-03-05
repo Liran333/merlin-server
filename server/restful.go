@@ -11,6 +11,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/operationlog"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/securitylog"
 	"github.com/openmerlin/merlin-server/config"
 	userctl "github.com/openmerlin/merlin-server/user/controller"
@@ -22,6 +23,7 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = userctl.RestfulAPI(services.userApp, services.securityLog)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
+	services.rateLimiterMiddleWare = ratelimiter.InitRateLimiter(cfg.Redis)
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

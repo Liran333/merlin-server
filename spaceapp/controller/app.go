@@ -20,19 +20,22 @@ func AddRouterForSpaceappWebController(
 	r *gin.RouterGroup,
 	s app.SpaceappAppService,
 	m middleware.UserMiddleWare,
+	l middleware.RateLimiter,
 ) {
 	ctl := SpaceAppWebController{
 		appService:     s,
 		userMiddleWare: m,
+		rateLimitMiddleWare: l,
 	}
 
-	r.GET("/v1/space-app/:owner/:name", m.Optional, ctl.Get)
+	r.GET("/v1/space-app/:owner/:name", m.Optional, l.CheckLimit, ctl.Get)
 }
 
 // SpaceAppWebController is a struct that represents the web controller for the space app.
 type SpaceAppWebController struct {
 	appService     app.SpaceappAppService
 	userMiddleWare middleware.UserMiddleWare
+	rateLimitMiddleWare middleware.RateLimiter
 }
 
 // @Summary  Get
