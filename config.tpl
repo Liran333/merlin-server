@@ -173,3 +173,7 @@ kafka:
   password: {{(ds "secret").data.KAFKA_PASSWORD }}
   algorithm: {{(ds "secret").data.KAFKA_ALGO }}
   skip_cert_verify: true
+
+ratelimit:
+    request_num: 10
+    burst_num: 10

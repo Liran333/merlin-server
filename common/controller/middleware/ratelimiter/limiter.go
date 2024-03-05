@@ -24,15 +24,15 @@ import (
 )
 
 const (
-	userIdParsed = "user_id"
+	userIdParsed          = "user_id"
 	defaultClientPoolSize = 10
 	defaultIdleTimeOutNum = 30
-	RequestNumPerSec = 10
-	BurstNumPerSec = 10
+	RequestNumPerSec      = 10
+	BurstNumPerSec        = 10
 )
 
 var (
-	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests”")
+	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests")
 )
 
 // InitRateLimiter creates a new instance of the rateLimiter struct.
@@ -78,10 +78,19 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 		logrus.Infof("get new redis client err:%s", err)
 		return nil
 	}
+
+	requestNum := RequestNumPerSec
+	if config.RequestNum > 0 {
+		requestNum = config.RequestNum
+	}
+	burstNum := BurstNumPerSec
+	if config.BurstNum > 0 {
+		burstNum = config.BurstNum
+	}
 	// Setup quota
 	quota := throttled.RateQuota{
-		MaxRate:  throttled.PerSec(RequestNumPerSec),
-		MaxBurst: BurstNumPerSec,
+		MaxRate:  throttled.PerSec(requestNum),
+		MaxBurst: burstNum,
 	}
 	rateLimitCtx, err := throttled.NewGCRARateLimiterCtx(store, quota)
 	if err != nil {
