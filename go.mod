@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gobwas/glob v0.2.3
 	github.com/google/uuid v1.4.0
@@ -22,6 +23,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
+	github.com/throttled/throttled/v2 v2.12.0
 	golang.org/x/crypto v0.20.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
