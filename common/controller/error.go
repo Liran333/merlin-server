@@ -76,6 +76,9 @@ func httpError(err error) (int, string) {
 			case allerror.ErrorCodeOrgExistResource:
 				sc = http.StatusBadRequest
 
+			case allerror.ErrorRateLimitOver:
+				sc = http.StatusTooManyRequests
+
 			default:
 				sc = http.StatusBadRequest
 			}

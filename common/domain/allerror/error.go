@@ -13,6 +13,9 @@ const (
 	// ErrorCodeUserNotFound is const
 	ErrorCodeUserNotFound = "user_not_found"
 
+	// ErrorRateLimitOver is const
+	ErrorRateLimitOver = "rate_limit_over"
+
 	// ErrorCodeModelNotFound is const
 	ErrorCodeModelNotFound = "model_not_found"
 
@@ -211,4 +214,17 @@ func NewInvalidParam(msg string) errorImpl {
 // NewCountExceeded creates a new error with the specified count exceeded message.
 func NewCountExceeded(msg string) errorImpl {
 	return New(ErrorCodeCountExceeded, msg)
+}
+
+// limitRateError
+type limitRateError struct {
+	errorImpl
+}
+
+// OverLimit is a marker method for over limit rate error.
+func (l limitRateError) OverLimit() {}
+
+// NewOverLimit creates a new over limit error with the specified code and message.
+func NewOverLimit(code string, msg string) limitRateError {
+	return limitRateError{errorImpl: New(code, msg)}
 }

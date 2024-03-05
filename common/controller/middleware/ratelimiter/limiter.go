@@ -8,26 +8,28 @@ package ratelimiter
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	redislib "github.com/opensourceways/redis-lib"
+	"github.com/sirupsen/logrus"
 	"github.com/throttled/throttled/v2"
 	"github.com/throttled/throttled/v2/store/goredisstore"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 )
 
 const (
-	userIdParsed    = "user_id"
+	userIdParsed = "user_id"
 )
 
-var overLimitExec = errors.New("request is over limit, please try later")
+var (
+	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "request is over limit")
+)
 
 // InitRateLimiter creates a new instance of the operationLog struct.
 func InitRateLimiter(cfg redislib.Config) *rateLimiter {
@@ -52,18 +54,18 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 		client = redis.NewClient(&redis.Options{
 			PoolSize:    10, // default
 			IdleTimeout: 30 * time.Second,
-			DB:        cfg.DB,
-			Addr:      cfg.Address,
-			Password:  cfg.Password,
-			TLSConfig: tlsConfig,
+			DB:          cfg.DB,
+			Addr:        cfg.Address,
+			Password:    cfg.Password,
+			TLSConfig:   tlsConfig,
 		})
 	} else {
 		client = redis.NewClient(&redis.Options{
 			PoolSize:    10, // default
 			IdleTimeout: 30 * time.Second,
-			DB:       cfg.DB,
-			Addr:     cfg.Address,
-			Password: cfg.Password,
+			DB:          cfg.DB,
+			Addr:        cfg.Address,
+			Password:    cfg.Password,
 		})
 	}
 	// Setup store
@@ -97,8 +99,11 @@ type rateLimiter struct {
 
 func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	v, ok := ctx.Get(userIdParsed)
+	logrus.Infof("get user is :%s, ok :%v", v, ok)
 	if !ok {
+		logrus.Infof("is checkout ok :%s", ok)
 		ctx.Next()
+		return
 	}
 	key := fmt.Sprintf("%v", v)
 
@@ -111,9 +116,12 @@ func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	}
 
 	if limited {
+		logrus.Infof("rate limit key:%s", key)
 		commonctl.SendError(ctx, overLimitExec)
+		logrus.Infof("rate limit limit:%s", limited)
 		ctx.Abort()
 	} else {
 		ctx.Next()
 	}
+
 }

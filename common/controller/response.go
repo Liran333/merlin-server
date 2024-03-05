@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -91,6 +92,7 @@ func SendRespOfDelete(ctx *gin.Context) {
 
 // SendError sends an error response based on the given error.
 func SendError(ctx *gin.Context, err error) {
+	logrus.Infof("================exec err==============:%s", err)
 	sc, code := httpError(err)
 	ctx.AbortWithError(sc, err)
 	ctx.JSON(sc, newResponseCodeMsg(code, err.Error()))
