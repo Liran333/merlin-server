@@ -15,6 +15,10 @@ sed -i "s/PG_PASS=.*/PG_PASS=$PG_PASS/" .env
 
 INTERNAL_TOKEN=12345
 echo "INTERNAL TOKEN is $INTERNAL_TOKEN"
+cd ./scripts
+pip freeze > requirements.txt
+pip install -r requirements.txt
+cd ../
 python3 ./scripts/generation.py $INTERNAL_TOKEN
 
 docker compose > /dev/null 2>&1
