@@ -6,6 +6,7 @@ package controller
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -57,6 +58,7 @@ func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 
 func (m *webAPIMiddleware) must(ctx *gin.Context) {
 	if err := m.checkToken(ctx); err != nil {
+		clearCookie(ctx)
 		commonctl.SendError(ctx, err)
 		m.securityLog.Warn(ctx, err.Error())
 
@@ -162,4 +164,13 @@ func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId,
 	}
 
 	return sessionId, err
+}
+
+func clearCookie(ctx *gin.Context) {
+	expiry := time.Now().AddDate(0, 0, -1)
+	setCookieOfSessionId(ctx, "", &expiry)
+	setCookieOfCSRFToken(ctx, "", &expiry)
+
+	commonctl.SetCookie(ctx, oneidUT, "", false, &expiry)
+	commonctl.SetCookie(ctx, oneidYG, "", true, &expiry)
 }
