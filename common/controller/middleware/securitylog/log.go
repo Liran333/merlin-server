@@ -31,8 +31,6 @@ func (log *securityLog) Info(ctx *gin.Context, msg ...interface{}) {
 
 	clientIp := fmt.Sprintf(" | client ip: [%s]", ctx.ClientIP())
 
-	clientType := fmt.Sprintf(" | client type: [%s]", ctx.GetHeader("User-Agent"))
-
 	requestUrl := fmt.Sprintf(" | request url: [%s]", ctx.Request.URL.String())
 
 	method := fmt.Sprintf(" | method: [%s]", ctx.Request.Method)
@@ -41,7 +39,7 @@ func (log *securityLog) Info(ctx *gin.Context, msg ...interface{}) {
 
 	message := fmt.Sprintf(" | message: [%v]", fmt.Sprint(msg...))
 
-	logrus.Info(temp, clientIp, clientType, requestUrl, method, state, message)
+	logrus.Info(temp, clientIp, requestUrl, method, state, message)
 
 }
 
@@ -52,8 +50,6 @@ func (log *securityLog) Warn(ctx *gin.Context, msg ...interface{}) {
 
 	clientIp := fmt.Sprintf(" | client ip: [%s]", ctx.ClientIP())
 
-	clientType := fmt.Sprintf(" | client type: [%s]", ctx.GetHeader("User-Agent"))
-
 	requestUrl := fmt.Sprintf(" | request url: [%s]", ctx.Request.URL.String())
 
 	method := fmt.Sprintf(" | method: [%s]", ctx.Request.Method)
@@ -62,6 +58,6 @@ func (log *securityLog) Warn(ctx *gin.Context, msg ...interface{}) {
 
 	message := fmt.Sprintf(" | message: [%v]", fmt.Sprint(msg...))
 
-	logrus.Warn(temp, clientIp, clientType, requestUrl, method, state, message)
+	logrus.Warn(temp, clientIp, requestUrl, method, state, message)
 
 }
