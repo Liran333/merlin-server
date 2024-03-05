@@ -62,7 +62,7 @@ REQUIRE_SIGNIN_VIEW = false
 PATH = {{(ds "data").GITEA_WORK_DIR }}/git/lfs
 
 [oauth2]
-JWT_SECRET = SO8Hx4FnzP2jCc5nZmaUh4-eu58eLAw7VUIegTxKK0s
+JWT_SECRET = 
 
 [message]
 SERVER_ADDR = {{(ds "data").KAFKA_ADDR }}

@@ -17,6 +17,7 @@ type CodeRepo struct {
 	Name       primitive.MSDName
 	Owner      primitive.Account
 	License    primitive.License
+	CreatedBy  primitive.Account
 	Visibility primitive.Visibility
 }
 
@@ -36,6 +37,21 @@ func (r *CodeRepo) RepoIndex() CodeRepoIndex {
 		Name:  r.Name,
 		Owner: r.Owner,
 	}
+}
+
+// ResourceOwner returns the owner of the model resource.
+func (m *CodeRepo) ResourceOwner() primitive.Account {
+	return m.Owner
+}
+
+// IsCreatedBy checks if the model is created by the given user.
+func (m *CodeRepo) IsCreatedBy(user primitive.Account) bool {
+	return m.CreatedBy == user
+}
+
+// OwnedByPerson checks if the model is owned by the same person who created it.
+func (m *CodeRepo) OwnedByPerson() bool {
+	return m.Owner == m.CreatedBy
 }
 
 // CodeRepoIndex represents the index of a code repository.

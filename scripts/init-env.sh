@@ -5,22 +5,6 @@ set -o pipefail
 BASEDIR=$(dirname "$0")
 ROOTDIR=$(cd $BASEDIR/..; pwd)
 
-REDIS_PASS=$(uuidgen | tr -d '-')
-echo "REDIS_PASS is $REDIS_PASS"
-sed -i "s/REDIS_PASS=.*/REDIS_PASS=$REDIS_PASS/" .env
-
-PG_PASS=$(uuidgen | tr -d '-')
-echo "PG_PASS is $PG_PASS"
-sed -i "s/PG_PASS=.*/PG_PASS=$PG_PASS/" .env
-
-INTERNAL_TOKEN=12345
-echo "INTERNAL TOKEN is $INTERNAL_TOKEN"
-cd ./scripts
-pip freeze > requirements.txt
-pip install -r requirements.txt
-cd ../
-python3 ./scripts/generation.py $INTERNAL_TOKEN
-
 docker compose > /dev/null 2>&1
 if [ $? -ne 0 ]
 then
@@ -40,7 +24,7 @@ function genServerConfig() {
 }
 
 function genGiteaConfig() {
-	docker run --rm  -v $ROOTDIR:/data hairyhenderson/gomplate:stable -d data=/data/.env -f /data/$1 > $2
+	docker run --rm  -v $ROOTDIR:/data hairyhenderson/gomplate:stable -d data=/data/deploy/.env -f /data/$1 > $2
 }
 
 function setupVault() {
@@ -59,13 +43,28 @@ function setupVault() {
 # cleanup
 mkdir -p $ROOTDIR/deploy
 cp $ROOTDIR/.env $ROOTDIR/deploy/.env
+
+# autogen password for local test env
+REDIS_PASS=$(uuidgen | tr -d '-')
+echo "REDIS_PASS is $REDIS_PASS"
+sed -i "s/REDIS_PASS=.*/REDIS_PASS=$REDIS_PASS/" $ROOTDIR/deploy/.env
+
+PG_PASS=$(uuidgen | tr -d '-')
+echo "PG_PASS is $PG_PASS"
+sed -i "s/PG_PASS=.*/PG_PASS=$PG_PASS/" $ROOTDIR/deploy/.env
+
+INTERNAL_TOKEN=12345
+echo "INTERNAL TOKEN is $INTERNAL_TOKEN"
+python3 ./scripts/generation.py $INTERNAL_TOKEN
+
 touch $ROOTDIR/deploy/config.yml && chmod 666 $ROOTDIR/deploy/config.yml
 touch $ROOTDIR/deploy/app.ini && chmod 666 $ROOTDIR/deploy/app.ini
 docker compose rm -fsv
 # gen gitea config
 genGiteaConfig gitea.tpl $ROOTDIR/deploy/app.ini
+
 # start containers
-docker compose up --build --remove-orphans -d --wait gitea
+docker compose --env-file $ROOTDIR/deploy/.env up --build --remove-orphans -d --wait gitea
 
 # create admin for gitea
 TOKEN=$(docker exec -i merlin-server-gitea-1 gitea admin user create --admin --username gitadmin --password \

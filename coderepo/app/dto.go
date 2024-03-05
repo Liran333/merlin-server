@@ -20,11 +20,12 @@ type CmdToCreateRepo struct {
 	InitReadme bool
 }
 
-func (cmd *CmdToCreateRepo) toCodeRepo() domain.CodeRepo {
+func (cmd *CmdToCreateRepo) toCodeRepo(user primitive.Account) domain.CodeRepo {
 	return domain.CodeRepo{
 		Name:       cmd.Name,
 		Owner:      cmd.Owner,
 		License:    cmd.License,
+		CreatedBy:  user,
 		Visibility: cmd.Visibility,
 	}
 }

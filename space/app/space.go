@@ -72,7 +72,7 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		return "", err
 	}
 
-	coderepo, err := s.codeRepoApp.Create(&cmd.CmdToCreateRepo)
+	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
 	if err != nil {
 		return "", err
 	}
@@ -85,7 +85,6 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		Hardware:  cmd.Hardware,
 		Fullname:  cmd.Fullname,
 		CodeRepo:  coderepo,
-		CreatedBy: user,
 		CreatedAt: now,
 		UpdatedAt: now,
 	})

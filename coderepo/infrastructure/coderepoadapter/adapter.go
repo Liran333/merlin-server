@@ -6,22 +6,30 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package coderepoadapter
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/go-sdk/gitea"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	giteaclient "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 )
 
 const msgRepoNotExist = "The target couldn't be found."
 
+type UserInfoAdapter interface {
+	GetPlatformUserInfo(primitive.Account) (string, error)
+}
+
 type codeRepoAdapter struct {
-	client *gitea.Client
+	client      *gitea.Client
+	userAdapter UserInfoAdapter
 }
 
 // NewRepoAdapter creates a new instance of the codeRepoAdapter.
-func NewRepoAdapter(c *gitea.Client) *codeRepoAdapter {
-	return &codeRepoAdapter{client: c}
+func NewRepoAdapter(c *gitea.Client, userAdapter UserInfoAdapter) *codeRepoAdapter {
+	return &codeRepoAdapter{client: c, userAdapter: userAdapter}
 }
 
 // Add adds a new code repository to the code repository service.
@@ -40,7 +48,22 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 		opt.AutoInit = true
 	}
 
-	obj, _, err := adapter.client.AdminCreateRepo(repo.Owner.Account(), opt)
+	p, err := adapter.userAdapter.GetPlatformUserInfo(repo.CreatedBy)
+	if err != nil {
+		return fmt.Errorf("failed to get platform user info: %w", err)
+	}
+
+	client, err := giteaclient.NewClient(repo.CreatedBy.Account(), p)
+	if err != nil {
+		return fmt.Errorf("failed to create git client: %w", err)
+	}
+
+	var obj *gitea.Repository
+	if repo.OwnedByPerson() {
+		obj, _, err = client.CreateRepo(opt)
+	} else {
+		obj, _, err = client.CreateOrgRepo(repo.Owner.Account(), opt)
+	}
 	if err == nil {
 		repo.Id = primitive.CreateIdentity(obj.ID)
 	}

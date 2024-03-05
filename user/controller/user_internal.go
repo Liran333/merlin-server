@@ -87,7 +87,7 @@ func (ctl *UserInernalController) GetPlatformUser(ctx *gin.Context) {
 		return
 	}
 
-	if v, err := ctl.s.GetPlatformInfo(username); err != nil {
+	if v, err := ctl.s.GetPlatformUserInfo(username); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)

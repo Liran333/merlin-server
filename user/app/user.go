@@ -58,7 +58,7 @@ type UserService interface {
 	ListUsers(primitive.Account) ([]UserDTO, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
-	GetPlatformInfo(domain.Account) (PlatformInfo, error)
+	GetPlatformUserInfo(domain.Account) (string, error)
 
 	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
 	DeleteToken(*domain.TokenDeletedCmd, platform.BaseAuthClient) error
@@ -182,9 +182,9 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 }
 
 // GetPlatformUser retrieves the platform user info for the given account.
-func (s userService) GetPlatformInfo(account domain.Account) (PlatformInfo, error) {
+func (s userService) GetPlatformUserInfo(account domain.Account) (string, error) {
 	if account == nil {
-		return PlatformInfo{}, allerror.NewInvalidParam("account is nil")
+		return "", allerror.NewInvalidParam("account is nil")
 	}
 	// get user from db
 	usernew, err := s.repo.GetByAccount(account)
@@ -193,25 +193,22 @@ func (s userService) GetPlatformInfo(account domain.Account) (PlatformInfo, erro
 			err = errUserNotFound(fmt.Sprintf("user %s not found", account.Account()))
 		}
 
-		return PlatformInfo{}, err
+		return "", err
 	}
 
-	return PlatformInfo{
-		Name:     usernew.Account.Account(),
-		Password: usernew.PlatformPwd,
-	}, nil
+	return usernew.PlatformPwd, nil
 }
 
 // GetPlatformUser retrieves the platform user for the given account.
 func (s userService) GetPlatformUser(account domain.Account) (token platform.BaseAuthClient, err error) {
-	p, err := s.GetPlatformInfo(account)
+	p, err := s.GetPlatformUserInfo(account)
 	if err != nil {
 		return
 	}
 
 	return git.NewBaseAuthClient(
-		p.Name,
-		p.Password,
+		account.Account(),
+		p,
 	)
 }
 

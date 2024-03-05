@@ -52,7 +52,7 @@ def main():
     print(f"salt: {saltLog}")
 
     # Write the salt to the .env file
-    with open(".env", "r") as file:
+    with open("deploy/.env", "r") as file:
         data = file.readlines()
 
     for i, line in enumerate(data):
@@ -61,7 +61,7 @@ def main():
         if line.startswith("INTERNAL_TOKEN_HASH="):
             data[i] = f"INTERNAL_TOKEN_HASH={encLog}\n"
 
-    with open(".env", "w") as file:
+    with open("deploy/.env", "w") as file:
         file.writelines(data)
 
 

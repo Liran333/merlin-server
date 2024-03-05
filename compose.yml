@@ -49,8 +49,6 @@ services:
       interval: 5s
       timeout: 30s
       retries: 10
-    env_file:
-      deploy/.env
     ports:
     - "${REDIS_PORT}:${REDIS_PORT}"
     networks:
@@ -66,8 +64,6 @@ services:
       interval: 5s
       timeout: 30s
       retries: 10
-    env_file:
-      deploy/.env
     ports:
     - "${PG_PORT}:${PG_PORT}"
     networks:
@@ -90,8 +86,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./deploy/app.ini:/etc/gitea/app.ini
       - ./tests/gitea-deploy/options:/var/lib/gitea/custom/options
-    env_file:
-      deploy/.env
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:3000"]
       interval: 5s
@@ -139,8 +133,6 @@ services:
       - ./deploy/config.yml:/home/modelfoundry/config.yml:ro
     ports:
     - "${SERVER_PORT}:${SERVER_PORT}"
-    env_file:
-      deploy/.env
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:${SERVER_PORT}/api/swagger/index.html"]
       interval: 5s

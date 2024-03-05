@@ -1053,6 +1053,8 @@ github.com/openmerlin/merlin-sdk v0.0.0-20240301105654-e646008a66b2 h1:TpEx2cV6x
 github.com/openmerlin/merlin-sdk v0.0.0-20240301105654-e646008a66b2/go.mod h1:vQwV6qYYsFp5I6j70zKNQCTwU5M3hzWqQUzIAEr2uSY=
 github.com/openmerlin/merlin-sdk v0.0.0-20240303124510-c61739ae2539 h1:Rr6suqa5E25znM/lmf+dNQ1yKYSHhobsio/XbxxC34k=
 github.com/openmerlin/merlin-sdk v0.0.0-20240303124510-c61739ae2539/go.mod h1:vQwV6qYYsFp5I6j70zKNQCTwU5M3hzWqQUzIAEr2uSY=
+github.com/openmerlin/merlin-sdk v0.0.0-20240304132014-07577b5120f3 h1:KOaccVyGgtQ51Fa4TSj9cRcBJ07alF05uB1xEEuSiZM=
+github.com/openmerlin/merlin-sdk v0.0.0-20240304132014-07577b5120f3/go.mod h1:vQwV6qYYsFp5I6j70zKNQCTwU5M3hzWqQUzIAEr2uSY=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771 h1:LefDtTbbfEIA8pV/q7w+m2lbau3SoxbzWoV664CiBkg=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771/go.mod h1:/d3aSeUZkqMS/B+EWPShLWBiSDKrzaeQI23fsD+g29E=
 github.com/opensourceways/go-gitee v0.0.0-20231106021446-9fc2a41b1faa/go.mod h1:OExGhjyeAI6nM597rup/xn+x1YN+90AwEZBazHzGdSY=

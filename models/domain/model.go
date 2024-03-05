@@ -15,10 +15,9 @@ import (
 type Model struct {
 	coderepo.CodeRepo
 
-	Desc      primitive.MSDDesc
-	Labels    ModelLabels
-	Fullname  primitive.MSDFullname
-	CreatedBy primitive.Account
+	Desc     primitive.MSDDesc
+	Labels   ModelLabels
+	Fullname primitive.MSDFullname
 
 	Version       int
 	CreatedAt     int64
@@ -27,24 +26,9 @@ type Model struct {
 	DownloadCount int
 }
 
-// ResourceOwner returns the owner of the model resource.
-func (m *Model) ResourceOwner() primitive.Account {
-	return m.Owner
-}
-
 // ResourceType returns the type of the model resource.
 func (m *Model) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeModel
-}
-
-// IsCreatedBy checks if the model is created by the given user.
-func (m *Model) IsCreatedBy(user primitive.Account) bool {
-	return m.CreatedBy == user
-}
-
-// OwnedByPerson checks if the model is owned by the same person who created it.
-func (m *Model) OwnedByPerson() bool {
-	return m.Owner == m.CreatedBy
 }
 
 // ModelLabels represents the labels associated with a model, including task labels, other labels, and framework labels.

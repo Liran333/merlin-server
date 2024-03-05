@@ -7,12 +7,13 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repoadapter"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
 // CodeRepoAppService is an interface for code repository application service.
 type CodeRepoAppService interface {
-	Create(cmd *CmdToCreateRepo) (domain.CodeRepo, error)
+	Create(primitive.Account, *CmdToCreateRepo) (domain.CodeRepo, error)
 	Delete(domain.CodeRepoIndex) error
 	Update(*domain.CodeRepo, *CmdToUpdateRepo) (bool, error)
 	IsRepoExist(*domain.CodeRepoIndex) (bool, error)
@@ -28,11 +29,10 @@ type codeRepoAppService struct {
 }
 
 // Create creates a new code repository.
-func (s *codeRepoAppService) Create(cmd *CmdToCreateRepo) (domain.CodeRepo, error) {
-	repo := cmd.toCodeRepo()
+func (s *codeRepoAppService) Create(user primitive.Account, cmd *CmdToCreateRepo) (domain.CodeRepo, error) {
+	repo := cmd.toCodeRepo(user)
 
 	if err := s.repoAdapter.Add(&repo, cmd.InitReadme); err != nil {
-
 		return repo, err
 	}
 

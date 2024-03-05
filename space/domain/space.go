@@ -16,12 +16,11 @@ import (
 type Space struct {
 	coderepo.CodeRepo
 
-	SDK       spaceprimitive.SDK
-	Desc      primitive.MSDDesc
-	Labels    SpaceLabels
-	Fullname  primitive.MSDFullname
-	Hardware  spaceprimitive.Hardware
-	CreatedBy primitive.Account
+	SDK      spaceprimitive.SDK
+	Desc     primitive.MSDDesc
+	Labels   SpaceLabels
+	Fullname primitive.MSDFullname
+	Hardware spaceprimitive.Hardware
 
 	Version       int
 	CreatedAt     int64
@@ -30,24 +29,9 @@ type Space struct {
 	DownloadCount int
 }
 
-// ResourceOwner returns the owner of the space resource.
-func (s *Space) ResourceOwner() primitive.Account {
-	return s.Owner
-}
-
-// ResourceType returns the type of the space resource.
-func (s *Space) ResourceType() primitive.ObjType {
+// ResourceType returns the type of the model resource.
+func (m *Space) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeSpace
-}
-
-// IsCreatedBy checks if the space is created by the given user.
-func (s *Space) IsCreatedBy(user primitive.Account) bool {
-	return s.CreatedBy == user
-}
-
-// OwnedByPerson checks if the space is owned by the same person who created it.
-func (s *Space) OwnedByPerson() bool {
-	return s.Owner == s.CreatedBy
 }
 
 // SpaceLabels represents labels associated with a space.
