@@ -157,11 +157,11 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.NameApi.V1NameHead(Auth, s.owner)
+	r, err = Api.OrganizationApi.V1NameHead(Auth, s.owner)
 	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.NameApi.V1NameHead(Auth, "testnonexist")
+	r, err = Api.OrganizationApi.V1NameHead(Auth, "testnonexist")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

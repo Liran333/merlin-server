@@ -17,9 +17,7 @@ import (
 )
 
 func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
-	api.SwaggerInfo.BasePath = prefix
-
-	rg := engine.Group(api.SwaggerInfo.BasePath)
+	rg := engine.Group(prefix)
 
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog)
@@ -40,5 +38,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfCodeRepoFile(rg, services)
 
-	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	api.SwaggerInfoweb.Title = apiTitle
+	api.SwaggerInfoweb.Version = version
+	api.SwaggerInfoweb.Description = apiDesc
+	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.InstanceName("web")))
 }

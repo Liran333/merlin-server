@@ -16,9 +16,7 @@ import (
 )
 
 func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
-	api.SwaggerInfo.BasePath = prefix
-
-	rg := engine.Group(api.SwaggerInfo.BasePath)
+	rg := engine.Group(prefix)
 
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = internalservice.NewAPIMiddleware(services.securityLog)
@@ -36,5 +34,8 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setRouterOfCodeRepoPermissionInternal(rg, services)
 
-	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	api.SwaggerInfointernal.Title = apiTitle
+	api.SwaggerInfointernal.Version = version
+	api.SwaggerInfointernal.Description = apiDesc
+	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.InstanceName("internal")))
 }

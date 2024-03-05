@@ -16,7 +16,7 @@ import (
 	"github.com/opensourceways/server-common-lib/interrupts"
 	"github.com/sirupsen/logrus"
 
-	"github.com/openmerlin/merlin-server/api"
+	_ "github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
 )
 
@@ -37,10 +37,6 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 	engine.Use(logRequest())
 	engine.UseRawPath = true
 	engine.TrustedPlatform = "x-real-ip"
-
-	api.SwaggerInfo.Title = apiTitle
-	api.SwaggerInfo.Version = version
-	api.SwaggerInfo.Description = apiDesc
 
 	// init services
 	services, err := initServices(cfg)

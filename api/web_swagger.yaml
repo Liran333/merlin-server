@@ -1,34 +1,4 @@
 definitions:
-  app.BranchCreateDTO:
-    properties:
-      branch_name:
-        type: string
-    type: object
-  app.ModelDTO:
-    properties:
-      created_at:
-        type: integer
-      desc:
-        type: string
-      download_count:
-        type: integer
-      fullname:
-        type: string
-      id:
-        type: string
-      labels:
-        $ref: '#/definitions/app.ModelLabelsDTO'
-      like_count:
-        type: integer
-      name:
-        type: string
-      owner:
-        type: string
-      updated_at:
-        type: integer
-      visibility:
-        type: string
-    type: object
   app.ModelLabelsDTO:
     properties:
       frameworks:
@@ -44,15 +14,6 @@ definitions:
       task:
         type: string
     type: object
-  app.ModelsDTO:
-    properties:
-      models:
-        items:
-          $ref: '#/definitions/repository.ModelSummary'
-        type: array
-      total:
-        type: integer
-    type: object
   app.SpaceAppDTO:
     properties:
       app_log_url:
@@ -64,35 +25,6 @@ definitions:
       id:
         type: integer
       status:
-        type: string
-    type: object
-  app.SpaceDTO:
-    properties:
-      created_at:
-        type: integer
-      desc:
-        type: string
-      download_count:
-        type: integer
-      fullname:
-        type: string
-      hardware:
-        type: string
-      id:
-        type: string
-      labels:
-        $ref: '#/definitions/app.SpaceLabelsDTO'
-      like_count:
-        type: integer
-      name:
-        type: string
-      owner:
-        type: string
-      sdk:
-        type: string
-      updated_at:
-        type: integer
-      visibility:
         type: string
     type: object
   app.SpaceLabelsDTO:
@@ -109,28 +41,6 @@ definitions:
         type: array
       task:
         type: string
-    type: object
-  app.SpaceMetaDTO:
-    properties:
-      hardware:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      sdk:
-        type: string
-    type: object
-  app.SpacesDTO:
-    properties:
-      spaces:
-        items:
-          $ref: '#/definitions/repository.SpaceSummary'
-        type: array
-      total:
-        type: integer
     type: object
   controller.OrgAcceptMemberRequest:
     properties:
@@ -329,15 +239,6 @@ definitions:
     required:
     - user
     type: object
-  controller.reqToCheckPermission:
-    properties:
-      name:
-        type: string
-      owner:
-        type: string
-      user:
-        type: string
-    type: object
   controller.reqToCreateModel:
     properties:
       desc:
@@ -376,36 +277,11 @@ definitions:
       visibility:
         type: string
     type: object
-  controller.reqToCreateSpaceApp:
-    properties:
-      commit_id:
-        type: string
-      space_id:
-        type: string
-    type: object
   controller.reqToLogin:
     properties:
       code:
         type: string
       redirect_uri:
-        type: string
-    type: object
-  controller.reqToSetBuildIsDone:
-    properties:
-      commit_id:
-        type: string
-      space_id:
-        type: string
-      success:
-        type: boolean
-    type: object
-  controller.reqToUpdateBuildInfo:
-    properties:
-      commit_id:
-        type: string
-      log_url:
-        type: string
-      space_id:
         type: string
     type: object
   controller.reqToUpdateModel:
@@ -417,17 +293,6 @@ definitions:
       name:
         type: string
       visibility:
-        type: string
-    type: object
-  controller.reqToUpdateServiceInfo:
-    properties:
-      app_url:
-        type: string
-      commit_id:
-        type: string
-      log_url:
-        type: string
-      space_id:
         type: string
     type: object
   controller.reqToUpdateSpace:
@@ -443,13 +308,6 @@ definitions:
       sdk:
         type: string
       visibility:
-        type: string
-    type: object
-  controller.restfulReqToCreateBranch:
-    properties:
-      base_branch:
-        type: string
-      branch:
         type: string
     type: object
   controller.sendEmailRequest:
@@ -691,122 +549,6 @@ paths:
       summary: User or organization info
       tags:
       - Organization
-  /v1/branch/{type}/{owner}/{repo}:
-    post:
-      consumes:
-      - application/json
-      description: create repo branch
-      parameters:
-      - description: type of space/model
-        in: path
-        name: type
-        required: true
-        type: string
-      - description: owner of space/model
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of space/model
-        in: path
-        name: repo
-        required: true
-        type: string
-      - description: restfulReqToCreateBranch
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.restfulReqToCreateBranch'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/app.BranchCreateDTO'
-      security:
-      - Bearer: []
-      summary: CreateBranch
-      tags:
-      - BranchRestful
-  /v1/branch/{type}/{owner}/{repo}/{branch}:
-    delete:
-      consumes:
-      - application/json
-      description: delete repo branch
-      parameters:
-      - description: repo type
-        in: path
-        name: type
-        required: true
-        type: string
-      - description: repo owner
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: repo name
-        in: path
-        name: repo
-        required: true
-        type: string
-      - description: branch name
-        in: path
-        name: branch
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      security:
-      - Bearer: []
-      summary: DeleteBranch
-      tags:
-      - BranchRestful
-  /v1/coderepo/permission/read:
-    post:
-      consumes:
-      - application/json
-      description: check if can read repo's sub-resource not the repo itsself
-      parameters:
-      - description: body of request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToCheckPermission'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Read
-      tags:
-      - Permission
-  /v1/coderepo/permission/update:
-    post:
-      consumes:
-      - application/json
-      description: check if can create/update/delete repo's sub-resource not the repo
-        itsself
-      parameters:
-      - description: body of request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToCheckPermission'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Update
-      tags:
-      - Permission
   /v1/invite:
     delete:
       consumes:
@@ -1025,31 +767,6 @@ paths:
       summary: Update
       tags:
       - Model
-  /v1/model/{id}/label:
-    put:
-      consumes:
-      - application/json
-      description: reset label of model
-      parameters:
-      - description: id of model
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToCreateModel'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      summary: ResetLabel
-      tags:
-      - ModelInternal
   /v1/model/{owner}:
     get:
       consumes:
@@ -1134,7 +851,7 @@ paths:
       - Bearer: []
       summary: Check
       tags:
-      - Name
+      - Organization
   /v1/organization:
     get:
       consumes:
@@ -1149,8 +866,7 @@ paths:
         in: query
         name: username
         type: string
-      - collectionFormat: csv
-        description: filter by roles
+      - description: filter by roles
         in: query
         items:
           type: string
@@ -1568,28 +1284,6 @@ paths:
       summary: Create
       tags:
       - Space
-  /v1/space-app/:
-    post:
-      consumes:
-      - application/json
-      description: create space app
-      parameters:
-      - description: body of creating space app
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToCreateSpaceApp'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: Create
-      tags:
-      - SpaceApp
   /v1/space-app/{owner}/{name}:
     get:
       consumes:
@@ -1614,72 +1308,6 @@ paths:
       summary: Get
       tags:
       - SpaceAppWeb
-  /v1/space-app/build/done:
-    put:
-      consumes:
-      - application/json
-      description: notidy space app build is done
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToSetBuildIsDone'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: NotifyBuildIsDone
-      tags:
-      - SpaceApp
-  /v1/space-app/build/started:
-    put:
-      consumes:
-      - application/json
-      description: notidy space app building is started
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToUpdateBuildInfo'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: NotifyBuildIsStarted
-      tags:
-      - SpaceApp
-  /v1/space-app/service/started:
-    put:
-      consumes:
-      - application/json
-      description: notidy space app service is started
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToUpdateServiceInfo'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: NotifyServiceIsStarted
-      tags:
-      - SpaceApp
   /v1/space/{id}:
     delete:
       consumes:
@@ -2010,185 +1638,6 @@ paths:
       summary: Verify token
       tags:
       - User
-  /v2/model:
-    get:
-      consumes:
-      - application/json
-      description: list global public model
-      parameters:
-      - description: name of model
-        in: query
-        name: name
-        type: string
-      - description: task label
-        in: query
-        name: task
-        type: string
-      - description: owner of model
-        in: query
-        name: owner
-        required: true
-        type: string
-      - description: other labels, separate multiple each ones with commas
-        in: query
-        name: others
-        type: string
-      - description: license label
-        in: query
-        name: license
-        type: string
-      - description: framework labels, separate multiple each ones with commas
-        in: query
-        name: frameworks
-        type: string
-      - description: whether to calculate the total
-        in: query
-        name: count
-        type: boolean
-      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
-          recently_created'
-        in: query
-        name: sort_by
-        type: string
-      - description: page num which starts from 1
-        in: query
-        name: page_num
-        type: integer
-      - description: count per page
-        in: query
-        name: count_per_page
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.ModelsDTO'
-      summary: List
-      tags:
-      - ModelRestful
-  /v2/model/{owner}/{name}:
-    get:
-      consumes:
-      - application/json
-      description: get model
-      parameters:
-      - description: owner of model
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of model
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.ModelDTO'
-      summary: Get
-      tags:
-      - ModelRestful
-  /v2/space:
-    get:
-      consumes:
-      - application/json
-      description: list global public space
-      parameters:
-      - description: name of space
-        in: query
-        name: name
-        type: string
-      - description: task label
-        in: query
-        name: task
-        type: string
-      - description: owner of space
-        in: query
-        name: owner
-        required: true
-        type: string
-      - description: other labels, separate multiple each ones with commas
-        in: query
-        name: others
-        type: string
-      - description: license label
-        in: query
-        name: license
-        type: string
-      - description: framework labels, separate multiple each ones with commas
-        in: query
-        name: frameworks
-        type: string
-      - description: whether to calculate the total
-        in: query
-        name: count
-        type: boolean
-      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
-          recently_created'
-        in: query
-        name: sort_by
-        type: string
-      - description: page num which starts from 1
-        in: query
-        name: page_num
-        type: integer
-      - description: count per page
-        in: query
-        name: count_per_page
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.SpacesDTO'
-      summary: List
-      tags:
-      - SpaceRestful
-  /v2/space/{id}:
-    get:
-      consumes:
-      - application/json
-      description: get space
-      parameters:
-      - description: id of space
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.SpaceMetaDTO'
-      summary: Get
-      tags:
-      - SpaceInternal
-  /v2/space/{owner}/{name}:
-    get:
-      consumes:
-      - application/json
-      description: get space
-      parameters:
-      - description: owner of space
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of space
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.SpaceDTO'
-      summary: Get
-      tags:
-      - SpaceRestful
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and api Bearer.

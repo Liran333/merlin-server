@@ -37,7 +37,7 @@ type SpaceInternalController struct {
 // @Param    id  path  string  true  "id of space"
 // @Accept   json
 // @Success  200  {object}  app.SpaceMetaDTO
-// @Router   /v2/space/{id} [get]
+// @Router   /v1/space/{id} [get]
 func (ctl *SpaceInternalController) Get(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {

@@ -17,9 +17,7 @@ import (
 )
 
 func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, services *allServices) {
-	api.SwaggerInfo.BasePath = prefix
-
-	rg := engine.Group(api.SwaggerInfo.BasePath)
+	rg := engine.Group(prefix)
 
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = userctl.RestfulAPI(services.userApp, services.securityLog)
@@ -38,5 +36,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	setRouterOfBranchRestful(rg, services)
 
-	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	api.SwaggerInforest.Title = apiTitle
+	api.SwaggerInforest.Version = version
+	api.SwaggerInforest.Description = apiDesc
+	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.InstanceName("rest")))
 }

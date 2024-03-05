@@ -25,7 +25,11 @@ This command will launch a server listen on 127.0.0.1:8888
 ## update swagger docs
 switch into root dir of the project
 ```
-swag init -o api
+swag init --instanceName rest -o api -t Organization,User,Model,ModelRestful,Space,SpaceRestful,BranchRestful
+
+swag init --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb
+
+swag init --instanceName internal -o api -t Session,User,SpaceInternal,ModelInternal,Permission
 ```
 
 ## run end to end test

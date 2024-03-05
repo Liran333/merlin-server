@@ -1,0 +1,1445 @@
+definitions:
+  app.BranchCreateDTO:
+    properties:
+      branch_name:
+        type: string
+    type: object
+  app.ModelDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.ModelLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
+  app.ModelLabelsDTO:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      others:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
+  app.ModelsDTO:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/repository.ModelSummary'
+        type: array
+      total:
+        type: integer
+    type: object
+  app.SpaceDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      hardware:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.SpaceLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      sdk:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
+  app.SpaceLabelsDTO:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      others:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
+  app.SpacesDTO:
+    properties:
+      spaces:
+        items:
+          $ref: '#/definitions/repository.SpaceSummary'
+        type: array
+      total:
+        type: integer
+    type: object
+  controller.OrgAcceptMemberRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+    required:
+    - org_name
+    type: object
+  controller.OrgApproveMemberRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+      user:
+        type: string
+    required:
+    - org_name
+    type: object
+  controller.OrgInviteMemberRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+      role:
+        type: string
+      user:
+        type: string
+    required:
+    - org_name
+    - role
+    - user
+    type: object
+  controller.OrgMemberEditRequest:
+    properties:
+      role:
+        type: string
+      user:
+        type: string
+    required:
+    - role
+    - user
+    type: object
+  controller.OrgReqMemberRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+    required:
+    - org_name
+    type: object
+  controller.OrgRevokeInviteRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+      user:
+        type: string
+    required:
+    - org_name
+    type: object
+  controller.OrgRevokeMemberReqRequest:
+    properties:
+      msg:
+        type: string
+      org_name:
+        type: string
+      user:
+        type: string
+    required:
+    - org_name
+    type: object
+  controller.ResponseData:
+    properties:
+      code:
+        type: string
+      data: {}
+      msg:
+        type: string
+    type: object
+  controller.bindEmailRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  controller.orgBasicInfoUpdateRequest:
+    properties:
+      allow_request:
+        type: boolean
+      avatar_id:
+        type: string
+      default_role:
+        type: string
+      description:
+        type: string
+      fullname:
+        type: string
+      website:
+        type: string
+    type: object
+  controller.orgCreateRequest:
+    properties:
+      avatar_id:
+        type: string
+      description:
+        type: string
+      fullname:
+        type: string
+      name:
+        type: string
+      website:
+        type: string
+    required:
+    - name
+    type: object
+  controller.orgMemberRemoveRequest:
+    properties:
+      user:
+        type: string
+    required:
+    - user
+    type: object
+  controller.reqToCreateModel:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      init_readme:
+        type: boolean
+      license:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.reqToCreateSpace:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      hardware:
+        type: string
+      init_readme:
+        type: boolean
+      license:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      sdk:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.reqToUpdateModel:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      name:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.reqToUpdateSpace:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      hardware:
+        type: string
+      name:
+        type: string
+      sdk:
+        type: string
+      visibility:
+        type: string
+    type: object
+  controller.restfulReqToCreateBranch:
+    properties:
+      base_branch:
+        type: string
+      branch:
+        type: string
+    type: object
+  controller.sendEmailRequest:
+    properties:
+      capt:
+        type: string
+      email:
+        type: string
+    required:
+    - capt
+    - email
+    type: object
+  controller.tokenCreateRequest:
+    properties:
+      name:
+        type: string
+      perm:
+        type: string
+    required:
+    - name
+    - perm
+    type: object
+  controller.tokenVerifyRequest:
+    properties:
+      action:
+        type: string
+      token:
+        type: string
+    required:
+    - action
+    - token
+    type: object
+  controller.userBasicInfoUpdateRequest:
+    properties:
+      avatar_id:
+        type: string
+      description:
+        type: string
+      fullname:
+        type: string
+      revoke_delete:
+        type: boolean
+    type: object
+  repository.ModelSummary:
+    properties:
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      task:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  repository.SpaceSummary:
+    properties:
+      desc:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      task:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/account/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get organization or user info
+      parameters:
+      - description: name of the user of organization
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "404":
+          description: user not found
+      summary: User or organization info
+      tags:
+      - Organization
+  /v1/branch/{type}/{owner}/{repo}:
+    post:
+      consumes:
+      - application/json
+      description: create repo branch
+      parameters:
+      - description: type of space/model
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: owner of space/model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space/model
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: restfulReqToCreateBranch
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.restfulReqToCreateBranch'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app.BranchCreateDTO'
+      security:
+      - Bearer: []
+      summary: CreateBranch
+      tags:
+      - BranchRestful
+  /v1/branch/{type}/{owner}/{repo}/{branch}:
+    delete:
+      consumes:
+      - application/json
+      description: delete repo branch
+      parameters:
+      - description: repo type
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: repo owner
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: repo name
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: branch name
+        in: path
+        name: branch
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: DeleteBranch
+      tags:
+      - BranchRestful
+  /v1/invite:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke invitation of the organization
+      parameters:
+      - description: body of the invitation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgRevokeInviteRequest'
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: RevokeInvitation
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: List invitation of the organization
+      parameters:
+      - description: organization name
+        in: query
+        name: org_name
+        type: string
+      - description: invitee name
+        in: query
+        name: invitee
+        type: string
+      - description: inviter name
+        in: query
+        name: inviter
+        type: string
+      - description: 'invitation status, can be: pending/approved/rejected'
+        in: query
+        name: status
+        type: string
+      - description: page size
+        in: query
+        name: page_size
+        type: integer
+      - description: page index
+        in: query
+        name: page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: ListInvitation
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to a user to join the organization
+      parameters:
+      - description: body of the invitation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgInviteMemberRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: InviteMember
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: Accept invite of the organization
+      parameters:
+      - description: body of the invitation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgAcceptMemberRequest'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: AcceptInvite
+      tags:
+      - Organization
+  /v1/model:
+    get:
+      consumes:
+      - application/json
+      description: list global public model
+      parameters:
+      - description: name of model
+        in: query
+        name: name
+        type: string
+      - description: task label
+        in: query
+        name: task
+        type: string
+      - description: owner of model
+        in: query
+        name: owner
+        required: true
+        type: string
+      - description: other labels, separate multiple each ones with commas
+        in: query
+        name: others
+        type: string
+      - description: license label
+        in: query
+        name: license
+        type: string
+      - description: framework labels, separate multiple each ones with commas
+        in: query
+        name: frameworks
+        type: string
+      - description: whether to calculate the total
+        in: query
+        name: count
+        type: boolean
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        in: query
+        name: sort_by
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ModelsDTO'
+      summary: List
+      tags:
+      - ModelRestful
+    post:
+      consumes:
+      - application/json
+      description: create model
+      parameters:
+      - description: body of creating model
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateModel'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - Model
+  /v1/model/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete
+      tags:
+      - Model
+    put:
+      consumes:
+      - application/json
+      description: update model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating model
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateModel'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - Model
+  /v1/model/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get model
+      parameters:
+      - description: owner of model
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of model
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ModelDTO'
+      summary: Get
+      tags:
+      - ModelRestful
+  /v1/name:
+    head:
+      consumes:
+      - application/json
+      description: Check the name is available
+      parameters:
+      - description: the name to be check whether it's usable
+        in: query
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: name is valid
+        "409":
+          description: name is invalid
+      security:
+      - Bearer: []
+      summary: Check
+      tags:
+      - Organization
+  /v1/organization:
+    get:
+      consumes:
+      - application/json
+      description: get organization info
+      parameters:
+      - description: filter by owner
+        in: query
+        name: owner
+        type: string
+      - description: filter by username
+        in: query
+        name: username
+        type: string
+      - description: filter by roles
+        in: query
+        items:
+          type: string
+        name: roles
+        type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: List
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: create a new organization
+      parameters:
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCreateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - Organization
+  /v1/organization/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a organization
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: get organization info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: Get
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: leave the organization
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Leave
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: update org basic info
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: body of new organization
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgBasicInfoUpdateRequest'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - Organization
+  /v1/organization/{name}/member:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a member from a organization
+      parameters:
+      - description: body of the removed member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgMemberRemoveRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: RemoveMember
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: list organization members
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: ListMember
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: Edit a member to the organization's role
+      parameters:
+      - description: body of new member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgMemberEditRequest'
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: EditMember
+      tags:
+      - Organization
+  /v1/request:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke member request of the organization
+      parameters:
+      - description: body of the member request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgRevokeMemberReqRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: RevokeMember
+      tags:
+      - Organization
+    get:
+      consumes:
+      - application/json
+      description: List requests of the organization
+      parameters:
+      - description: organization name
+        in: query
+        name: org_name
+        type: string
+      - description: invitee name
+        in: query
+        name: requester
+        type: string
+      - description: 'invitation status, can be: pending/approved/rejected'
+        in: query
+        name: status
+        type: string
+      - description: page size
+        in: query
+        name: page_size
+        type: integer
+      - description: page index
+        in: query
+        name: page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: ListRequests
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Request to be a member of the organization
+      parameters:
+      - description: body of the member request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgReqMemberRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: RequestMember
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: Approve a user's member request of the organization
+      parameters:
+      - description: body of the accept
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.OrgApproveMemberRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: ApproveRequest
+      tags:
+      - Organization
+  /v1/space:
+    get:
+      consumes:
+      - application/json
+      description: list global public space
+      parameters:
+      - description: name of space
+        in: query
+        name: name
+        type: string
+      - description: task label
+        in: query
+        name: task
+        type: string
+      - description: owner of space
+        in: query
+        name: owner
+        required: true
+        type: string
+      - description: other labels, separate multiple each ones with commas
+        in: query
+        name: others
+        type: string
+      - description: license label
+        in: query
+        name: license
+        type: string
+      - description: framework labels, separate multiple each ones with commas
+        in: query
+        name: frameworks
+        type: string
+      - description: whether to calculate the total
+        in: query
+        name: count
+        type: boolean
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        in: query
+        name: sort_by
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpacesDTO'
+      summary: List
+      tags:
+      - SpaceRestful
+    post:
+      consumes:
+      - application/json
+      description: create space
+      parameters:
+      - description: body of creating space
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateSpace'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - Space
+  /v1/space/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete space
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete
+      tags:
+      - Space
+    put:
+      consumes:
+      - application/json
+      description: update space
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating space
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateSpace'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - Space
+  /v1/space/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get space
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpaceDTO'
+      summary: Get
+      tags:
+      - SpaceRestful
+  /v1/user:
+    delete:
+      consumes:
+      - application/json
+      description: delete
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Request Delete User info
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: get current sign-in user info
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Get current user info
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: update user basic info
+      parameters:
+      - description: body of updating user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.userBasicInfoUpdateRequest'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - User
+  /v1/user/{name}/platform:
+    get:
+      consumes:
+      - application/json
+      description: Get platform user info
+      parameters:
+      - description: name of the user
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Get platform user info
+      tags:
+      - User
+  /v1/user/email/bind:
+    post:
+      consumes:
+      - application/json
+      description: bind user's email
+      parameters:
+      - description: body of bind email info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.bindEmailRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Bind User Email
+      tags:
+      - User
+  /v1/user/email/send:
+    post:
+      consumes:
+      - application/json
+      description: send user's email verify code
+      parameters:
+      - description: body of bind email info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.sendEmailRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Send User Email Verify code
+      tags:
+      - User
+  /v1/user/privacy:
+    put:
+      consumes:
+      - application/json
+      description: revoke
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: PrivacyRevoke
+      tags:
+      - User
+  /v1/user/token:
+    get:
+      consumes:
+      - application/json
+      description: list all platform tokens of user
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: GetTokenInfo
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: create a new platform token of user
+      parameters:
+      - description: body of create token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.tokenCreateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: CreatePlatformToken
+      tags:
+      - User
+  /v1/user/token/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a new platform token of user
+      parameters:
+      - description: token name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: DeletePlatformToken
+      tags:
+      - User
+  /v1/user/token/verify:
+    post:
+      consumes:
+      - application/json
+      description: verify a platform token of user
+      parameters:
+      - description: body of token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.tokenVerifyRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            type: token
+        "401":
+          description: Unauthorized
+          schema:
+            type: token
+        "403":
+          description: Forbidden
+          schema:
+            type: token
+        "500":
+          description: Internal Server Error
+          schema:
+            type: internal
+      security:
+      - Internal: []
+      summary: Verify token
+      tags:
+      - User
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and api Bearer.
+    in: header
+    name: Authorization
+    type: apiKey
+  Internal:
+    description: Type "Internal" followed by a space and internal token.
+    in: header
+    name: TOKEN
+    type: apiKey
+swagger: "2.0"

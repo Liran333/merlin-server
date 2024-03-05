@@ -47,7 +47,7 @@ type ModelRestfulController struct {
 // @Param    name   path  string  true  "name of model"
 // @Accept   json
 // @Success  200  {object}  app.ModelDTO
-// @Router   /v2/model/{owner}/{name} [get]
+// @Router   /v1/model/{owner}/{name} [get]
 func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
 	if err != nil {
@@ -79,7 +79,7 @@ func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json
 // @Success  200  {object}  app.ModelsDTO
-// @Router   /v2/model [get]
+// @Router   /v1/model [get]
 func (ctl *ModelRestfulController) List(ctx *gin.Context) {
 	var req restfulReqToListModels
 

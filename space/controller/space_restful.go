@@ -47,7 +47,7 @@ type SpaceRestfulController struct {
 // @Param    name   path  string  true  "name of space"
 // @Accept   json
 // @Success  200  {object}  app.SpaceDTO
-// @Router   /v2/space/{owner}/{name} [get]
+// @Router   /v1/space/{owner}/{name} [get]
 func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
 	if err != nil {
@@ -79,7 +79,7 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json
 // @Success  200  {object}  app.SpacesDTO
-// @Router   /v2/space [get]
+// @Router   /v1/space [get]
 func (ctl *SpaceRestfulController) List(ctx *gin.Context) {
 	var req restfulReqToListSpaces
 
