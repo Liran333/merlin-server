@@ -22,19 +22,24 @@ func addRouteForSpaceController(
 	r *gin.RouterGroup,
 	ctl *SpaceController,
 	l middleware.OperationLog,
+	rl middleware.RateLimiter,
 ) {
 	m := ctl.userMiddleWare
 
-	r.POST(`/v1/space`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, ctl.Create)
-	r.DELETE("/v1/space/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, ctl.Delete)
-	r.PUT("/v1/space/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, ctl.Update)
+	r.POST(`/v1/space`, m.Write,
+		userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, rl.CheckLimit, ctl.Create)
+	r.DELETE("/v1/space/:id", m.Write,
+		userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, rl.CheckLimit, ctl.Delete)
+	r.PUT("/v1/space/:id", m.Write,
+		userctl.CheckMail(ctl.userMiddleWare, ctl.user), l.Write, rl.CheckLimit, ctl.Update)
 }
 
 // SpaceController is a struct that contains the necessary dependencies for handling space-related operations.
 type SpaceController struct {
-	appService     app.SpaceAppService
-	userMiddleWare middleware.UserMiddleWare
-	user           userapp.UserService
+	appService     			app.SpaceAppService
+	userMiddleWare 			middleware.UserMiddleWare
+	user           			userapp.UserService
+	rateLimitMiddleWare 	middleware.RateLimiter
 }
 
 // @Summary  Create

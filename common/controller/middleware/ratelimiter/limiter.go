@@ -25,13 +25,17 @@ import (
 
 const (
 	userIdParsed = "user_id"
+	defaultClientPoolSize = 10
+	defaultIdleTimeOutNum = 30
+	RequestNumPerSec = 10
+	BurstNumPerSec = 10
 )
 
 var (
-	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "request is over limit")
+	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests”")
 )
 
-// InitRateLimiter creates a new instance of the operationLog struct.
+// InitRateLimiter creates a new instance of the rateLimiter struct.
 func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 	// Initialize a redis client using go-redis
 	client := &redis.Client{}
@@ -47,13 +51,13 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 		}
 
 		tlsConfig := &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // #nosec G402
 			RootCAs:            pool,
 		}
 
 		client = redis.NewClient(&redis.Options{
-			PoolSize:    10, // default
-			IdleTimeout: 30 * time.Second,
+			PoolSize:    defaultClientPoolSize, // default
+			IdleTimeout: defaultIdleTimeOutNum * time.Second,
 			DB:          cfg.DB,
 			Addr:        cfg.Address,
 			Password:    cfg.Password,
@@ -61,8 +65,8 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 		})
 	} else {
 		client = redis.NewClient(&redis.Options{
-			PoolSize:    10, // default
-			IdleTimeout: 30 * time.Second,
+			PoolSize:    defaultClientPoolSize, // default
+			IdleTimeout: defaultIdleTimeOutNum * time.Second,
 			DB:          cfg.DB,
 			Addr:        cfg.Address,
 			Password:    cfg.Password,
@@ -71,24 +75,22 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 	// Setup store
 	store, err := goredisstore.NewCtx(client, "api-rate-limit:")
 	if err != nil {
-		// TODO
-		logrus.Infof("new redis client err:%s", err)
+		logrus.Infof("get new redis client err:%s", err)
 		return nil
 	}
 	// Setup quota
 	quota := throttled.RateQuota{
-		MaxRate:  throttled.PerMin(1),
-		MaxBurst: 1,
+		MaxRate:  throttled.PerSec(RequestNumPerSec),
+		MaxBurst: BurstNumPerSec,
 	}
-	rateLimterCtx, err := throttled.NewGCRARateLimiterCtx(store, quota)
+	rateLimitCtx, err := throttled.NewGCRARateLimiterCtx(store, quota)
 	if err != nil {
-		// TODO
-		logrus.Infof("new rate store err:%s", err)
+		logrus.Errorf("get new rate store err:%s", err)
 		return nil
 	}
 
 	httpRateLimiter := &throttled.HTTPRateLimiterCtx{
-		RateLimiter: rateLimterCtx,
+		RateLimiter: rateLimitCtx,
 	}
 	return &rateLimiter{limitCli: httpRateLimiter}
 }
@@ -99,29 +101,23 @@ type rateLimiter struct {
 
 func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	v, ok := ctx.Get(userIdParsed)
-	logrus.Infof("get user is :%s, ok :%v", v, ok)
 	if !ok {
-		logrus.Infof("is checkout ok :%s", ok)
 		ctx.Next()
 		return
 	}
+
 	key := fmt.Sprintf("%v", v)
-
 	limited, _, err := rl.limitCli.RateLimiter.RateLimitCtx(ctx.Request.Context(), key, 1)
-
 	if err != nil {
-		// TODO
-		logrus.Infof("rate limit key:%s, err:%s", key, err)
+		logrus.Errorf("check limit is err:%s", err)
+		ctx.Abort()
 		return
 	}
 
 	if limited {
-		logrus.Infof("rate limit key:%s", key)
 		commonctl.SendError(ctx, overLimitExec)
-		logrus.Infof("rate limit limit:%s", limited)
 		ctx.Abort()
 	} else {
 		ctx.Next()
 	}
-
 }
