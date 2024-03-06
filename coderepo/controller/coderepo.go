@@ -11,13 +11,14 @@ import (
 func AddRouterForCodeRepoController(
 	rg *gin.RouterGroup,
 	cr app.CodeRepoAppService,
-	m middleware.UserMiddleWare) {
+	m middleware.UserMiddleWare,
+	rl middleware.RateLimiter) {
 	ctl := CodeRepoController{
 		codeRepo:       cr,
 		userMiddleWare: m,
 	}
 
-	rg.GET("/v1/exists/:owner/:name", m.Read, ctl.Get)
+	rg.GET("/v1/exists/:owner/:name", m.Read, rl.CheckLimit, ctl.Get)
 }
 
 type CodeRepoController struct {

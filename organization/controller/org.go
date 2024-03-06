@@ -27,6 +27,7 @@ func AddRouterForOrgController(
 	user userapp.UserService,
 	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
+	rl middleware.RateLimiter,
 ) {
 	ctl := OrgController{
 		m:    m,
@@ -34,29 +35,41 @@ func AddRouterForOrgController(
 		user: user,
 	}
 
-	rg.PUT("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Update)
-	rg.POST("/v1/organization", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Create)
-	rg.GET("/v1/organization/:name", m.Optional, ctl.Get)
-	rg.GET("/v1/organization", m.Optional, ctl.List)
-	rg.POST("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Leave)
-	rg.DELETE("/v1/organization/:name", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.Delete)
-	rg.HEAD("/v1/name", m.Read, ctl.Check)
+	rg.PUT("/v1/organization/:name", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Update)
+	rg.POST("/v1/organization", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Create)
+	rg.GET("/v1/organization/:name", m.Optional, rl.CheckLimit, ctl.Get)
+	rg.GET("/v1/organization", m.Optional, rl.CheckLimit, ctl.List)
+	rg.POST("/v1/organization/:name", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Leave)
+	rg.DELETE("/v1/organization/:name", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Delete)
+	rg.HEAD("/v1/name", m.Read, rl.CheckLimit, ctl.Check)
 
-	rg.POST("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.InviteMember)
-	rg.PUT("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.AcceptInvite)
-	rg.GET("/v1/invite", m.Read, ctl.ListInvitation)
-	rg.DELETE("/v1/invite", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveInvitation)
+	rg.POST("/v1/invite", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.InviteMember)
+	rg.PUT("/v1/invite", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.AcceptInvite)
+	rg.GET("/v1/invite", m.Read, rl.CheckLimit, ctl.ListInvitation)
+	rg.DELETE("/v1/invite", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveInvitation)
 
-	rg.POST("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RequestMember)
-	rg.PUT("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.ApproveRequest)
-	rg.GET("/v1/request", m.Read, ctl.ListRequests)
-	rg.DELETE("/v1/request", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveRequest)
+	rg.POST("/v1/request", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RequestMember)
+	rg.PUT("/v1/request", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.ApproveRequest)
+	rg.GET("/v1/request", m.Read, rl.CheckLimit, ctl.ListRequests)
+	rg.DELETE("/v1/request", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveRequest)
 
-	rg.DELETE("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.RemoveMember)
-	rg.GET("/v1/organization/:name/member", m.Optional, ctl.ListMember)
-	rg.PUT("/v1/organization/:name/member", m.Write, userctl.CheckMail(ctl.m, ctl.user), l.Write, ctl.EditMember)
+	rg.DELETE("/v1/organization/:name/member", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveMember)
+	rg.GET("/v1/organization/:name/member", m.Optional, rl.CheckLimit, ctl.ListMember)
+	rg.PUT("/v1/organization/:name/member", m.Write,
+		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.EditMember)
 
-	rg.GET("/v1/account/:name", m.Optional, ctl.GetUser)
+	rg.GET("/v1/account/:name", m.Optional, rl.CheckLimit, ctl.GetUser)
 }
 
 // OrgController is a struct that contains the necessary dependencies for organization-related operations.

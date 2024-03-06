@@ -46,6 +46,7 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 		services.userMiddleWare,
 		services.operationLog,
 		services.userApp,
+		services.rateLimiterMiddleWare,
 	)
 }
 

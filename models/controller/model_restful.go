@@ -20,6 +20,7 @@ func AddRouteForModelRestfulController(
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
 	u userapp.UserService,
+	rl middleware.RateLimiter,
 ) {
 	ctl := ModelRestfulController{
 		ModelController: ModelController{
@@ -31,8 +32,8 @@ func AddRouteForModelRestfulController(
 
 	addRouteForModelController(r, &ctl.ModelController, l)
 
-	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
-	r.GET("/v1/model", m.Optional, ctl.List)
+	r.GET("/v1/model/:owner/:name", m.Optional, rl.CheckLimit, ctl.Get)
+	r.GET("/v1/model", m.Optional, rl.CheckLimit, ctl.List)
 }
 
 // ModelRestfulController is a struct that holds the app service for model restful operations.

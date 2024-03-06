@@ -52,6 +52,7 @@ func setRouterOfCodeRepo(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.codeRepoApp,
 		services.userMiddleWare,
+		services.rateLimiterMiddleWare,
 	)
 }
 
@@ -69,6 +70,7 @@ func setRouterOfBranchRestful(rg *gin.RouterGroup, services *allServices) {
 		),
 		services.userMiddleWare,
 		services.operationLog,
+		services.rateLimiterMiddleWare,
 	)
 }
 

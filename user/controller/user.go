@@ -27,6 +27,7 @@ func AddRouterForUserController(
 	repo userrepo.User,
 	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
+	rl middleware.RateLimiter,
 ) {
 	ctl := UserController{
 		repo: repo,
@@ -34,18 +35,20 @@ func AddRouterForUserController(
 		m:    m,
 	}
 
-	rg.PUT("/v1/user", m.Write, l.Write, ctl.Update)
-	rg.GET("/v1/user", m.Read, ctl.Get)
-	rg.DELETE("/v1/user", m.Write, l.Write, ctl.RequestDelete)
+	rg.PUT("/v1/user", m.Write, l.Write, rl.CheckLimit, ctl.Update)
+	rg.GET("/v1/user", m.Read, rl.CheckLimit, ctl.Get)
+	rg.DELETE("/v1/user", m.Write, l.Write, rl.CheckLimit, ctl.RequestDelete)
 
-	rg.POST("/v1/user/token", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.CreatePlatformToken)
-	rg.DELETE("/v1/user/token/:name", m.Write, CheckMail(ctl.m, ctl.s), l.Write, ctl.DeletePlatformToken)
-	rg.GET("/v1/user/token", m.Read, ctl.GetTokenInfo)
+	rg.POST("/v1/user/token", m.Write,
+		CheckMail(ctl.m, ctl.s), l.Write, rl.CheckLimit, ctl.CreatePlatformToken)
+	rg.DELETE("/v1/user/token/:name", m.Write,
+		CheckMail(ctl.m, ctl.s), l.Write, rl.CheckLimit, ctl.DeletePlatformToken)
+	rg.GET("/v1/user/token", m.Read, rl.CheckLimit, ctl.GetTokenInfo)
 
-	rg.POST("/v1/user/email/bind", m.Write, l.Write, ctl.BindEmail)
-	rg.POST("/v1/user/email/send", m.Write, l.Write, ctl.SendEmail)
+	rg.POST("/v1/user/email/bind", m.Write, l.Write, rl.CheckLimit, ctl.BindEmail)
+	rg.POST("/v1/user/email/send", m.Write, l.Write, rl.CheckLimit, ctl.SendEmail)
 
-	rg.PUT("/v1/user/privacy", m.Write, l.Write, ctl.PrivacyRevoke)
+	rg.PUT("/v1/user/privacy", m.Write, l.Write, rl.CheckLimit, ctl.PrivacyRevoke)
 }
 
 // UserController is a struct that holds references to user repository, user service, and user middleware.
