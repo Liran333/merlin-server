@@ -175,5 +175,5 @@ kafka:
   skip_cert_verify: true
 
 ratelimit:
-    request_num: 10
-    burst_num: 10
+    request_num: 100
+    burst_num: 100
