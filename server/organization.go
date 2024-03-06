@@ -47,5 +47,6 @@ func setRouterOfOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServic
 		services.userApp,
 		services.operationLog,
 		services.userMiddleWare,
+		services.rateLimiterMiddleWare,
 	)
 }

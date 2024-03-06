@@ -20,14 +20,15 @@ func AddRouteForBranchRestfulController(
 	s app.BranchAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
+	rl middleware.RateLimiter,
 ) {
 	ctl := BranchRestfulController{
 		userMiddleWare: m,
 		appService:     s,
 	}
 
-	r.POST("/v1/branch/:type/:owner/:repo", m.Write, l.Write, ctl.Create)
-	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Write, l.Write, ctl.Delete)
+	r.POST("/v1/branch/:type/:owner/:repo", m.Write, l.Write, rl.CheckLimit, ctl.Create)
+	r.DELETE("/v1/branch/:type/:owner/:repo/:branch", m.Write, l.Write, rl.CheckLimit, ctl.Delete)
 }
 
 // BranchRestfulController is a struct that holds user middleware and app service for branch operations.

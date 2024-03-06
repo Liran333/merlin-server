@@ -53,6 +53,7 @@ func setRouterOfUser(v1 *gin.RouterGroup, cfg *config.Config, services *allServi
 		services.userRepo,
 		services.operationLog,
 		services.userMiddleWare,
+		services.rateLimiterMiddleWare,
 	)
 }
 
