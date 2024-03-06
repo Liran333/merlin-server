@@ -43,15 +43,6 @@ const (
 	// ErrorCodeAccessTokenInvalid This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 
-	// ErrorCodeLoginIdInvalid is const
-	ErrorCodeLoginIdInvalid = "login_id_invalid"
-
-	// ErrorCodeLoginIdMissing is const
-	ErrorCodeLoginIdMissing = "login_id_missing"
-
-	// ErrorCodeLoginIdNotFound is const
-	ErrorCodeLoginIdNotFound = "login_id_not_found"
-
 	// ErrorCodeCSRFTokenMissing is const
 	ErrorCodeCSRFTokenMissing = "csrf_token_missing" // #nosec G101
 
@@ -71,7 +62,7 @@ const (
 	ErrorCodeSessionIdMissing = "session_id_missing"
 
 	// ErrorCodeSessionNotFound is const
-	ErrorCodeSessionNotFound = "session_id_not_found"
+	ErrorCodeSessionNotFound = "session_not_found"
 
 	// ErrorCodeBranchExist is const
 	ErrorCodeBranchExist = "branch_exist"

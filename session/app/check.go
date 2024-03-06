@@ -49,7 +49,7 @@ func (s *sessionAppService) check(cmd *CmdToCheck) (
 	session, err = s.sessionFastRepo.Find(cmd.SessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeSessionIdInvalid, "no session id")
+			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session")
 		}
 
 		return
