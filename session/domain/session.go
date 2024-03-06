@@ -51,7 +51,7 @@ func (s *Session) Invalidate() {
 	s.IP = ""
 }
 
-// Invalid checks if the login event is invalid.
+// IsInvalid checks if the login event is invalid.
 func (s *Session) IsInvalid() bool {
 	return s.IP == ""
 }

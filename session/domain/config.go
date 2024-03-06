@@ -40,7 +40,7 @@ func (cfg *Config) SetDefault() {
 	}
 
 	if cfg.SessionTimeout <= 0 {
-		cfg.SessionTimeout = 60 * 60
+		cfg.SessionTimeout = seconds
 	}
 
 	cfg.csrfTokenTimeout = time.Duration(cfg.CSRFTokenTimeout) * time.Second

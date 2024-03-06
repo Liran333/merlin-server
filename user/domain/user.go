@@ -25,11 +25,14 @@ type OrgRole = string
 type UserType = int
 
 const (
-	tokenPermDenied               = "token permission denied"
-	tokenInvalid                  = "token invalid"
-	tokenExpired                  = "token expired"
-	UserTypeUser         UserType = 0 // UserTypeUser is const
-	UserTypeOrganization UserType = 1 // UserTypeOrganization is const
+	tokenPermDenied = "token permission denied"
+	tokenInvalid    = "token invalid"
+	tokenExpired    = "token expired"
+
+	// UserTypeUser is const
+	UserTypeUser UserType = 0
+	// UserTypeOrganization is const
+	UserTypeOrganization UserType = 1
 	iter                          = 10000
 	keyLen                        = 32 // keyLen is const
 )

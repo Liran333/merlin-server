@@ -29,6 +29,7 @@ type CSRFTokenRepositoryAdapter interface {
 	Find(primitive.RandomId) (domain.CSRFToken, error)
 }
 
+// SessionFastRepositoryAdapter defines the interface for an adapter that interacts with a fast session repository.
 type SessionFastRepositoryAdapter interface {
 	Add(*domain.Session) error
 	Save(*domain.Session) error

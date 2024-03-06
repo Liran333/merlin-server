@@ -241,7 +241,8 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	}
 
 	if !can {
-		return allerror.New(allerror.ErrorCodeOrgExistResource, "can't delete the organization, while some repos still existed")
+		return allerror.New(allerror.ErrorCodeOrgExistResource,
+			"can't delete the organization, while some repos still existed")
 	}
 
 	err = org.member.DeleteByOrg(o.Account)
@@ -396,7 +397,8 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 	return
 }
 
-func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account, roles []primitive.Role) (orgIDs []int64, err error) {
+func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account,
+	roles []primitive.Role) (orgIDs []int64, err error) {
 	members, err := org.member.GetByUserAndRoles(user, roles)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
