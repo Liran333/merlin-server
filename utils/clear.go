@@ -28,7 +28,7 @@ func ClearStringMemory(s ...string) {
 
 // clearStringMemory clears the memory of a string by setting each byte to 0.
 func clearStringMemory(s string) {
-	if len(s) <= 1 {
+	if len(s) < 1 {
 		return
 	}
 
