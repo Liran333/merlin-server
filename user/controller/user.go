@@ -335,10 +335,10 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, "privacy revoke")
 
-	if err := ctl.s.PrivacyRevoke(user); err != nil {
+	if idToken, err := ctl.s.PrivacyRevoke(user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx, nil)
+		commonctl.SendRespOfPut(ctx, revokePrivacyInfo{IdToken: idToken})
 	}
 }
 

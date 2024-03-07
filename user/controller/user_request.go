@@ -190,3 +190,7 @@ func (req *tokenVerifyRequest) ToCmd() (string, primitive.TokenPerm, error) {
 type tokenVerifyResp struct {
 	Account string `json:"account"`
 }
+
+type revokePrivacyInfo struct {
+	IdToken string `json:"id_token"`
+}

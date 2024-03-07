@@ -70,7 +70,7 @@ type UserService interface {
 	SendBindEmail(*CmdToSendBindEmail) error
 	VerifyBindEmail(*CmdToVerifyBindEmail) error
 
-	PrivacyRevoke(user primitive.Account) error
+	PrivacyRevoke(user primitive.Account) (string, error)
 }
 
 // NewUserService creates a new UserService instance with the provided dependencies.
@@ -639,19 +639,24 @@ func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, er
 }
 
 // PrivacyRevoke revokes the privacy settings for a user.
-func (s userService) PrivacyRevoke(user primitive.Account) error {
+func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 	sessions, err := s.session.FindByUser(user)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if len(sessions) == 0 || sessions[0].UserId == "" {
-		return fmt.Errorf("user id not found")
+	if len(sessions) == 0 {
+		return "", allerror.NewNoPermission("session not found")
 	}
 
-	if err = s.oidc.PrivacyRevoke(sessions[0].UserId); err != nil {
-		return err
+	ss := sessions[0]
+	if ss.UserId == "" || ss.IdToken == "" {
+		return "", fmt.Errorf("user info not found")
 	}
 
-	return s.sessionClear.ClearAllSession(user)
+	if err = s.oidc.PrivacyRevoke(ss.UserId); err != nil {
+		return "", err
+	}
+
+	return ss.IdToken, s.sessionClear.ClearAllSession(user)
 }
