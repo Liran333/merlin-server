@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package e2e
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -533,6 +534,118 @@ func (s *SuiteInvite) TestInviteOrg() {
 
 	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
+}
+
+// TestInviteListByAdmin used for testing
+// 只有管理员可以查看组织中的邀请信息
+func (s *SuiteInvite) TestInviteListByAdmin() {
+	_, r, err := Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(context.Background(), &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// WRITE角色不能列出成员
+	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    "test2",
+		Role:    "write",
+		Msg:     "invite me ASAP",
+	})
+
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+		OrgName: s.name,
+	})
+
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// READ角色不能列出成员
+	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+		Role: "read",
+		User: "test2",
+	}, s.name)
+
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
+		User: "test2",
+	}, s.name)
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestInviteOrg used for testing
+// 用户只能查看自己的邀请信息
+func (s *SuiteInvite) TestInviteListBySelf() {
+	_, r, err := Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		Invitee: optional.NewString("test2"),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		Invitee: optional.NewString("test1"),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		Inviter: optional.NewString("test2"),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		Inviter: optional.NewString("test1"),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	_, r, err = Api.OrganizationApi.V1InviteGet(Auth2, &swagger.OrganizationApiV1InviteGetOpts{
+		OrgName: optional.NewString(s.name),
+	})
+
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
 }
 
 // TestInvite used for testing

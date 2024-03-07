@@ -14,6 +14,7 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/organization/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -523,8 +524,22 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	}
 
 	cmd := req.toCmd(user)
+	if err := cmd.Validate(); err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
 
-	if dtos, err := ctl.org.ListInvitation(&cmd); err != nil {
+		return
+	}
+
+	var dtos []app.ApproveDTO
+	var err error
+	if cmd.Org != nil {
+		dtos, err = ctl.org.ListInvitationByOrg(user, cmd.Org, cmd.Status)
+	} else if cmd.Invitee != nil {
+		dtos, err = ctl.org.ListInvitationByInvitee(user, cmd.Invitee, cmd.Status)
+	} else if cmd.Inviter != nil {
+		dtos, err = ctl.org.ListInvitationByInviter(user, cmd.Inviter, cmd.Status)
+	}
+	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, dtos)

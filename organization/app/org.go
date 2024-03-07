@@ -48,7 +48,9 @@ type OrgService interface {
 	AcceptInvite(*domain.OrgAcceptInviteCmd) (ApproveDTO, error)
 	RevokeInvite(*domain.OrgRemoveInviteCmd) (ApproveDTO, error)
 	ListMemberReq(*domain.OrgMemberReqListCmd) ([]MemberRequestDTO, error)
-	ListInvitation(*domain.OrgInvitationListCmd) ([]ApproveDTO, error)
+	ListInvitationByInvitee(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
+	ListInvitationByInviter(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
+	ListInvitationByOrg(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
 	AddMember(*domain.OrgAddMemberCmd) error
 	RemoveMember(*domain.OrgRemoveMemberCmd) error
 	EditMember(*domain.OrgEditMemberCmd) (MemberDTO, error)
@@ -592,7 +594,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
 	if err != nil {
-		return fmt.Errorf("failed to get member by org %s and user %s, %w", cmd.Org.Account(),
+		return fmt.Errorf("failed to get member when remove member by org %s and user %s, %w", cmd.Org.Account(),
 			cmd.Account.Account(), err)
 	}
 
@@ -619,7 +621,7 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
 	if err != nil {
-		err = fmt.Errorf("failed to get member by org:%s and user:%s, %w",
+		err = fmt.Errorf("failed to get member when edit member by org:%s and user:%s, %w",
 			cmd.Org.Account(), cmd.Account.Account(), err)
 		return
 	}
@@ -728,7 +730,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 func (org *orgService) hasMember(o, user primitive.Account) bool {
 	_, err := org.member.GetByOrgAndUser(o.Account(), user.Account())
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
-		logrus.Errorf("failed to get member by org:%s and user:%s, %s", o.Account(), user.Account(), err)
+		logrus.Errorf("failed to get member when check existence by org:%s and user:%s, %s", o.Account(), user.Account(), err)
 		return true
 	}
 
@@ -1003,19 +1005,26 @@ func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []Me
 		return
 	}
 
+	if cmd.Actor == nil {
+		err = allerror.NewNoPermission("anno can not list requests")
+		return
+	}
+
 	if err = cmd.Validate(); err != nil {
 		return
 	}
 
-	if cmd.Actor != nil && cmd.Org != nil {
+	// 只有管理员可以查询组织内的申请
+	if cmd.Org != nil {
 		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
 		if err != nil {
 			return
 		}
 	}
 
-	if cmd.Requester != nil && cmd.Actor != nil && cmd.Org == nil && cmd.Actor.Account() != cmd.Requester.Account() {
-		err = allerror.NewNoPermission("can't list member request of others")
+	// 不能列出其他人发出的申请
+	if cmd.Requester != nil && cmd.Org == nil && cmd.Actor.Account() != cmd.Requester.Account() {
+		err = allerror.NewNoPermission("can't list member request of other user")
 		return
 	}
 
@@ -1089,56 +1098,89 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 	return
 }
 
-// ListInvitation lists the invitations based on the given command.
-func (org *orgService) ListInvitation(cmd *domain.OrgInvitationListCmd) (dtos []ApproveDTO, err error) {
-	if cmd == nil {
-		err = allerror.NewInvalidParam("account is nil")
-		return
-	}
-
-	if err = cmd.Validate(); err != nil {
-		return
-	}
-
-	if cmd.Org != nil {
-		if _, err = org.repo.GetOrgByName(cmd.Org); err != nil {
-			if commonrepo.IsErrorResourceNotExists(err) {
-				err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
-			}
-
-			return
+// ListInvitationByOrg lists the invitations based on the org.
+func (org *orgService) ListInvitationByOrg(actor, orgName primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+	if _, err = org.repo.GetOrgByName(orgName); err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", orgName.Account()))
 		}
+
+		return
 	}
 
 	// permission check
-	if cmd.Org != nil && cmd.Actor != nil {
-		err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeInvite, primitive.ActionRead)
-		if err != nil {
-			return
-		}
-	}
-
-	if cmd.Actor != nil && cmd.Invitee != nil && cmd.Org == nil && cmd.Actor.Account() != cmd.Invitee.Account() {
-		err = allerror.NewNoPermission("can not list invitation for other user")
+	// check role when list invitations in a org
+	err = org.perm.Check(actor, orgName, primitive.ObjTypeInvite, primitive.ActionRead)
+	if err != nil {
 		return
 	}
 
-	if cmd.Invitee != nil {
-		if cmd.Invitee.Account() != cmd.Actor.Account() {
-			err = allerror.NewNoPermission("can not list invitation by invitee for other user")
-		}
-	}
-
-	if cmd.Inviter != nil {
-		if cmd.Inviter.Account() != cmd.Actor.Account() {
-			err = allerror.NewNoPermission("can not list invitation by inviter for other user")
-		}
-	}
-
-	o, err := org.invite.ListInvitation(cmd)
+	o, err := org.invite.ListInvitation(&domain.OrgInvitationListCmd{
+		OrgNormalCmd: domain.OrgNormalCmd{
+			Org: orgName,
+		},
+		Status: status,
+	})
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.Org.Account()))
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", orgName.Account()))
+		}
+
+		return
+	}
+
+	dtos = make([]ApproveDTO, len(o))
+	for i := range o {
+		dtos[i] = ToApproveDTO(&o[i], org.user)
+	}
+
+	return
+}
+
+// ListInvitationByInviter lists the invitations based on the inviter.
+func (org *orgService) ListInvitationByInviter(actor, inviter primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+	// can't list other's sent invitations
+	if inviter != actor {
+		err = allerror.NewNoPermission("can not list invitation sent by other user")
+		return
+	}
+
+	o, err := org.invite.ListInvitation(&domain.OrgInvitationListCmd{
+		Inviter: inviter,
+		Status:  status,
+	})
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", inviter))
+		}
+
+		return
+	}
+
+	dtos = make([]ApproveDTO, len(o))
+	for i := range o {
+		dtos[i] = ToApproveDTO(&o[i], org.user)
+	}
+
+	return
+}
+
+// ListInvitationByInvitee lists the invitations based on the invitee.
+func (org *orgService) ListInvitationByInvitee(actor, invitee primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+	// permission check
+	// can't list other's received invitations
+	if invitee != actor {
+		err = allerror.NewNoPermission("can not list invitation received by other user")
+		return
+	}
+
+	o, err := org.invite.ListInvitation(&domain.OrgInvitationListCmd{
+		Invitee: invitee,
+		Status:  status,
+	})
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", invitee))
 		}
 
 		return

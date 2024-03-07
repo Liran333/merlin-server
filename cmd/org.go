@@ -347,7 +347,7 @@ var inviteListCmd = &cobra.Command{
 		req.Status = domain.ApproveStatus(viper.GetString("invite.list.status"))
 		req.Inviter = inviter
 
-		invites, err = orgAppService.ListInvitation(req)
+		invites, err = orgAppService.ListInvitationByOrg(req.Actor, orgName, req.Status)
 
 		if err != nil {
 			logrus.Fatalf("list invites failed :%s", err.Error())

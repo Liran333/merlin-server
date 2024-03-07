@@ -474,8 +474,25 @@ func (cmd OrgInvitationListCmd) Validate() error {
 		return allerror.NewInvalidParam("invalid actor")
 	}
 
-	if cmd.Org == nil && cmd.Invitee == nil && cmd.Inviter == nil {
-		return allerror.NewInvalidParam("When list invitation, org_name/invitee/inviter can't be all empty")
+	count := 0
+	if cmd.Org != nil {
+		count++
+	}
+
+	if cmd.Invitee != nil {
+		count++
+	}
+
+	if cmd.Inviter != nil {
+		count++
+	}
+
+	if count > 1 {
+		return allerror.NewInvalidParam("Only one of the org_name/invitee/inviter can be used")
+	}
+
+	if count == 0 {
+		return allerror.NewInvalidParam("When list member invitation, org_name/invitee/inviter can't be all empty")
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
