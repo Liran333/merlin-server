@@ -12,11 +12,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	giteaclient "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 )
-
-const msgRepoNotExist = "The target couldn't be found."
 
 type UserInfoAdapter interface {
 	GetPlatformUserInfo(primitive.Account) (string, error)
@@ -93,13 +90,4 @@ func (adapter *codeRepoAdapter) Save(index *domain.CodeRepoIndex, repo *domain.C
 	)
 
 	return err
-}
-
-func (adapter *codeRepoAdapter) Get(index *domain.CodeRepoIndex) (*domain.Repository, error) {
-	repo, _, err := adapter.client.GetRepo(index.Owner.Account(), index.Name.MSDName())
-	if err != nil && err.Error() == msgRepoNotExist {
-		err = commonrepo.NewErrorResourceNotExists(err)
-	}
-
-	return repo, err
 }

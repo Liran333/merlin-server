@@ -39,6 +39,14 @@ func initCodeRepo(cfg *config.Config, services *allServices) error {
 	return nil
 }
 
+func initResource(services *allServices) {
+	services.resourceApp = app.NewResourceAppService(
+		resourceadapterimpl.NewResourceAdapterImpl(
+			modelrepositoryadapter.ModelAdapter(),
+			spacerepositoryadapter.SpaceAdapter(),
+		))
+}
+
 func setRouterOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForCodeRepoFileController(
 		rg,
@@ -50,7 +58,7 @@ func setRouterOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
 func setRouterOfCodeRepo(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForCodeRepoController(
 		rg,
-		services.codeRepoApp,
+		services.resourceApp,
 		services.userMiddleWare,
 		services.rateLimiterMiddleWare,
 	)

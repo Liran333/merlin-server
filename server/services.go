@@ -27,12 +27,13 @@ type allServices struct {
 
 	sessionApp sessionapp.SessionAppService
 
+	resourceApp     coderepoapp.ResourceAppService
 	codeRepoApp     coderepoapp.CodeRepoAppService
 	codeRepoFileApp coderepoapp.CodeRepoFileAppService
 
-	operationLog   middleware.OperationLog
-	securityLog    middleware.SecurityLog
-	userMiddleWare middleware.UserMiddleWare
+	operationLog          middleware.OperationLog
+	securityLog           middleware.SecurityLog
+	userMiddleWare        middleware.UserMiddleWare
 	rateLimiterMiddleWare middleware.RateLimiter
 
 	modelApp modelapp.ModelAppService
@@ -66,6 +67,9 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	if err = initSpaceApp(cfg, &services); err != nil {
 		return
 	}
+
+	// initResource depends on initModel and initSpace
+	initResource(&services)
 
 	return
 }

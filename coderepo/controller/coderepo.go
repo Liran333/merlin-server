@@ -10,11 +10,12 @@ import (
 
 func AddRouterForCodeRepoController(
 	rg *gin.RouterGroup,
-	cr app.CodeRepoAppService,
+	r app.ResourceAppService,
 	m middleware.UserMiddleWare,
-	rl middleware.RateLimiter) {
+	rl middleware.RateLimiter,
+) {
 	ctl := CodeRepoController{
-		codeRepo:       cr,
+		coderepo:       r,
 		userMiddleWare: m,
 	}
 
@@ -22,7 +23,7 @@ func AddRouterForCodeRepoController(
 }
 
 type CodeRepoController struct {
-	codeRepo       app.CodeRepoAppService
+	coderepo       app.ResourceAppService
 	userMiddleWare middleware.UserMiddleWare
 }
 
@@ -40,7 +41,7 @@ func (ctl *CodeRepoController) Get(ctx *gin.Context) {
 		commonctl.SendBadRequestParam(ctx, err)
 	}
 
-	data, err := ctl.codeRepo.IsRepoExist(codeRepo)
+	data, err := ctl.coderepo.IsRepoExist(codeRepo)
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
 	} else {

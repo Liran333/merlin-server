@@ -14,6 +14,4 @@ type RepoAdapter interface {
 	Add(*domain.CodeRepo, bool) error
 	Delete(*domain.CodeRepoIndex) error
 	Save(*domain.CodeRepoIndex, *domain.CodeRepo) error
-
-	Get(*domain.CodeRepoIndex) (*domain.Repository, error)
 }
