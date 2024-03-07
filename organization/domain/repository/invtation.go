@@ -20,4 +20,5 @@ type Approve interface {
 	// DeleteRequestByOrg(primitive.Account) error
 	ListInvitation(*domain.OrgInvitationListCmd) ([]domain.Approve, error)
 	ListRequests(*domain.OrgMemberReqListCmd) ([]domain.MemberRequest, error)
+	UpdateAllApproveStatus(primitive.Account, primitive.Account, domain.ApproveStatus) error
 }

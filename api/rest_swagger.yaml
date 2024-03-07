@@ -772,7 +772,8 @@ paths:
         in: query
         name: username
         type: string
-      - description: filter by roles
+      - collectionFormat: csv
+        description: filter by roles
         in: query
         items:
           type: string
@@ -978,10 +979,8 @@ paths:
         schema:
           $ref: '#/definitions/controller.OrgRevokeMemberReqRequest'
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
+        "204":
+          description: No Content
       security:
       - Bearer: []
       summary: RevokeMember

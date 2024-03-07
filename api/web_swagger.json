@@ -584,6 +584,7 @@
                         "items": {
                             "type": "string"
                         },
+                        "collectionFormat": "csv",
                         "description": "filter by roles",
                         "name": "roles",
                         "in": "query"
@@ -1030,11 +1031,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }

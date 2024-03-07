@@ -787,13 +787,12 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 	request.OrgId = o.Id
 	request.UserId = requester.Id
 
-	_, err = org.invite.AddRequest(request)
-
+	approve, err := org.invite.AddRequest(request)
 	if err != nil {
 		return
 	}
 
-	dto = ToMemberRequestDTO(request, org.user)
+	dto = ToMemberRequestDTO(&approve, org.user)
 
 	return
 }
@@ -872,6 +871,9 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 
 	dto = ToApproveDTO(&invite, org.user)
 
+	// Update all requests and invites status pending to approved
+	err = org.invite.UpdateAllApproveStatus(approve.Username, approve.OrgName, approve.Status)
+
 	return
 }
 
@@ -934,6 +936,12 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 		Type:   domain.InviteTypeRequest,
 		Role:   request.Role,
 	})
+	if err != nil {
+		return
+	}
+
+	// Update all requests and invites status pending to approved
+	err = org.invite.UpdateAllApproveStatus(request.Username, request.OrgName, request.Status)
 
 	return
 }

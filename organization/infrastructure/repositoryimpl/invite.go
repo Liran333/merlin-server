@@ -68,32 +68,11 @@ func (impl *inviteRepoImpl) ListInvitation(cmd *domain.OrgInvitationListCmd) (ap
 
 // AddInvite adds a new invite to the database.
 func (impl *inviteRepoImpl) AddInvite(o *domain.Approve) (new domain.Approve, err error) {
-	// Build query to check for an existing invitation
-	query := impl.DB().Model(&Approve{}).
-		Where(impl.EqualQuery(fieldUser), o.Username).
-		Where(impl.EqualQuery(fieldOrg), o.OrgName).
-		Where(impl.EqualQuery(fieldInviter), o.Inviter).
-		Where(impl.EqualQuery(fieldStatus), o.Status)
-
-	// Attempt to find an existing record
-	var existingInvite Approve
-	err = query.First(&existingInvite).Error
-	if err == nil {
-		// Found an existing record, delete it
-		if deleteErr := impl.DB().Delete(&existingInvite).Error; deleteErr != nil {
-			return domain.Approve{}, deleteErr
-		}
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		// An error occurred other than "record not found", return the error
-		return domain.Approve{}, err
-	}
-
-	// Record not found or deleted, proceed to add new one
 	o.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toApproveDoc(o)
 
-	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
-	if err != nil {
+	// Update existed record or add a new record, keep only one approve record
+	if err = impl.saveAndKeepOneApprove(&do); err != nil {
 		return domain.Approve{}, err
 	}
 
@@ -140,9 +119,9 @@ func (impl *inviteRepoImpl) AddRequest(r *domain.MemberRequest) (new domain.Memb
 	r.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toRequestDoc(r)
 
-	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
-	if err != nil {
-		return
+	// Update existed record or add a new record, keep only one approve record
+	if err = impl.saveAndKeepOneApprove(&do); err != nil {
+		return domain.MemberRequest{}, err
 	}
 
 	new = toMemberRequest(&do)
@@ -208,4 +187,41 @@ func (impl *inviteRepoImpl) ListRequests(cmd *domain.OrgMemberReqListCmd) (rs []
 	}
 
 	return
+}
+
+// saveAndKeepOneApprove save a new member request or invite, keep only one record.
+func (impl *inviteRepoImpl) saveAndKeepOneApprove(ap *Approve) error {
+	if ap == nil {
+		return errors.New("approve is nil")
+	}
+	// Build query to check for an existing invitation
+	query := impl.DB().Where(impl.EqualQuery(fieldUser), ap.Username).
+		Where(impl.EqualQuery(fieldOrg), ap.Orgname).
+		Where(impl.EqualQuery(fieldInviter), ap.Inviter).
+		Where(impl.EqualQuery(fieldStatus), ap.Status).
+		Where(impl.EqualQuery(fieldType), ap.Type)
+
+	// Attempt to find an existing record
+	var existingApprove Approve
+	err := query.First(&existingApprove).Error
+	if err == nil {
+		// Found an existing record, update it
+		ap.ID = existingApprove.ID
+		return impl.DB().Model(&Approve{CommonModel: postgresql.CommonModel{ID: existingApprove.ID}}).
+			Clauses(clause.Returning{}).Updates(&ap).Error
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// An error occurred other than "record not found", return the error
+		return err
+	}
+
+	return impl.DB().Clauses(clause.Returning{}).Create(&ap).Error
+}
+
+// UpdateAllApproveStatus updates all requests and invites status with pending status.
+func (impl *inviteRepoImpl) UpdateAllApproveStatus(user, org primitive.Account, status domain.ApproveStatus) error {
+	return impl.DB().Model(&Approve{}).Clauses(clause.Returning{}).
+		Where(impl.EqualQuery(fieldUser), user).
+		Where(impl.EqualQuery(fieldOrg), org).
+		Where(impl.EqualQuery(fieldStatus), domain.ApproveStatusPending).
+		Update(fieldStatus, status).Error
 }

@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	fieldID       = "id"
 	fieldName     = "name"
 	fieldOwner    = "owner"
 	fieldCount    = "count"

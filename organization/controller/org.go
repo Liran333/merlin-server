@@ -537,7 +537,7 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 // @Param    body  body  OrgRevokeMemberReqRequest  true  "body of the member request"
 // @Accept   json
 // @Security Bearer
-// @Success  200 {object}  commonctl.ResponseData
+// @Success  204
 // @Router   /v1/request [delete]
 func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
