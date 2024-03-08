@@ -10,6 +10,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 type userBasicInfoUpdateRequest struct {
@@ -137,7 +138,7 @@ type bindEmailRequest struct {
 }
 
 func (req *bindEmailRequest) action() string {
-	return fmt.Sprintf("bind email %s", req.Email)
+	return fmt.Sprintf("bind email %s", utils.AnonymizeEmail(req.Email))
 }
 
 func (req *bindEmailRequest) toCmd(user domain.Account) (cmd app.CmdToVerifyBindEmail, err error) {
@@ -158,7 +159,7 @@ type sendEmailRequest struct {
 }
 
 func (req *sendEmailRequest) action() string {
-	return fmt.Sprintf("send email verify code to %s", req.Email)
+	return fmt.Sprintf("send email verify code to %s", utils.AnonymizeEmail(req.Email))
 }
 
 func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEmail, err error) {

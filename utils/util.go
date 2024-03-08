@@ -7,6 +7,7 @@ package utils
 import (
 	"net/url"
 	"os"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	layout     = "2006-01-02"
-	timeLayout = "2006-01-02 15:04:05"
+	layout       = "2006-01-02"
+	timeLayout   = "2006-01-02 15:04:05"
+	anonymizeLen = 3
 )
 
 // LoadFromYaml reads a YAML file from the given path and unmarshals it into the provided interface.
@@ -77,4 +79,30 @@ func ExtractDomain(inputURL string) (string, error) {
 	domain := parsedURL.Hostname()
 
 	return domain, nil
+}
+
+// AnonymizeEmail Anonymized email information
+func AnonymizeEmail(email string) string {
+	if email == "" {
+		return email
+	}
+
+	atIndex := strings.Index(email, "@")
+	if atIndex == -1 {
+		return email
+	}
+
+	emailName := email[:atIndex]
+	if atIndex >= 0 {
+		replaceEmail := ""
+		if atIndex > anonymizeLen {
+			pre := len(emailName) - anonymizeLen
+			replaceEmail = emailName[:pre] + strings.Repeat("*", anonymizeLen)
+		} else {
+			replaceEmail = strings.Repeat("*", anonymizeLen)
+		}
+		return replaceEmail + email[atIndex:]
+	}
+
+	return email
 }

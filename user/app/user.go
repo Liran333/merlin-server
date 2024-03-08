@@ -545,7 +545,10 @@ func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (Tok
 		return TokenDTO{}, allerror.NewNoPermission("token not found")
 	}
 
-	return newTokenDTO(&token), nil
+	newToken := newTokenDTO(&token)
+	newToken.Token = ""
+
+	return newToken, nil
 }
 
 // SendBindEmail sends an email to bind the account.

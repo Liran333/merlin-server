@@ -15,7 +15,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
-	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -224,35 +223,12 @@ var userBindCmd = &cobra.Command{
 	},
 }
 
-var userListCmd = &cobra.Command{
-	Use: "list",
-	Run: func(cmd *cobra.Command, args []string) {
-		t := domain.UserTypeUser
-		us, _, err := userrepo.ListAccount(&repository.ListOption{Type: &t})
-		if err != nil {
-			logrus.Fatalf("list users failed :%s", err.Error())
-		}
-
-		for _, u := range us {
-			logrus.Infof("user %s", u.Account.Account())
-			logrus.Infof("email %s", u.Email.Email())
-			logrus.Infof("phone %s", u.Phone.PhoneNumber())
-			logrus.Infof("pwd %s", u.PlatformPwd)
-		}
-	},
-	PreRun: func(cmd *cobra.Command, args []string) {
-		initServer(configFile)
-		inittoken()
-	},
-}
-
 func init() {
 	userCmd.AddCommand(userAddCmd)
 	userCmd.AddCommand(userDelCmd)
 	userCmd.AddCommand(userGetCmd)
 	userCmd.AddCommand(userGetAvaCmd)
 	userCmd.AddCommand(userEditCmd)
-	userCmd.AddCommand(userListCmd)
 	userCmd.AddCommand(userBindCmd)
 	// 添加命令行参数
 	userAddCmd.Flags().StringP("name", "n", "", "user name")
