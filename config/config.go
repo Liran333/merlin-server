@@ -6,8 +6,9 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package config
 
 import (
-	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"os"
+
+	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 
 	redislib "github.com/opensourceways/redis-lib"
 
@@ -47,21 +48,21 @@ func LoadConfig(path string, cfg *Config, remove bool) error {
 type Config struct {
 	ReadHeaderTimeout int `json:"read_header_timeout"`
 
-	Git        	gitea.Config      `json:"gitea"`
-	Org        	orgdomain.Config  `json:"organization"`
-	User       	userdomain.Config `json:"user"`
-	Redis      	redislib.Config   `json:"redis"`
-	RateLimiter ratelimiter.Config`json:"ratelimit"`
-	Kafka      	kafka.Config      `json:"kafka"`
-	Model      	models.Config     `json:"model"`
-	Space      	space.Config      `json:"space"`
-	Session    	session.Config    `json:"session"`
-	SpaceApp   	spaceapp.Config   `json:"space_app"`
-	CodeRepo   	coderepo.Config   `json:"coderepo"`
-	Internal   	internal.Config   `json:"internal"`
-	Primitive  	primitive.Config  `json:"primitive"`
-	Postgresql 	postgresql.Config `json:"postgresql"`
-	Permission 	permission.Config `json:"permission"`
+	Git         gitea.Config       `json:"gitea"`
+	Org         orgdomain.Config   `json:"organization"`
+	User        userdomain.Config  `json:"user"`
+	Redis       redislib.Config    `json:"redis"`
+	RateLimiter ratelimiter.Config `json:"ratelimit"`
+	Kafka       kafka.Config       `json:"kafka"`
+	Model       models.Config      `json:"model"`
+	Space       space.Config       `json:"space"`
+	Session     session.Config     `json:"session"`
+	SpaceApp    spaceapp.Config    `json:"space_app"`
+	CodeRepo    coderepo.Config    `json:"coderepo"`
+	Internal    internal.Config    `json:"internal"`
+	Primitive   primitive.Config   `json:"primitive"`
+	Postgresql  postgresql.Config  `json:"postgresql"`
+	Permission  permission.Config  `json:"permission"`
 }
 
 // Init initializes the application using the configuration settings provided in the Config struct.
@@ -79,8 +80,6 @@ func (cfg *Config) Init() error {
 	cfg.CodeRepo.Init()
 
 	internal.Init(&cfg.Internal)
-
-	ratelimiter.Init(&cfg.RateLimiter)
 
 	return nil
 }

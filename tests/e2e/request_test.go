@@ -209,7 +209,6 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	// 查询邀请列表不为空
 	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
-		Invitee: optional.NewString(s.requester),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
@@ -226,13 +225,20 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 
 	// 查询加入组织申请列表不为空
 	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
-		Requester: optional.NewString(s.requester),
-		OrgName:   optional.NewString(s.name),
-		Status:    optional.NewString("pending"),
+		OrgName: optional.NewString(s.name),
+		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), data.Data)
+
+	// 不能查询其他人的申请
+	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+		Requester: optional.NewString(s.requester),
+		Status:    optional.NewString("pending"),
+	})
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	// 接受加入组织申请
 	_, r, err = Api.OrganizationApi.V1RequestPut(Auth, swagger.ControllerOrgApproveMemberRequest{
@@ -246,7 +252,6 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	// 查询邀请列表为空
 	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
-		Invitee: optional.NewString(s.requester),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
@@ -255,9 +260,8 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 
 	// 查询加入组织申请列表为空
 	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
-		Requester: optional.NewString(s.requester),
-		OrgName:   optional.NewString(s.name),
-		Status:    optional.NewString("pending"),
+		OrgName: optional.NewString(s.name),
+		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)

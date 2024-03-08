@@ -37,7 +37,8 @@ var (
 )
 
 // InitRateLimiter creates a new instance of the rateLimiter struct.
-func InitRateLimiter(cfg redislib.Config) error {
+func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
+	Init(rateCfg)
 	// Initialize a redis client using go-redis
 	client := &redis.Client{}
 	if cfg.DBCert != "" {
@@ -98,6 +99,8 @@ func InitRateLimiter(cfg redislib.Config) error {
 		logrus.Errorf("get new rate store err:%s", err)
 		return fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
 	}
+
+	logrus.Infof(" ratelimit with: rate: %d burst: %d", requestNum, burstNum)
 
 	httpRateLimiter := &throttled.HTTPRateLimiterCtx{
 		RateLimiter: rateLimitCtx,
