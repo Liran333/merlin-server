@@ -6,6 +6,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -23,7 +24,12 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = userctl.RestfulAPI(services.userApp, services.securityLog)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
-	services.rateLimiterMiddleWare = ratelimiter.InitRateLimiter(cfg.Redis)
+	r, err := ratelimiter.InitRateLimiter(cfg.Redis)
+	if err != nil {
+		logrus.Fatalf("init ratelimit failed, %s", err)
+	}
+
+	services.rateLimiterMiddleWare = r
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

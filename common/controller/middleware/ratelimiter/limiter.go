@@ -36,18 +36,18 @@ var (
 )
 
 // InitRateLimiter creates a new instance of the rateLimiter struct.
-func InitRateLimiter(cfg redislib.Config) *rateLimiter {
+func InitRateLimiter(cfg redislib.Config) (*rateLimiter, error) {
 	// Initialize a redis client using go-redis
 	client := &redis.Client{}
 	if cfg.DBCert != "" {
 		ca, err := ioutil.ReadFile(cfg.DBCert)
 		if err != nil {
-			return nil
+			return nil, fmt.Errorf("read cert failed")
 		}
 
 		pool := x509.NewCertPool()
 		if !pool.AppendCertsFromPEM(ca) {
-			return nil
+			return nil, fmt.Errorf("new pool failed")
 		}
 
 		tlsConfig := &tls.Config{
@@ -76,7 +76,7 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 	store, err := goredisstore.NewCtx(client, "api-rate-limit:")
 	if err != nil {
 		logrus.Infof("get new redis client err:%s", err)
-		return nil
+		return nil, fmt.Errorf("init goredisstore failed, %s", err)
 	}
 
 	requestNum := RequestNumPerSec
@@ -95,13 +95,13 @@ func InitRateLimiter(cfg redislib.Config) *rateLimiter {
 	rateLimitCtx, err := throttled.NewGCRARateLimiterCtx(store, quota)
 	if err != nil {
 		logrus.Errorf("get new rate store err:%s", err)
-		return nil
+		return nil, fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
 	}
 
 	httpRateLimiter := &throttled.HTTPRateLimiterCtx{
 		RateLimiter: rateLimitCtx,
 	}
-	return &rateLimiter{limitCli: httpRateLimiter}
+	return &rateLimiter{limitCli: httpRateLimiter}, nil
 }
 
 type rateLimiter struct {
@@ -116,6 +116,13 @@ func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	}
 
 	key := fmt.Sprintf("%v", v)
+	logrus.Infof("user %v", v)
+	logrus.Infof("rl %v", rl)
+	logrus.Infof("limitcli %v", rl.limitCli)
+	logrus.Infof("ratelimiter %v", rl.limitCli.RateLimiter)
+	logrus.Infof("ctx %v", ctx)
+	logrus.Infof("ctx request %v", ctx.Request)
+
 	limited, _, err := rl.limitCli.RateLimiter.RateLimitCtx(ctx.Request.Context(), key, 1)
 	if err != nil {
 		logrus.Errorf("check limit is err:%s", err)
