@@ -14,6 +14,7 @@ import (
 	redisdb "github.com/opensourceways/redis-lib"
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -123,8 +124,16 @@ func main() {
 		return
 	}
 
+	// ratelimit must init before redisdb
+	// bcs redisdb will delete the cert
+	if err := ratelimiter.InitRateLimiter(cfg.Redis); err != nil {
+		logrus.Errorf("init ratelimiter failed, err %s", err)
+
+		return
+	}
+
 	// redis
-	if err := redisdb.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
+	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
 
 		return
