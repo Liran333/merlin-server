@@ -23,6 +23,7 @@ func AddRouterForModelInternalController(
 		appService: s,
 	}
 
+	r.GET("/v1/model/:id", m.Read, ctl.GetById)
 	r.PUT("/v1/model/:id/label", m.Write, ctl.ResetLabel)
 }
 
@@ -37,6 +38,7 @@ type ModelInternalController struct {
 // @Param    id    path  string            true  "id of model"
 // @Param    body  body  reqToCreateModel  true  "body"
 // @Accept   json
+// @Security Internal
 // @Success  202  {object}  commonctl.ResponseData
 // @Router   /v1/model/{id}/label [put]
 func (ctl *ModelInternalController) ResetLabel(ctx *gin.Context) {
@@ -61,5 +63,30 @@ func (ctl *ModelInternalController) ResetLabel(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  GetById
+// @Description  get model info by id
+// @Tags     ModelInternal
+// @Param    id    path  string   true  "id of model"
+// @Accept   json
+// @Security Internal
+// @Success  200  {object}  commonctl.ResponseData
+// @Router   /v1/model/{id} [get]
+func (ctl *ModelInternalController) GetById(ctx *gin.Context) {
+
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	data, err := ctl.appService.GetById(modelId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, data)
 	}
 }

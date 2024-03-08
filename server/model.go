@@ -55,6 +55,7 @@ func setRouterOfModelInternal(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		app.NewModelInternalAppService(
 			modelrepositoryadapter.ModelLabelsAdapter(),
+			modelrepositoryadapter.ModelAdapter(),
 		),
 		services.userMiddleWare,
 	)

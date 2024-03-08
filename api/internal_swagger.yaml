@@ -194,6 +194,27 @@ paths:
       summary: Update
       tags:
       - Permission
+  /v1/model/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get model info by id
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: GetById
+      tags:
+      - ModelInternal
   /v1/model/{id}/label:
     put:
       consumes:
@@ -216,6 +237,8 @@ paths:
           description: Accepted
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
       summary: ResetLabel
       tags:
       - ModelInternal

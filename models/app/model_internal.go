@@ -13,17 +13,22 @@ import (
 // ModelInternalAppService is an interface for the internal model application service.
 type ModelInternalAppService interface {
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
+	GetById(modelId primitive.Identity) (ModelDTO, error)
 }
 
 // NewModelInternalAppService creates a new instance of the internal model application service.
-func NewModelInternalAppService(repoAdapter repository.ModelLabelsRepoAdapter) ModelInternalAppService {
+func NewModelInternalAppService(repoAdapter repository.ModelLabelsRepoAdapter,
+	mAdapter repository.ModelRepositoryAdapter,
+) ModelInternalAppService {
 	return &modelInternalAppService{
-		repoAdapter: repoAdapter,
+		repoAdapter:  repoAdapter,
+		modelAdapter: mAdapter,
 	}
 }
 
 type modelInternalAppService struct {
-	repoAdapter repository.ModelLabelsRepoAdapter
+	repoAdapter  repository.ModelLabelsRepoAdapter
+	modelAdapter repository.ModelRepositoryAdapter
 }
 
 // ResetLabels resets the labels of a model.
@@ -35,4 +40,17 @@ func (s *modelInternalAppService) ResetLabels(modelId primitive.Identity, cmd *C
 	}
 
 	return err
+}
+
+// GetById retrieves a model by id.
+func (s *modelInternalAppService) GetById(modelId primitive.Identity) (ModelDTO, error) {
+	model, err := s.modelAdapter.FindById(modelId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errorModelNotFound
+		}
+		return ModelDTO{}, err
+	}
+
+	return toModelDTO(&model), nil
 }

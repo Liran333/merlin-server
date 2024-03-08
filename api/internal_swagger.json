@@ -76,8 +76,47 @@
                 }
             }
         },
+        "/v1/model/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "get model info by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelInternal"
+                ],
+                "summary": "GetById",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{id}/label": {
             "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
                 "description": "reset label of model",
                 "consumes": [
                     "application/json"
