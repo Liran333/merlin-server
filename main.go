@@ -124,6 +124,14 @@ func main() {
 		return
 	}
 
+	// ratelimit must init before redisdb
+	// bcs redisdb will delete the cert
+	if err := ratelimiter.InitRateLimiter(cfg.Redis); err != nil {
+		logrus.Errorf("init ratelimiter failed, err %s", err)
+
+		return
+	}
+
 	// redis
 	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
@@ -166,12 +174,6 @@ func main() {
 	// session
 	if err := cfg.InitSession(); err != nil {
 		logrus.Errorf("init session failed, err:%s", err.Error())
-
-		return
-	}
-
-	if err := ratelimiter.InitRateLimiter(cfg.Redis); err != nil {
-		logrus.Errorf("init ratelimiter failed, err %s", err)
 
 		return
 	}
