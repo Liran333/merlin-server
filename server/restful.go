@@ -24,12 +24,10 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = userctl.RestfulAPI(services.userApp, services.securityLog)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
-	r, err := ratelimiter.InitRateLimiter(cfg.Redis)
-	if err != nil {
-		logrus.Fatalf("init ratelimit failed, %s", err)
+	services.rateLimiterMiddleWare = ratelimiter.Limiter()
+	if services.rateLimiterMiddleWare == nil {
+		logrus.Fatalf("init ratelimit failed")
 	}
-
-	services.rateLimiterMiddleWare = r
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

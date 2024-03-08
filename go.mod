@@ -15,7 +15,7 @@ require (
 	github.com/openmerlin/merlin-sdk v0.0.0-20240304132014-07577b5120f3
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771
 	github.com/opensourceways/kafka-lib v0.0.0-20231114071554-b2af9944cf3a
-	github.com/opensourceways/redis-lib v0.0.0-20231018083224-85bc8e32c7c0
+	github.com/opensourceways/redis-lib v0.0.0-20240229112647-bcce13fb1094
 	github.com/opensourceways/server-common-lib v0.0.0-20231027024402-f55c66e6699c
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
@@ -102,7 +102,7 @@ require (
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
