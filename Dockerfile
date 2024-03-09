@@ -1,5 +1,6 @@
 FROM golang:1.21 as BUILDER
-RUN go env -w GOPROXY=https://goproxy.cn,direct
+ARG MERLIN_GOPROXY=https://goproxy.cn,direct
+RUN go env -w GOPROXY=${MERLIN_GOPROXY}
 
 # build binary
 COPY . /go/src/github.com/openmerlin/merlin-server
