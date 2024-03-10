@@ -7,5 +7,6 @@ package loginrepositoryadapter
 
 // Tables represents the tables used in the login repository adapter.
 type Tables struct {
+	Key   []byte `json:"key"   required:"true"`
 	Login string `json:"login" required:"true"`
 }

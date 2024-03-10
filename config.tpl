@@ -12,6 +12,8 @@ session:
     endpoint: {{(ds "secret").data.OIDC_ENDPOINT }}
   login:
     login: login
+    key: {{(ds "secret").data.SESSION_ENC_KEY }}
+
   domain:
     max_session_num: {{(ds "data").MAX_SESSION_NUM }}
     csrf_token_timeout: {{(ds "data").CSRF_TOKEN_TIMEOUT }}

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package session
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/session/controller"
 	"github.com/openmerlin/merlin-server/session/domain"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
@@ -35,7 +36,7 @@ func (cfg *Config) Init() error {
 	oidcimpl.Init(&cfg.OIDC)
 	controller.Init(&cfg.Controller)
 
-	if err := loginrepositoryadapter.Init(&cfg.Login); err != nil {
+	if err := loginrepositoryadapter.Init(&cfg.Login, crypto.NewEncryption(cfg.Login.Key)); err != nil {
 		return err
 	}
 

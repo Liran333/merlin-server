@@ -7,6 +7,7 @@ package loginrepositoryadapter
 import (
 	"gorm.io/gorm"
 
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/session/domain"
 )
@@ -21,11 +22,15 @@ type dao interface {
 
 type loginAdapter struct {
 	dao
+	e crypto.Encrypter
 }
 
 // Add adds a new login to the database.
 func (adapter *loginAdapter) Add(login *domain.Session) error {
-	do := toLoginDO(login)
+	do, err := toLoginDO(login, adapter.e)
+	if err != nil {
+		return err
+	}
 
 	v := adapter.DB().Create(&do)
 
@@ -53,7 +58,7 @@ func (adapter *loginAdapter) Find(loginId primitive.RandomId) (domain.Session, e
 		return domain.Session{}, err
 	}
 
-	return do.toLogin(), nil
+	return do.toLogin(adapter.e)
 }
 
 // FindByUser finds all logins in the database associated with a user.
@@ -71,7 +76,9 @@ func (adapter *loginAdapter) FindByUser(user primitive.Account) ([]domain.Sessio
 
 	r := make([]domain.Session, len(dos))
 	for i := range dos {
-		r[i] = dos[i].toLogin()
+		if r[i], err = dos[i].toLogin(adapter.e); err != nil {
+			return r, err
+		}
 	}
 
 	return r, nil
