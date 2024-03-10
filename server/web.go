@@ -42,8 +42,6 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfSpaceAppWeb(rg, services)
 
-	setRouterOfCodeRepoFile(rg, services)
-
 	setRouterOfCodeRepo(rg, services)
 
 	api.SwaggerInfoweb.Title = apiTitle

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package primitive
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/snowflake"
@@ -15,6 +16,11 @@ var (
 	node             *snowflake.Node
 	msdConfig        MSDConfig
 	allLicenses      map[string]bool
+	emailConfig      EmailConfig
+	phoneConfig      PhoneConfig
+	tokenConfig      TokenConfig
+	websiteConfig    WebsiteConfig
+	accountConfig    AccountConfig
 	randomIdLength   int
 	passwordInstance *passwordImpl
 )
@@ -22,6 +28,11 @@ var (
 // Init initializes the configuration with the given Config struct.
 func Init(cfg *Config) (err error) {
 	msdConfig = cfg.MSDConfig
+	emailConfig = cfg.EmailConfig
+	phoneConfig = cfg.PhoneConfig
+	tokenConfig = cfg.TokenConfig
+	websiteConfig = cfg.WebsiteConfig
+	accountConfig = cfg.AccountConfig
 
 	m := map[string]bool{}
 	for _, v := range cfg.Licenses {
@@ -35,19 +46,18 @@ func Init(cfg *Config) (err error) {
 
 	randomIdLength = cfg.RandomIdLength
 	passwordInstance = newPasswordImpl(cfg.PasswordConfig)
-
-	if len(msdConfig.ReservedAccounts) > 0 {
-		msdConfig.reservedAccounts = sets.New[string]()
-		msdConfig.reservedAccounts.Insert(msdConfig.ReservedAccounts...)
-	}
 	return
 }
 
 // Config represents the main configuration structure.
 type Config struct {
-	MSDConfig
-
 	Licenses       []string       `json:"licenses" required:"true"`
+	MSDConfig      MSDConfig      `json:"msd"`
+	EmailConfig    EmailConfig    `json:"email"`
+	PhoneConfig    PhoneConfig    `json:"phone"`
+	TokenConfig    TokenConfig    `json:"token"`
+	WebsiteConfig  WebsiteConfig  `json:"website"`
+	AccountConfig  AccountConfig  `json:"account"`
 	RandomIdLength int            `json:"random_id_length"`
 	PasswordConfig PasswordConfig `json:"password_config"`
 }
@@ -63,37 +73,109 @@ func (cfg *Config) SetDefault() {
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.MSDConfig,
+		&cfg.EmailConfig,
+		&cfg.PhoneConfig,
+		&cfg.TokenConfig,
+		&cfg.WebsiteConfig,
+		&cfg.AccountConfig,
 		&cfg.PasswordConfig,
 	}
 }
 
 // MSDConfig represents the configuration for MSD.
 type MSDConfig struct {
-	MaxNameLength     int      `json:"max_name_length"`
-	MinNameLength     int      `json:"min_name_length"`
-	MaxDescLength     int      `json:"max_desc_length"`
-	MaxFullnameLength int      `json:"max_fullname_length"`
-	ReservedAccounts  []string `json:"reserved_accounts" required:"true"`
-	reservedAccounts  sets.Set[string]
+	NameRegexp        string `json:"msd_name_regexp"          required:"true"`
+	MaxNameLength     int    `json:"msd_max_name_length"      required:"true"`
+	MinNameLength     int    `json:"msd_min_name_length"      required:"true"`
+	MaxDescLength     int    `json:"msd_max_desc_length"      required:"true"`
+	MaxFullnameLength int    `json:"msd_max_fullname_length"  required:"true"`
+
+	nameRegexp *regexp.Regexp
 }
 
-// SetDefault sets default values for MSDConfig if they are not provided.
-func (cfg *MSDConfig) SetDefault() {
-	if cfg.MaxNameLength <= 0 {
-		cfg.MaxNameLength = 50
+func (cfg *MSDConfig) Validate() (err error) {
+	cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp)
+
+	return
+}
+
+type EmailConfig struct {
+	Regexp    string `json:"email_regexp"      required:"true"`
+	MaxLength int    `json:"email_max_length"  required:"true"`
+
+	regexp *regexp.Regexp
+}
+
+func (cfg *EmailConfig) Validate() (err error) {
+	cfg.regexp, err = regexp.Compile(cfg.Regexp)
+
+	return
+}
+
+type PhoneConfig struct {
+	Regexp    string `json:"phone_regexp"      required:"true"`
+	MaxLength int    `json:"phone_max_length"  required:"true"`
+
+	regexp *regexp.Regexp
+}
+
+func (cfg *PhoneConfig) Validate() (err error) {
+	cfg.regexp, err = regexp.Compile(cfg.Regexp)
+
+	return
+}
+
+type TokenConfig struct {
+	Regexp        string `json:"token_name_regexp"     required:"true"`
+	MaxNameLength int    `json:"token_max_name_length" required:"true"`
+	MinNameLength int    `json:"token_min_name_length" required:"true"`
+
+	regexp *regexp.Regexp
+}
+
+func (cfg *TokenConfig) Validate() (err error) {
+	cfg.regexp, err = regexp.Compile(cfg.Regexp)
+
+	return
+}
+
+type WebsiteConfig struct {
+	Regexp    string `json:"website_regexp"     required:"true"`
+	MaxLength int    `json:"website_max_length" required:"true"`
+
+	regexp *regexp.Regexp
+}
+
+func (cfg *WebsiteConfig) Validate() (err error) {
+	cfg.regexp, err = regexp.Compile(cfg.Regexp)
+
+	return
+}
+
+// AccountConfig represents the configuration for Account.
+type AccountConfig struct {
+	NameRegexp        string   `json:"account_name_regexp"         required:"true"`
+	MaxNameLength     int      `json:"account_max_name_length"     required:"true"`
+	MinNameLength     int      `json:"account_min_name_length"     required:"true"`
+	MaxDescLength     int      `json:"account_max_desc_length"     required:"true"`
+	ReservedAccounts  []string `json:"reserved_accounts"           required:"true"`
+	MaxFullnameLength int      `json:"account_max_fullname_length" required:"true"`
+
+	nameRegexp       *regexp.Regexp
+	reservedAccounts sets.Set[string]
+}
+
+func (cfg *AccountConfig) Validate() (err error) {
+	if cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp); err != nil {
+		return err
 	}
 
-	if cfg.MinNameLength <= 0 {
-		cfg.MinNameLength = 5
+	if len(cfg.ReservedAccounts) > 0 {
+		cfg.reservedAccounts = sets.New[string]()
+		cfg.reservedAccounts.Insert(cfg.ReservedAccounts...)
 	}
 
-	if cfg.MaxDescLength <= 0 {
-		cfg.MaxDescLength = 200
-	}
-
-	if cfg.MaxFullnameLength <= 0 {
-		cfg.MaxFullnameLength = 200
-	}
+	return nil
 }
 
 // PasswordConfig represents the configuration for password.

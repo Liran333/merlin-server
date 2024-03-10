@@ -45,11 +45,11 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		fullname, err := primitive.NewMSDFullname(viper.GetString("user.create.fullname"))
+		fullname, err := primitive.NewAccountFullname(viper.GetString("user.create.fullname"))
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		desc, err := primitive.NewMSDDesc("")
+		desc, err := primitive.NewAccountDesc("")
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
@@ -171,11 +171,11 @@ var userEditCmd = &cobra.Command{
 		if err == nil {
 			updateCmd.AvatarId = avatar
 		}
-		desc, err := primitive.NewMSDDesc(viper.GetString("user.edit.bio"))
+		desc, err := primitive.NewAccountDesc(viper.GetString("user.edit.bio"))
 		if err == nil {
 			updateCmd.Desc = desc
 		}
-		fullname, err := primitive.NewMSDFullname(viper.GetString("user.edit.fullname"))
+		fullname, err := primitive.NewAccountFullname(viper.GetString("user.edit.fullname"))
 		if err != nil {
 			updateCmd.Fullname = fullname
 		}

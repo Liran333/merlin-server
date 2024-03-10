@@ -27,9 +27,8 @@ type allServices struct {
 
 	sessionApp sessionapp.SessionAppService
 
-	resourceApp     coderepoapp.ResourceAppService
-	codeRepoApp     coderepoapp.CodeRepoAppService
-	codeRepoFileApp coderepoapp.CodeRepoFileAppService
+	resourceApp coderepoapp.ResourceAppService
+	codeRepoApp coderepoapp.CodeRepoAppService
 
 	operationLog          middleware.OperationLog
 	securityLog           middleware.SecurityLog

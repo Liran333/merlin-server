@@ -5,8 +5,6 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
-	"fmt"
-
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -30,12 +28,12 @@ const (
 
 // OrgCreatedCmd represents the command for creating an organization.
 type OrgCreatedCmd struct {
-	Name        primitive.Account     `json:"name"`
-	FullName    primitive.MSDFullname `json:"fullname"`
-	Description primitive.MSDDesc     `json:"description"`
-	Website     string                `json:"website"`
-	AvatarId    primitive.AvatarId    `json:"avatar_id"`
-	Owner       primitive.Account     `json:"owner"`
+	Name        primitive.Account         `json:"name"`
+	FullName    primitive.AccountFullname `json:"fullname"`
+	Description primitive.AccountDesc     `json:"description"`
+	Website     primitive.Website         `json:"website"`
+	AvatarId    primitive.AvatarId        `json:"avatar_id"`
+	Owner       primitive.Account         `json:"owner"`
 }
 
 // OrgDeletedCmd represents the command for deleting an organization.
@@ -63,18 +61,14 @@ type OrgUpdatedBasicInfoCmd struct {
 	OrgName      primitive.Account
 	AllowRequest *bool
 	DefaultRole  primitive.Role
-	FullName     string
-	Description  string
-	Website      string
-	AvatarId     string
+	FullName     primitive.AccountFullname
+	Description  primitive.AccountDesc
+	Website      primitive.Website
+	AvatarId     primitive.AvatarId
 }
 
 // Validate validates the OrgUpdatedBasicInfoCmd fields.
 func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
-	if cmd.Website != "" && !utils.IsUrl(cmd.Website) {
-		return allerror.NewInvalidParam("invalid website")
-	}
-
 	if cmd.Actor == nil {
 		return allerror.NewInvalidParam("account is nil")
 	}
@@ -87,28 +81,24 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 }
 
 // ToOrg updates the Organization object with the values from the OrgUpdatedBasicInfoCmd.
-func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool, err error) {
-	if cmd.AvatarId != o.AvatarId.AvatarId() {
-		o.AvatarId, err = primitive.NewAvatarId(cmd.AvatarId)
-		if err != nil {
-			err = allerror.NewInvalidParam(fmt.Sprintf("failed to create avatar id, %s", err))
-			return
-		}
+func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool) {
+	if cmd.AvatarId != o.AvatarId && cmd.AvatarId != nil {
+		o.AvatarId = cmd.AvatarId
 		change = true
 	}
 
-	if cmd.Website != o.Website && cmd.Website != "" {
+	if cmd.Website != nil && cmd.Website != o.Website {
 		o.Website = cmd.Website
 		change = true
 	}
 
-	if cmd.Description != o.Desc.MSDDesc() && cmd.Description != "" {
-		o.Desc = primitive.CreateMSDDesc(cmd.Description)
+	if cmd.Description != o.Desc && cmd.Description != nil {
+		o.Desc = cmd.Description
 		change = true
 	}
 
-	if cmd.FullName != o.Fullname.MSDFullname() && cmd.FullName != "" {
-		o.Fullname = primitive.CreateMSDFullname(cmd.FullName)
+	if cmd.FullName != o.Fullname && cmd.FullName != nil {
+		o.Fullname = cmd.FullName
 		change = true
 	}
 

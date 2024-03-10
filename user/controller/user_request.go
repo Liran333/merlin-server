@@ -25,7 +25,7 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 	err error,
 ) {
 	if req.Desc != nil {
-		if cmd.Desc, err = primitive.NewMSDDesc(*req.Desc); err != nil {
+		if cmd.Desc, err = primitive.NewAccountDesc(*req.Desc); err != nil {
 			return
 		}
 	}
@@ -37,7 +37,7 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 	}
 
 	if req.Fullname != nil {
-		if cmd.Fullname, err = primitive.NewMSDFullname(*req.Fullname); err != nil {
+		if cmd.Fullname, err = primitive.NewAccountFullname(*req.Fullname); err != nil {
 			return
 		}
 	}
@@ -71,7 +71,7 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 		return
 	}
 
-	if cmd.Desc, err = primitive.NewMSDDesc(req.Bio); err != nil {
+	if cmd.Desc, err = primitive.NewAccountDesc(req.Bio); err != nil {
 		return
 	}
 
@@ -79,7 +79,7 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 		return
 	}
 
-	if cmd.Fullname, err = primitive.NewMSDFullname(req.Fullname); err != nil {
+	if cmd.Fullname, err = primitive.NewAccountFullname(req.Fullname); err != nil {
 		return
 	}
 

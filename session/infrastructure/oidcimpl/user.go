@@ -94,7 +94,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		return
 	}
 
-	if userInfo.Fullname, err = primitive.NewMSDFullname(v.FullName); err != nil {
+	if userInfo.Fullname, err = primitive.NewAccountFullname(v.FullName); err != nil {
 		return
 	}
 

@@ -6,10 +6,7 @@ package primitive
 
 import (
 	"errors"
-	"regexp"
 )
-
-var regMSDName = regexp.MustCompile("^[a-zA-Z0-9_-]+$")
 
 // MSDName is an interface representing a name.
 type MSDName interface {
@@ -24,7 +21,7 @@ func NewMSDName(v string) (MSDName, error) {
 		return nil, errors.New("invalid name")
 	}
 
-	if !regMSDName.MatchString(v) {
+	if !msdConfig.nameRegexp.MatchString(v) {
 		return nil, errors.New("invalid name")
 	}
 

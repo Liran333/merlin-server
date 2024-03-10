@@ -126,9 +126,9 @@ func (c *BaseAuthClient) CreateOrg(cmd *org.Organization) (err error) {
 
 	tmp, _, err := c.client.CreateOrg(gitea.CreateOrgOption{
 		Name:                      cmd.Account.Account(),
-		FullName:                  cmd.Fullname.MSDFullname(),
-		Description:               cmd.Desc.MSDDesc(),
-		Website:                   cmd.Website,
+		FullName:                  cmd.Fullname.AccountFullname(),
+		Description:               cmd.Desc.AccountDesc(),
+		Website:                   cmd.Website.Website(),
 		Visibility:                gitea.VisibleTypePublic,
 		RepoAdminChangeTeamAccess: false,
 	})

@@ -7,13 +7,6 @@ package primitive
 import (
 	"errors"
 	"fmt"
-	"regexp"
-
-	"github.com/openmerlin/merlin-server/utils"
-)
-
-var (
-	regUserName = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 )
 
 // Account is an interface that represents an account.
@@ -27,17 +20,17 @@ func NewAccount(v string) (Account, error) {
 		return nil, errors.New("empty name")
 	}
 
-	if msdConfig.reservedAccounts.Has(v) {
+	if accountConfig.reservedAccounts.Has(v) {
 		return nil, errors.New("name is reserved")
 	}
 
 	n := len(v)
-	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
+	if n > accountConfig.MaxNameLength || n < accountConfig.MinNameLength {
 		return nil, fmt.Errorf("invalid name length, should between %d and %d",
-			msdConfig.MinNameLength, msdConfig.MaxNameLength)
+			accountConfig.MinNameLength, accountConfig.MaxNameLength)
 	}
 
-	if !regUserName.MatchString(v) {
+	if !accountConfig.nameRegexp.MatchString(v) {
 		return nil, errors.New("name can only contain alphabet, integer, _ and -")
 	}
 
@@ -68,17 +61,13 @@ func NewTokenName(v string) (TokenName, error) {
 	}
 
 	n := len(v)
-	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
+	if n > tokenConfig.MaxNameLength || n < tokenConfig.MinNameLength {
 		return nil, fmt.Errorf("invalid token name length, should between %d and %d",
-			msdConfig.MinNameLength, msdConfig.MaxNameLength)
+			tokenConfig.MinNameLength, tokenConfig.MaxNameLength)
 	}
 
-	if !regUserName.MatchString(v) {
+	if !tokenConfig.regexp.MatchString(v) {
 		return nil, errors.New("token name can only contain alphabet, integer, _ and -")
-	}
-
-	if utils.IsInt(v) {
-		return nil, errors.New("token name can't be an integer")
 	}
 
 	return dpTokenName(v), nil

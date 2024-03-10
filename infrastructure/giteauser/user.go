@@ -120,12 +120,12 @@ func (c *UserClient) UpdateUser(cmd *UserUpdateCmd) (err error) {
 	}
 
 	if cmd.Desc != nil {
-		desc := cmd.Desc.MSDDesc()
+		desc := cmd.Desc.AccountDesc()
 		d.Description = &desc
 	}
 
 	if cmd.Fullname != nil {
-		fullname := cmd.Fullname.MSDFullname()
+		fullname := cmd.Fullname.AccountFullname()
 		d.FullName = &fullname
 	}
 

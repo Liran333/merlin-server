@@ -201,6 +201,36 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Nil(s.T(), err)
 }
 
+// 使用无效的分支名会导致创建分支失败
+func (s *SuiteSpaceBranch) TestOrgUserCreateInvalidBranch() {
+	branchName := "invild#branch"
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: true,
+		License:    "mit",
+		Name:       "test2space",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Nil(s.T(), err)
+	id := getString(s.T(), data.Data)
+
+	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "test2space", swagger.ControllerRestfulReqToCreateBranch{
+		BaseBranch: "main",
+		Branch:     branchName,
+	})
+	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 func TestSpaceBranch(t *testing.T) {
 	suite.Run(t, new(SuiteSpaceBranch))
 }

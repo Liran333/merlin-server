@@ -55,11 +55,11 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	}
 
 	if u.Desc != nil {
-		dto.Description = u.Desc.MSDDesc()
+		dto.Description = u.Desc.AccountDesc()
 	}
 
 	if u.IsOrganization() {
-		website := u.Website
+		website := u.Website.Website()
 		owner := u.Owner.Account()
 		ownerId := u.OwnerId.Identity()
 		allow := u.AllowRequest
@@ -85,7 +85,7 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	}
 
 	dto.Type = u.Type
-	dto.Fullname = u.Fullname.MSDFullname()
+	dto.Fullname = u.Fullname.AccountFullname()
 	dto.CreatedAt = u.CreatedAt
 	dto.UpdatedAt = u.UpdatedAt
 	dto.Id = u.Id.Identity()
@@ -141,9 +141,9 @@ type ToUserDTO interface {
 
 // UpdateUserBasicInfoCmd represents the command to update basic user information.
 type UpdateUserBasicInfoCmd struct {
-	Desc            primitive.MSDDesc
+	Desc            primitive.AccountDesc
 	AvatarId        primitive.AvatarId
-	Fullname        primitive.MSDFullname
+	Fullname        primitive.AccountFullname
 	descChanged     bool
 	avatarChanged   bool
 	fullNameChanged bool
@@ -156,12 +156,12 @@ func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
 		cmd.avatarChanged = true
 	}
 
-	if cmd.Desc != nil && cmd.Desc.MSDDesc() != u.Desc.MSDDesc() {
+	if cmd.Desc != nil && cmd.Desc.AccountDesc() != u.Desc.AccountDesc() {
 		u.Desc = cmd.Desc
 		cmd.descChanged = true
 	}
 
-	if cmd.Fullname != nil && u.Fullname.MSDFullname() != cmd.Fullname.MSDFullname() {
+	if cmd.Fullname != nil && u.Fullname.AccountFullname() != cmd.Fullname.AccountFullname() {
 		u.Fullname = cmd.Fullname
 		cmd.fullNameChanged = true
 	}

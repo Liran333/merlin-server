@@ -7,17 +7,12 @@ package primitive
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 )
 
 const (
 	repoTypeModel = "model"
 	repoTypeSpace = "space"
-)
-
-var (
-	regBranchName = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 )
 
 // BranchName represents a branch name.
@@ -32,11 +27,11 @@ func NewBranchName(v string) (BranchName, error) {
 		return nil, errors.New("branch name empty")
 	}
 
-	if len(v) > maxBranchNameLength {
+	if len(v) > branchConfig.MaxBranchNameLength {
 		return nil, errors.New("branch name too long")
 	}
 
-	if !regBranchName.MatchString(v) {
+	if !branchConfig.branchRegexp.MatchString(v) {
 		return nil, errors.New("branch name can only contain alphabet, integer, _ and -")
 	}
 

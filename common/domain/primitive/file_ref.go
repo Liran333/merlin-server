@@ -9,12 +9,6 @@ type FileRef interface {
 	FileRef() string
 }
 
-// NewCodeFileRef creates a new CodeFileRef instance with the given value.
-func NewCodeFileRef(v string) (FileRef, error) {
-	// todo judge the length of ref
-	return codeFileRef(v), nil
-}
-
 // InitCodeFileRef initializes a new CodeFileRef instance with the default value "main".
 func InitCodeFileRef() FileRef {
 	return codeFileRef("main")

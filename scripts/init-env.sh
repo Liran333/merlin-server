@@ -20,7 +20,7 @@ then
 fi
 
 function genServerConfig() {
-	docker run --rm --net=host -e VAULT_TOKEN=00000000-0000-0000-0000-000000000000 -v $ROOTDIR:/data hairyhenderson/gomplate:stable -d data=/data/config-meta.yaml -d secret=vault+http://127.0.0.1:8201/modelfoundry/data/server -f /data/$1 > $2
+	docker run --rm --net=host -e VAULT_TOKEN=00000000-0000-0000-0000-000000000000 -v $ROOTDIR:/data hairyhenderson/gomplate:stable -d data=/data/config-meta.yaml -d common=/data/common.yaml -d secret=vault+http://127.0.0.1:8201/modelfoundry/data/server -f /data/$1 > $2
 }
 
 function genGiteaConfig() {

@@ -1,0 +1,46 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+package primitive
+
+import (
+	"errors"
+
+	"github.com/openmerlin/merlin-server/utils"
+)
+
+// AccountFullname is an interface representing a full name.
+type AccountFullname interface {
+	AccountFullname() string
+}
+
+// NewAccountFullname creates a new AccountFullname instance from a string value.
+func NewAccountFullname(v string) (AccountFullname, error) {
+	if v == "" {
+		return accountFullname(v), nil
+	}
+
+	if utils.StrLen(v) > accountConfig.MaxFullnameLength {
+		return nil, errors.New("fullname is too long")
+	}
+
+	v = utils.XSSEscapeString(v)
+	if utils.StrLen(v) > accountConfig.MaxFullnameLength {
+		return nil, errors.New("fullname is too long")
+	}
+
+	return accountFullname(v), nil
+}
+
+// CreateAccountFullname creates a new AccountFullname instance directly from a string value.
+func CreateAccountFullname(v string) AccountFullname {
+	return accountFullname(v)
+}
+
+type accountFullname string
+
+// AccountFullname returns the string representation of the full name.
+func (r accountFullname) AccountFullname() string {
+	return string(r)
+}

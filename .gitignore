@@ -12,3 +12,6 @@ deploy/
 label/label
 tests/e2e/client
 tests/e2e/token
+api/docs.go
+api/swagger.json
+api/swagger.yaml

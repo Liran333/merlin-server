@@ -1,21 +1,9 @@
-MIN_NAME_LEN: 1
-MAX_NAME_LEN: 50
-MAX_DESC_LEN: 200
-MAX_FULLNAME_LEN: 200
 MAX_SESSION_NUM: 3
 CSRF_TOKEN_TIMEOUT: 28800
 CSRF_TOKEN_TIMEOUT_TO_RESET: 3
 CSRF_TOKEN_COOKIE_EXPIRY: 28800
 INVITE_EXPIRY: 1209600
 DEFAULT_ROLE: write
-SPACE_SDK:
-  - Gradio
-  - Docker
-  - Static
-SPACE_HARDWARE:
-  - "CPU basic 2 vCPU · 16GB · FREE"
-  - "CPU basic 2 vCPU · 8GB · FREE"
-  - "CPU basic 2 vCPU · 4GB · FREE"
 RESERVED_ACCOUNTS:
   - "404"
   - "blogs"
@@ -55,32 +43,3 @@ RESERVED_ACCOUNTS:
   - "tasks"
   - "tool"
   - "users"
-LICENSES:
-  - "apache-2.0"
-  - "mit"
-  - "cc-by-sa-3.0"
-  - "afl-3.0"
-  - "cc-by-sa-4.0"
-  - "lgpl-3.0"
-  - "lgpl-lr"
-  - "cc-by-nc-3.0"
-  - "bsd-2-clause"
-  - "ecl-2.0"
-  - "cc-by-nc-sa-4.0"
-  - "cc-by-nc-4.0"
-  - "gpl-3.0"
-  - "cc0-1.0"
-  - "cc"
-  - "bsd-3-clause"
-  - "agpl-3.0"
-  - "wtfpl"
-  - "artistic-2.0"
-  - "postgresql"
-  - "gpl-2.0"
-  - "isc"
-  - "eupl-1.1"
-  - "pddl"
-  - "bsd-3-clause-clear"
-  - "mpl-2.0"
-  - "odbl-1.0"
-  - "cc-by-4.0"

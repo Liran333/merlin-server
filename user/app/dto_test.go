@@ -14,7 +14,7 @@ import (
 // TestCreateCmdValidate is a test function for validating the CreateCmd struct.
 func TestCreateCmdValidate(t *testing.T) {
 	validAcc := primitive.CreateAccount("xxx")
-	validEmail, _ := primitive.NewEmail("yyy")
+	validEmail := primitive.CreateEmail("yyy")
 	tests := []domain.UserCreateCmd{
 		{
 			Email:   validEmail,

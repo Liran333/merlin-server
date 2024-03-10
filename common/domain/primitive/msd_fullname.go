@@ -21,9 +21,13 @@ func NewMSDFullname(v string) (MSDFullname, error) {
 		return msdFullname(v), nil
 	}
 
+	if utils.StrLen(v) > msdConfig.MaxFullnameLength {
+		return nil, errors.New("fullname is too long")
+	}
+
 	v = utils.XSSEscapeString(v)
 	if utils.StrLen(v) > msdConfig.MaxFullnameLength {
-		return nil, errors.New("invalid fullname")
+		return nil, errors.New("fullname is too long")
 	}
 
 	return msdFullname(v), nil

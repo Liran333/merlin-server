@@ -21,9 +21,13 @@ func NewMSDDesc(v string) (MSDDesc, error) {
 		return msdDesc(v), nil
 	}
 
+	if utils.StrLen(v) > msdConfig.MaxDescLength {
+		return nil, errors.New("desc is too long")
+	}
+
 	v = utils.XSSEscapeString(v)
 	if utils.StrLen(v) > msdConfig.MaxDescLength {
-		return nil, errors.New("invalid desc")
+		return nil, errors.New("desc is too long")
 	}
 
 	return msdDesc(v), nil

@@ -55,6 +55,42 @@ func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
 	assert.Nil(s.T(), err)
 }
 
+// 使用无效仓库名创建、修改模型失败
+func (s *SuiteUserModel) TestUserCreateUpdateInvalidModel() {
+	_, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+		Name:       "invalid#testmodel",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+		Name:       "testmodel",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
+		Name:       "invalid#testmodel",
+		Visibility: "public",
+	})
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestNotLoginCantCreateModel used for testing
 // 没登录用户不能创建模型
 func (s *SuiteUserModel) TestNotLoginCantCreateModel() {

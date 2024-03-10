@@ -13,7 +13,6 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/branchclientadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/branchrepositoryadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepoadapter"
-	"github.com/openmerlin/merlin-server/coderepo/infrastructure/coderepofileadapter"
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/resourceadapterimpl"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -32,10 +31,6 @@ func initCodeRepo(cfg *config.Config, services *allServices) error {
 		coderepoadapter.NewRepoAdapter(gitea.Client(), services.userApp),
 	)
 
-	services.codeRepoFileApp = app.NewCodeRepoFileAppService(
-		coderepofileadapter.NewCodeRepoFileAdapter(gitea.Client()),
-	)
-
 	return nil
 }
 
@@ -45,14 +40,6 @@ func initResource(services *allServices) {
 			modelrepositoryadapter.ModelAdapter(),
 			spacerepositoryadapter.SpaceAdapter(),
 		))
-}
-
-func setRouterOfCodeRepoFile(rg *gin.RouterGroup, services *allServices) {
-	controller.AddRouterForCodeRepoFileController(
-		rg,
-		services.codeRepoFileApp,
-		services.userMiddleWare,
-	)
 }
 
 func setRouterOfCodeRepo(rg *gin.RouterGroup, services *allServices) {

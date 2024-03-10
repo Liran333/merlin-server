@@ -297,11 +297,7 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 		return
 	}
 
-	change, err := cmd.ToOrg(&o)
-	if err != nil {
-		return
-	}
-
+	change := cmd.ToOrg(&o)
 	if change {
 		o, err = org.repo.SaveOrg(&o)
 		if err != nil {

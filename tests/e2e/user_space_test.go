@@ -63,6 +63,55 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// 使用无效仓库名创建、修改Space失败
+func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
+	_, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
+		License:    "mit",
+		Name:       "invalid#testspace",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		InitReadme: false,
+		License:    "mit",
+		Name:       "testspace",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+		Desc:     "space desc new",
+		Fullname: "spacefullname-new",
+		Hardware: "CPU basic 2 vCPU · 16GB · FREE",
+		Name:     "invalid#testspace",
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestNotLoginCantCreateSpace used for testing
 // 没登录用户不能创建Space
 func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {

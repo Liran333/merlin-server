@@ -28,11 +28,11 @@ space:
     space: "space"
   primitive:
     sdk:
-{{- range (ds "data").SPACE_SDK}}
+{{- range (ds "common").SPACE_SDK}}
     - {{ . }}
 {{- end }}
     hardware:
-{{- range (ds "data").SPACE_HARDWARE}}
+{{- range (ds "common").SPACE_HARDWARE}}
     - {{ . }}
 {{- end }}
   topics:
@@ -128,20 +128,44 @@ user:
   key: {{(ds "secret").data.USER_ENC_KEY }}
 
 coderepo:
+  primitive:
+    max_branch_name_length: {{(ds "common").MAX_BRANCH_NAME_LEN }}
+    branch_regexp: {{(ds "common").BRANCH_REGEXP }}
   tables:
     branch: branch
 
 primitive:
-  min_name_length: {{(ds "data").MIN_NAME_LEN }}
-  max_name_length: {{(ds "data").MAX_NAME_LEN }}
-  max_desc_length: {{(ds "data").MAX_DESC_LEN }}
-  max_fullname_length: {{(ds "data").MAX_FULLNAME_LEN }}
-  reserved_accounts:
-{{- range (ds "data").RESERVED_ACCOUNTS}}
-  - "{{ . }}"
-{{- end }}
+  msd:
+    msd_name_regexp: {{(ds "common").MSD_NAME_REGEXP }}
+    msd_min_name_length: {{(ds "common").MIN_MSD_NAME_LEN }}
+    msd_max_name_length: {{(ds "common").MAX_MSD_NAME_LEN }}
+    msd_max_desc_length: {{(ds "common").MAX_MSD_DESC_LEN }}
+    msd_max_fullname_length: {{(ds "common").MAX_MSD_FULLNAME_LEN }}
+  email:
+    email_regexp: {{(ds "common").EMAIL_REGEXP }}
+    email_max_length: {{(ds "common").MAX_EMAIL_LEN }}
+  phone:
+    phone_regexp: {{(ds "common").PHONE_REGEXP }}
+    phone_max_length: {{(ds "common").PHONE_MAX_LEN }}
+  token:
+    token_name_regexp: {{(ds "common").TOKEN_NAME_REGEXP }}
+    token_min_name_length: {{(ds "common").MIN_TOKEN_NAME_LEN }}
+    token_max_name_length: {{(ds "common").MAX_TOKEN_NAME_LEN }}
+  website:
+    website_regexp: {{(ds "common").WEBSITE_REGEXP }}
+    website_max_length: {{(ds "common").MAX_WEBSITE_LEN }}
+  account:
+    account_name_regexp: {{(ds "common").ACCOUNT_NAME_REGEXP }}
+    account_min_name_length: {{(ds "common").MIN_ACCOUNT_NAME_LEN }}
+    account_max_name_length: {{(ds "common").MAX_ACCOUNT_NAME_LEN }}
+    account_max_desc_length: {{(ds "common").MAX_ACCOUNT_DESC_LEN }}
+    account_max_fullname_length: {{(ds "common").MAX_ACCOUNT_FULLNAME_LEN }}
+    reserved_accounts:
+  {{- range (ds "data").RESERVED_ACCOUNTS}}
+    - "{{ . }}"
+  {{- end }}
   licenses:
-{{- range (ds "data").LICENSES}}
+{{- range (ds "common").LICENSES}}
   - "{{ . }}"
 {{- end }}
 

@@ -62,7 +62,7 @@ type UserDO struct {
 func toUserDONoEnc(u *domain.User) (do UserDO) {
 	do = UserDO{
 		Name:            u.Account.Account(),
-		Fullname:        u.Fullname.MSDFullname(),
+		Fullname:        u.Fullname.AccountFullname(),
 		Email:           u.Email.Email(),
 		AvatarId:        u.AvatarId.AvatarId(),
 		Type:            u.Type,
@@ -75,7 +75,7 @@ func toUserDONoEnc(u *domain.User) (do UserDO) {
 	}
 
 	if u.Desc != nil {
-		do.Desc = u.Desc.MSDDesc()
+		do.Desc = u.Desc.AccountDesc()
 	}
 
 	do.ID = u.Id.Integer()
@@ -101,7 +101,7 @@ func toUserDO(u *domain.User, e crypto.Encrypter) (do UserDO, err error) {
 
 	do = UserDO{
 		Name:            u.Account.Account(),
-		Fullname:        u.Fullname.MSDFullname(),
+		Fullname:        u.Fullname.AccountFullname(),
 		Email:           email,
 		AvatarId:        u.AvatarId.AvatarId(),
 		Type:            u.Type,
@@ -114,7 +114,7 @@ func toUserDO(u *domain.User, e crypto.Encrypter) (do UserDO, err error) {
 	}
 
 	if u.Desc != nil {
-		do.Desc = u.Desc.MSDDesc()
+		do.Desc = u.Desc.AccountDesc()
 	}
 
 	do.ID = u.Id.Integer()
@@ -124,9 +124,9 @@ func toUserDO(u *domain.User, e crypto.Encrypter) (do UserDO, err error) {
 
 func toOrgDO(u *org.Organization) (do UserDO) {
 	do = UserDO{
-		Desc:         u.Desc.MSDDesc(),
+		Desc:         u.Desc.AccountDesc(),
 		Name:         u.Account.Account(),
-		Fullname:     u.Fullname.MSDFullname(),
+		Fullname:     u.Fullname.AccountFullname(),
 		AvatarId:     u.AvatarId.AvatarId(),
 		Type:         u.Type,
 		PlatformId:   u.PlatformId,
@@ -138,7 +138,7 @@ func toOrgDO(u *org.Organization) (do UserDO) {
 		WriteTeamId:  u.WriteTeamId,
 		Owner:        u.Owner.Account(),
 		OwnerId:      u.OwnerId.Integer(),
-		Website:      u.Website,
+		Website:      u.Website.Website(),
 	}
 
 	do.ID = u.Id.Integer()
@@ -159,26 +159,26 @@ func (u *UserDO) toOrgNoEnc() (o org.Organization) {
 	o = org.Organization{
 		Id:              primitive.CreateIdentity(u.ID),
 		Version:         u.Version,
-		Desc:            primitive.CreateMSDDesc(u.Desc),
+		Desc:            primitive.CreateAccountDesc(u.Desc),
 		Account:         primitive.CreateAccount(u.Name),
-		Fullname:        primitive.CreateMSDFullname(u.Fullname),
+		Fullname:        primitive.CreateAccountFullname(u.Fullname),
 		AvatarId:        primitive.CreateAvatarId(u.AvatarId),
 		PlatformId:      u.PlatformId,
 		CreatedAt:       u.CreatedAt.Unix(),
 		UpdatedAt:       u.UpdatedAt.Unix(),
-		PlatformPwd:     u.PlatformPwd,                        // user only
-		Email:           primitive.CreateEmail(u.Email),       // user only
-		Phone:           primitive.CreatePhoneNumber(u.Phone), // user only,
-		RequestDelete:   u.RequestDelete,                      // user only
-		RequestDeleteAt: u.RequestDeleteAt,                    // user only
-		AllowRequest:    u.AllowRequest,                       // org only
-		DefaultRole:     primitive.CreateRole(u.DefaultRole),  // org only
-		OwnerTeamId:     u.OwnerTeamId,                        // org only
-		ReadTeamId:      u.ReadTeamId,                         // org only
-		WriteTeamId:     u.WriteTeamId,                        // org only
-		Owner:           primitive.CreateAccount(u.Owner),     // org only
-		OwnerId:         primitive.CreateIdentity(u.OwnerId),  // org only
-		Website:         u.Website,                            // org only
+		PlatformPwd:     u.PlatformPwd,                         // user only
+		Email:           primitive.CreateEmail(u.Email),        // user only
+		Phone:           primitive.CreatePhoneNumber(u.Phone),  // user only,
+		RequestDelete:   u.RequestDelete,                       // user only
+		RequestDeleteAt: u.RequestDeleteAt,                     // user only
+		AllowRequest:    u.AllowRequest,                        // org only
+		DefaultRole:     primitive.CreateRole(u.DefaultRole),   // org only
+		OwnerTeamId:     u.OwnerTeamId,                         // org only
+		ReadTeamId:      u.ReadTeamId,                          // org only
+		WriteTeamId:     u.WriteTeamId,                         // org only
+		Owner:           primitive.CreateAccount(u.Owner),      // org only
+		OwnerId:         primitive.CreateIdentity(u.OwnerId),   // org only
+		Website:         primitive.CreateOrgWebsite(u.Website), // org only
 		Type:            u.Type,
 	}
 
@@ -204,26 +204,26 @@ func (u *UserDO) toOrg(e crypto.Encrypter) (o org.Organization, err error) {
 	o = org.Organization{
 		Id:              primitive.CreateIdentity(u.ID),
 		Version:         u.Version,
-		Desc:            primitive.CreateMSDDesc(u.Desc),
+		Desc:            primitive.CreateAccountDesc(u.Desc),
 		Account:         primitive.CreateAccount(u.Name),
-		Fullname:        primitive.CreateMSDFullname(u.Fullname),
+		Fullname:        primitive.CreateAccountFullname(u.Fullname),
 		AvatarId:        primitive.CreateAvatarId(u.AvatarId),
 		PlatformId:      u.PlatformId,
 		CreatedAt:       u.CreatedAt.Unix(),
 		UpdatedAt:       u.UpdatedAt.Unix(),
-		PlatformPwd:     pwd,                                 // user only
-		Email:           primitive.CreateEmail(email),        // user only
-		Phone:           primitive.CreatePhoneNumber(phone),  // user only,
-		RequestDelete:   u.RequestDelete,                     // user only
-		RequestDeleteAt: u.RequestDeleteAt,                   // user only
-		AllowRequest:    u.AllowRequest,                      // org only
-		DefaultRole:     primitive.CreateRole(u.DefaultRole), // org only
-		OwnerTeamId:     u.OwnerTeamId,                       // org only
-		ReadTeamId:      u.ReadTeamId,                        // org only
-		WriteTeamId:     u.WriteTeamId,                       // org only
-		Owner:           primitive.CreateAccount(u.Owner),    // org only
-		OwnerId:         primitive.CreateIdentity(u.OwnerId), // org only
-		Website:         u.Website,                           // org only
+		PlatformPwd:     pwd,                                   // user only
+		Email:           primitive.CreateEmail(email),          // user only
+		Phone:           primitive.CreatePhoneNumber(phone),    // user only,
+		RequestDelete:   u.RequestDelete,                       // user only
+		RequestDeleteAt: u.RequestDeleteAt,                     // user only
+		AllowRequest:    u.AllowRequest,                        // org only
+		DefaultRole:     primitive.CreateRole(u.DefaultRole),   // org only
+		OwnerTeamId:     u.OwnerTeamId,                         // org only
+		ReadTeamId:      u.ReadTeamId,                          // org only
+		WriteTeamId:     u.WriteTeamId,                         // org only
+		Owner:           primitive.CreateAccount(u.Owner),      // org only
+		OwnerId:         primitive.CreateIdentity(u.OwnerId),   // org only
+		Website:         primitive.CreateOrgWebsite(u.Website), // org only
 		Type:            u.Type,
 	}
 

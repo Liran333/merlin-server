@@ -6,10 +6,7 @@ package primitive
 
 import (
 	"errors"
-	"regexp"
 )
-
-var phoneRegexp = regexp.MustCompile(`^(\\+)?[0-9]+$`)
 
 // Phone number, china mainland supported only for now
 type Phone interface {
@@ -22,8 +19,12 @@ func NewPhone(v string) (Phone, error) {
 		return nil, errors.New("empty phone number")
 	}
 
-	if !phoneRegexp.MatchString(v) {
-		return nil, errors.New("invalid name")
+	if len(v) > phoneConfig.MaxLength {
+		return nil, errors.New("phone is too laong")
+	}
+
+	if !phoneConfig.regexp.MatchString(v) {
+		return nil, errors.New("invalid phone")
 	}
 
 	return phoneNumber(v), nil

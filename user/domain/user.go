@@ -43,10 +43,10 @@ type User struct {
 	Email           primitive.Email
 	Phone           primitive.Phone
 	Account         Account
-	Fullname        primitive.MSDFullname
+	Fullname        primitive.AccountFullname
 	PlatformPwd     string // password for git user
 	PlatformId      int64  // id in gitea
-	Website         string
+	Website         primitive.Website
 	Owner           primitive.Account
 	OwnerId         primitive.Identity
 	WriteTeamId     int64
@@ -54,7 +54,7 @@ type User struct {
 	OwnerTeamId     int64
 	CreatedAt       int64
 	UpdatedAt       int64
-	Desc            primitive.MSDDesc
+	Desc            primitive.AccountDesc
 	AvatarId        primitive.AvatarId
 	Type            UserType
 	DefaultRole     primitive.Role
@@ -160,9 +160,9 @@ func ToPerms(t primitive.TokenPerm) []string {
 type UserCreateCmd struct {
 	Email    primitive.Email
 	Account  Account
-	Desc     primitive.MSDDesc
+	Desc     primitive.AccountDesc
 	AvatarId primitive.AvatarId
-	Fullname primitive.MSDFullname
+	Fullname primitive.AccountFullname
 	Phone    primitive.Phone
 }
 
@@ -216,7 +216,7 @@ type FollowerInfo struct {
 type FollowerUserInfo struct {
 	Account    Account
 	AvatarId   primitive.AvatarId
-	Desc       primitive.MSDDesc
+	Desc       primitive.AccountDesc
 	IsFollower bool
 }
 

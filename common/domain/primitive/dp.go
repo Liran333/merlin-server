@@ -7,8 +7,9 @@ package primitive
 import (
 	"context"
 	"errors"
-	"net/url"
 	"time"
+
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 var (
@@ -54,10 +55,6 @@ func NewURL(v string) (URL, error) {
 		return nil, errors.New("empty url")
 	}
 
-	if _, err := url.Parse(v); err != nil {
-		return nil, errors.New("invalid url")
-	}
-
 	return dpURL(v), nil
 }
 
@@ -70,6 +67,44 @@ type dpURL string
 
 // URL returns the URL as a string.
 func (r dpURL) URL() string {
+	return string(r)
+}
+
+// Website is an interface for Website operations.
+type Website interface {
+	Website() string
+}
+
+// NewOrgWebsite creates a new Website instance with the given value.
+func NewOrgWebsite(v string) (Website, error) {
+	if v == "" {
+		return dpWebsite(v), nil
+	}
+
+	if len(v) > websiteConfig.MaxLength {
+		return nil, errors.New("invalid website length")
+	}
+
+	if !websiteConfig.regexp.MatchString(v) {
+		return nil, errors.New("invalid Website")
+	}
+
+	if !utils.IsUrl(v) {
+		return nil, errors.New("invalid website")
+	}
+
+	return dpWebsite(v), nil
+}
+
+// CreateOrgWebsite creates a new Website instance with the given value without validation.
+func CreateOrgWebsite(v string) Website {
+	return dpWebsite(v)
+}
+
+type dpWebsite string
+
+// Website returns the Website as a string.
+func (r dpWebsite) Website() string {
 	return string(r)
 }
 

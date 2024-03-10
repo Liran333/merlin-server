@@ -83,20 +83,25 @@ var orgAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
-		fullname, err := primitive.NewMSDFullname(viper.GetString("org.create.fullname"))
+		fullname, err := primitive.NewAccountFullname(viper.GetString("org.create.fullname"))
 		if err != nil {
 			logrus.Fatalf("invalid fullname :%s", err.Error())
 		}
-		website := viper.GetString("org.create.website")
+		var website primitive.Website
+		if viper.GetString("org.create.website") != "" {
+			website, err = primitive.NewOrgWebsite(viper.GetString("org.create.website"))
+			if err != nil {
+				logrus.Fatalf("invalid website :%s", err.Error())
+			}
+		}
 		ava, err := primitive.NewAvatarId(viper.GetString("org.create.avatarid"))
 		if err != nil {
 			logrus.Fatalf("invalid avatarid :%s", err.Error())
 		}
-		desc, err := primitive.NewMSDDesc(viper.GetString("org.create.description"))
+		desc, err := primitive.NewAccountDesc(viper.GetString("org.create.description"))
 		if err != nil {
 			logrus.Fatalf("invalid description :%s", err.Error())
 		}
-
 		owner, err := primitive.NewAccount(actor)
 		if err != nil {
 			logrus.Fatalf("invalid owner :%s", err.Error())
@@ -605,20 +610,28 @@ var orgEditCmd = &cobra.Command{
 		updateCmd := domain.OrgUpdatedBasicInfoCmd{}
 		avatar := viper.GetString("org.edit.avatar")
 		if avatar != "" {
-			updateCmd.AvatarId = avatar
+			if updateCmd.AvatarId, err = primitive.NewAvatarId(avatar); err != nil {
+				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.avatar"))
+			}
 		}
 		website := viper.GetString("org.edit.website")
 		if website != "" {
-			updateCmd.Website = website
+			if updateCmd.Website, err = primitive.NewOrgWebsite(website); err != nil {
+				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.website"))
+			}
 		}
 		fullname := viper.GetString("org.edit.fullname")
 		if fullname != "" {
+			if updateCmd.FullName, err = primitive.NewAccountFullname(fullname); err != nil {
+				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.fullname"))
+			}
 			fmt.Printf("change full name to %s", fullname)
-			updateCmd.FullName = fullname
 		}
 		desc := viper.GetString("org.edit.desc")
 		if desc != "" {
-			updateCmd.Description = desc
+			if updateCmd.Description, err = primitive.NewAccountDesc(desc); err != nil {
+				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.desc"))
+			}
 		}
 		*updateCmd.AllowRequest = viper.GetBool("org.edit.allowrequest")
 		updateCmd.DefaultRole, err = primitive.NewRole(viper.GetString("org.edit.defaultrole"))

@@ -34,8 +34,6 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	setRouterOfUser(rg, cfg, services)
 
-	setRouterOfCodeRepoFile(rg, services)
-
 	setRouterOfModelRestful(rg, services)
 
 	setRouterOfSpaceRestful(rg, services)

@@ -29,11 +29,11 @@ const (
 
 // UserInfo represents the user information structure.
 type UserInfo struct {
-	Desc     primitive.MSDDesc
+	Desc     primitive.AccountDesc
 	Name     domain.Account
 	Email    primitive.Email
 	AvatarId primitive.AvatarId
-	Fullname primitive.MSDFullname
+	Fullname primitive.AccountFullname
 	Phone    primitive.Phone
 	UserId   string
 }

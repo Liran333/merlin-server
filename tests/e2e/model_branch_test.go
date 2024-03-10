@@ -194,6 +194,34 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Nil(s.T(), err)
 }
 
+// 使用无效的分支名会导致创建分支失败
+func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
+	branchName := "invild#branch"
+	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+		Name:       "test2model",
+		Owner:      s.name,
+		License:    "mit",
+		Visibility: "public",
+		InitReadme: true,
+	})
+	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Nil(s.T(), err)
+	id := getString(s.T(), data.Data)
+
+	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model", s.name, "test2model", swagger.ControllerRestfulReqToCreateBranch{
+		BaseBranch: "main",
+		Branch:     branchName,
+	})
+	assert.Equal(s.T(), 400, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	time.Sleep(1 * time.Second)
+
+	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 func TestModelBranch(t *testing.T) {
 	suite.Run(t, new(SuiteModelBranch))
 }

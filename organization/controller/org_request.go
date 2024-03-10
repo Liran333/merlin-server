@@ -14,12 +14,12 @@ import (
 )
 
 type orgBasicInfoUpdateRequest struct {
-	FullName     string `json:"fullname"`
-	Website      string `json:"website"`
-	AvatarId     string `json:"avatar_id"`
-	Description  string `json:"description"`
-	AllowRequest *bool  `json:"allow_request,omitempty"`
-	DefaultRole  string `json:"default_role"`
+	FullName     string  `json:"fullname"`
+	Website      *string `json:"website"`
+	AvatarId     string  `json:"avatar_id"`
+	Description  string  `json:"description"`
+	AllowRequest *bool   `json:"allow_request,omitempty"`
+	DefaultRole  string  `json:"default_role"`
 }
 
 func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName string) (
@@ -34,22 +34,30 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 
 	empty := true
 	if req.FullName != "" {
-		cmd.FullName = req.FullName
+		if cmd.FullName, err = primitive.NewAccountFullname(req.FullName); err != nil {
+			return
+		}
 		empty = false
 	}
 
 	if req.AvatarId != "" {
-		cmd.AvatarId = req.AvatarId
+		if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+			return
+		}
 		empty = false
 	}
 
-	if req.Website != "" {
-		cmd.Website = req.Website
+	if req.Website != nil {
+		if cmd.Website, err = primitive.NewOrgWebsite(*req.Website); err != nil {
+			return
+		}
 		empty = false
 	}
 
 	if req.Description != "" {
-		cmd.Description = req.Description
+		if cmd.Description, err = primitive.NewAccountDesc(req.Description); err != nil {
+			return
+		}
 		empty = false
 	}
 
@@ -130,7 +138,7 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 		return
 	}
 
-	if cmd.FullName, err = primitive.NewMSDFullname(req.FullName); err != nil {
+	if cmd.FullName, err = primitive.NewAccountFullname(req.FullName); err != nil {
 		return
 	}
 
@@ -138,12 +146,13 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 		return
 	}
 
-	if cmd.Description, err = primitive.NewMSDDesc(req.Description); err != nil {
+	if cmd.Description, err = primitive.NewAccountDesc(req.Description); err != nil {
 		return
 	}
 
-	cmd.Website = req.Website
-
+	if cmd.Website, err = primitive.NewOrgWebsite(req.Website); err != nil {
+		return
+	}
 	return
 }
 
