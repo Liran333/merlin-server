@@ -23,8 +23,8 @@ func AddRouterForSpaceappWebController(
 	l middleware.RateLimiter,
 ) {
 	ctl := SpaceAppWebController{
-		appService:     s,
-		userMiddleWare: m,
+		appService:          s,
+		userMiddleWare:      m,
 		rateLimitMiddleWare: l,
 	}
 
@@ -33,8 +33,8 @@ func AddRouterForSpaceappWebController(
 
 // SpaceAppWebController is a struct that represents the web controller for the space app.
 type SpaceAppWebController struct {
-	appService     app.SpaceappAppService
-	userMiddleWare middleware.UserMiddleWare
+	appService          app.SpaceappAppService
+	userMiddleWare      middleware.UserMiddleWare
 	rateLimitMiddleWare middleware.RateLimiter
 }
 

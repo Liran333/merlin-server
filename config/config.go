@@ -8,13 +8,12 @@ package config
 import (
 	"os"
 
-	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
-
 	redislib "github.com/opensourceways/redis-lib"
 
 	"github.com/openmerlin/merlin-server/coderepo"
 	common "github.com/openmerlin/merlin-server/common/config"
 	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"

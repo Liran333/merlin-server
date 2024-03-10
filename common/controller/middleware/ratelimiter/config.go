@@ -14,8 +14,6 @@ func Init(cfg *Config) {
 
 // Config holds the configuration for the rate limiter
 type Config struct {
-	RequestNum 	  int `json:"request_num" required:"true"`
-	BurstNum      int `json:"burst_num" required:"true"`
+	RequestNum int `json:"request_num" required:"true"`
+	BurstNum   int `json:"burst_num"   required:"true"`
 }
-
-
