@@ -133,7 +133,7 @@ func main() {
 	}
 
 	// redis
-	if err := redisdb.Init(&cfg.Redis, false); err != nil {
+	if err := redisdb.Init(&cfg.Redis, o.service.RemoveCfg); err != nil {
 		logrus.Errorf("init redis failed, err:%s", err.Error())
 
 		return
