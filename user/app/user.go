@@ -83,7 +83,7 @@ func NewUserService(
 	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
 	sc SessionClearAppService,
-	cfg *domain.Config,
+	cfg domain.Config,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -103,7 +103,7 @@ type userService struct {
 	token        repository.Token
 	session      session.SessionRepositoryAdapter
 	sessionClear SessionClearAppService
-	cfg          *domain.Config
+	cfg          domain.Config
 }
 
 // Create creates a new user in the system.
