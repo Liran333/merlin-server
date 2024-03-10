@@ -83,7 +83,7 @@ func NewUserService(
 	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
 	sc SessionClearAppService,
-	cfg domain.Config,
+	cfg *domain.Config,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -103,7 +103,7 @@ type userService struct {
 	token        repository.Token
 	session      session.SessionRepositoryAdapter
 	sessionClear SessionClearAppService
-	cfg          domain.Config
+	cfg          *domain.Config
 }
 
 // Create creates a new user in the system.
@@ -118,7 +118,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 		return
 	}
 
-	if err = s.ValiAvatar(cmd.AvatarId.AvatarId()); err != nil {
+	if err = s.ValidateAvatar(cmd.AvatarId.AvatarId()); err != nil {
 		err = allerror.NewInvalidParam(err.Error())
 		return
 	}
@@ -167,7 +167,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
-	if err = s.ValiAvatar(user.AvatarId.AvatarId()); err != nil {
+	if err = s.ValidateAvatar(user.AvatarId.AvatarId()); err != nil {
 		err = allerror.NewInvalidParam(err.Error())
 		return
 	}
@@ -197,7 +197,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 	return
 }
 
-func (s userService) ValiAvatar(avatarId string) error {
+func (s userService) ValidateAvatar(avatarId string) error {
 	if avatarId == "" {
 		return nil
 	}
