@@ -5,7 +5,9 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -83,6 +85,7 @@ func NewUserService(
 	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
 	sc SessionClearAppService,
+	cfg domain.Config,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -91,6 +94,7 @@ func NewUserService(
 		token:        token,
 		session:      session,
 		sessionClear: sc,
+		cfg:          cfg,
 	}
 }
 
@@ -101,6 +105,7 @@ type userService struct {
 	token        repository.Token
 	session      session.SessionRepositoryAdapter
 	sessionClear SessionClearAppService
+	cfg          domain.Config
 }
 
 // Create creates a new user in the system.
@@ -111,6 +116,11 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 	}
 
 	if err = cmd.Validate(); err != nil {
+		err = allerror.NewInvalidParam(err.Error())
+		return
+	}
+
+	if err = s.ValidateAvatar(cmd.AvatarId.AvatarId()); err != nil {
 		err = allerror.NewInvalidParam(err.Error())
 		return
 	}
@@ -159,6 +169,11 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
+	if err = s.ValidateAvatar(user.AvatarId.AvatarId()); err != nil {
+		err = allerror.NewInvalidParam(err.Error())
+		return
+	}
+
 	if user, err = s.repo.SaveUser(&user); err != nil {
 		err = allerror.NewInvalidParam("failed to update user info")
 		return
@@ -182,6 +197,24 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 	dto = newUserDTO(&user, account)
 
 	return
+}
+
+func (s userService) ValidateAvatar(avatarId string) error {
+	if avatarId == "" {
+		return nil
+	}
+
+	if len(s.cfg.AcceptableAvatarDomains) > 0 {
+		for _, domain := range s.cfg.AcceptableAvatarDomains {
+			if strings.HasPrefix(avatarId, domain) {
+				return nil
+			}
+		}
+		return errors.New("avatar url domain not allowed")
+	}
+
+	logrus.Info("no acceptable avatar domains configured")
+	return nil
 }
 
 // GetPlatformUser retrieves the platform user info for the given account.

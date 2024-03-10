@@ -12,8 +12,9 @@ type tables struct {
 
 // Config is a struct that holds the configuration for the program.
 type Config struct {
-	Tables tables `json:"tables"            required:"true"`
-	Key    []byte `json:"key"               required:"true"`
+	Tables                  tables   `json:"tables"            			required:"true"`
+	Key                     []byte   `json:"key"               			required:"true"`
+	AcceptableAvatarDomains []string `json:"acceptable_avatar_domains" 	required:"true"`
 }
 
 var _config Config
