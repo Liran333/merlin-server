@@ -57,6 +57,7 @@ type UserDO struct {
 	RequestDelete   bool   `gorm:"column:request_delete"`
 	RequestDeleteAt int64  `gorm:"column:request_delete_at"`
 	Version         int    `gorm:"column:version"`
+	IsAgreePrivacy  bool   `gorm:"column:is_agree_privacy;default:t"`
 }
 
 func toUserDONoEnc(u *domain.User) (do UserDO) {
@@ -111,6 +112,7 @@ func toUserDO(u *domain.User, e crypto.Encrypter) (do UserDO, err error) {
 		Phone:           phone,
 		RequestDelete:   u.RequestDelete,
 		RequestDeleteAt: u.RequestDeleteAt,
+		IsAgreePrivacy:  u.IsAgreePrivacy,
 	}
 
 	if u.Desc != nil {
@@ -225,6 +227,7 @@ func (u *UserDO) toOrg(e crypto.Encrypter) (o org.Organization, err error) {
 		OwnerId:         primitive.CreateIdentity(u.OwnerId),   // org only
 		Website:         primitive.CreateOrgWebsite(u.Website), // org only
 		Type:            u.Type,
+		IsAgreePrivacy:  u.IsAgreePrivacy,
 	}
 
 	return

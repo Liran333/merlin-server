@@ -62,11 +62,20 @@ type User struct {
 	RequestDelete   bool
 	RequestDeleteAt int64
 	Version         int
+	IsAgreePrivacy  bool
 }
 
 // IsOrganization checks if the user is an organization.
-func (u User) IsOrganization() bool {
+func (u *User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
+}
+
+func (u *User) AgreePrivacy() {
+	u.IsAgreePrivacy = true
+}
+
+func (u *User) RevokePrivacy() {
+	u.IsAgreePrivacy = false
 }
 
 // UserInfo represents additional information about a user.

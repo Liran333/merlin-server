@@ -99,6 +99,9 @@ const (
 	// ErrorCodeEmailDuplicateSend is const
 	ErrorCodeEmailDuplicateSend = "email_duplicate_send"
 
+	// ErrorCodeDisAgreedPrivacy is const
+	ErrorCodeDisAgreedPrivacy = "disagreed_privacy"
+
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 )

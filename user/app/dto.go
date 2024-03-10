@@ -41,6 +41,7 @@ type UserDTO struct {
 	RequestDelete   bool    `json:"request_delete"`
 	RequestDeleteAt int64   `json:"request_delete_at"`
 	DefaultRole     string  `json:"default_role,omitempty"`
+	IsAgreePrivacy  bool    `json:"-"`
 }
 
 // NewUserDTO creates a new UserDTO based on the given domain.User object.
@@ -89,6 +90,7 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	dto.CreatedAt = u.CreatedAt
 	dto.UpdatedAt = u.UpdatedAt
 	dto.Id = u.Id.Identity()
+	dto.IsAgreePrivacy = u.IsAgreePrivacy
 
 	return
 }

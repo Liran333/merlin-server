@@ -75,6 +75,13 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 		}
 	}
 
+	if !user.IsAgreePrivacy {
+		err = s.userApp.AgreePrivacy(primitive.CreateAccount(user.Name))
+		if err != nil {
+			return
+		}
+	}
+
 	if err = s.clearLogin(login.Name, cmd.IP); err != nil {
 		return
 	}

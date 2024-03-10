@@ -34,6 +34,7 @@ type allServices struct {
 	securityLog           middleware.SecurityLog
 	userMiddleWare        middleware.UserMiddleWare
 	rateLimiterMiddleWare middleware.RateLimiter
+	privacyCheck          middleware.PrivacyCheck
 
 	modelApp modelapp.ModelAppService
 

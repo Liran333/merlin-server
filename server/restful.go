@@ -12,6 +12,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/operationlog"
+	"github.com/openmerlin/merlin-server/common/controller/middleware/privacycheck"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/securitylog"
 	"github.com/openmerlin/merlin-server/config"
@@ -28,6 +29,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 	if services.rateLimiterMiddleWare == nil {
 		logrus.Fatalf("init ratelimit failed")
 	}
+
+	services.privacyCheck = privacycheck.PrivacyCheck(services.userMiddleWare, services.userApp)
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

@@ -71,6 +71,8 @@ type UserService interface {
 	VerifyBindEmail(*CmdToVerifyBindEmail) error
 
 	PrivacyRevoke(user primitive.Account) (string, error)
+	AgreePrivacy(user primitive.Account) error
+	IsAgreePrivacy(user primitive.Account) (bool, error)
 }
 
 // NewUserService creates a new UserService instance with the provided dependencies.
@@ -654,12 +656,44 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 
 	ss := sessions[0]
 	if ss.UserId == "" || ss.IdToken == "" {
-		return "", fmt.Errorf("user info not found")
+		return "", fmt.Errorf("session info not found")
 	}
 
 	if err = s.oidc.PrivacyRevoke(ss.UserId); err != nil {
 		return "", err
 	}
 
+	userInfo, err := s.repo.GetByAccount(user)
+	if err != nil {
+		return "", err
+	}
+
+	userInfo.RevokePrivacy()
+	if _, err = s.repo.SaveUser(&userInfo); err != nil {
+		return "", err
+	}
+
 	return ss.IdToken, s.sessionClear.ClearAllSession(user)
+}
+
+func (s userService) AgreePrivacy(user primitive.Account) error {
+	userInfo, err := s.repo.GetByAccount(user)
+	if err != nil {
+		return err
+	}
+
+	userInfo.AgreePrivacy()
+
+	_, err = s.repo.SaveUser(&userInfo)
+
+	return err
+}
+
+func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
+	userInfo, err := s.repo.GetByAccount(user)
+	if err != nil {
+		return false, err
+	}
+
+	return userInfo.IsAgreePrivacy, nil
 }
