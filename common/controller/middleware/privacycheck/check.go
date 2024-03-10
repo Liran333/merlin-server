@@ -6,6 +6,7 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
@@ -29,6 +30,32 @@ func (c *privacyCheck) Check(ctx *gin.Context) {
 		return
 	}
 
+	c.check(ctx, user)
+}
+
+func (c *privacyCheck) CheckOwner(ctx *gin.Context) {
+	owner, err := primitive.NewAccount(ctx.Param("owner"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		ctx.Abort()
+	}
+
+	c.check(ctx, owner)
+}
+
+func (c *privacyCheck) CheckName(ctx *gin.Context) {
+	name, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	c.check(ctx, name)
+}
+
+func (c *privacyCheck) check(ctx *gin.Context, user primitive.Account) {
 	isAgree, err := c.userApp.IsAgreePrivacy(user)
 	if err != nil {
 		commonctl.SendError(ctx, err)

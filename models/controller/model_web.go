@@ -21,6 +21,7 @@ func AddRouteForModelWebController(
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
 	u userapp.UserService,
+	p middleware.PrivacyCheck,
 ) {
 	ctl := ModelWebController{
 		ModelController: ModelController{
@@ -32,8 +33,8 @@ func AddRouteForModelWebController(
 
 	addRouteForModelController(r, &ctl.ModelController, l)
 
-	r.GET("/v1/model/:owner/:name", m.Optional, ctl.Get)
-	r.GET("/v1/model/:owner", m.Optional, ctl.List)
+	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, ctl.Get)
+	r.GET("/v1/model/:owner", p.CheckOwner, m.Optional, ctl.List)
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
 }
 

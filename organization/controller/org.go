@@ -29,6 +29,7 @@ func AddRouterForOrgController(
 	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 	rl middleware.RateLimiter,
+	p middleware.PrivacyCheck,
 ) {
 	ctl := OrgController{
 		m:    m,
@@ -70,7 +71,7 @@ func AddRouterForOrgController(
 	rg.PUT("/v1/organization/:name/member", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.EditMember)
 
-	rg.GET("/v1/account/:name", m.Optional, rl.CheckLimit, ctl.GetUser)
+	rg.GET("/v1/account/:name", p.CheckName, m.Optional, rl.CheckLimit, ctl.GetUser)
 }
 
 // OrgController is a struct that contains the necessary dependencies for organization-related operations.
