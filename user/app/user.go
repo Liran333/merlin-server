@@ -202,14 +202,16 @@ func (s userService) ValidateAvatar(avatarId string) error {
 		return nil
 	}
 
-	if len(s.cfg.AvatarAccept) > 0 {
-		for _, domain := range s.cfg.AvatarAccept {
+	if len(s.cfg.AcceptableAvatarDomains) > 0 {
+		for _, domain := range s.cfg.AcceptableAvatarDomains {
 			if strings.HasPrefix(avatarId, domain) {
 				return nil
 			}
 		}
 		return errors.New("avatar url domain not allowed")
 	}
+
+	logrus.Info("no acceptable avatar domains configured")
 	return nil
 }
 
