@@ -58,7 +58,7 @@ func initorg() {
 	)
 
 	userAppService := userapp.NewUserService(
-		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session)
+		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session, cfg.User)
 
 	orgAppService = orgapp.NewOrgService(
 		userAppService, user, member, invite, p, &cfg.Org, git)

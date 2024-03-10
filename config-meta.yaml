@@ -43,3 +43,7 @@ RESERVED_ACCOUNTS:
   - "tasks"
   - "tool"
   - "users"
+AVATAR_ACCEPT: 
+  - "https://gitee.com"
+  - "https://files.authing.co"
+  - "https://avatars.githubusercontent.com"

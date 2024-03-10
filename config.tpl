@@ -126,6 +126,10 @@ user:
     user: user
     token: token
   key: {{(ds "secret").data.USER_ENC_KEY }}
+  avatar_accept: 
+  {{- range (ds "data").AVATAR_ACCEPT}}
+    - "{{ . }}"
+  {{- end }}
 
 coderepo:
   primitive:
