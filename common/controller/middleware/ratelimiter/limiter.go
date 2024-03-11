@@ -9,18 +9,17 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/go-redis/redis/v8"
+	"github.com/throttled/throttled/v2"
+	"github.com/throttled/throttled/v2/store/goredisstore.v8"
 	"io/ioutil"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
-	redislib "github.com/opensourceways/redis-lib"
-	"github.com/sirupsen/logrus"
-	"github.com/throttled/throttled/v2"
-	"github.com/throttled/throttled/v2/store/goredisstore"
-
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	redislib "github.com/opensourceways/redis-lib"
+	"github.com/sirupsen/logrus"
 )
 
 const (
