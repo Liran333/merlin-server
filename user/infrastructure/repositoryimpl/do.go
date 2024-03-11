@@ -169,7 +169,7 @@ func (u *UserDO) toOrgNoEnc() (o org.Organization) {
 		CreatedAt:       u.CreatedAt.Unix(),
 		UpdatedAt:       u.UpdatedAt.Unix(),
 		PlatformPwd:     u.PlatformPwd,                         // user only
-		Email:           primitive.CreateEmail(u.Email),        // user only
+		Email:           primitive.CreateUserEmail(u.Email),    // user only
 		Phone:           primitive.CreatePhoneNumber(u.Phone),  // user only,
 		RequestDelete:   u.RequestDelete,                       // user only
 		RequestDeleteAt: u.RequestDeleteAt,                     // user only
@@ -214,7 +214,7 @@ func (u *UserDO) toOrg(e crypto.Encrypter) (o org.Organization, err error) {
 		CreatedAt:       u.CreatedAt.Unix(),
 		UpdatedAt:       u.UpdatedAt.Unix(),
 		PlatformPwd:     pwd,                                   // user only
-		Email:           primitive.CreateEmail(email),          // user only
+		Email:           primitive.CreateUserEmail(email),      // user only
 		Phone:           primitive.CreatePhoneNumber(phone),    // user only,
 		RequestDelete:   u.RequestDelete,                       // user only
 		RequestDeleteAt: u.RequestDeleteAt,                     // user only

@@ -18,7 +18,7 @@ type SDK interface {
 func NewSDK(v string) (SDK, error) {
 	v = strings.ToLower(strings.TrimSpace(v))
 
-	if v == "" || !allSDK[v] {
+	if _, ok := sdkObjects[v]; v == "" || !ok {
 		return nil, errors.New("unsupported sdk")
 	}
 

@@ -30,13 +30,13 @@ space:
     space: "space"
   primitive:
     sdk:
-{{- range (ds "common").SPACE_SDK}}
-    - {{ . }}
-{{- end }}
-    hardware:
-{{- range (ds "common").SPACE_HARDWARE}}
-    - {{ . }}
-{{- end }}
+  {{- range (ds "common").SPACE_SDK}}
+    - type: {{.TYPE}}
+      hardware:
+    {{- range .HARDWARE}}
+      - '{{.}}'
+    {{- end }}
+  {{- end }}
   topics:
     space_updated: space_updated
     space_deleted: space_deleted
@@ -135,37 +135,38 @@ user:
 
 coderepo:
   primitive:
-    max_branch_name_length: {{(ds "common").MAX_BRANCH_NAME_LEN }}
     branch_regexp: {{(ds "common").BRANCH_REGEXP }}
+    branch_name_min_length: {{(ds "common").BRANCH_NAME_MIN_LEN }}
+    branch_name_max_length: {{(ds "common").BRANCH_NAME_MAX_LEN }}
   tables:
     branch: branch
 
 primitive:
   msd:
     msd_name_regexp: {{(ds "common").MSD_NAME_REGEXP }}
-    msd_min_name_length: {{(ds "common").MIN_MSD_NAME_LEN }}
-    msd_max_name_length: {{(ds "common").MAX_MSD_NAME_LEN }}
-    msd_max_desc_length: {{(ds "common").MAX_MSD_DESC_LEN }}
-    msd_max_fullname_length: {{(ds "common").MAX_MSD_FULLNAME_LEN }}
+    msd_name_min_length: {{(ds "common").MSD_NAME_MIN_LEN }}
+    msd_name_max_length: {{(ds "common").MSD_NAME_MAX_LEN }}
+    msd_desc_max_length: {{(ds "common").MSD_DESC_MAX_LEN }}
+    msd_fullname_max_length: {{(ds "common").MSD_FULLNAME_MAX_LEN }}
   email:
     email_regexp: {{(ds "common").EMAIL_REGEXP }}
-    email_max_length: {{(ds "common").MAX_EMAIL_LEN }}
+    email_max_length: {{(ds "common").EMAIL_MAX_LEN }}
   phone:
     phone_regexp: {{(ds "common").PHONE_REGEXP }}
     phone_max_length: {{(ds "common").PHONE_MAX_LEN }}
   token:
     token_name_regexp: {{(ds "common").TOKEN_NAME_REGEXP }}
-    token_min_name_length: {{(ds "common").MIN_TOKEN_NAME_LEN }}
-    token_max_name_length: {{(ds "common").MAX_TOKEN_NAME_LEN }}
+    token_name_min_length: {{(ds "common").TOKEN_NAME_MIN_LEN }}
+    token_name_max_length: {{(ds "common").TOKEN_NAME_MAX_LEN }}
   website:
     website_regexp: {{(ds "common").WEBSITE_REGEXP }}
-    website_max_length: {{(ds "common").MAX_WEBSITE_LEN }}
+    website_max_length: {{(ds "common").WEBSITE_MAX_LEN }}
   account:
     account_name_regexp: {{(ds "common").ACCOUNT_NAME_REGEXP }}
-    account_min_name_length: {{(ds "common").MIN_ACCOUNT_NAME_LEN }}
-    account_max_name_length: {{(ds "common").MAX_ACCOUNT_NAME_LEN }}
-    account_max_desc_length: {{(ds "common").MAX_ACCOUNT_DESC_LEN }}
-    account_max_fullname_length: {{(ds "common").MAX_ACCOUNT_FULLNAME_LEN }}
+    account_name_min_length: {{(ds "common").ACCOUNT_NAME_MIN_LEN }}
+    account_name_max_length: {{(ds "common").ACCOUNT_NAME_MAX_LEN }}
+    account_desc_max_length: {{(ds "common").ACCOUNT_DESC_MAX_LEN }}
+    account_fullname_max_length: {{(ds "common").ACCOUNT_FULLNAME_MAX_LEN }}
     reserved_accounts:
   {{- range (ds "data").RESERVED_ACCOUNTS}}
     - "{{ . }}"

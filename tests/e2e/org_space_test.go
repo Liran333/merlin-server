@@ -88,7 +88,7 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "tempFullName",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "tempSpace",
@@ -129,7 +129,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	_, r, err = Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -144,7 +144,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -193,7 +193,7 @@ func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -218,7 +218,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -255,7 +255,7 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",

@@ -85,20 +85,22 @@ func (cfg *Config) ConfigItems() []interface{} {
 // MSDConfig represents the configuration for MSD.
 type MSDConfig struct {
 	NameRegexp        string `json:"msd_name_regexp"          required:"true"`
-	MaxNameLength     int    `json:"msd_max_name_length"      required:"true"`
-	MinNameLength     int    `json:"msd_min_name_length"      required:"true"`
-	MaxDescLength     int    `json:"msd_max_desc_length"      required:"true"`
-	MaxFullnameLength int    `json:"msd_max_fullname_length"  required:"true"`
+	MaxNameLength     int    `json:"msd_name_max_length"      required:"true"`
+	MinNameLength     int    `json:"msd_name_min_length"      required:"true"`
+	MaxDescLength     int    `json:"msd_desc_max_length"      required:"true"`
+	MaxFullnameLength int    `json:"msd_fullname_max_length"  required:"true"`
 
 	nameRegexp *regexp.Regexp
 }
 
+// SetDefault sets default values for MSDConfig whether they are valid.
 func (cfg *MSDConfig) Validate() (err error) {
 	cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp)
 
 	return
 }
 
+// EmailConfig represents the configuration for Email.
 type EmailConfig struct {
 	Regexp    string `json:"email_regexp"      required:"true"`
 	MaxLength int    `json:"email_max_length"  required:"true"`
@@ -106,12 +108,14 @@ type EmailConfig struct {
 	regexp *regexp.Regexp
 }
 
+// SetDefault sets default values for EmailConfig whether they are valid.
 func (cfg *EmailConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
 	return
 }
 
+// PhoneConfig represents the configuration for Phone.
 type PhoneConfig struct {
 	Regexp    string `json:"phone_regexp"      required:"true"`
 	MaxLength int    `json:"phone_max_length"  required:"true"`
@@ -119,26 +123,30 @@ type PhoneConfig struct {
 	regexp *regexp.Regexp
 }
 
+// SetDefault sets default values for PhoneConfig whether they are valid.
 func (cfg *PhoneConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
 	return
 }
 
+// TokenConfig represents the configuration for Token.
 type TokenConfig struct {
 	Regexp        string `json:"token_name_regexp"     required:"true"`
-	MaxNameLength int    `json:"token_max_name_length" required:"true"`
-	MinNameLength int    `json:"token_min_name_length" required:"true"`
+	MaxNameLength int    `json:"token_name_max_length" required:"true"`
+	MinNameLength int    `json:"token_name_min_length" required:"true"`
 
 	regexp *regexp.Regexp
 }
 
+// SetDefault sets default values for TokenConfig whether they are valid.
 func (cfg *TokenConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
 	return
 }
 
+// WebsiteConfig represents the configuration for Website.
 type WebsiteConfig struct {
 	Regexp    string `json:"website_regexp"     required:"true"`
 	MaxLength int    `json:"website_max_length" required:"true"`
@@ -146,6 +154,7 @@ type WebsiteConfig struct {
 	regexp *regexp.Regexp
 }
 
+// SetDefault sets default values for WebsiteConfig whether they are valid.
 func (cfg *WebsiteConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
@@ -155,16 +164,17 @@ func (cfg *WebsiteConfig) Validate() (err error) {
 // AccountConfig represents the configuration for Account.
 type AccountConfig struct {
 	NameRegexp        string   `json:"account_name_regexp"         required:"true"`
-	MaxNameLength     int      `json:"account_max_name_length"     required:"true"`
-	MinNameLength     int      `json:"account_min_name_length"     required:"true"`
-	MaxDescLength     int      `json:"account_max_desc_length"     required:"true"`
+	MaxNameLength     int      `json:"account_name_max_length"     required:"true"`
+	MinNameLength     int      `json:"account_name_min_length"     required:"true"`
+	MaxDescLength     int      `json:"account_desc_max_length"     required:"true"`
 	ReservedAccounts  []string `json:"reserved_accounts"           required:"true"`
-	MaxFullnameLength int      `json:"account_max_fullname_length" required:"true"`
+	MaxFullnameLength int      `json:"account_fullname_max_length" required:"true"`
 
 	nameRegexp       *regexp.Regexp
 	reservedAccounts sets.Set[string]
 }
 
+// SetDefault sets default values for AccountConfig whether they are valid.
 func (cfg *AccountConfig) Validate() (err error) {
 	if cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp); err != nil {
 		return err

@@ -6,6 +6,7 @@ package primitive
 
 import (
 	"errors"
+	"fmt"
 )
 
 // MSDName is an interface representing a name.
@@ -18,7 +19,8 @@ type MSDName interface {
 func NewMSDName(v string) (MSDName, error) {
 	n := len(v)
 	if n > msdConfig.MaxNameLength || n < msdConfig.MinNameLength {
-		return nil, errors.New("invalid name")
+		return nil, fmt.Errorf("invalid name length, should between %d and %d",
+			msdConfig.MinNameLength, msdConfig.MaxNameLength)
 	}
 
 	if !msdConfig.nameRegexp.MatchString(v) {

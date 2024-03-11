@@ -86,7 +86,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		return
 	}
 
-	if userInfo.Email, err = primitive.NewEmail(v.Email); err != nil {
+	if userInfo.Email, err = primitive.NewUserEmail(v.Email); err != nil {
 		return
 	}
 

@@ -61,7 +61,7 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 		return
 	}
 
-	if cmd.Hardware, err = spaceprimitive.NewHardware(req.Hardware); err != nil {
+	if cmd.Hardware, err = spaceprimitive.NewHardware(req.Hardware, req.SDK); err != nil {
 		return
 	}
 
@@ -125,8 +125,8 @@ func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
 		}
 	}
 
-	if p.Hardware != nil {
-		if cmd.Hardware, err = spaceprimitive.NewHardware(*p.Hardware); err != nil {
+	if p.Hardware != nil && p.SDK != nil {
+		if cmd.Hardware, err = spaceprimitive.NewHardware(*p.Hardware, *p.SDK); err != nil {
 			return
 		}
 	}

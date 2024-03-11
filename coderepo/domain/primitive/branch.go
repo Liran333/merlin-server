@@ -27,8 +27,8 @@ func NewBranchName(v string) (BranchName, error) {
 		return nil, errors.New("branch name empty")
 	}
 
-	if len(v) > branchConfig.MaxBranchNameLength {
-		return nil, errors.New("branch name too long")
+	if len(v) > branchConfig.MaxBranchNameLength || len(v) < branchConfig.MinBranchNameLength {
+		return nil, errors.New("branch name length is invalid")
 	}
 
 	if !branchConfig.branchRegexp.MatchString(v) {

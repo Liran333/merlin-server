@@ -34,7 +34,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -51,7 +51,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
 		Desc:     "space desc new",
 		Fullname: "spacefullname-new",
-		Hardware: "CPU basic 2 vCPU · 16GB · FREE",
+		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
 		Name:     "testspace-new",
 	})
 
@@ -68,7 +68,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	_, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "invalid#testspace",
@@ -83,7 +83,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -100,7 +100,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
 		Desc:     "space desc new",
 		Fullname: "spacefullname-new",
-		Hardware: "CPU basic 2 vCPU · 16GB · FREE",
+		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
 		Name:     "invalid#testspace",
 	})
 
@@ -118,7 +118,7 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 	_, r, err := Api.SpaceApi.V1SpacePost(context.Background(), swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
@@ -137,7 +137,7 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 //	 data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 //		 Desc:       "space desc",
 //		 Fullname:   "spacefullname",
-//		 Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+//		 Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 //		 InitReadme: false,
 //		 License:    "mit",
 //		 Name:       "testspace",

@@ -14,8 +14,8 @@ type Email interface {
 	Email() string
 }
 
-// NewEmail creates a new Email instance with the given value.
-func NewEmail(v string) (Email, error) {
+// NewUserEmail creates a new Email instance with the given value.
+func NewUserEmail(v string) (Email, error) {
 	if v == "" {
 		return dpEmail(v), nil
 	}
@@ -38,8 +38,8 @@ func NewEmail(v string) (Email, error) {
 	return dpEmail(v), nil
 }
 
-// CreateEmail creates a new Email instance without validating the email address.
-func CreateEmail(v string) Email {
+// CreateUserEmail creates a new Email instance without validating the email address.
+func CreateUserEmail(v string) Email {
 	return dpEmail(v)
 }
 

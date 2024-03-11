@@ -14,11 +14,15 @@ type Hardware interface {
 	Hardware() string
 }
 
-// NewHardware creates a new Hardware instance based on the given string.
-func NewHardware(v string) (Hardware, error) {
+// NewHardware creates a new Hardware instance decided by sdk based on the given string.
+func NewHardware(v string, sdk string) (Hardware, error) {
 	v = strings.ToLower(strings.TrimSpace(v))
 
-	if v == "" || !allHardware[v] {
+	if _, ok := sdkObjects[sdk]; sdk == "" || !ok {
+		return nil, errors.New("unsupported sdk")
+	}
+
+	if v == "" || !sdkObjects[sdk].Has(v) {
 		return nil, errors.New("unsupported hardware")
 	}
 

@@ -17,8 +17,9 @@ func Init(cfg *Config) {
 
 // Config represents the configuration for the application.
 type Config struct {
-	MaxBranchNameLength int    `json:"max_branch_name_length"`
-	BranchRegexp        string `json:"branch_regexp" required:"true"`
+	BranchRegexp        string `json:"branch_regexp"           required:"true"`
+	MinBranchNameLength int    `json:"branch_name_min_length"  required:"true"`
+	MaxBranchNameLength int    `json:"branch_name_max_length"  required:"true"`
 
 	branchRegexp *regexp.Regexp
 }

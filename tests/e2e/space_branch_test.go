@@ -77,7 +77,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	data, r, err = Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: true,
 		License:    "mit",
 		Name:       "testspace",
@@ -170,7 +170,7 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: true,
 		License:    "mit",
 		Name:       "test2space",
@@ -207,7 +207,7 @@ func (s *SuiteSpaceBranch) TestOrgUserCreateInvalidBranch() {
 	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 4GB · FREE",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		InitReadme: true,
 		License:    "mit",
 		Name:       "test2space",

@@ -67,7 +67,7 @@ func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
 		return
 	}
 
-	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
+	if cmd.Email, err = primitive.NewUserEmail(req.Email); err != nil {
 		return
 	}
 
@@ -142,7 +142,7 @@ func (req *bindEmailRequest) action() string {
 }
 
 func (req *bindEmailRequest) toCmd(user domain.Account) (cmd app.CmdToVerifyBindEmail, err error) {
-	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
+	if cmd.Email, err = primitive.NewUserEmail(req.Email); err != nil {
 		return
 	}
 
@@ -163,7 +163,7 @@ func (req *sendEmailRequest) action() string {
 }
 
 func (req *sendEmailRequest) toCmd(user domain.Account) (cmd app.CmdToSendBindEmail, err error) {
-	if cmd.Email, err = primitive.NewEmail(req.Email); err != nil {
+	if cmd.Email, err = primitive.NewUserEmail(req.Email); err != nil {
 		return
 	}
 

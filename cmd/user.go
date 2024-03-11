@@ -37,7 +37,7 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		email, err := primitive.NewEmail(viper.GetString("user.create.email"))
+		email, err := primitive.NewUserEmail(viper.GetString("user.create.email"))
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
@@ -201,7 +201,7 @@ var userBindCmd = &cobra.Command{
 			logrus.Fatalf("edit user failed :%s with %s", err.Error(), viper.GetString("user.bind.name"))
 		}
 
-		email, err := primitive.NewEmail(viper.GetString("user.bind.email"))
+		email, err := primitive.NewUserEmail(viper.GetString("user.bind.email"))
 		if err != nil {
 			logrus.Fatalf("user email invalid, %s", err)
 		}
