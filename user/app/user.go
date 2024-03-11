@@ -725,6 +725,10 @@ func (s userService) AgreePrivacy(user primitive.Account) error {
 func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
 	userInfo, err := s.repo.GetByAccount(user)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			return true, nil
+		}
+
 		return false, err
 	}
 
