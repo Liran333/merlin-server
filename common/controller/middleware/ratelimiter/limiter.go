@@ -9,17 +9,18 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"github.com/throttled/throttled/v2"
-	"github.com/throttled/throttled/v2/store/goredisstore.v8"
 	"io/ioutil"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	commonctl "github.com/openmerlin/merlin-server/common/controller"
-	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	"github.com/go-redis/redis/v8"
 	redislib "github.com/opensourceways/redis-lib"
 	"github.com/sirupsen/logrus"
+	"github.com/throttled/throttled/v2"
+	"github.com/throttled/throttled/v2/store/goredisstore.v8"
+
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 )
 
 const (
@@ -98,7 +99,8 @@ func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 		logrus.Errorf("get new rate store err:%s", err)
 		return fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
 	}
-
+	// set max cas limit value
+	rateLimitCtx.SetMaxCASAttemptsLimit(requestNum)
 	logrus.Infof(" ratelimit with: rate: %d burst: %d", requestNum, burstNum)
 
 	httpRateLimiter := &throttled.HTTPRateLimiterCtx{
