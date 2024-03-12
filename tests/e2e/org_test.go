@@ -220,7 +220,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
 	d := swagger.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
-		Description: string(make([]byte, http.StatusCreated)),
+		Description: string(make([]byte, 256)),
 	}
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)

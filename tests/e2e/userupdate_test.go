@@ -99,7 +99,7 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 
 	d := swagger.ControllerUserBasicInfoUpdateRequest{
-		Description: string(make([]byte, http.StatusCreated)),
+		Description: string(make([]byte, 2049)),
 	}
 	_, r, err := Api.UserApi.V1UserPut(Auth, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
