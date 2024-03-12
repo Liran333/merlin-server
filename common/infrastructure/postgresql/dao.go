@@ -147,5 +147,5 @@ func (dao *daoImpl) TableName() string {
 func (dao *daoImpl) IsRecordExists(err error) bool {
 	pgError, ok := err.(*pgconn.PgError)
 
-	return ok && pgError.Code == errorCodes.UniqueConstraint
+	return ok && pgError != nil && pgError.Code == errorCodes.UniqueConstraint
 }
