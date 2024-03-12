@@ -99,8 +99,9 @@ func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 		logrus.Errorf("get new rate store err:%s", err)
 		return fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
 	}
-	// set max cas limit value
-	rateLimitCtx.SetMaxCASAttemptsLimit(requestNum)
+	// set max cas limit value because maxCASAttempts must be more over than requestNum
+	maxCASAttempts := requestNum * 100
+	rateLimitCtx.SetMaxCASAttemptsLimit(maxCASAttempts)
 	logrus.Infof(" ratelimit with: rate: %d burst: %d", requestNum, burstNum)
 
 	httpRateLimiter := &throttled.HTTPRateLimiterCtx{
@@ -131,6 +132,7 @@ func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	limited, _, err := rl.limitCli.RateLimiter.RateLimitCtx(ctx.Request.Context(), key, 1)
 	if err != nil {
 		logrus.Errorf("check limit is err:%s", err)
+		commonctl.SendError(ctx, overLimitExec)
 		ctx.Abort()
 		return
 	}
