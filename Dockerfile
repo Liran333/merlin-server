@@ -15,6 +15,7 @@ RUN dnf -y update --repo OS --repo update && \
     groupadd -g 1000 modelfoundry && \
     useradd -u 1000 -g modelfoundry -s /sbin/nologin -m modelfoundry && \
     echo > /etc/issue && echo > /etc/issue.net && echo > /etc/motd && \
+    echo "umask 027" >> /root/.bashrc &&\
     echo 'set +o history' >> /root/.bashrc && \
     sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/' /etc/login.defs && \
     rm -rf /tmp/*
