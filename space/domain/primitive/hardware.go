@@ -17,6 +17,7 @@ type Hardware interface {
 // NewHardware creates a new Hardware instance decided by sdk based on the given string.
 func NewHardware(v string, sdk string) (Hardware, error) {
 	v = strings.ToLower(strings.TrimSpace(v))
+	sdk = strings.ToLower(strings.TrimSpace(sdk))
 
 	if _, ok := sdkObjects[sdk]; sdk == "" || !ok {
 		return nil, errors.New("unsupported sdk")
