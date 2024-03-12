@@ -449,6 +449,14 @@ func (s *SuiteInvite) TestRemoveOwner() {
 	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
+	// 查询组织，管理员成为组织新的owner
+	data, r, err = Api.OrganizationApi.V1OrganizationNameGet(Auth2, name)
+
+	oData := getData(s.T(), data.Data)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), s.invitee, oData["owner"])
+
 	// 新的管理员可以删除组织
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth2, name)
 

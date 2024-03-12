@@ -605,6 +605,15 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 		return fmt.Errorf("failed to delete member, %w", err)
 	}
 
+	// when owner is removed, a new owner must be set
+	if cmd.Account == o.Owner {
+		o.Owner = cmd.Actor
+		_, err = org.repo.SaveOrg(&o)
+		if err != nil {
+			return fmt.Errorf("failed to change owner of org, %w", err)
+		}
+	}
+
 	return nil
 }
 
