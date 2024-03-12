@@ -40,6 +40,9 @@ const (
 	// ErrorCodeSpaceAppUnmatchedStatus is const
 	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
 
+	// ErrorCodeSpaceAppRestartOverTime is const
+	ErrorCodeSpaceAppRestartOverTime = "space_app_restart_over_time"
+
 	// ErrorCodeAccessTokenInvalid This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 

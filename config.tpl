@@ -199,6 +199,11 @@ space_app:
     space_code_changed: space_code_changed
     space_hardware_updated: space_hardware_updated
     space_deleted: space_deleted
+    space_app_restarted: space_app_restarted
+  controller:
+    sse_token: {{(ds "secret").data.SSE_TOKEN }}
+  domain:
+    restart_over_time: 7200
 
 kafka:
   address: {{(ds "secret").data.KAFKA_ADDR }}

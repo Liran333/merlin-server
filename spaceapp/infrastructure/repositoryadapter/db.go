@@ -10,7 +10,10 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 )
 
-var appRepositoryAdapterInstance *appRepositoryAdapter
+var (
+	buildLogAdapterInstance      *buildLogAdapterImpl
+	appRepositoryAdapterInstance *appRepositoryAdapter
+)
 
 // Init initializes the space app module by performing necessary setup and migrations.
 func Init(db *gorm.DB, tables *Tables) error {
@@ -21,8 +24,14 @@ func Init(db *gorm.DB, tables *Tables) error {
 		return err
 	}
 
+	dao := postgresql.DAO(tables.SpaceApp)
+
 	appRepositoryAdapterInstance = &appRepositoryAdapter{
-		dao: postgresql.DAO(tables.SpaceApp),
+		dao: dao,
+	}
+
+	buildLogAdapterInstance = &buildLogAdapterImpl{
+		dao: dao,
 	}
 
 	return nil
@@ -31,4 +40,8 @@ func Init(db *gorm.DB, tables *Tables) error {
 // AppRepositoryAdapter is an instance of the AppRepositoryAdapter.
 func AppRepositoryAdapter() *appRepositoryAdapter {
 	return appRepositoryAdapterInstance
+}
+
+func BuildLogAdapter() *buildLogAdapterImpl {
+	return buildLogAdapterInstance
 }

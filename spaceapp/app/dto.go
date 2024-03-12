@@ -23,6 +23,7 @@ type CmdToNotifyBuildIsStarted struct {
 type CmdToNotifyBuildIsDone struct {
 	domain.SpaceAppIndex
 
+	Logs    string
 	Success bool
 }
 

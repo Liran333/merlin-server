@@ -9,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // SpaceAppIndex represents the index for a space app.
@@ -23,7 +24,8 @@ type SpaceApp struct {
 
 	SpaceAppIndex
 
-	Status appprimitive.AppStatus
+	Status      appprimitive.AppStatus
+	RestartedAt int64
 
 	AppURL    primitive.URL
 	AppLogURL primitive.URL
@@ -53,7 +55,7 @@ func (app *SpaceApp) SetBuildIsDone(success bool) error {
 	}
 
 	if success {
-		app.Status = appprimitive.AppStatusBuildSuccessfully
+		app.Status = appprimitive.AppStatusServeStarting
 	} else {
 		app.Status = appprimitive.AppStatusBuildFailed
 	}
@@ -63,8 +65,8 @@ func (app *SpaceApp) SetBuildIsDone(success bool) error {
 
 // StartService starts the service for the space app with the specified app URL and log URL.
 func (app *SpaceApp) StartService(appURL, logURL primitive.URL) error {
-	if !app.Status.IsBuildSuccessful() {
-		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not build successful")
+	if !app.Status.IsBuildSuccessful() && !app.Status.IsRestarting() {
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not build successful or restarting")
 	}
 
 	if appURL != nil {
@@ -75,5 +77,28 @@ func (app *SpaceApp) StartService(appURL, logURL primitive.URL) error {
 		app.Status = appprimitive.AppStatusStartFailed
 	}
 
+	return nil
+}
+
+type SpaceAppBuildLog struct {
+	AppId int64
+	Logs  string
+}
+
+// RestartService restart the service for space app with oldRestartTime
+func (app *SpaceApp) RestartService(oldRestartTime int64) error {
+	now := utils.Now()
+	if app.Status.IsRestarting() {
+		if now-oldRestartTime < config.RestartOverTime {
+			return allerror.New(allerror.ErrorCodeSpaceAppRestartOverTime, "not over time to restart")
+		}
+		app.RestartedAt = now
+		return nil
+	}
+	if !app.Status.IsReadyToRestart() {
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, "not ready to restart")
+	}
+	app.Status = appprimitive.AppStatusRestarted
+	app.RestartedAt = now
 	return nil
 }

@@ -13,12 +13,14 @@ import (
 const (
 	appInit = "init"
 
-	building          = "building"
-	buildFailed       = "build_failed"
-	buildSuccessfully = "build_successfully"
+	building    = "building"
+	buildFailed = "build_failed"
 
+	starting    = "starting"
 	serving     = "serving"
 	startFailed = "start_failed"
+
+	restarting = "restarting"
 )
 
 var (
@@ -37,8 +39,11 @@ var (
 	// AppStatusStartFailed represents the application status when the start process fails.
 	AppStatusStartFailed = appStatus(startFailed)
 
-	// AppStatusBuildSuccessfully represents the application status when the build process is successful.
-	AppStatusBuildSuccessfully = appStatus(buildSuccessfully)
+	// AppStatusServeStarting represents the application status when the build process is successful.
+	AppStatusServeStarting = appStatus(starting)
+
+	// AppStatusRestarted represents the application status when the app is restarted.
+	AppStatusRestarted = appStatus(restarting)
 )
 
 // AppStatus is an interface that defines methods for working with application statuses.
@@ -47,6 +52,8 @@ type AppStatus interface {
 	AppStatus() string
 	IsBuilding() bool
 	IsBuildSuccessful() bool
+	IsRestarting() bool
+	IsReadyToRestart() bool
 }
 
 // NewAppStatus creates a new instance of AppStatus based on the provided value.
@@ -59,7 +66,7 @@ func NewAppStatus(v string) (AppStatus, error) {
 	case building:
 	case buildFailed:
 	case startFailed:
-	case buildSuccessfully:
+	case starting:
 
 	default:
 		return nil, errors.New("unknown appStatus")
@@ -93,5 +100,15 @@ func (r appStatus) IsBuilding() bool {
 
 // IsBuildSuccessful checks if the appStatus is equal to buildSuccessfully.
 func (r appStatus) IsBuildSuccessful() bool {
-	return string(r) == buildSuccessfully
+	return string(r) == starting
+}
+
+// IsRestarting checks if the appStatus is equal to restarting.
+func (r appStatus) IsRestarting() bool {
+	return string(r) == restarting
+}
+
+// IsReadyToRestart checks if the appStatus can be restart
+func (r appStatus) IsReadyToRestart() bool {
+	return string(r) == serving || string(r) == startFailed
 }

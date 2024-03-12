@@ -47,7 +47,8 @@ func (req *reqToUpdateBuildInfo) toCmd() (cmd app.CmdToNotifyBuildIsStarted, err
 type reqToSetBuildIsDone struct {
 	reqToCreateSpaceApp
 
-	Success bool `json:"success"`
+	Logs    string `json:"logs"`
+	Success bool   `json:"success"`
 }
 
 func (req *reqToSetBuildIsDone) toCmd() (cmd app.CmdToNotifyBuildIsDone, err error) {
@@ -55,6 +56,7 @@ func (req *reqToSetBuildIsDone) toCmd() (cmd app.CmdToNotifyBuildIsDone, err err
 		return
 	}
 
+	cmd.Logs = req.Logs
 	cmd.Success = req.Success
 
 	return

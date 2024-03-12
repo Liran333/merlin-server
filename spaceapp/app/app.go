@@ -11,12 +11,16 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	spacedomain "github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/spaceapp/domain"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/message"
 	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
 // SpaceappAppService is the interface for the space app service.
 type SpaceappAppService interface {
 	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
+	GetRequestDataStream(*domain.SeverSentStream) error
+	RestartSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
 }
 
 // spaceRepository
@@ -26,22 +30,28 @@ type spaceRepository interface {
 
 // NewSpaceappAppService creates a new instance of the space app service.
 func NewSpaceappAppService(
+	msg message.SpaceAppMessage,
 	repo repository.Repository,
 	spaceRepo spaceRepository,
 	permission commonapp.ResourcePermissionAppService,
+	sse domain.SeverSentEvent,
 ) *spaceappAppService {
 	return &spaceappAppService{
+		msg:        msg,
 		repo:       repo,
 		spaceRepo:  spaceRepo,
 		permission: permission,
+		sse:        sse,
 	}
 }
 
 // spaceappAppService
 type spaceappAppService struct {
+	msg        message.SpaceAppMessage
 	repo       repository.Repository
 	spaceRepo  spaceRepository
 	permission commonapp.ResourcePermissionAppService
+	sse        domain.SeverSentEvent
 }
 
 // GetByName retrieves the space app by name.
@@ -77,4 +87,55 @@ func (s *spaceappAppService) GetByName(
 	}
 
 	return toSpaceAppDTO(&app), nil
+}
+
+// GetRequestDataStream
+func (s *spaceappAppService) GetRequestDataStream(cmd *domain.SeverSentStream) error {
+	return s.sse.Request(cmd)
+}
+
+// RestartSpaceApp a SpaceApp in the spaceappAppService.
+func (s *spaceappAppService) RestartSpaceApp(
+	user primitive.Account, index *spacedomain.SpaceIndex,
+) error {
+	space, err := s.spaceRepo.FindByName(index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errorSpaceAppNotFound
+		}
+
+		return err
+	}
+
+	if err = s.permission.CanUpdate(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = errorSpaceAppNotFound
+		}
+
+		return err
+	}
+
+	app, err := s.repo.FindBySpaceId(space.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = errorSpaceAppNotFound
+		}
+
+		return err
+	}
+
+	if err := app.RestartService(app.RestartedAt); err != nil {
+		return err
+	}
+
+	if err := s.repo.Save(&app); err != nil {
+		return err
+	}
+
+	v := domain.SpaceAppIndex{
+		SpaceId:  app.SpaceId,
+		CommitId: app.CommitId,
+	}
+	e := domain.NewSpaceAppRestartEvent(&v)
+	return s.msg.SendSpaceAppRestartedEvent(&e)
 }

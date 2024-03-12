@@ -30,17 +30,20 @@ type SpaceappInternalAppService interface {
 func NewSpaceappInternalAppService(
 	msg message.SpaceAppMessage,
 	repo repository.Repository,
+	buildLogAdapter repository.SpaceAppBuildLogAdapter,
 ) *spaceappInternalAppService {
 	return &spaceappInternalAppService{
-		msg:  msg,
-		repo: repo,
+		msg:             msg,
+		repo:            repo,
+		buildLogAdapter: buildLogAdapter,
 	}
 }
 
 // spaceappInternalAppService
 type spaceappInternalAppService struct {
-	msg  message.SpaceAppMessage
-	repo repository.Repository
+	msg             message.SpaceAppMessage
+	repo            repository.Repository
+	buildLogAdapter repository.SpaceAppBuildLogAdapter
 }
 
 // Create creates a new SpaceApp in the spaceappInternalAppService.
@@ -90,6 +93,15 @@ func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDo
 	}
 
 	if err := v.SetBuildIsDone(cmd.Success); err != nil {
+		return err
+	}
+
+	log := domain.SpaceAppBuildLog{
+		AppId: v.Id,
+		Logs:  cmd.Logs,
+	}
+
+	if err := s.buildLogAdapter.Save(&log); err != nil {
 		return err
 	}
 

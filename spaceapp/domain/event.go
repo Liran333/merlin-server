@@ -24,3 +24,22 @@ func NewSpaceAppCreatedEvent(app *SpaceApp) spaceappCreatedEvent {
 		CommitId: app.CommitId,
 	}
 }
+
+// spaceappRestartEvent
+type spaceappRestartEvent struct {
+	SpaceId  string `json:"space_id"`
+	CommitId string `json:"commit_id"`
+}
+
+// Message returns the JSON representation of the spaceappCreatedEvent.
+func (e *spaceappRestartEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppRestartEvent creates a spaceappRestartEvent instance with the given SpaceApp.
+func NewSpaceAppRestartEvent(app *SpaceAppIndex) spaceappRestartEvent {
+	return spaceappRestartEvent{
+		SpaceId:  app.SpaceId.Identity(),
+		CommitId: app.CommitId,
+	}
+}

@@ -13,4 +13,5 @@ type EventMessage interface {
 // SpaceAppMessage is an interface that defines a method for sending a space app created event.
 type SpaceAppMessage interface {
 	SendSpaceAppCreatedEvent(EventMessage) error
+	SendSpaceAppRestartedEvent(EventMessage) error
 }

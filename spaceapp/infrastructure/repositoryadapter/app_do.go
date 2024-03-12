@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	fieldSpaceId = "space_id"
-	fieldVersion = "version"
+	fieldSpaceId     = "space_id"
+	fieldVersion     = "version"
+	fieldAllBuildLog = "all_build_log"
 )
 
 var (
@@ -26,6 +27,7 @@ func toSpaceAppDO(m *domain.SpaceApp) spaceappDO {
 		Version:     m.Version,
 		CommitId:    m.CommitId,
 		AllBuildLog: m.AllBuildLog,
+		RestartedAt: m.RestartedAt,
 	}
 
 	do.Id = m.Id
@@ -51,7 +53,8 @@ type spaceappDO struct {
 	SpaceId  int64  `gorm:"column:space_id;index:,unique"`
 	CommitId string `gorm:"column:commit_id"`
 
-	Status string `gorm:"column:status"`
+	Status      string `gorm:"column:status"`
+	RestartedAt int64  `gorm:"column:restarted_at"`
 
 	AppURL    string `gorm:"column:app_url"`
 	AppLogURL string `gorm:"column:app_log_url"`
@@ -75,6 +78,7 @@ func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 			CommitId: do.CommitId,
 		},
 		Status:      appprimitive.CreateAppStatus(do.Status),
+		RestartedAt: do.RestartedAt,
 		Version:     do.Version,
 		AllBuildLog: do.AllBuildLog,
 	}

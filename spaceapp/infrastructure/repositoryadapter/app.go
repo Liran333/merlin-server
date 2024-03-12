@@ -91,7 +91,7 @@ func (adapter *appRepositoryAdapter) Save(m *domain.SpaceApp) error {
 		&spaceappDO{Id: m.Id},
 	).Where(
 		adapter.dao.EqualQuery(fieldVersion), m.Version,
-	).Select(`*`).Updates(&do)
+	).Select(`*`).Omit(fieldAllBuildLog).Updates(&do)
 
 	if v.Error != nil {
 		return v.Error

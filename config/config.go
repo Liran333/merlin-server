@@ -74,6 +74,8 @@ func (cfg *Config) Init() error {
 
 	cfg.Space.Init()
 
+	cfg.SpaceApp.Init()
+
 	cfg.CodeRepo.Init()
 
 	internal.Init(&cfg.Internal)

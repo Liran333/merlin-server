@@ -17,3 +17,7 @@ type Repository interface {
 	Save(*domain.SpaceApp) error
 	FindBySpaceId(primitive.Identity) (domain.SpaceApp, error)
 }
+
+type SpaceAppBuildLogAdapter interface {
+	Save(*domain.SpaceAppBuildLog) error
+}
