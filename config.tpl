@@ -166,6 +166,7 @@ primitive:
     account_name_min_length: {{(ds "common").ACCOUNT_NAME_MIN_LEN }}
     account_name_max_length: {{(ds "common").ACCOUNT_NAME_MAX_LEN }}
     account_desc_max_length: {{(ds "common").ACCOUNT_DESC_MAX_LEN }}
+    org_fullname_min_length: {{(ds "common").ORG_FULLNAME_MIN_LEN }}
     account_fullname_max_length: {{(ds "common").ACCOUNT_FULLNAME_MAX_LEN }}
     reserved_accounts:
   {{- range (ds "data").RESERVED_ACCOUNTS}}

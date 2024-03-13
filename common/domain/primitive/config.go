@@ -168,6 +168,7 @@ type AccountConfig struct {
 	MinNameLength     int      `json:"account_name_min_length"     required:"true"`
 	MaxDescLength     int      `json:"account_desc_max_length"     required:"true"`
 	ReservedAccounts  []string `json:"reserved_accounts"           required:"true"`
+	MinFullnameLength int      `json:"org_fullname_min_length"     required:"true"`
 	MaxFullnameLength int      `json:"account_fullname_max_length" required:"true"`
 
 	nameRegexp       *regexp.Regexp

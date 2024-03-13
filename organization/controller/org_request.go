@@ -34,7 +34,7 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 
 	empty := true
 	if req.FullName != "" {
-		if cmd.FullName, err = primitive.NewAccountFullname(req.FullName); err != nil {
+		if cmd.FullName, err = primitive.NewOrgFullname(req.FullName); err != nil {
 			return
 		}
 		empty = false
@@ -138,7 +138,7 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 		return
 	}
 
-	if cmd.FullName, err = primitive.NewAccountFullname(req.FullName); err != nil {
+	if cmd.FullName, err = primitive.NewOrgFullname(req.FullName); err != nil {
 		return
 	}
 

@@ -6,6 +6,7 @@ package primitive
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -28,6 +29,25 @@ func NewAccountFullname(v string) (AccountFullname, error) {
 	v = utils.XSSEscapeString(v)
 	if utils.StrLen(v) > accountConfig.MaxFullnameLength {
 		return nil, errors.New("fullname is too long")
+	}
+
+	return accountFullname(v), nil
+}
+
+// NewOrgFullname creates a new OrgFullname instance from a string value.TODO: add orgFullname
+func NewOrgFullname(v string) (AccountFullname, error) {
+	if v == "" {
+		return nil, errors.New("org fullname can't be empty")
+	}
+
+	if utils.StrLen(v) > accountConfig.MaxFullnameLength {
+		return nil, errors.New("org fullname is too long")
+	}
+
+	v = utils.XSSEscapeString(v)
+	if utils.StrLen(v) > accountConfig.MaxFullnameLength || utils.StrLen(v) < accountConfig.MinFullnameLength {
+		return nil, fmt.Errorf("invalid org fullname length, should between %d and %d",
+			accountConfig.MinFullnameLength, accountConfig.MaxFullnameLength)
 	}
 
 	return accountFullname(v), nil

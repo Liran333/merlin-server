@@ -83,7 +83,7 @@ var orgAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
-		fullname, err := primitive.NewAccountFullname(viper.GetString("org.create.fullname"))
+		fullname, err := primitive.NewOrgFullname(viper.GetString("org.create.fullname"))
 		if err != nil {
 			logrus.Fatalf("invalid fullname :%s", err.Error())
 		}
@@ -622,7 +622,7 @@ var orgEditCmd = &cobra.Command{
 		}
 		fullname := viper.GetString("org.edit.fullname")
 		if fullname != "" {
-			if updateCmd.FullName, err = primitive.NewAccountFullname(fullname); err != nil {
+			if updateCmd.FullName, err = primitive.NewOrgFullname(fullname); err != nil {
 				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.fullname"))
 			}
 			fmt.Printf("change full name to %s", fullname)
