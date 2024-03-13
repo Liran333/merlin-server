@@ -27,6 +27,7 @@ func AddRouterForOrgController(
 	org orgapp.OrgService,
 	user userapp.UserService,
 	l middleware.OperationLog,
+	sl middleware.SecurityLog,
 	m middleware.UserMiddleWare,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
@@ -38,38 +39,38 @@ func AddRouterForOrgController(
 	}
 
 	rg.PUT("/v1/organization/:name", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Update)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Update)
 	rg.POST("/v1/organization", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Create)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Create)
 	rg.GET("/v1/organization/:name", m.Optional, rl.CheckLimit, ctl.Get)
 	rg.GET("/v1/organization", m.Optional, rl.CheckLimit, ctl.List)
 	rg.POST("/v1/organization/:name", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Leave)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Leave)
 	rg.DELETE("/v1/organization/:name", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.Delete)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Delete)
 	rg.HEAD("/v1/name", m.Read, rl.CheckLimit, ctl.Check)
 
 	rg.POST("/v1/invite", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.InviteMember)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.InviteMember)
 	rg.PUT("/v1/invite", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.AcceptInvite)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.AcceptInvite)
 	rg.GET("/v1/invite", m.Read, rl.CheckLimit, ctl.ListInvitation)
 	rg.DELETE("/v1/invite", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveInvitation)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RemoveInvitation)
 
 	rg.POST("/v1/request", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RequestMember)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RequestMember)
 	rg.PUT("/v1/request", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.ApproveRequest)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.ApproveRequest)
 	rg.GET("/v1/request", m.Read, rl.CheckLimit, ctl.ListRequests)
 	rg.DELETE("/v1/request", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveRequest)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RemoveRequest)
 
 	rg.DELETE("/v1/organization/:name/member", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.RemoveMember)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RemoveMember)
 	rg.GET("/v1/organization/:name/member", m.Optional, rl.CheckLimit, ctl.ListMember)
 	rg.PUT("/v1/organization/:name/member", m.Write,
-		userctl.CheckMail(ctl.m, ctl.user), l.Write, rl.CheckLimit, ctl.EditMember)
+		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.EditMember)
 
 	rg.GET("/v1/account/:name", p.CheckName, m.Optional, rl.CheckLimit, ctl.GetUser)
 }

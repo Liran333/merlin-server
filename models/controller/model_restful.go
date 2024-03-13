@@ -19,6 +19,7 @@ func AddRouteForModelRestfulController(
 	s app.ModelAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
+	sl middleware.SecurityLog,
 	u userapp.UserService,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
@@ -31,7 +32,7 @@ func AddRouteForModelRestfulController(
 		},
 	}
 
-	addRouteForModelController(r, &ctl.ModelController, l)
+	addRouteForModelController(r, &ctl.ModelController, l, sl)
 
 	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/model", m.Optional, rl.CheckLimit, ctl.List)

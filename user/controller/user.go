@@ -26,6 +26,7 @@ func AddRouterForUserController(
 	us app.UserService,
 	repo userrepo.User,
 	l middleware.OperationLog,
+	sl middleware.SecurityLog,
 	m middleware.UserMiddleWare,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
@@ -41,9 +42,9 @@ func AddRouterForUserController(
 	rg.DELETE("/v1/user", m.Write, l.Write, rl.CheckLimit, ctl.RequestDelete)
 
 	rg.POST("/v1/user/token", m.Write,
-		CheckMail(ctl.m, ctl.s), l.Write, rl.CheckLimit, p.Check, ctl.CreatePlatformToken)
+		CheckMail(ctl.m, ctl.s, sl), l.Write, rl.CheckLimit, p.Check, ctl.CreatePlatformToken)
 	rg.DELETE("/v1/user/token/:name", m.Write,
-		CheckMail(ctl.m, ctl.s), l.Write, rl.CheckLimit, p.Check, ctl.DeletePlatformToken)
+		CheckMail(ctl.m, ctl.s, sl), l.Write, rl.CheckLimit, p.Check, ctl.DeletePlatformToken)
 	rg.GET("/v1/user/token", m.Read, rl.CheckLimit, p.Check, ctl.GetTokenInfo)
 
 	rg.POST("/v1/user/email/bind", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.BindEmail)
@@ -98,7 +99,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 }
 
 // CheckMail check mail middleware
-func CheckMail(m middleware.UserMiddleWare, us app.UserService) gin.HandlerFunc {
+func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog middleware.SecurityLog) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := m.GetUserAndExitIfFailed(ctx)
 		if user == nil {
@@ -107,13 +108,16 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService) gin.HandlerFunc 
 
 		u, err := us.GetByAccount(user, user)
 		if err != nil {
+			securityLog.Warn(ctx, err.Error())
 			ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("user not found"))
 		} else {
 			if u.Email != nil && *u.Email != "" {
 				ctx.Next()
 			} else {
 				// will call ctx.Abort() internally
-				commonctl.SendError(ctx, allerror.New(allerror.ErrorCodeNeedBindEmail, "need bind user email firstly"))
+				err := allerror.New(allerror.ErrorCodeNeedBindEmail, "need bind user email firstly")
+				securityLog.Warn(ctx, err.Error())
+				commonctl.SendError(ctx, err)
 			}
 		}
 	}

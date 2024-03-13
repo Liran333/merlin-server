@@ -22,12 +22,13 @@ func addRouteForModelController(
 	r *gin.RouterGroup,
 	ctl *ModelController,
 	opLog middleware.OperationLog,
+	sl middleware.SecurityLog,
 ) {
 	m := ctl.userMiddleWare
 
-	r.POST(`/v1/model`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Create)
-	r.DELETE("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Delete)
-	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user), opLog.Write, ctl.Update)
+	r.POST(`/v1/model`, m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), opLog.Write, ctl.Create)
+	r.DELETE("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), opLog.Write, ctl.Delete)
+	r.PUT("/v1/model/:id", m.Write, userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), opLog.Write, ctl.Update)
 }
 
 // ModelController is a controller for handling model-related requests.

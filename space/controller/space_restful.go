@@ -19,6 +19,7 @@ func AddRouteForSpaceRestfulController(
 	s app.SpaceAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
+	sl middleware.SecurityLog,
 	rl middleware.RateLimiter,
 	u userapp.UserService,
 	p middleware.PrivacyCheck,
@@ -32,7 +33,7 @@ func AddRouteForSpaceRestfulController(
 		},
 	}
 
-	addRouteForSpaceController(r, &ctl.SpaceController, l, rl)
+	addRouteForSpaceController(r, &ctl.SpaceController, l, sl, rl)
 
 	r.GET("/v1/space/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.List)
