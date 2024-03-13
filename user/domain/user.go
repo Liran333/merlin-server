@@ -33,8 +33,8 @@ const (
 	UserTypeUser UserType = 0
 	// UserTypeOrganization is const
 	UserTypeOrganization UserType = 1
-	iter                          = 10000
-	keyLen                        = 32 // keyLen is const
+	iter                 int      = 10000
+	keyLen               int      = 32 // keyLen is const
 )
 
 // User is a struct representing a user.

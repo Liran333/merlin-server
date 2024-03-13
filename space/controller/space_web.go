@@ -74,10 +74,6 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 		SpaceDTO: &dto,
 	}
 
-	if user != nil {
-		//TODO check whether user like the space
-	}
-
 	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

@@ -6,20 +6,13 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 type tables struct {
-	User  string `json:"user" required:"true"`
+	User  string `json:"user"  required:"true"`
 	Token string `json:"token" required:"true"`
 }
 
 // Config is a struct that holds the configuration for the program.
 type Config struct {
-	Tables                  tables   `json:"tables"            			required:"true"`
-	Key                     []byte   `json:"key"               			required:"true"`
-	AcceptableAvatarDomains []string `json:"acceptable_avatar_domains" 	required:"true"`
-}
-
-var _config Config
-
-// Init initializes the configuration with the given Config struct.
-func Init(cfg *Config) {
-	_config = *cfg
+	Tables                  tables   `json:"tables" required:"true"`
+	Key                     []byte   `json:"key"    required:"true"`
+	AcceptableAvatarDomains []string `json:"acceptable_avatar_domains" required:"true"`
 }

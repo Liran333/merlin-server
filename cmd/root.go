@@ -15,7 +15,6 @@ import (
 	basegitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-	"github.com/openmerlin/merlin-server/user/domain"
 )
 
 var configFile string
@@ -55,9 +54,6 @@ func initServer(configFile string) {
 	if err := redisdb.Init(&cfg.Redis, false); err != nil {
 		logrus.Fatalf("init redis failed, err:%s", err.Error())
 	}
-
-	// user
-	domain.Init(&cfg.User)
 
 	// postgresql
 	if err := postgresql.Init(&cfg.Postgresql, false); err != nil {

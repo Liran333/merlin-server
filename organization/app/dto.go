@@ -53,9 +53,9 @@ func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	u, err := user.GetByAccount(nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
-		fullname = ""
+	} else {
+		fullname = u.Fullname
 	}
-	fullname = u.Fullname
 
 	return ApproveDTO{
 		Id:        m.Id.Identity(),
@@ -97,9 +97,9 @@ func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) Membe
 	u, err := user.GetByAccount(nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
-		fullname = ""
+	} else {
+		fullname = u.Fullname
 	}
-	fullname = u.Fullname
 
 	return MemberRequestDTO{
 		Id:        m.Id.Identity(),

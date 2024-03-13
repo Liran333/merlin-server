@@ -23,6 +23,7 @@ func newResponseData(data interface{}) ResponseData {
 	}
 }
 
+//nolint:golint,unused
 func newResponseCodeError(code string, err error) ResponseData {
 	return ResponseData{
 		Code: code,
@@ -92,6 +93,6 @@ func SendRespOfDelete(ctx *gin.Context) {
 // SendError sends an error response based on the given error.
 func SendError(ctx *gin.Context, err error) {
 	sc, code := httpError(err)
-	ctx.AbortWithError(sc, err)
+	_ = ctx.AbortWithError(sc, err)
 	ctx.JSON(sc, newResponseCodeMsg(code, err.Error()))
 }

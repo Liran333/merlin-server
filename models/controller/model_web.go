@@ -72,10 +72,6 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 		ModelDTO: &dto,
 	}
 
-	if user != nil {
-		//TODO check whether user like the model
-	}
-
 	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

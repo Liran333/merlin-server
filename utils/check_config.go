@@ -73,6 +73,7 @@ func CheckConfig(opts interface{}, parent string) error {
 		v := optsValue.Field(i)
 		f := optsType.Field(i)
 
+		//nolint:staticcheck
 		if f.Tag.Get("json") == "-" || f.Name != strings.Title(f.Name) {
 			continue
 		}

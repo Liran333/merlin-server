@@ -24,11 +24,6 @@ type spaceRepository interface {
 	FindByName(*spacedomain.SpaceIndex) (spacedomain.Space, error)
 }
 
-// permissionValidator
-type permissionValidator interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
-}
-
 // NewSpaceappAppService creates a new instance of the space app service.
 func NewSpaceappAppService(
 	repo repository.Repository,

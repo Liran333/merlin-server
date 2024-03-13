@@ -66,8 +66,6 @@ type Config struct {
 
 // Init initializes the application using the configuration settings provided in the Config struct.
 func (cfg *Config) Init() error {
-	userdomain.Init(&cfg.User)
-
 	if err := primitive.Init(&cfg.Primitive); err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,9 +40,9 @@ var (
 func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 	Init(rateCfg)
 	// Initialize a redis client using go-redis
-	client := &redis.Client{}
+	var client *redis.Client
 	if cfg.DBCert != "" {
-		ca, err := ioutil.ReadFile(cfg.DBCert)
+		ca, err := os.ReadFile(cfg.DBCert)
 		if err != nil {
 			return fmt.Errorf("read cert failed")
 		}

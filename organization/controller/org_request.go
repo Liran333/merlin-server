@@ -156,10 +156,6 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 	return
 }
 
-type orgMemberAddRequest struct {
-	User string `json:"user" binding:"required"`
-}
-
 type orgMemberRemoveRequest struct {
 	User string `json:"user" binding:"required"`
 }

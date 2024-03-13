@@ -54,44 +54,6 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 	return
 }
 
-type userCreateRequest struct {
-	Account  string `json:"account" binding:"required"`
-	Fullname string `json:"fullname" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Bio      string `json:"bio"`
-	AvatarId string `json:"avatar_id"`
-}
-
-func (req *userCreateRequest) toCmd() (cmd domain.UserCreateCmd, err error) {
-	if cmd.Account, err = primitive.NewAccount(req.Account); err != nil {
-		return
-	}
-
-	if cmd.Email, err = primitive.NewUserEmail(req.Email); err != nil {
-		return
-	}
-
-	if cmd.Desc, err = primitive.NewAccountDesc(req.Bio); err != nil {
-		return
-	}
-
-	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
-		return
-	}
-
-	if cmd.Fullname, err = primitive.NewAccountFullname(req.Fullname); err != nil {
-		return
-	}
-
-	err = cmd.Validate()
-
-	return
-}
-
-type userDetail struct {
-	*app.UserDTO
-}
-
 type tokenCreateRequest struct {
 	Name string `json:"name" binding:"required"`
 	Perm string `json:"perm" binding:"required"`
@@ -113,23 +75,6 @@ func (req *tokenCreateRequest) toCmd(user domain.Account) (cmd domain.TokenCreat
 	cmd.Account = user
 
 	return
-}
-
-type userToken struct {
-	app.TokenDTO
-}
-
-// reqToGetUserInfo
-type reqToGetUserInfo struct {
-	Account string `form:"account"`
-}
-
-func (req *reqToGetUserInfo) toAccount() (primitive.Account, error) {
-	if req.Account == "" {
-		return nil, nil
-	}
-
-	return primitive.NewAccount(req.Account)
 }
 
 type bindEmailRequest struct {

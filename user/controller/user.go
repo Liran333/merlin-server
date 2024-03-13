@@ -109,7 +109,7 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 		u, err := us.GetByAccount(user, user)
 		if err != nil {
 			securityLog.Warn(ctx, err.Error())
-			ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("user not found"))
+			_ = ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("user not found"))
 		} else {
 			if u.Email != nil && *u.Email != "" {
 				ctx.Next()

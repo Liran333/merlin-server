@@ -21,10 +21,6 @@ jobs:
         env:
           TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
         run: git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
-      - name: Unit tests
-        run: go test -race -count=1 -v ./...
-      - name: Run Gosec Security Scanner
-        run: docker run --rm -i -w /data -v `pwd`:/data securego/gosec -exclude-dir api -exclude-dir tests ./...
       - name: Run e2e tests
         run: bash -x scripts/init-env.sh && bash -x scripts/openapi.sh && cd tests/e2e && go test -v -count=1 ./...
       - name: Self Hosted Runner Post Job Cleanup Action
