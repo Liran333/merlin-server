@@ -21,6 +21,7 @@ type SpaceappAppService interface {
 	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
 	GetRequestDataStream(*domain.SeverSentStream) error
 	RestartSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
+	CheckPermissionRead(primitive.Account, *spacedomain.SpaceIndex) error
 }
 
 // spaceRepository
@@ -138,4 +139,15 @@ func (s *spaceappAppService) RestartSpaceApp(
 	}
 	e := domain.NewSpaceAppRestartEvent(&v)
 	return s.msg.SendSpaceAppRestartedEvent(&e)
+}
+
+// CheckPermissionRead  check user permission for read space app.
+func (s *spaceappAppService) CheckPermissionRead(user primitive.Account, index *spacedomain.SpaceIndex) error {
+	space, err := s.spaceRepo.FindByName(index)
+	if err != nil {
+		err = allerror.NewNoPermission(err.Error())
+		return err
+	}
+
+	return s.permission.CanRead(user, &space)
 }

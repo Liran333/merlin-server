@@ -35,6 +35,7 @@ type allServices struct {
 	userMiddleWare        middleware.UserMiddleWare
 	rateLimiterMiddleWare middleware.RateLimiter
 	privacyCheck          middleware.PrivacyCheck
+	tokenMiddleWare       middleware.TokenMiddleWare
 
 	modelApp modelapp.ModelAppService
 

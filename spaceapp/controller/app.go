@@ -24,11 +24,13 @@ func AddRouterForSpaceappWebController(
 	r *gin.RouterGroup,
 	s app.SpaceappAppService,
 	m middleware.UserMiddleWare,
+	t middleware.TokenMiddleWare,
 	l middleware.RateLimiter,
 ) {
 	ctl := SpaceAppWebController{
 		appService:          s,
 		userMiddleWare:      m,
+		tokenMiddleWare:     t,
 		rateLimitMiddleWare: l,
 	}
 
@@ -36,12 +38,14 @@ func AddRouterForSpaceappWebController(
 	r.GET("/v1/space-app/:owner/:name/buildlog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeBuildLog)
 	r.GET("/v1/space-app/:owner/:name/spacelog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeSpaceLog)
 	r.POST("/v1/space-app/:owner/:name/restart", m.Optional, l.CheckLimit, ctl.Restart)
+	r.GET("/v1/space-app/:owner/:name/read", t.CheckToken, l.CheckLimit, ctl.CanRead)
 }
 
 // SpaceAppWebController is a struct that represents the web controller for the space app.
 type SpaceAppWebController struct {
 	appService          app.SpaceappAppService
 	userMiddleWare      middleware.UserMiddleWare
+	tokenMiddleWare     middleware.TokenMiddleWare
 	rateLimitMiddleWare middleware.RateLimiter
 }
 
@@ -208,5 +212,28 @@ func (ctl *SpaceAppWebController) Restart(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
+	}
+}
+
+// @Summary  CanRead
+// @Description  check permission for read space app
+// @Tags     SpaceAppWeb
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Success  200  {object}  commonctl.ResponseData
+// @Router   /v1/space-app/{owner}/{name}/read [get]
+func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	if err := ctl.appService.CheckPermissionRead(user, &index); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, "successfully")
 	}
 }

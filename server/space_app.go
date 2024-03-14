@@ -34,6 +34,7 @@ func setRouterOfSpaceAppWeb(rg *gin.RouterGroup, services *allServices, cfg *con
 		rg,
 		s,
 		services.userMiddleWare,
+		services.tokenMiddleWare,
 		services.rateLimiterMiddleWare,
 	)
 }

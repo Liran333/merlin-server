@@ -39,12 +39,17 @@ type webAPIMiddleware struct {
 
 // Write is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Write(ctx *gin.Context) {
-	m.must(ctx)
+	m.must(ctx, true)
 }
 
 // Read is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Read(ctx *gin.Context) {
-	m.must(ctx)
+	m.must(ctx, true)
+}
+
+// CheckToken is a middleware function that checks if the CSRF token is present in the request header and no refresh.
+func (m *webAPIMiddleware) CheckToken(ctx *gin.Context) {
+	m.must(ctx, false)
 }
 
 // Optional is a middleware function that checks if the CSRF token is present in the request header.
@@ -52,12 +57,12 @@ func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 	if v := ctx.GetHeader(csrfTokenHeader); v == "" {
 		ctx.Next()
 	} else {
-		m.must(ctx)
+		m.must(ctx, true)
 	}
 }
 
-func (m *webAPIMiddleware) must(ctx *gin.Context) {
-	if err := m.checkToken(ctx); err != nil {
+func (m *webAPIMiddleware) must(ctx *gin.Context, autoRefresh bool) {
+	if err := m.checkToken(ctx, autoRefresh); err != nil {
 		clearCookie(ctx)
 		commonctl.SendError(ctx, err)
 		m.securityLog.Warn(ctx, err.Error())
@@ -93,7 +98,7 @@ func (m *webAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Ac
 	return nil
 }
 
-func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
+func (m *webAPIMiddleware) checkToken(ctx *gin.Context, autoRefresh bool) error {
 	csrfToken, err := m.parseCSRFToken(ctx)
 	if err != nil {
 		return err
@@ -119,15 +124,18 @@ func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
 			SessionId: sessionId,
 			CSRFToken: csrfToken,
 		},
-		IP:        ip,
-		UserAgent: userAgent,
+		IP:          ip,
+		UserAgent:   userAgent,
+		AutoRefresh: autoRefresh,
 	})
 	if err != nil {
 		return err
 	}
 
-	expiry := config.csrfTokenCookieExpiry()
-	setCookieOfCSRFToken(ctx, newCSRF, &expiry)
+	if autoRefresh {
+		expiry := config.csrfTokenCookieExpiry()
+		setCookieOfCSRFToken(ctx, newCSRF, &expiry)
+	}
 
 	ctx.Set(userIdParsed, user)
 

@@ -24,6 +24,7 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	services.securityLog = securitylog.SecurityLog()
 	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog)
+	services.tokenMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
 	services.rateLimiterMiddleWare = ratelimiter.Limiter()
 	if services.rateLimiterMiddleWare == nil {
