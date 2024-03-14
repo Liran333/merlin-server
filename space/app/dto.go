@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	sdk "github.com/openmerlin/merlin-sdk/space"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
@@ -127,22 +129,14 @@ type SpacesDTO struct {
 // CmdToListSpaces is a command to list spaces with repository.ListOption options.
 type CmdToListSpaces = repository.ListOption
 
-// SpaceMetaDTO represents the data transfer object for space metadata.
-type SpaceMetaDTO struct {
-	Id       string `json:"id"`
-	SDK      string `json:"sdk"`
-	Name     string `json:"name"`
-	Owner    string `json:"owner"`
-	Hardware string `json:"hardware"`
-}
-
-func toSpaceMetaDTO(space *domain.Space) SpaceMetaDTO {
-	dto := SpaceMetaDTO{
+func toSpaceMetaDTO(space *domain.Space) sdk.SpaceMetaDTO {
+	dto := sdk.SpaceMetaDTO{
 		Id:       space.Id.Identity(),
 		SDK:      space.SDK.SDK(),
 		Name:     space.Name.MSDName(),
 		Owner:    space.Owner.Account(),
 		Hardware: space.Hardware.Hardware(),
+		Visibility: space.CodeRepo.Visibility.Visibility(),
 	}
 	return dto
 }
