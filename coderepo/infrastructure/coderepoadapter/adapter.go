@@ -20,6 +20,7 @@ const (
 	repoAlreadyExistsErr = "The repository with the same name already exists."
 )
 
+// UserInfoAdapter is an interface that defines the methods for retrieving platform-specific user information.
 type UserInfoAdapter interface {
 	GetPlatformUserInfo(primitive.Account) (string, error)
 }
