@@ -91,6 +91,10 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, fmt.Sprintf("update user:%s's basic info", user.Account()))
 
+	if req.RevokeDelete != nil {
+		middleware.SetAction(ctx, fmt.Sprintf("revoke user:%s's delete request", user.Account()))
+	}
+
 	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
