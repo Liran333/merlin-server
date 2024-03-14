@@ -16,6 +16,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 const (
@@ -70,6 +71,8 @@ func (m *restfulAPI) check(ctx *gin.Context, ignore bool, permission primitive.T
 
 		return
 	}
+
+	defer utils.ClearStringMemory(token)
 
 	if t, err := m.s.VerifyToken(token, permission); err != nil {
 		commonctl.SendError(ctx, err)
