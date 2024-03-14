@@ -169,17 +169,23 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 // TestOrgWriteCreateDeleteModel used for testing
 // 拥有write权限的用户可以创建和删除模型
 func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	modelParam := swagger.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
 		Visibility: "public",
-	})
+	}
+	data, r, err := Api.ModelApi.V1ModelPost(Auth2, modelParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
+
+	// 重复创建模型返回400
+	_, r, err = Api.ModelApi.V1ModelPost(Auth2, modelParam)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

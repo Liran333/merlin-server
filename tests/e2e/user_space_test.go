@@ -31,7 +31,7 @@ func (s *SuiteUserSpace) TearDownSuite() {
 // TestUserCanCreateUpdateDeleteSpace used for testing
 // 可以创建Space到自己名下, 并且可以修改和删除自己名下的Space
 func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	spaceParam := swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -41,12 +41,18 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Owner:      "test2",
 		Sdk:        "gradio",
 		Visibility: "public",
-	})
+	}
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
+
+	// 重复创建空间返回400
+	_, r, err = Api.SpaceApi.V1SpacePost(Auth2, spaceParam)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
 		Desc:     "space desc new",

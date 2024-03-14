@@ -6,7 +6,6 @@ package app
 
 import (
 	"fmt"
-
 	"github.com/sirupsen/logrus"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"

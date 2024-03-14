@@ -113,6 +113,15 @@ func (s *SuiteSpaceBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	// 重复创建分支返回400
+	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "testspace",
+		swagger.ControllerRestfulReqToCreateBranch{
+			BaseBranch: "main",
+			Branch:     branchName,
+		})
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
 	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "space", s.name, "testspace", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)

@@ -31,17 +31,23 @@ func (s *SuiteUserModel) TearDownSuite() {
 // TestUserCanCreateUpdateDeleteModel used for testing
 // 可以创建模型到自己名下, 并且可以修改和删除自己名下的模型
 func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	modelParam := swagger.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      "test2",
 		License:    "mit",
 		Visibility: "public",
-	})
+	}
+	data, r, err := Api.ModelApi.V1ModelPost(Auth2, modelParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
+
+	// 重复创建模型返回400
+	_, r, err = Api.ModelApi.V1ModelPost(Auth2, modelParam)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
 		Name:       "testmodel-new",

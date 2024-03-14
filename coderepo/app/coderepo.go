@@ -7,7 +7,9 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repoadapter"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
 // CodeRepoAppService is an interface for code repository application service.
@@ -31,6 +33,10 @@ func (s *codeRepoAppService) Create(user primitive.Account, cmd *CmdToCreateRepo
 	repo := cmd.toCodeRepo(user)
 
 	if err := s.repoAdapter.Add(&repo, cmd.InitReadme); err != nil {
+		if commonrepo.IsErrorDuplicateCreating(err) {
+			err = allerror.NewInvalidParam(err.Error())
+		}
+
 		return repo, err
 	}
 

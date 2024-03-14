@@ -12,7 +12,12 @@ import (
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	giteaclient "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+)
+
+const (
+	repoAlreadyExistsErr = "The repository with the same name already exists."
 )
 
 type UserInfoAdapter interface {
@@ -61,8 +66,11 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 	} else {
 		obj, _, err = client.CreateOrgRepo(repo.Owner.Account(), opt)
 	}
+
 	if err == nil {
 		repo.Id = primitive.CreateIdentity(obj.ID)
+	} else if err != nil && err.Error() == repoAlreadyExistsErr {
+		err = commonrepo.NewErrorDuplicateCreating(err)
 	}
 
 	return err

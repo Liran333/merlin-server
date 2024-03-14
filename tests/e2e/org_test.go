@@ -101,6 +101,11 @@ func (s *SuiteOrg) TestOrgCreate() {
 	}
 	assert.Equal(s.T(), countOne, count)
 
+	// 重复创建组织返回400
+	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)

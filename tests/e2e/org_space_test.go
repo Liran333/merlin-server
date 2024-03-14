@@ -85,7 +85,7 @@ func (s *SuiteOrgSpace) TearDownSuite() {
 // TestDeleteSpaceContainsModel used for testing
 // 当组织下有Space，组织卡片时，删除组织失败
 func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+	spaceParam := swagger.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "tempFullName",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -95,10 +95,16 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 		Owner:      s.name,
 		Sdk:        "gradio",
 		Visibility: "public",
-	})
+	}
+	data, r, err := Api.SpaceApi.V1SpacePost(Auth, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
+
+	// 重复创建空间返回400
+	_, r, err = Api.SpaceApi.V1SpacePost(Auth, spaceParam)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	// 删除组织失败
 	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
