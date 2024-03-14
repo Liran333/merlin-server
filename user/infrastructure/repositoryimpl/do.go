@@ -60,7 +60,7 @@ type UserDO struct {
 	IsAgreePrivacy  bool   `gorm:"column:is_agree_privacy;default:t"`
 }
 
-//nolint:golint,unused
+// nolint:golint,unused
 func toUserDONoEnc(u *domain.User) (do UserDO) {
 	do = UserDO{
 		Name:            u.Account.Account(),
@@ -153,12 +153,12 @@ func (u *UserDO) toUser(e crypto.Encrypter) (domain.User, error) {
 	return u.toOrg(e)
 }
 
-//nolint:golint,unused
+// nolint:golint,unused
 func (u *UserDO) toUserNoEnc() domain.User {
 	return u.toOrgNoEnc()
 }
 
-//nolint:golint,unused
+// nolint:golint,unused
 func (u *UserDO) toOrgNoEnc() (o org.Organization) {
 
 	o = org.Organization{

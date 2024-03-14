@@ -15,6 +15,7 @@ type ResourceAppService interface {
 	IsRepoExist(*domain.CodeRepoIndex) (bool, error)
 }
 
+// NewResourceAppService creates a new instance of the resourceAppService.
 func NewResourceAppService(r resourceadapter.ResourceAdapter) *resourceAppService {
 	return &resourceAppService{resource: r}
 }

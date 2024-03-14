@@ -72,7 +72,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 	}
 }
 
-// @Summary  Get platform user info
+// @Summary  GetPlatformUser info
 // @Description  Get platform user info
 // @Tags     User
 // @Accept   json

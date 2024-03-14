@@ -24,7 +24,7 @@ type Config struct {
 	branchRegexp *regexp.Regexp
 }
 
-// SetDefault sets the default values for the Config struct if they are not set.
+// Validate is a method that validates the Config instance.
 func (cfg *Config) Validate() (err error) {
 	cfg.branchRegexp, err = regexp.Compile(cfg.BranchRegexp)
 

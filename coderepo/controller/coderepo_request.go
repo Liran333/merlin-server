@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -7,6 +11,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// ToCmdToCheckRepoExists is a function that parses the request context
+// and returns a command to check if a repository exists.
 func ToCmdToCheckRepoExists(ctx *gin.Context) (*app.CmdToCheckRepoExists, error) {
 	owner, err := primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {

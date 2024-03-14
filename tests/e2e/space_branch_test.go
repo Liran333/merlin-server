@@ -224,19 +224,20 @@ func (s *SuiteSpaceBranch) TestOrgUserCreateInvalidBranch() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "test2space", swagger.ControllerRestfulReqToCreateBranch{
-		BaseBranch: "main",
-		Branch:     branchName,
-	})
-	assert.Equal(s.T(), 400, r.StatusCode)
+	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space",
+		s.name, "test2space", swagger.ControllerRestfulReqToCreateBranch{
+			BaseBranch: "main",
+			Branch:     branchName,
+		})
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 

@@ -27,8 +27,11 @@ const (
 	userIdParsed          = "user_id"
 	defaultClientPoolSize = 10
 	defaultIdleTimeOutNum = 30
+	// RequestNumPerSec represents the maximum number of requests allowed per second.
 	RequestNumPerSec      = 10
+	// BurstNumPerSec represents the maximum number of burst requests allowed per second.
 	BurstNumPerSec        = 10
+	maxCASMultiplier      = 100
 )
 
 var (
@@ -100,7 +103,7 @@ func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 		return fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
 	}
 	// set max cas limit value because maxCASAttempts must be more over than requestNum
-	maxCASAttempts := requestNum * 100
+	maxCASAttempts := requestNum * maxCASMultiplier
 	rateLimitCtx.SetMaxCASAttemptsLimit(maxCASAttempts)
 	logrus.Infof(" ratelimit with: rate: %d burst: %d", requestNum, burstNum)
 
@@ -117,6 +120,7 @@ type rateLimiter struct {
 	limitCli *throttled.HTTPRateLimiterCtx
 }
 
+// Limiter is a function that returns a pointer to the rateLimiter instance.
 func Limiter() *rateLimiter {
 	return limiter
 }

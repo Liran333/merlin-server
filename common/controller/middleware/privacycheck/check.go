@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package privacycheck provides functionality for checking user privacy agreement.
 package privacycheck
 
 import (
@@ -10,6 +15,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// PrivacyCheck is a function that creates a new instance of the privacyCheck.
 func PrivacyCheck(u middleware.UserMiddleWare, ua userapp.UserService,
 ) *privacyCheck {
 	return &privacyCheck{

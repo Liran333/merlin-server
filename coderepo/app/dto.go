@@ -87,4 +87,5 @@ type CmdToDeleteBranch struct {
 	RepoType repoprimitive.RepoType
 }
 
+// CmdToCheckRepoExists is an alias type for the domain.CodeRepoIndex.
 type CmdToCheckRepoExists = domain.CodeRepoIndex

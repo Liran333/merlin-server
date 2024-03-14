@@ -1104,7 +1104,8 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 }
 
 // ListInvitationByOrg lists the invitations based on the org.
-func (org *orgService) ListInvitationByOrg(actor, orgName primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+func (org *orgService) ListInvitationByOrg(actor, orgName primitive.Account,
+	status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
 	if _, err = org.repo.GetOrgByName(orgName); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("org %s not found", orgName.Account()))
@@ -1143,7 +1144,8 @@ func (org *orgService) ListInvitationByOrg(actor, orgName primitive.Account, sta
 }
 
 // ListInvitationByInviter lists the invitations based on the inviter.
-func (org *orgService) ListInvitationByInviter(actor, inviter primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+func (org *orgService) ListInvitationByInviter(actor, inviter primitive.Account,
+	status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
 	// can't list other's sent invitations
 	if inviter != actor {
 		err = allerror.NewNoPermission("can not list invitation sent by other user")
@@ -1171,7 +1173,8 @@ func (org *orgService) ListInvitationByInviter(actor, inviter primitive.Account,
 }
 
 // ListInvitationByInvitee lists the invitations based on the invitee.
-func (org *orgService) ListInvitationByInvitee(actor, invitee primitive.Account, status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
+func (org *orgService) ListInvitationByInvitee(actor, invitee primitive.Account,
+	status domain.ApproveStatus) (dtos []ApproveDTO, err error) {
 	// permission check
 	// can't list other's received invitations
 	if invitee != actor {

@@ -63,4 +63,5 @@ type CodeRepoIndex struct {
 // Resource represents a common resource.
 type Resource = commondomain.Resource
 
+// Repository is an alias type for the gitea.Repository.
 type Repository = gitea.Repository

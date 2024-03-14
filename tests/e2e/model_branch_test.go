@@ -204,21 +204,22 @@ func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 		Visibility: "public",
 		InitReadme: true,
 	})
-	assert.Equal(s.T(), 201, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model", s.name, "test2model", swagger.ControllerRestfulReqToCreateBranch{
-		BaseBranch: "main",
-		Branch:     branchName,
-	})
-	assert.Equal(s.T(), 400, r.StatusCode)
+	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model",
+		s.name, "test2model", swagger.ControllerRestfulReqToCreateBranch{
+			BaseBranch: "main",
+			Branch:     branchName,
+		})
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	time.Sleep(1 * time.Second)
 
 	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
-	assert.Equal(s.T(), 204, r.StatusCode)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 

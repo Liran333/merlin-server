@@ -70,10 +70,14 @@ func (u *User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
 }
 
+// AgreePrivacy sets the IsAgreePrivacy field of the User instance to true,
+// indicating that the user has agreed to the privacy terms.
 func (u *User) AgreePrivacy() {
 	u.IsAgreePrivacy = true
 }
 
+// RevokePrivacy sets the IsAgreePrivacy field of the User instance to false,
+// indicating that the user has revoked their agreement to the privacy terms.
 func (u *User) RevokePrivacy() {
 	u.IsAgreePrivacy = false
 }

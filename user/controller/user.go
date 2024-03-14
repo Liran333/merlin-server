@@ -347,7 +347,7 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 	}
 }
 
-// @Summary  Request Delete User info
+// @Summary  RequestDelete User info
 // @Description  delete
 // @Tags     User
 // @Accept   json

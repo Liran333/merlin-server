@@ -17,7 +17,7 @@ import (
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
-//nolint:golint,unused
+// nolint:golint,unused
 var errorNoPermission = allerror.NewNoPermission("no permission")
 
 // AddRouteForCodeRepoPermissionInternalController adds routes for CodeRepoPermissionInternalController.

@@ -66,7 +66,7 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 	}
 }
 
-// @Summary  Clear
+// @Summary  Clear session by session id
 // @Description  Clear session when it expired
 // @Tags     Session
 // @Accept   json

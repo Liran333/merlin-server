@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package controller
 
 import (
@@ -8,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 )
 
+// AddRouterForCodeRepoController adds routes for the CodeRepoController to the specified gin.RouterGroup.
 func AddRouterForCodeRepoController(
 	rg *gin.RouterGroup,
 	r app.ResourceAppService,
@@ -22,12 +27,13 @@ func AddRouterForCodeRepoController(
 	rg.GET("/v1/exists/:owner/:name", m.Read, rl.CheckLimit, ctl.Get)
 }
 
+// CodeRepoController is a controller that handles code repository-related operations.
 type CodeRepoController struct {
 	coderepo       app.ResourceAppService
 	userMiddleWare middleware.UserMiddleWare
 }
 
-// @Summary  Check
+// @Summary  Get coderepo and check it
 // @Description  check whether the repo exists
 // @Tags     CodeRepo
 // @Param    owner  path  string  true  "owner of repo"
