@@ -6,7 +6,6 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/gin-gonic/gin"
@@ -99,17 +98,18 @@ func (ctl *SpaceAppWebController) parseIndex(ctx *gin.Context) (index spacedomai
 func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
 	if err != nil {
+		ctx.SSEvent("error", err.Error())
 		return
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	spaceApp, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		ctx.SSEvent("error", err.Error())
 		return
 	}
 	if spaceApp.BuildLogURL == "" {
-		commonctl.SendBadRequestParam(ctx, fmt.Errorf("space app is not building"))
+		ctx.SSEvent("error", "space app is not building")
 		return
 	}
 
@@ -135,7 +135,7 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.GetRequestDataStream(cmd); err != nil {
-		commonctl.SendError(ctx, err)
+		ctx.SSEvent("error", err.Error())
 	}
 
 }
@@ -151,17 +151,18 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
 	if err != nil {
+		ctx.SSEvent("error", err.Error())
 		return
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	spaceApp, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		ctx.SSEvent("error", err.Error())
 		return
 	}
 	if spaceApp.AppLogURL == "" {
-		commonctl.SendBadRequestParam(ctx, fmt.Errorf("space app is not serving"))
+		ctx.SSEvent("error", "space app is not serving")
 		return
 	}
 
@@ -187,7 +188,7 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.GetRequestDataStream(cmd); err != nil {
-		commonctl.SendError(ctx, err)
+		ctx.SSEvent("error", err.Error())
 	}
 
 }
