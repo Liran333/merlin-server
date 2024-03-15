@@ -28,7 +28,12 @@ func ClearStringMemory(s ...string) {
 
 // clearStringMemory clears the memory of a string by setting each byte to 0.
 func clearStringMemory(s string) {
-	if len(s) < 1 {
+	// for strings represented by a single character, Go's runtime implements string sharing of character data,
+	// which resides in a unified staticbytes. Therefore, it is forbidden to clear it,
+	// as doing so would result in all strings parsed from a single character having a value of '\0'
+	// during later runtime execution of the program. This is to avoid setting sensitive information such as passwords
+	// and credentials with a length less than or equal to 1.
+	if len(s) <= 1 {
 		return
 	}
 
