@@ -43,3 +43,6 @@ RESERVED_ACCOUNTS:
   - "tasks"
   - "tool"
   - "users"
+
+PG_MAX_CONN: 100
+PG_MAX_IDLE: 50

@@ -183,6 +183,8 @@ postgresql:
   pwd: {{(ds "secret").data.PG_PASS }}
   name: {{(ds "secret").data.PG_DB }}
   port: {{(ds "secret").data.PG_PORT }}
+  max_conn: {{(ds "data").PG_MAX_CONN }}
+  max_idle: {{(ds "data").PG_MAX_IDLE }}
   cert: {{(ds "secret").data.PG_CERT }}
 
 internal:
