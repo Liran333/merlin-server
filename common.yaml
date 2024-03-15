@@ -67,3 +67,8 @@ LICENSES:
   - 'mpl-2.0'
   - 'odbl-1.0'
   - 'cc-by-4.0'
+ACCEPTABLE_AVATAR_DOMAINS: 
+  - "https://gitee.com"
+  - "https://files.authing.co"
+  - "https://avatars.githubusercontent.com"
+  - "https://foruda.gitee.com"

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package primitive
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
@@ -13,16 +14,17 @@ import (
 )
 
 var (
-	node             *snowflake.Node
-	msdConfig        MSDConfig
-	allLicenses      map[string]bool
-	emailConfig      EmailConfig
-	phoneConfig      PhoneConfig
-	tokenConfig      TokenConfig
-	websiteConfig    WebsiteConfig
-	accountConfig    AccountConfig
-	randomIdLength   int
-	passwordInstance *passwordImpl
+	node                    *snowflake.Node
+	msdConfig               MSDConfig
+	allLicenses             map[string]bool
+	emailConfig             EmailConfig
+	phoneConfig             PhoneConfig
+	tokenConfig             TokenConfig
+	websiteConfig           WebsiteConfig
+	accountConfig           AccountConfig
+	randomIdLength          int
+	passwordInstance        *passwordImpl
+	acceptableAvatarDomains []string
 )
 
 // Init initializes the configuration with the given Config struct.
@@ -46,20 +48,27 @@ func Init(cfg *Config) (err error) {
 
 	randomIdLength = cfg.RandomIdLength
 	passwordInstance = newPasswordImpl(cfg.PasswordConfig)
+	if len(cfg.AcceptableAvatarDomains) <= 0 {
+		err = errors.New("no acceptable avatar domains configured")
+		return
+	}
+
+	acceptableAvatarDomains = cfg.AcceptableAvatarDomains
 	return
 }
 
 // Config represents the main configuration structure.
 type Config struct {
-	Licenses       []string       `json:"licenses" required:"true"`
-	MSDConfig      MSDConfig      `json:"msd"`
-	EmailConfig    EmailConfig    `json:"email"`
-	PhoneConfig    PhoneConfig    `json:"phone"`
-	TokenConfig    TokenConfig    `json:"token"`
-	WebsiteConfig  WebsiteConfig  `json:"website"`
-	AccountConfig  AccountConfig  `json:"account"`
-	RandomIdLength int            `json:"random_id_length"`
-	PasswordConfig PasswordConfig `json:"password_config"`
+	Licenses                []string       `json:"licenses" required:"true"`
+	MSDConfig               MSDConfig      `json:"msd"`
+	EmailConfig             EmailConfig    `json:"email"`
+	PhoneConfig             PhoneConfig    `json:"phone"`
+	TokenConfig             TokenConfig    `json:"token"`
+	WebsiteConfig           WebsiteConfig  `json:"website"`
+	AccountConfig           AccountConfig  `json:"account"`
+	RandomIdLength          int            `json:"random_id_length"`
+	PasswordConfig          PasswordConfig `json:"password_config"`
+	AcceptableAvatarDomains []string       `json:"acceptable_avatar_domains" required:"true"`
 }
 
 // SetDefault sets default values for Config if they are not provided.

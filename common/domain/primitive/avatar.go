@@ -7,6 +7,7 @@ package primitive
 import (
 	"errors"
 	"net/url"
+	"strings"
 )
 
 // AvatarId is an interface that represents a unique identifier for an avatar.
@@ -25,7 +26,12 @@ func NewAvatarId(v string) (AvatarId, error) {
 		return nil, errors.New("avatar must be a valid uri")
 	}
 
-	return dpAvatarId(avatarId.String()), nil
+	for _, domain := range acceptableAvatarDomains {
+		if strings.HasPrefix(v, domain) {
+			return dpAvatarId(avatarId.String()), nil
+		}
+	}
+	return nil, errors.New("avatar url domain not allowed")
 }
 
 // CreateAvatarId creates a new AvatarId instance from the given string.

@@ -128,10 +128,6 @@ user:
     user: user
     token: token
   key: {{(ds "secret").data.USER_ENC_KEY }}
-  acceptable_avatar_domains: 
-  {{- range (ds "data").ACCEPTABLE_AVATAR_DOMAINS}}
-    - "{{ . }}"
-  {{- end }}
 
 coderepo:
   primitive:
@@ -174,6 +170,10 @@ primitive:
   {{- end }}
   licenses:
 {{- range (ds "common").LICENSES}}
+  - "{{ . }}"
+{{- end }}
+  acceptable_avatar_domains:
+{{- range (ds "common").ACCEPTABLE_AVATAR_DOMAINS}}
   - "{{ . }}"
 {{- end }}
 
