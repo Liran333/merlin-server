@@ -7,6 +7,7 @@ package e2e
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/antihax/optional"
@@ -29,6 +30,10 @@ type SuiteOrg struct {
 	owner        string
 	owerId       string
 }
+
+const (
+	charA = "A"
+)
 
 // SetupSuite used for testing
 func (s *SuiteOrg) SetupSuite() {
@@ -111,9 +116,55 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Nil(s.T(), err)
 }
 
+// TestOrgCreateSuccess used for testing
+// 创建一个组织成功，website为非必选项
+func (s *SuiteOrg) TestOrgCreateSuccess() {
+	// website为非必选项
+	d := swagger.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+	}
+	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 创建组织，website设置成功
+	d = swagger.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+		Website:  s.website,
+	}
+	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &swagger.OrganizationApiV1OrganizationGetOpts{})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	orgs := getArrary(s.T(), data.Data)
+	count := 0
+	for _, v := range orgs {
+		if v["fullname"] == s.fullname {
+			assert.Equal(s.T(), s.website, v["website"])
+			count++
+		}
+	}
+	assert.Equal(s.T(), countOne, count)
+
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestOrgCreateFail used for testing
-// 创建一个组织昵称必填
+// 创建一个组织名、ID必填
 func (s *SuiteOrg) TestOrgCreateFail() {
+	// 组织名必填
 	d := swagger.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: "",
@@ -121,6 +172,16 @@ func (s *SuiteOrg) TestOrgCreateFail() {
 
 	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "org fullname can't be empty")
+	assert.NotNil(s.T(), err)
+
+	// 组织ID必填
+	d = swagger.ControllerOrgCreateRequest{
+		Name:     "",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "name can't be empty")
 	assert.NotNil(s.T(), err)
 }
 
@@ -245,6 +306,36 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
+
+	// website too long
+	d = swagger.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+		Website:  strings.Repeat(charA, ComConfig.WEBSITE_MAX_LEN+1),
+	}
+
+	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+
+	// website repeate
+	d = swagger.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+		Website:  s.website,
+	}
+
+	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
 }
 
 // TestOrgListEmpty used for testing
@@ -401,7 +492,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 	// Slice of invalid names
 	invalidNames := []string{
 		"", // Empty name
-		string(make([]byte, http.StatusCreated)),
+		strings.Repeat(charA, ComConfig.ACCOUNT_NAME_MAX_LEN+1),
 	}
 
 	for _, name := range invalidNames {
@@ -425,7 +516,7 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 	// Slice of invalid names
 	invalidFullname := []string{
 		"", // Empty name
-		string(make([]byte, http.StatusCreated)),
+		strings.Repeat(charA, ComConfig.MSD_FULLNAME_MAX_LEN+1),
 	}
 
 	for _, fullname := range invalidFullname {
