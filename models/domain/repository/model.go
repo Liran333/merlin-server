@@ -68,6 +68,7 @@ type ModelRepositoryAdapter interface {
 	Save(*domain.Model) error
 	List(*ListOption) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
+	SearchModel(*ListOption, primitive.Account) ([]ModelSummary, int, error)
 }
 
 // ModelLabelsRepoAdapter represents an interface for managing model labels.

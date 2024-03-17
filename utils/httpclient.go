@@ -2,11 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type HttpClient struct {
@@ -37,7 +37,7 @@ func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, 
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		rb, err := ioutil.ReadAll(resp.Body)
+		rb, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}

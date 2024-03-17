@@ -6,6 +6,7 @@ package modelrepositoryadapter
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -180,6 +181,47 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	}
 
 	return db
+}
+
+func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account) ([]repository.ModelSummary, int, error) {
+	db := adapter.db()
+
+	queryName, argName := likeFilter(fieldName, opt.Name)
+
+	db = db.Where(queryName, argName)
+
+	if login != nil {
+		sql := fmt.Sprintf(`%s = ? or %s = ?`, fieldVisibility, fieldOwner)
+		db = db.Where(sql, primitive.VisibilityPublic, login)
+	} else {
+		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
+	}
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if b, offset := opt.Pagination(); b {
+		if offset > 0 {
+			db = db.Limit(opt.CountPerPage).Offset(offset)
+		} else {
+			db = db.Limit(opt.CountPerPage)
+		}
+	}
+
+	var dos []modelDO
+
+	if err := db.Find(&dos).Error; err != nil {
+		return nil, 0, err
+	}
+
+	r := make([]repository.ModelSummary, len(dos))
+	for i, do := range dos {
+		r[i] = do.toModelSummary()
+	}
+
+	return r, int(total), nil
 }
 
 func order(t primitive.SortType) string {

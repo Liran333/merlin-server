@@ -6,6 +6,7 @@ package spacerepositoryadapter
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -182,6 +183,47 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	}
 
 	return db
+}
+
+func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primitive.Account) ([]repository.SpaceSummary, int, error) {
+	db := adapter.db()
+
+	queryName, argName := likeFilter(fieldName, opt.Name)
+
+	db = db.Where(queryName, argName)
+
+	if login != nil {
+		sql := fmt.Sprintf(`%s = ? or %s = ?`, fieldVisibility, fieldOwner)
+		db = db.Where(sql, primitive.VisibilityPublic, login)
+	} else {
+		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
+	}
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if b, offset := opt.Pagination(); b {
+		if offset > 0 {
+			db = db.Limit(opt.CountPerPage).Offset(offset)
+		} else {
+			db = db.Limit(opt.CountPerPage)
+		}
+	}
+
+	var dos []spaceDO
+
+	if err := db.Find(&dos).Error; err != nil {
+		return nil, 0, err
+	}
+
+	r := make([]repository.SpaceSummary, len(dos))
+	for i := range dos {
+		r[i] = dos[i].toSpaceSummary()
+	}
+
+	return r, int(total), nil
 }
 
 func order(t primitive.SortType) string {

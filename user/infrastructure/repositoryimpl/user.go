@@ -350,6 +350,107 @@ func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domai
 	return
 }
 
+func (impl *userRepoImpl) SearchUser(opt *repository.ListOption) ([]domain.User, int, error) {
+	db := impl.DB()
+
+	if opt == nil {
+		err := fmt.Errorf("list option is nil")
+		return nil, 0, err
+	}
+
+	if opt.Name == "" {
+		err := fmt.Errorf("search key is empty")
+		return nil, 0, err
+	}
+
+	queryName, argName := impl.LikeFilter(fieldName, opt.Name)
+
+	db = db.Where(queryName, argName)
+
+	db = db.Where(impl.EqualQuery(fieldType), domain.UserTypeUser)
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if b, offset := opt.Pagination(); b {
+		if offset > 0 {
+			db = db.Limit(opt.CountPerPage).Offset(offset)
+		} else {
+			db = db.Limit(opt.CountPerPage)
+		}
+	}
+
+	var dos []UserDO
+
+	if err := db.Find(&dos).Error; err != nil {
+		return nil, 0, err
+	}
+
+	users := make([]domain.User, len(dos))
+
+	for i := range dos {
+		u, err := dos[i].toUser(impl.e)
+		if err != nil {
+			return nil, 0, err
+		}
+		users[i] = u
+	}
+
+	return users, int(total), nil
+}
+
+func (impl *userRepoImpl) SearchOrg(opt *repository.ListOption) ([]org.Organization, int, error) {
+	db := impl.DB()
+
+	if opt == nil {
+		err := fmt.Errorf("list option is nil")
+		return nil, 0, err
+	}
+
+	if opt.Name == "" {
+		err := fmt.Errorf("search key is empty")
+		return nil, 0, err
+	}
+
+	queryName, argName := impl.LikeFilter(fieldName, opt.Name)
+
+	db = db.Where(queryName, argName)
+
+	db = db.Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization)
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if b, offset := opt.Pagination(); b {
+		if offset > 0 {
+			db = db.Limit(opt.CountPerPage).Offset(offset)
+		} else {
+			db = db.Limit(opt.CountPerPage)
+		}
+	}
+
+	var dos []UserDO
+
+	if err := db.Find(&dos).Error; err != nil {
+		return nil, 0, err
+	}
+
+	orgs := make([]org.Organization, len(dos))
+	for i := range dos {
+		o, err := dos[i].toOrg(impl.e)
+		if err != nil {
+			return nil, 0, err
+		}
+		orgs[i] = o
+	}
+
+	return orgs, int(total), nil
+}
+
 func (impl *userRepoImpl) order(t primitive.SortType) string {
 	if t == nil {
 		return ""

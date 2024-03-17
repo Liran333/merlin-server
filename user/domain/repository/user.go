@@ -31,6 +31,15 @@ type ListOption struct {
 	CountPerPage int
 }
 
+// Pagination calculates the offset for pagination.
+func (opt *ListOption) Pagination() (bool, int) {
+	if opt.PageNum > 0 && opt.CountPerPage > 0 {
+		return true, (opt.PageNum - 1) * opt.CountPerPage
+	}
+
+	return false, 0
+}
+
 // ListOrgOption is a struct for defining options when listing organization resources.
 type ListOrgOption struct {
 	OrgIDs []int64
@@ -57,4 +66,7 @@ type User interface {
 	GetOrgCountByOwner(primitive.Account) (int64, error)
 
 	ListAccount(*ListOption) ([]domain.User, int, error)
+
+	SearchUser(*ListOption) ([]domain.User, int, error)
+	SearchOrg(*ListOption) ([]org.Organization, int, error)
 }

@@ -68,6 +68,7 @@ type SpaceRepositoryAdapter interface {
 	Save(*domain.Space) error
 	List(*ListOption) ([]SpaceSummary, int, error)
 	Count(*ListOption) (int, error)
+	SearchSpace(*ListOption, primitive.Account) ([]SpaceSummary, int, error)
 }
 
 // SpaceLabelsRepoAdapter is an interface for interacting with space label repositories.
