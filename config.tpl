@@ -192,6 +192,11 @@ internal:
   token_hash: {{(ds "secret").data.INTERNAL_TOKEN_HASH }}
   salt: {{(ds "secret").data.INTERNAL_SALT }}
 
+git_access:
+  token: {{(ds "secret").data.INTERNAL_TOKEN }}
+  endpoint: http://127.0.0.1:8888
+  token_header: TOKEN
+
 space_app:
   tables:
     space_app: space_app

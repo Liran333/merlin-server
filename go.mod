@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/jackc/pgx/v5 v5.5.4
 	github.com/lib/pq v1.10.9
+	github.com/openmerlin/git-access-sdk v0.0.0-20240318034535-9f147766bb45
 	github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458
 	github.com/openmerlin/merlin-sdk v0.0.0-20240314074644-3467b205106e
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771

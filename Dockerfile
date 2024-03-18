@@ -1,6 +1,9 @@
 FROM golang:1.21 as BUILDER
 ARG MERLIN_GOPROXY=https://goproxy.cn,direct
-RUN go env -w GOPROXY=${MERLIN_GOPROXY}
+ARG GH_USER
+ARG GH_TOKEN
+RUN go env -w GOPROXY=${MERLIN_GOPROXY} && go env -w GOPRIVATE=github.com/openmerlin
+RUN echo "machine github.com login ${GH_USER} password ${GH_TOKEN}" > $HOME/.netrc
 
 # build binary
 COPY . /go/src/github.com/openmerlin/merlin-server

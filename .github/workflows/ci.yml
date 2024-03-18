@@ -17,11 +17,10 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
-      - name: config private models
-        env:
-          TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
-        run: git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
       - name: Run e2e tests
+        env:
+          GH_TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
+          GH_USER: ${{ secrets.USER_NAME }}
         run: bash -x scripts/init-env.sh && bash -x scripts/openapi.sh && cd tests/e2e && go test -v -count=1 ./...
       - name: Self Hosted Runner Post Job Cleanup Action
         uses: TooMuch4U/actions-clean@master

@@ -111,6 +111,8 @@ services:
       dockerfile: Dockerfile
       args:
         MODE: debug
+        GH_USER: ${GH_USER}
+        GH_TOKEN: ${GH_TOKEN}
     depends_on:
       kafka:
         condition: service_healthy

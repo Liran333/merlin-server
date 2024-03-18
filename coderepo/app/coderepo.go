@@ -5,6 +5,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"github.com/openmerlin/git-access-sdk/filescan"
+	"github.com/openmerlin/git-access-sdk/filescan/api"
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repoadapter"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
@@ -53,9 +57,26 @@ func (s *codeRepoAppService) Delete(index domain.CodeRepoIndex) error {
 func (s *codeRepoAppService) Update(repo *domain.CodeRepo, cmd *CmdToUpdateRepo) (bool, error) {
 	index := repo.RepoIndex()
 
+	// when the Visibility of repo change from private to public, must scan it
+	whetherToScan := repo.IsPrivate() && cmd.Visibility.IsPublic()
+
 	if !cmd.toRepo(repo) {
 		return false, nil
 	}
 
-	return true, s.repoAdapter.Save(&index, repo)
+	err := s.repoAdapter.Save(&index, repo)
+
+	if err == nil && whetherToScan {
+		_, err1 := api.CreateFileInfo(&filescan.ReqToCreateFileInfo{
+			Owner:  repo.Owner.Account(),
+			Repo:   repo.Name.MSDName(),
+			RepoId: repo.Id.Integer(),
+		})
+		if err1 != nil {
+			logrus.Errorf("create file scan task of %s/%s error:%s",
+				repo.Owner.Account(), repo.Name.MSDName(), err1.Error())
+		}
+	}
+
+	return true, err
 }

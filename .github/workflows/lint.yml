@@ -7,12 +7,20 @@ permissions:
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
   # pull-requests: read
 
+env:
+  GOPRIVATE: "github.com/openmerlin"
+
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux]
     steps:
       - uses: actions/checkout@v4
+      - name: config github
+        env:
+          TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
+          USER: ${{ secrets.USER_NAME }}
+        run: echo "machine github.com login $USER password $TOKEN" > ~/.netrc
       - uses: actions/setup-go@v5
         with:
           go-version: '1.21'
@@ -51,6 +59,8 @@ jobs:
           # install-mode: "goinstall"
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
+        env:
+          GITHUB_AUTHENTICATION_TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
         with:
           args: -exclude-dir api -exclude-dir tests ./...
       - name: Unit tests
