@@ -4,7 +4,12 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 
 package primitive
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/openmerlin/merlin-server/utils"
+	"github.com/sirupsen/logrus"
+)
 
 type SearchKey interface {
 	SearchKey() string
@@ -17,12 +22,20 @@ const (
 	SearchTypeMaxLength = 5
 	SearchTypeMinLength = 0
 
-	SearchTypeItemMaxLength = 20
-	SearchTypeItemMinLength = 0
-
 	SizeMaxLength = 100
 	SizeMinLength = 0
+
+	TypeModelResultNum = 6
+
+	SearchTypeModel = "model"
+	SearchTypeSpace = "space"
+	SearchTypeUser  = "user"
+	SearchTypeOrg   = "org"
 )
+
+func getTypeLimit() []string {
+	return []string{SearchTypeModel, SearchTypeSpace, SearchTypeUser, SearchTypeOrg}
+}
 
 func NewSearchKey(v string) (SearchKey, error) {
 	n := len(v)
@@ -54,8 +67,8 @@ func NewSearchType(v []string) (SearchType, error) {
 	}
 
 	for _, s := range v {
-		if len(s) >= SearchTypeItemMaxLength || len(s) <= SearchTypeItemMinLength {
-			return nil, fmt.Errorf("invalid searchType item length, should between %d and %d", 0, 20)
+		if !utils.Contains(getTypeLimit(), s) {
+			return nil, fmt.Errorf("invalid searchType, should be one of %v", getTypeLimit())
 		}
 	}
 
@@ -77,8 +90,13 @@ type Size interface {
 }
 
 func NewSize(v int) (Size, error) {
+	if v == 0 {
+		logrus.Infof("size is 0, set to default value %d", TypeModelResultNum)
+		return size(TypeModelResultNum), nil
+	}
+
 	if v >= SizeMaxLength || v <= SizeMinLength {
-		return nil, fmt.Errorf("invalid size, should between %d and %d", 1, 100)
+		return nil, fmt.Errorf("invalid size, should between %d and %d", 0, 100)
 	}
 
 	return size(v), nil

@@ -7,18 +7,12 @@ package resourceadapterimpl
 import (
 	"fmt"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/search/domain"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
-)
-
-const (
-	SearchTypeModel = "model"
-	SearchTypeSpace = "space"
-	SearchTypeUser  = "user"
-	SearchTypeOrg   = "org"
 )
 
 type searchAdapter struct {
@@ -41,7 +35,7 @@ func NewSearchRepositoryAdapter(
 
 func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchResult, error) {
 	var result domain.SearchResult
-	if utils.Contains(opt.SearchType, SearchTypeModel) {
+	if utils.Contains(opt.SearchType, primitive.SearchTypeModel) {
 		cmd := &modelrepo.ListOption{
 			Name:         opt.SearchKey,
 			CountPerPage: opt.Size,
@@ -53,7 +47,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 		result.SearchResultModel = models
 	}
 
-	if utils.Contains(opt.SearchType, SearchTypeSpace) {
+	if utils.Contains(opt.SearchType, primitive.SearchTypeSpace) {
 		cmd := &spacerepo.ListOption{
 			Name:         opt.SearchKey,
 			CountPerPage: opt.Size,
@@ -65,7 +59,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 		result.SearchResultSpace = spaces
 	}
 
-	if utils.Contains(opt.SearchType, SearchTypeUser) {
+	if utils.Contains(opt.SearchType, primitive.SearchTypeUser) {
 		cmd := &repository.ListOption{
 			Name:         opt.SearchKey,
 			CountPerPage: opt.Size,
@@ -77,7 +71,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 		result.SearchResultUser = users
 	}
 
-	if utils.Contains(opt.SearchType, SearchTypeOrg) {
+	if utils.Contains(opt.SearchType, primitive.SearchTypeOrg) {
 		cmd := &repository.ListOption{
 			Name:         opt.SearchKey,
 			CountPerPage: opt.Size,

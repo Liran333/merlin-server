@@ -28,5 +28,6 @@ func setRouterOfSearchWeb(rg *gin.RouterGroup, services *allServices) {
 		),
 		services.operationLog,
 		services.userMiddleWare,
+		services.rateLimiterMiddleWare,
 	)
 }

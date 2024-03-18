@@ -10,9 +10,9 @@ import (
 )
 
 type quickSearchRequest struct {
-	SearchKey  string   `json:"search_key" binding:"required"`
-	SearchType []string `json:"search_type" binding:"required"`
-	Size       int      `json:"size" binding:"required"`
+	SearchKey  string   `form:"searchKey" binding:"required"`
+	SearchType []string `form:"type" binding:"required"`
+	Size       int      `form:"size"`
 }
 
 func (req *quickSearchRequest) toCmd() (cmd app.CmdToSearch, err error) {
