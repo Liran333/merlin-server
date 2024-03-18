@@ -24,7 +24,7 @@ func (s *sessionAppService) CheckAndRefresh(cmd *CmdToCheck) (
 	user = session.User
 	token = cmd.CSRFToken.RandomId()
 
-	if !cmd.AutoRefresh || !refreshToken {
+	if !refreshToken {
 		return
 	}
 
@@ -78,5 +78,22 @@ func (s *sessionAppService) check(cmd *CmdToCheck) (
 
 	refreshToken = csrfToken.IsExpired()
 
+	return
+}
+
+// CheckSession checks the session for a given command.
+func (s *sessionAppService) CheckSession(cmd *CmdToCheck) (user primitive.Account, err error) {
+	session, err := s.sessionFastRepo.Find(cmd.SessionId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session")
+		}
+
+		return
+	}
+
+	err = s.sessionFastRepo.Save(&session)
+
+	user = session.User
 	return
 }

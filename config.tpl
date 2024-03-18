@@ -20,7 +20,8 @@ session:
     csrf_token_timeout_to_reset: {{(ds "data").CSRF_TOKEN_TIMEOUT_TO_RESET }}
   controller:
     csrf_token_cookie_expiry: {{(ds "data").CSRF_TOKEN_COOKIE_EXPIRY }}
-
+    session_domain: ".fatedomain.com"
+    
 gitea:
   url: {{(ds "secret").data.GITEA_BASE_URL }}
   token: {{(ds "secret").data.GITEA_ROOT_TOKEN }}

@@ -25,31 +25,33 @@ const (
 var noUserError = errors.New("no user")
 
 // WebAPIMiddleware creates a new instance of webAPIMiddleware with the given session and securityLog.
-func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog) *webAPIMiddleware {
+func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog, cfg *Config) *webAPIMiddleware {
 	return &webAPIMiddleware{
 		session:     session,
 		securityLog: securityLog,
+		cfg:         cfg,
 	}
 }
 
 type webAPIMiddleware struct {
 	session     app.SessionAppService
 	securityLog middleware.SecurityLog
+	cfg         *Config
 }
 
 // Write is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Write(ctx *gin.Context) {
-	m.must(ctx, true)
+	m.must(ctx)
 }
 
 // Read is a middleware function that checks if the CSRF token is present in the request header.
 func (m *webAPIMiddleware) Read(ctx *gin.Context) {
-	m.must(ctx, true)
+	m.must(ctx)
 }
 
-// CheckToken is a middleware function that checks if the CSRF token is present in the request header and no refresh.
-func (m *webAPIMiddleware) CheckToken(ctx *gin.Context) {
-	m.must(ctx, false)
+// CheckSession is a middleware function that checks if the session is present in the request header.
+func (m *webAPIMiddleware) CheckSession(ctx *gin.Context) {
+	m.mustSession(ctx)
 }
 
 // Optional is a middleware function that checks if the CSRF token is present in the request header.
@@ -57,13 +59,25 @@ func (m *webAPIMiddleware) Optional(ctx *gin.Context) {
 	if v := ctx.GetHeader(csrfTokenHeader); v == "" {
 		ctx.Next()
 	} else {
-		m.must(ctx, true)
+		m.must(ctx)
 	}
 }
 
-func (m *webAPIMiddleware) must(ctx *gin.Context, autoRefresh bool) {
-	if err := m.checkToken(ctx, autoRefresh); err != nil {
-		clearCookie(ctx)
+func (m *webAPIMiddleware) must(ctx *gin.Context) {
+	if err := m.checkToken(ctx); err != nil {
+		clearCookie(ctx, m.cfg.SessionDomain)
+		commonctl.SendError(ctx, err)
+		m.securityLog.Warn(ctx, err.Error())
+
+		ctx.Abort()
+	} else {
+		ctx.Next()
+	}
+}
+
+func (m *webAPIMiddleware) mustSession(ctx *gin.Context) {
+	if err := m.checkSession(ctx); err != nil {
+		clearCookie(ctx, m.cfg.SessionDomain)
 		commonctl.SendError(ctx, err)
 		m.securityLog.Warn(ctx, err.Error())
 
@@ -98,7 +112,7 @@ func (m *webAPIMiddleware) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Ac
 	return nil
 }
 
-func (m *webAPIMiddleware) checkToken(ctx *gin.Context, autoRefresh bool) error {
+func (m *webAPIMiddleware) checkToken(ctx *gin.Context) error {
 	csrfToken, err := m.parseCSRFToken(ctx)
 	if err != nil {
 		return err
@@ -124,17 +138,34 @@ func (m *webAPIMiddleware) checkToken(ctx *gin.Context, autoRefresh bool) error 
 			SessionId: sessionId,
 			CSRFToken: csrfToken,
 		},
-		IP:          ip,
-		UserAgent:   userAgent,
-		AutoRefresh: autoRefresh,
+		IP:        ip,
+		UserAgent: userAgent,
 	})
 	if err != nil {
 		return err
 	}
 
-	if autoRefresh {
-		expiry := config.csrfTokenCookieExpiry()
-		setCookieOfCSRFToken(ctx, newCSRF, &expiry)
+	expiry := config.csrfTokenCookieExpiry()
+	setCookieOfCSRFToken(ctx, newCSRF, m.cfg.SessionDomain, &expiry)
+
+	ctx.Set(userIdParsed, user)
+
+	return nil
+}
+
+func (m *webAPIMiddleware) checkSession(ctx *gin.Context) error {
+	sessionId, err := m.parseSessionId(ctx)
+	if err != nil {
+		return err
+	}
+
+	user, err := m.session.CheckSession(&app.CmdToCheck{
+		SessionDTO: app.SessionDTO{
+			SessionId: sessionId,
+		},
+	})
+	if err != nil {
+		return err
 	}
 
 	ctx.Set(userIdParsed, user)
@@ -174,11 +205,8 @@ func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId,
 	return sessionId, err
 }
 
-func clearCookie(ctx *gin.Context) {
+func clearCookie(ctx *gin.Context, domain string) {
 	expiry := time.Now().AddDate(0, 0, -1)
-	setCookieOfSessionId(ctx, "", &expiry)
-	setCookieOfCSRFToken(ctx, "", &expiry)
-
-	commonctl.SetCookie(ctx, oneidUT, "", false, &expiry)
-	commonctl.SetCookie(ctx, oneidYG, "", true, &expiry)
+	setCookieOfSessionId(ctx, "", domain, &expiry)
+	setCookieOfCSRFToken(ctx, "", domain, &expiry)
 }

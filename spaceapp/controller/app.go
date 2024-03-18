@@ -37,7 +37,7 @@ func AddRouterForSpaceappWebController(
 	r.GET("/v1/space-app/:owner/:name/buildlog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeBuildLog)
 	r.GET("/v1/space-app/:owner/:name/spacelog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeSpaceLog)
 	r.POST("/v1/space-app/:owner/:name/restart", m.Optional, l.CheckLimit, ctl.Restart)
-	r.GET("/v1/space-app/:owner/:name/read", t.CheckToken, l.CheckLimit, ctl.CanRead)
+	r.GET("/v1/space-app/:owner/:name/read", t.CheckSession, l.CheckLimit, ctl.CanRead)
 }
 
 // SpaceAppWebController is a struct that represents the web controller for the space app.

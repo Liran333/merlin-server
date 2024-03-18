@@ -23,8 +23,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	rg := engine.Group(prefix)
 
 	services.securityLog = securitylog.SecurityLog()
-	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog)
-	services.tokenMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog)
+	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog, &cfg.Session.Controller)
+	services.tokenMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog, &cfg.Session.Controller)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
 	services.rateLimiterMiddleWare = ratelimiter.Limiter()
 	if services.rateLimiterMiddleWare == nil {
@@ -38,7 +38,7 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfUser(rg, cfg, services)
 
-	setRouterOfSession(rg, services)
+	setRouterOfSession(rg, services, &cfg.Session.Controller)
 
 	setRouterOfModelWeb(rg, services)
 

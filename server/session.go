@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	"github.com/openmerlin/merlin-server/session/controller"
+	sessionctl "github.com/openmerlin/merlin-server/session/controller"
 	"github.com/openmerlin/merlin-server/session/infrastructure/csrftokenrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
@@ -29,9 +30,9 @@ func initSession(cfg *config.Config, services *allServices) {
 	)
 }
 
-func setRouterOfSession(rg *gin.RouterGroup, services *allServices) {
+func setRouterOfSession(rg *gin.RouterGroup, services *allServices, cfg *sessionctl.Config) {
 	controller.AddRouterForSessionController(
-		rg, services.sessionApp, services.operationLog, services.userMiddleWare,
+		rg, services.sessionApp, services.operationLog, services.userMiddleWare, cfg,
 	)
 }
 

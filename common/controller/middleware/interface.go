@@ -39,9 +39,8 @@ type UserMiddleWare interface {
 
 // TokenMiddleWare is an interface that defines methods for user authentication and authorization.
 type TokenMiddleWare interface {
-	// 1. The token must be exist and valid and has read role,
+	// 1. The session must be exist and valid and has read role,
 	// otherwise abort directly and send allerror.ErrorCodeAccessTokenInvalid
-	// 2. If token is valid, then parse the user bound to the token and save it
-	// 3. Only read token and will not refresh expired token
-	CheckToken(*gin.Context)
+	// 2. If session is valid, then parse the user bound to the token and save it
+	CheckSession(*gin.Context)
 }

@@ -34,14 +34,15 @@ func GetUserAgent(ctx *gin.Context) (primitive.UserAgent, error) {
 }
 
 // SetCookie sets a cookie with the given key, value, httpOnly flag, and expiry time in the given gin context.
-func SetCookie(ctx *gin.Context, key, val string, httpOnly bool, expiry *time.Time) {
+func SetCookie(ctx *gin.Context, key, val, domain string, httpOnly bool, expiry *time.Time, sameSite http.SameSite) {
 	cookie := &http.Cookie{
 		Name:     key,
 		Value:    val,
 		Path:     "/",
 		HttpOnly: httpOnly,
 		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: sameSite,
+		Domain:   domain,
 	}
 
 	if expiry != nil {

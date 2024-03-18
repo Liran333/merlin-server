@@ -6,6 +6,7 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,9 +30,11 @@ func AddRouterForSessionController(
 	s app.SessionAppService,
 	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
+	cfg *Config,
 ) {
 	pc := SessionController{
-		s: s,
+		s:   s,
+		cfg: cfg,
 	}
 
 	rg.POST("/v1/session", l.Write, pc.Login)
@@ -40,7 +43,8 @@ func AddRouterForSessionController(
 
 // SessionController is a struct that holds the session app service.
 type SessionController struct {
-	s app.SessionAppService
+	s   app.SessionAppService
+	cfg *Config
 }
 
 // @Summary  Login
@@ -78,10 +82,10 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("%s login", user.Name))
 
 	sessionExpiry := config.sessionCookieExpiry()
-	setCookieOfSessionId(ctx, session.SessionId.RandomId(), &sessionExpiry)
+	setCookieOfSessionId(ctx, session.SessionId.RandomId(), ctl.cfg.SessionDomain, &sessionExpiry)
 
 	expiry := config.csrfTokenCookieExpiry()
-	setCookieOfCSRFToken(ctx, session.CSRFToken.RandomId(), &expiry)
+	setCookieOfCSRFToken(ctx, session.CSRFToken.RandomId(), ctl.cfg.SessionDomain, &expiry)
 
 	commonctl.SendRespOfGet(ctx, user)
 }
@@ -117,16 +121,16 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 	}
 
 	expiry := time.Now().AddDate(0, 0, -1)
-	setCookieOfSessionId(ctx, "", &expiry)
-	setCookieOfCSRFToken(ctx, "", &expiry)
+	setCookieOfSessionId(ctx, "", ctl.cfg.SessionDomain, &expiry)
+	setCookieOfCSRFToken(ctx, "", ctl.cfg.SessionDomain, &expiry)
 
 	commonctl.SendRespOfPut(ctx, logoutInfo{IdToken: idToken})
 }
 
-func setCookieOfCSRFToken(ctx *gin.Context, value string, expiry *time.Time) {
-	commonctl.SetCookie(ctx, cookieCSRFToken, value, false, expiry)
+func setCookieOfCSRFToken(ctx *gin.Context, value, domain string, expiry *time.Time) {
+	commonctl.SetCookie(ctx, cookieCSRFToken, value, domain, false, expiry, http.SameSiteStrictMode)
 }
 
-func setCookieOfSessionId(ctx *gin.Context, value string, expiry *time.Time) {
-	commonctl.SetCookie(ctx, cookieSessionId, value, true, expiry)
+func setCookieOfSessionId(ctx *gin.Context, value, domain string, expiry *time.Time) {
+	commonctl.SetCookie(ctx, cookieSessionId, value, domain, true, expiry, http.SameSiteLaxMode)
 }

@@ -26,6 +26,7 @@ type SessionAppService interface {
 	Clear(primitive.RandomId) error
 
 	CheckAndRefresh(*CmdToCheck) (primitive.Account, string, error)
+	CheckSession(*CmdToCheck) (primitive.Account, error)
 }
 
 // NewSessionAppService creates a new instance of sessionAppService.

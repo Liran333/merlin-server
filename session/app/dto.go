@@ -16,9 +16,8 @@ type UserDTO = userapp.UserDTO
 type CmdToCheck struct {
 	SessionDTO
 
-	IP          string
-	UserAgent   primitive.UserAgent
-	AutoRefresh bool
+	IP        string
+	UserAgent primitive.UserAgent
 }
 
 // CmdToLogin represents a command to login with the provided code, redirect URI, and user agent.
