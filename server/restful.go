@@ -41,6 +41,8 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	setRouterOfSpaceRestful(rg, services)
 
+	setRouterOfSpaceAppRestful(rg, services, cfg)
+
 	setRouterOfBranchRestful(rg, services)
 
 	api.SwaggerInforest.Title = apiTitle

@@ -39,6 +39,24 @@ func setRouterOfSpaceAppWeb(rg *gin.RouterGroup, services *allServices, cfg *con
 	)
 }
 
+func setRouterOfSpaceAppRestful(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
+	s := app.NewSpaceappAppService(
+		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
+		repositoryadapter.AppRepositoryAdapter(),
+		spacerepositoryadapter.SpaceAdapter(),
+		services.permissionApp,
+		sseadapter.StreamSentAdapter(),
+	)
+
+	controller.AddRouterForSpaceappRestfulController(
+		rg,
+		s,
+		services.userMiddleWare,
+		services.tokenMiddleWare,
+		services.rateLimiterMiddleWare,
+	)
+}
+
 func setRouterOfSpaceAppInternal(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
 	s := app.NewSpaceappInternalAppService(
 		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
