@@ -977,11 +977,6 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 		return
 	}
 
-	if len(o) > 1 {
-		err = fmt.Errorf("multiple invitations found")
-		return
-	}
-
 	if len(o) == 0 {
 		err = fmt.Errorf("no request found")
 		return
@@ -1074,11 +1069,6 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 	})
 
 	if err != nil {
-		return
-	}
-
-	if len(o) > 1 {
-		err = fmt.Errorf("multiple invitations found")
 		return
 	}
 
