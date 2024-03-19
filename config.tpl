@@ -39,6 +39,7 @@ space:
     {{- end }}
   {{- end }}
   topics:
+    space_created: space_created
     space_updated: space_updated
     space_deleted: space_deleted
 
@@ -117,6 +118,10 @@ permission:
 model:
   tables:
     model: "model"
+  topics:
+    model_created: model_created
+    model_updated: model_updated
+    model_deleted: model_deleted
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}

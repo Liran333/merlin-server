@@ -20,6 +20,12 @@ type messageAdapter struct {
 	topics Topics
 }
 
+// SendSpaceCreatedEvent is a method on the messageAdapter struct that takes an EventMessage
+// and sends it to the SpaceCreated topic.
+func (p *messageAdapter) SendSpaceCreatedEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceCreated, e)
+}
+
 // SendSpaceDeletedEvent is a method on the messageAdapter struct that takes an EventMessage
 // and sends it to the SpaceDeleted topic.
 func (p *messageAdapter) SendSpaceDeletedEvent(e message.EventMessage) error {

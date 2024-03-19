@@ -9,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // CmdToCreateModel is a struct that represents a command to create a model.
@@ -36,6 +37,10 @@ func (cmd *CmdToUpdateModel) toModel(model *domain.Model) (b bool) {
 	if v := cmd.Fullname; v != nil && v != model.Fullname {
 		model.Fullname = v
 		b = true
+	}
+
+	if b {
+		model.UpdatedAt = utils.Now()
 	}
 
 	return

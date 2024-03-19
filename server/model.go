@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/controller"
+	"github.com/openmerlin/merlin-server/models/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 )
 
@@ -22,6 +23,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 
 	services.modelApp = app.NewModelAppService(
 		services.permissionApp,
+		messageadapter.MessageAdapter(&cfg.Model.Topics),
 		services.codeRepoApp,
 		modelrepositoryadapter.ModelAdapter(),
 	)

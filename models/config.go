@@ -8,6 +8,7 @@ package models
 import (
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/controller"
+	"github.com/openmerlin/merlin-server/models/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 )
 
@@ -15,6 +16,7 @@ import (
 type Config struct {
 	App        app.Config                    `json:"app"`
 	Tables     modelrepositoryadapter.Tables `json:"tables"`
+	Topics     messageadapter.Topics         `json:"topics"`
 	Controller controller.Config             `json:"controller"`
 }
 
@@ -23,6 +25,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.App,
 		&cfg.Tables,
+		&cfg.Topics,
 		&cfg.Controller,
 	}
 }

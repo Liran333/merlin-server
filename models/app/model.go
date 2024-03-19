@@ -7,12 +7,15 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
+	"github.com/openmerlin/merlin-server/models/domain/message"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -34,11 +37,13 @@ type ModelAppService interface {
 // NewModelAppService creates a new instance of the model application service.
 func NewModelAppService(
 	permission commonapp.ResourcePermissionAppService,
+	msgAdapter message.ModelMessage,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
+		msgAdapter:  msgAdapter,
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
 	}
@@ -46,6 +51,7 @@ func NewModelAppService(
 
 type modelAppService struct {
 	permission  commonapp.ResourcePermissionAppService
+	msgAdapter  message.ModelMessage
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter
 }
@@ -66,16 +72,24 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 	}
 
 	now := utils.Now()
-
-	err = s.repoAdapter.Add(&domain.Model{
+	model := domain.Model{
 		Desc:      cmd.Desc,
 		Fullname:  cmd.Fullname,
 		CodeRepo:  coderepo,
 		CreatedAt: now,
 		UpdatedAt: now,
-	})
+	}
+	if err = s.repoAdapter.Add(&model); err != nil {
+		return "", err
+	}
 
-	return coderepo.Id.Identity(), err
+	e := domain.NewModelCreatedEvent(&model)
+	if err1 := s.msgAdapter.SendModelCreatedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send model created event, model id:%s", model.Id.Identity())
+
+	}
+
+	return model.Id.Identity(), nil
 }
 
 // Delete deletes a model.
@@ -110,6 +124,11 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 
 	if err = s.repoAdapter.Delete(model.Id); err != nil {
 		return
+	}
+
+	e := domain.NewModelDeletedEvent(user, modelId)
+	if err1 := s.msgAdapter.SendModelDeletedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send model deleted event, model id:%s", modelId.Identity())
 	}
 
 	return
@@ -153,7 +172,14 @@ func (s *modelAppService) Update(
 		return
 	}
 
-	err = s.repoAdapter.Save(&model)
+	if err = s.repoAdapter.Save(&model); err != nil {
+		return
+	}
+
+	e := domain.NewModelUpdatedEvent(&model, user)
+	if err1 := s.msgAdapter.SendModelUpdatedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send model updated event, model id:%s", modelId.Identity())
+	}
 
 	return
 }

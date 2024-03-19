@@ -11,8 +11,8 @@ type EventMessage interface {
 }
 
 // SpaceMessage is an interface that defines methods for sending space-related events.
-type SpaceMessage interface {
-	SendSpaceCreatedEvent(EventMessage) error
-	SendSpaceDeletedEvent(EventMessage) error
-	SendSpaceUpdatedEvent(EventMessage) error
+type ModelMessage interface {
+	SendModelCreatedEvent(EventMessage) error
+	SendModelDeletedEvent(EventMessage) error
+	SendModelUpdatedEvent(EventMessage) error
 }

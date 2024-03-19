@@ -12,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // CmdToCreateSpace is a struct used to create a space.
@@ -53,6 +54,10 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 	if v := cmd.Hardware; v != nil && v != space.Hardware {
 		space.Hardware = v
 		b = true
+	}
+
+	if b {
+		space.UpdatedAt = utils.Now()
 	}
 
 	return
@@ -131,11 +136,11 @@ type CmdToListSpaces = repository.ListOption
 
 func toSpaceMetaDTO(space *domain.Space) sdk.SpaceMetaDTO {
 	dto := sdk.SpaceMetaDTO{
-		Id:       space.Id.Identity(),
-		SDK:      space.SDK.SDK(),
-		Name:     space.Name.MSDName(),
-		Owner:    space.Owner.Account(),
-		Hardware: space.Hardware.Hardware(),
+		Id:         space.Id.Identity(),
+		SDK:        space.SDK.SDK(),
+		Name:       space.Name.MSDName(),
+		Owner:      space.Owner.Account(),
+		Hardware:   space.Hardware.Hardware(),
 		Visibility: space.CodeRepo.Visibility.Visibility(),
 	}
 	return dto

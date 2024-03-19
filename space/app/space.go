@@ -78,8 +78,7 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	}
 
 	now := utils.Now()
-
-	err = s.repoAdapter.Add(&domain.Space{
+	space := domain.Space{
 		SDK:       cmd.SDK,
 		Desc:      cmd.Desc,
 		Hardware:  cmd.Hardware,
@@ -87,9 +86,17 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		CodeRepo:  coderepo,
 		CreatedAt: now,
 		UpdatedAt: now,
-	})
+	}
+	if err = s.repoAdapter.Add(&space); err != nil {
+		return "", err
+	}
 
-	return coderepo.Id.Identity(), err
+	e := domain.NewSpaceCreatedEvent(&space)
+	if err1 := s.msgAdapter.SendSpaceCreatedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send space created event, space id:%s", space.Id.Identity())
+	}
+
+	return space.Id.Identity(), nil
 }
 
 // Delete deletes the space with the given space ID and returns the action performed.
@@ -126,7 +133,7 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		return
 	}
 
-	e := domain.NewSpaceDeletedEvent(&space)
+	e := domain.NewSpaceDeletedEvent(user, &space)
 	if err1 := s.msgAdapter.SendSpaceDeletedEvent(&e); err1 != nil {
 		logrus.Errorf("failed to send space deleted event, space id:%s", spaceId.Identity())
 	}
@@ -172,9 +179,11 @@ func (s *spaceAppService) Update(
 		return
 	}
 
-	err = s.repoAdapter.Save(&space)
+	if err = s.repoAdapter.Save(&space); err != nil {
+		return
+	}
 
-	e := domain.NewSpaceUpdatedEvent(&space)
+	e := domain.NewSpaceUpdatedEvent(user, &space)
 	if err1 := s.msgAdapter.SendSpaceUpdatedEvent(&e); err1 != nil {
 		logrus.Errorf("failed to send space updated event, space id:%s", spaceId.Identity())
 	}

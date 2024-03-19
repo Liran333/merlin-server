@@ -7,7 +7,7 @@ package messageadapter
 
 // Topics is a struct that represents the topics related to space deletion and update.
 type Topics struct {
-	SpaceCreated string `json:"space_created" required:"true"`
-	SpaceDeleted string `json:"space_deleted" required:"true"`
-	SpaceUpdated string `json:"space_updated" required:"true"`
+	ModelCreated string `json:"model_created" required:"true"`
+	ModelUpdated string `json:"model_updated" required:"true"`
+	ModelDeleted string `json:"model_deleted" required:"true"`
 }
