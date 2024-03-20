@@ -101,12 +101,6 @@ func (p *reqToUpdateSpace) action() (str string) {
 }
 
 func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
-	if p.SDK != nil {
-		if cmd.SDK, err = spaceprimitive.NewSDK(*p.SDK); err != nil {
-			return
-		}
-	}
-
 	if p.Name != nil {
 		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
 			return
@@ -121,12 +115,6 @@ func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
 
 	if p.Fullname != nil {
 		if cmd.Fullname, err = primitive.NewMSDFullname(*p.Fullname); err != nil {
-			return
-		}
-	}
-
-	if p.Hardware != nil && p.SDK != nil {
-		if cmd.Hardware, err = spaceprimitive.NewHardware(*p.Hardware, *p.SDK); err != nil {
 			return
 		}
 	}
