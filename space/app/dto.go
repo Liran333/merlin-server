@@ -145,3 +145,13 @@ func toSpaceMetaDTO(space *domain.Space) sdk.SpaceMetaDTO {
 	}
 	return dto
 }
+
+// SpaceModelDTO
+type SpaceModelDTO struct {
+	Owner         string `json:"owner"`
+	Name          string `json:"name"`
+	AvatarId      string `json:"avatar_id"`
+	UpdatedAt     int64  `json:"updated_at"`
+	LikeCount     int    `json:"like_count"`
+	DownloadCount int    `json:"download_count"`
+}

@@ -18,6 +18,7 @@ import (
 func AddRouteForSpaceWebController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
+	ms app.ModelSpaceAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
 	sl middleware.SecurityLog,
@@ -32,6 +33,7 @@ func AddRouteForSpaceWebController(
 			rateLimitMiddleWare: rl,
 			user:                u,
 		},
+		modelSpaceService: ms,
 	}
 
 	addRouteForSpaceController(r, &ctl.SpaceController, l, sl, rl)
@@ -39,11 +41,13 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.ListGlobal)
+	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
 }
 
 // SpaceWebController is a struct that holds the necessary dependencies for handling space-related operations in web controller.
 type SpaceWebController struct {
 	SpaceController
+	modelSpaceService app.ModelSpaceAppService
 }
 
 // @Summary  Get
@@ -232,4 +236,39 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 		Total:  dto.Total,
 		Spaces: infos,
 	}, nil
+}
+
+// @Summary  GetModelsBySpaceId
+// @Description  get models related to a space
+// @Tags     SpaceWeb
+// @Param    id    path  string   true  "id of space"
+// @Accept   json
+// @Success  200  {object}  []app.SpaceModelDTO
+// @Router   /v1/space/relation/{id}/model [get]
+func (ctl *SpaceWebController) GetModelsBySpaceId(ctx *gin.Context) {
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	models, err := ctl.modelSpaceService.GetModelsBySpaceId(user, spaceId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+
+		return
+	}
+
+	for _, model := range models {
+		if avatar, err := ctl.user.GetUserAvatarId(primitive.CreateAccount(model.Owner)); err != nil {
+			model.AvatarId = ""
+		} else {
+			model.AvatarId = avatar.AvatarId
+		}
+	}
+
+	commonctl.SendRespOfGet(ctx, &models)
 }

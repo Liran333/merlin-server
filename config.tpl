@@ -29,6 +29,7 @@ gitea:
 space:
   tables:
     space: "space"
+    space_model: "space_model"
   primitive:
     sdk:
   {{- range (ds "common").SPACE_SDK}}

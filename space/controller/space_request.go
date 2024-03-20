@@ -14,14 +14,17 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/space/app"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	firstPage    = 1
-	labelSpliter = ","
+	firstPage          = 1
+	labelSpliter       = ","
+	repoNameSplitedLen = 2
 )
 
 type reqToCreateSpace struct {
@@ -238,7 +241,7 @@ type spaceDetail struct {
 	*app.SpaceDTO
 }
 
-// spacesInfo
+// userSpacesInfo
 type userSpacesInfo struct {
 	Owner    string `json:"owner"`
 	AvatarId string `json:"avatar_id"`
@@ -246,7 +249,7 @@ type userSpacesInfo struct {
 	*app.SpacesDTO
 }
 
-// spacesInfo
+// spaceInfo
 type spaceInfo struct {
 	AvatarId string `json:"avatar_id"`
 
@@ -257,4 +260,35 @@ type spaceInfo struct {
 type spacesInfo struct {
 	Total  int         `json:"total"`
 	Spaces []spaceInfo `json:"spaces"`
+}
+
+// ModeIds is []string{"owner/name"}
+type ModeIds struct {
+	Ids []string `json:"ids"`
+}
+
+func (req *ModeIds) toCmd() []*domain.ModelIndex {
+	modelsIndex := make([]*domain.ModelIndex, 0, len(req.Ids))
+
+	for _, id := range req.Ids {
+		index := strings.Split(id, "/")
+		if len(index) != repoNameSplitedLen {
+			logrus.Debugf("invalid model_id: %s", id)
+			continue
+		}
+		owner, err := primitive.NewAccount(index[0])
+		if err != nil {
+			logrus.Debugf("invalid owner: %s", owner)
+			continue
+		}
+		name, err := primitive.NewMSDName(index[1])
+		if err != nil {
+			logrus.Debugf("invalid model name: %s", name)
+			continue
+		}
+		modelIndex := domain.ModelIndex{Owner: owner, Name: name}
+		modelsIndex = append(modelsIndex, &modelIndex)
+	}
+
+	return modelsIndex
 }

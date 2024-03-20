@@ -52,7 +52,6 @@ type Config struct {
 	Org         orgdomain.Config   `json:"organization"`
 	User        userdomain.Config  `json:"user"`
 	Redis       redislib.Config    `json:"redis"`
-	RateLimiter ratelimiter.Config `json:"ratelimit"`
 	Kafka       kafka.Config       `json:"kafka"`
 	Model       models.Config      `json:"model"`
 	Space       space.Config       `json:"space"`
@@ -64,6 +63,7 @@ type Config struct {
 	GitAccess   gitaccess.Config   `json:"git_access"`
 	Postgresql  postgresql.Config  `json:"postgresql"`
 	Permission  permission.Config  `json:"permission"`
+	RateLimiter ratelimiter.Config `json:"ratelimit"`
 }
 
 // Init initializes the application using the configuration settings provided in the Config struct.

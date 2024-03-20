@@ -7,6 +7,7 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 )
 
@@ -14,10 +15,12 @@ import (
 type ModelInternalAppService interface {
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	GetById(modelId primitive.Identity) (ModelDTO, error)
+	GetByNames([]*domain.ModelIndex) []primitive.Identity
 }
 
 // NewModelInternalAppService creates a new instance of the internal model application service.
-func NewModelInternalAppService(repoAdapter repository.ModelLabelsRepoAdapter,
+func NewModelInternalAppService(
+	repoAdapter repository.ModelLabelsRepoAdapter,
 	mAdapter repository.ModelRepositoryAdapter,
 ) ModelInternalAppService {
 	return &modelInternalAppService{
@@ -53,4 +56,20 @@ func (s *modelInternalAppService) GetById(modelId primitive.Identity) (ModelDTO,
 	}
 
 	return toModelDTO(&model), nil
+}
+
+// GetByNames retrieves ids of models by names.
+func (s *modelInternalAppService) GetByNames(modelsIndex []*domain.ModelIndex) []primitive.Identity {
+	var dtos []primitive.Identity
+
+	for _, index := range modelsIndex {
+		model, err := s.modelAdapter.FindByName(index)
+		if err != nil {
+			continue
+		}
+
+		dtos = append(dtos, model.Id)
+	}
+
+	return dtos
 }

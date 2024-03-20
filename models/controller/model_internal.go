@@ -75,7 +75,6 @@ func (ctl *ModelInternalController) ResetLabel(ctx *gin.Context) {
 // @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/model/{id} [get]
 func (ctl *ModelInternalController) GetById(ctx *gin.Context) {
-
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)

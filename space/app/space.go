@@ -22,6 +22,7 @@ import (
 
 var (
 	errorSpaceNotFound      = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found")
+	errorModelNotFound      = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
 	errorSpaceCountExceeded = allerror.NewCountExceeded("space count exceed")
 )
 

@@ -35,10 +35,12 @@ func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForModelWebController(
 		rg,
 		services.modelApp,
+		services.modelSpace,
 		services.userMiddleWare,
 		services.operationLog,
 		services.securityLog,
 		services.userApp,
+		services.rateLimiterMiddleWare,
 		services.privacyCheck,
 	)
 }

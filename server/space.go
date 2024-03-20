@@ -9,6 +9,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	modelapp "github.com/openmerlin/merlin-server/models/app"
+	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
@@ -21,11 +23,28 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		return err
 	}
 
+	err = modelrepositoryadapter.Init(postgresql.DB(), &cfg.Model.Tables)
+	if err != nil {
+		return err
+	}
+
 	services.spaceApp = app.NewSpaceAppService(
 		services.permissionApp,
 		messageadapter.MessageAdapter(&cfg.Space.Topics),
 		services.codeRepoApp,
 		spacerepositoryadapter.SpaceAdapter(),
+	)
+
+	services.modelSpace = app.NewModelSpaceAppService(
+		services.permissionApp,
+		spacerepositoryadapter.ModelSpaceRelationAdapter(),
+		modelrepositoryadapter.ModelAdapter(),
+		spacerepositoryadapter.SpaceAdapter(),
+		modelapp.NewModelInternalAppService(
+			modelrepositoryadapter.ModelLabelsAdapter(),
+			modelrepositoryadapter.ModelAdapter(),
+		),
+		app.NewSpaceInternalAppService(spacerepositoryadapter.SpaceAdapter()),
 	)
 
 	return nil
@@ -35,6 +54,7 @@ func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouteForSpaceWebController(
 		rg,
 		services.spaceApp,
+		services.modelSpace,
 		services.userMiddleWare,
 		services.operationLog,
 		services.securityLog,
@@ -63,6 +83,7 @@ func setRouterOfSpaceInternal(rg *gin.RouterGroup, services *allServices) {
 		app.NewSpaceInternalAppService(
 			spacerepositoryadapter.SpaceAdapter(),
 		),
+		services.modelSpace,
 		services.userMiddleWare,
 	)
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
@@ -18,10 +19,12 @@ import (
 func AddRouteForModelWebController(
 	r *gin.RouterGroup,
 	s app.ModelAppService,
+	ms spaceapp.ModelSpaceAppService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
 	sl middleware.SecurityLog,
 	u userapp.UserService,
+	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
 ) {
 	ctl := ModelWebController{
@@ -30,6 +33,7 @@ func AddRouteForModelWebController(
 			userMiddleWare: m,
 			user:           u,
 		},
+		modelSpaceService: ms,
 	}
 
 	addRouteForModelController(r, &ctl.ModelController, l, sl)
@@ -37,11 +41,13 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, ctl.Get)
 	r.GET("/v1/model/:owner", p.CheckOwner, m.Optional, ctl.List)
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
+	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
 }
 
 // ModelWebController is a struct that holds the app service for model web operations.
 type ModelWebController struct {
 	ModelController
+	modelSpaceService spaceapp.ModelSpaceAppService
 }
 
 // @Summary  Get
@@ -230,4 +236,39 @@ func (ctl *ModelWebController) setAvatars(dto *app.ModelsDTO) (modelsInfo, error
 		Total:  dto.Total,
 		Models: infos,
 	}, nil
+}
+
+// @Summary  GetSpacesByModelId
+// @Description  get spaces related to a model
+// @Tags     ModelWeb
+// @Param    id    path  string   true  "id of model"
+// @Accept   json
+// @Success  200  {object}  []spaceapp.SpaceModelDTO
+// @Router   /v1/model/relation/{id}/space [get]
+func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	spaces, err := ctl.modelSpaceService.GetSpacesByModelId(user, modelId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+
+		return
+	}
+
+	for _, space := range spaces {
+		if avatar, err := ctl.user.GetUserAvatarId(primitive.CreateAccount(space.Owner)); err != nil {
+			space.AvatarId = ""
+		} else {
+			space.AvatarId = avatar.AvatarId
+		}
+	}
+
+	commonctl.SendRespOfGet(ctx, &spaces)
 }

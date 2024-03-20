@@ -40,6 +40,8 @@ type allServices struct {
 	modelApp modelapp.ModelAppService
 
 	spaceApp spaceapp.SpaceAppService
+
+	modelSpace spaceapp.ModelSpaceAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
