@@ -19,6 +19,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/server"
 )
@@ -161,6 +162,13 @@ func main() {
 	// gitea
 	if err := gitea.Init(&cfg.Git); err != nil {
 		logrus.Errorf("init gitea failed, err:%s", err.Error())
+
+		return
+	}
+
+	// vault
+	if err := securestorage.Init(&cfg.Vault); err != nil {
+		logrus.Errorf("init secure storage failed, err:%s", err.Error())
 
 		return
 	}

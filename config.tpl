@@ -30,6 +30,7 @@ space:
   tables:
     space: "space"
     space_model: "space_model"
+    space_env_secret: "space_env_secret"
   primitive:
     sdk:
   {{- range (ds "common").SPACE_SDK}}
@@ -226,5 +227,11 @@ kafka:
   skip_cert_verify: true
 
 ratelimit:
-    request_num: 100
-    burst_num: 100
+  request_num: 100
+  burst_num: 100
+
+vault:
+  address: {{(ds "secret").data.VAULT_ADDRESS }}
+  user_name: {{(ds "secret").data.VAULT_USER }}
+  pass_word: {{(ds "secret").data.VAULT_PASS }}
+  base_path: {{(ds "secret").data.VAULT_BASE_PATH }}

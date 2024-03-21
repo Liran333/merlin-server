@@ -32,6 +32,22 @@ func newModelNotFound(err error) error {
 	return allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 }
 
+func newSpaceSecretNotFound(err error) error {
+	return allerror.NewNotFound(allerror.ErrorCodeSpaceSecretNotFound, "not found", err)
+}
+
+func newSpaceSecretCountExceeded(err error) error {
+	return allerror.NewCountExceeded("space secret count exceed", err)
+}
+
+func newSpaceVariableNotFound(err error) error {
+	return allerror.NewNotFound(allerror.ErrorCodeSpaceVariableNotFound, "not found", err)
+}
+
+func newSpaceVariableCountExceeded(err error) error {
+	return allerror.NewCountExceeded("space variable count exceed", err)
+}
+
 // Permission is an interface for checking permissions.
 type Permission interface {
 	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error

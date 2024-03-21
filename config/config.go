@@ -19,6 +19,7 @@ import (
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
@@ -64,6 +65,7 @@ type Config struct {
 	Postgresql  postgresql.Config  `json:"postgresql"`
 	Permission  permission.Config  `json:"permission"`
 	RateLimiter ratelimiter.Config `json:"ratelimit"`
+	Vault       securestorage.Config `json:"vault"`
 }
 
 // Init initializes the application using the configuration settings provided in the Config struct.
@@ -107,6 +109,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.GitAccess,
 		&cfg.Primitive,
 		&cfg.Postgresql,
+		&cfg.Vault,
 	}
 }
 

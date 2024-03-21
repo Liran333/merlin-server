@@ -38,6 +38,8 @@ func addRouteForSpaceController(
 // SpaceController is a struct that contains the necessary dependencies for handling space-related operations.
 type SpaceController struct {
 	appService          app.SpaceAppService
+	variableService     app.SpaceVariableService
+	secretService       app.SpaceSecretService
 	userMiddleWare      middleware.UserMiddleWare
 	user                userapp.UserService
 	rateLimitMiddleWare middleware.RateLimiter

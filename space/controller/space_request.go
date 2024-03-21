@@ -292,3 +292,115 @@ func (req *ModeIds) toCmd() []*domain.ModelIndex {
 
 	return modelsIndex
 }
+
+type reqToCreateSpaceVariable struct {
+	Name  *string `json:"name"       required:"true"`
+	Desc  *string `json:"desc"`
+	Value *string `json:"value"`
+}
+
+func (p *reqToCreateSpaceVariable) toCmd() (cmd app.CmdToCreateSpaceVariable, err error) {
+	if p.Name != nil {
+		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
+			return
+		}
+	}
+
+	if p.Desc != nil {
+		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			return
+		}
+	}
+
+	if p.Value != nil {
+		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// reqToUpdateSpaceVariable
+type reqToUpdateSpaceVariable struct {
+	Value *string `json:"value"`
+	Desc  *string `json:"desc"`
+}
+
+func (p *reqToUpdateSpaceVariable) action() (str string) {
+	if p.Value != nil {
+		str += fmt.Sprintf("value = %s", *p.Value)
+	}
+
+	if p.Desc != nil {
+		str += fmt.Sprintf("desc = %s", *p.Desc)
+	}
+
+	return
+}
+
+func (p *reqToUpdateSpaceVariable) toCmd() (cmd app.CmdToUpdateSpaceVariable, err error) {
+	if p.Desc != nil {
+		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			return
+		}
+	}
+
+	if p.Value != nil {
+		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+type reqToCreateSpaceSecret struct {
+	Name  *string `json:"name"       required:"true"`
+	Desc  *string `json:"desc"`
+	Value *string `json:"value"`
+}
+
+func (p *reqToCreateSpaceSecret) toCmd() (cmd app.CmdToCreateSpaceSecret, err error) {
+	if p.Name != nil {
+		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
+			return
+		}
+	}
+
+	if p.Desc != nil {
+		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			return
+		}
+	}
+
+	if p.Value != nil {
+		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// reqToUpdateSpaceSecret
+type reqToUpdateSpaceSecret struct {
+	Value *string `json:"value"`
+	Desc  *string `json:"desc"`
+}
+
+func (p *reqToUpdateSpaceSecret) toCmd() (cmd app.CmdToUpdateSpaceSecret, err error) {
+	if p.Desc != nil {
+		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			return
+		}
+	}
+
+	if p.Value != nil {
+		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+			return
+		}
+	}
+
+	return
+}

@@ -42,6 +42,10 @@ type allServices struct {
 	spaceApp spaceapp.SpaceAppService
 
 	modelSpace spaceapp.ModelSpaceAppService
+
+	spaceVariable spaceapp.SpaceVariableService
+
+	spaceSecret spaceapp.SpaceSecretService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {

@@ -22,6 +22,12 @@ const (
 	// ErrorCodeSpaceNotFound is const
 	ErrorCodeSpaceNotFound = "space_not_found"
 
+	// ErrorCodeSpaceVariableNotFound space variable
+	ErrorCodeSpaceVariableNotFound = "space_variable_not_found"
+
+	// ErrorCodeSpaceSecretNotFound space secret
+	ErrorCodeSpaceSecretNotFound = "space_secret_not_found"
+
 	// ErrorCodeTokenNotFound is const
 	ErrorCodeTokenNotFound = "token_not_found"
 

@@ -19,6 +19,8 @@ func AddRouteForSpaceWebController(
 	r *gin.RouterGroup,
 	s app.SpaceAppService,
 	ms app.ModelSpaceAppService,
+	sv app.SpaceVariableService,
+	ss app.SpaceSecretService,
 	m middleware.UserMiddleWare,
 	l middleware.OperationLog,
 	sl middleware.SecurityLog,
@@ -29,14 +31,21 @@ func AddRouteForSpaceWebController(
 	ctl := SpaceWebController{
 		SpaceController: SpaceController{
 			appService:          s,
+			variableService:     sv,
+			secretService: 		 ss,
 			userMiddleWare:      m,
 			rateLimitMiddleWare: rl,
 			user:                u,
+
 		},
 		modelSpaceService: ms,
 	}
 
 	addRouteForSpaceController(r, &ctl.SpaceController, l, sl, rl)
+
+	addRouteForSpaceVariableController(r, &ctl.SpaceController, l, sl, rl)
+
+	addRouteForSpaceSecretController(r, &ctl.SpaceController, l, sl, rl)
 
 	r.GET("/v1/space/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)

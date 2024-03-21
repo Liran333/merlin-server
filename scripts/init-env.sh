@@ -31,13 +31,44 @@ function setupVault() {
 	# create new engine
 	docker exec -i merlin-server-vault-1 vault secrets enable -address=http://127.0.0.1:8201 -version=2 -path=modelfoundry kv
 
+  # create new engine
+  docker exec -i merlin-server-vault-1 vault secrets enable -address=http://127.0.0.1:8201 -path=fakepath kv
+
+  # write default-policy.hcl
+  docker exec -i merlin-server-vault-1 vault policy read -address=http://127.0.0.1:8201 default > default-policy.hcl
+
+  # update default-policy.hcl
+  echo "
+  # Allow a token to manage its own fakepath
+  path \"fakepath/*\" {
+      capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"patch\"]
+  }
+  " >> default-policy.hcl
+
+  # cp to docker
+  docker cp default-policy.hcl merlin-server-vault-1:/default-policy.hcl
+
+  # write default policy
+  docker exec -i merlin-server-vault-1 vault policy write -address=http://127.0.0.1:8201 default /default-policy.hcl
+
+  # enable user pass
+  docker exec -i merlin-server-vault-1 vault auth enable -address=http://127.0.0.1:8201 userpass
+
+	# create user pass
+  docker exec -i merlin-server-vault-1 vault write -address=http://127.0.0.1:8201 auth/userpass/users/fakeuser password=fakesecret
+
+  # del default-policy.hcl
+  unlink default-policy.hcl
+
 	# import secrets
 	docker exec -i merlin-server-vault-1 vault kv put -address=http://127.0.0.1:8201 modelfoundry/server \
 		REDIS_HOST=$REDIS_HOST REDIS_PASS=$REDIS_PASS REDIS_PORT=$REDIS_PORT GITEA_BASE_URL=http://$GITEA_HOST:$GITEA_PORT \
 		PG_PASS=$PG_PASS PG_DB=$PG_DB PG_PORT=$PG_PORT PG_HOST=$PG_HOST PG_USER=$PG_USER GITEA_ROOT_TOKEN=$TOKEN \
 		OIDC_SECRET=$OIDC_SECRET OIDC_ENDPOINT=$OIDC_ENDPOINT OIDC_APPID=$OIDC_APPID REDIS_CERT="" PG_CERT="" \
 		INTERNAL_TOKEN_HASH=$INTERNAL_TOKEN_HASH INTERNAL_SALT=$INTERNAL_SALT SSE_TOKEN=$SSE_TOKEN KAFKA_ADDR=$KAFKA_ADDR USER_ENC_KEY=$USER_ENC_KEY KAFKA_CERT="" \
-		KAFKA_USERNAME="" KAFKA_PASSWORD="" KAFKA_ALGO="" SESSION_ENC_KEY=$USER_ENC_KEY INTERNAL_TOKEN=$INTERNAL_TOKEN
+		KAFKA_USERNAME="" KAFKA_PASSWORD="" KAFKA_ALGO="" SESSION_ENC_KEY=$USER_ENC_KEY INTERNAL_TOKEN=$INTERNAL_TOKEN \
+		VAULT_ADDRESS=$VAULT_ADDRESS VAULT_USER=$VAULT_USER VAULT_PASS=$VAULT_PASS \
+		VAULT_BASE_PATH=$VAULT_BASE_PATH
 }
 
 # cleanup

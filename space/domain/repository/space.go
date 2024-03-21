@@ -75,3 +75,32 @@ type SpaceRepositoryAdapter interface {
 type SpaceLabelsRepoAdapter interface {
 	Save(*domain.SpaceIndex, *domain.SpaceLabels) error
 }
+
+// SpaceVariableSecretSummary represents a summary of a space variable and secret.
+type SpaceVariableSecretSummary struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Value     string `json:"value"`
+	Type      string `json:"type"`
+	Desc      string `json:"desc"`
+	UpdatedAt int64  `json:"updated_at"`
+}
+
+// SpaceVariableRepositoryAdapter is an interface for interacting with space variable repositories.
+type SpaceVariableRepositoryAdapter interface {
+	AddVariable(variable *domain.SpaceVariable) error
+	FindVariableById(primitive.Identity) (domain.SpaceVariable, error)
+	DeleteVariable(primitive.Identity) error
+	SaveVariable(*domain.SpaceVariable) error
+	CountVariable(primitive.Identity) (int, error)
+	ListVariableSecret(primitive.Identity) ([]SpaceVariableSecretSummary, error)
+}
+
+// SpaceSecretRepositoryAdapter is an interface for interacting with space secret repositories.
+type SpaceSecretRepositoryAdapter interface {
+	AddSecret(variable *domain.SpaceSecret) error
+	FindSecretById(primitive.Identity) (domain.SpaceSecret, error)
+	DeleteSecret(primitive.Identity) error
+	SaveSecret(*domain.SpaceSecret) error
+	CountSecret(primitive.Identity) (int, error)
+}

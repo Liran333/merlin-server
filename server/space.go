@@ -8,12 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
+	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/config"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
+	"github.com/openmerlin/merlin-server/space/infrastructure/securestoragadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
@@ -47,6 +49,20 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		app.NewSpaceInternalAppService(spacerepositoryadapter.SpaceAdapter()),
 	)
 
+	services.spaceVariable = app.NewSpaceVariableService(
+		services.permissionApp,
+		spacerepositoryadapter.SpaceAdapter(),
+		spacerepositoryadapter.SpaceVariableAdapter(),
+		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
+	)
+
+	services.spaceSecret = app.NewSpaceSecretService(
+		services.permissionApp,
+		spacerepositoryadapter.SpaceAdapter(),
+		spacerepositoryadapter.SpaceSecretAdapter(),
+		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
+	)
+
 	return nil
 }
 
@@ -55,6 +71,8 @@ func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		services.spaceApp,
 		services.modelSpace,
+		services.spaceVariable,
+		services.spaceSecret,
 		services.userMiddleWare,
 		services.operationLog,
 		services.securityLog,

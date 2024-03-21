@@ -10,6 +10,12 @@ import (
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
+	"github.com/openmerlin/merlin-server/space/domain/securestorage"
+)
+
+const (
+	VariablePath = "variable/"
+	SecretePath  = "secret/"
 )
 
 // Space represents a space with its associated properties and methods.
@@ -43,3 +49,43 @@ type SpaceLabels struct {
 
 // SpaceIndex represents an index for spaces in the code repository.
 type SpaceIndex = coderepo.CodeRepoIndex
+
+type SpaceVariable struct {
+	Id      primitive.Identity
+	SpaceId primitive.Identity
+	Name    primitive.MSDName
+	Desc    primitive.MSDDesc
+	Value   primitive.MSDName
+
+	CreatedAt int64
+	UpdatedAt int64
+}
+
+// NewSpaceVariableVault return a space env secret vault by space variable
+func NewSpaceVariableVault(variable *SpaceVariable) securestorage.SpaceEnvSecret {
+	return securestorage.SpaceEnvSecret{
+		Path:  VariablePath + variable.SpaceId.Identity(),
+		Name:  variable.Name.MSDName(),
+		Value: variable.Value.MSDName(),
+	}
+}
+
+type SpaceSecret struct {
+	Id      primitive.Identity
+	SpaceId primitive.Identity
+	Name    primitive.MSDName
+	Desc    primitive.MSDDesc
+	Value   primitive.MSDName
+
+	CreatedAt int64
+	UpdatedAt int64
+}
+
+// NewSpaceSecretVault return a space env secret vault by space secret
+func NewSpaceSecretVault(secret *SpaceSecret) securestorage.SpaceEnvSecret {
+	return securestorage.SpaceEnvSecret{
+		Path:  SecretePath + secret.SpaceId.Identity(),
+		Name:  secret.Name.MSDName(),
+		Value: secret.Value.MSDName(),
+	}
+}

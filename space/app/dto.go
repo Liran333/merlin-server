@@ -155,3 +155,62 @@ type SpaceModelDTO struct {
 	LikeCount     int    `json:"like_count"`
 	DownloadCount int    `json:"download_count"`
 }
+
+// CmdToCreateSpaceVariable is a struct used to create a space variable.
+type CmdToCreateSpaceVariable struct {
+	Name  primitive.MSDName
+	Desc  primitive.MSDDesc
+	Value primitive.MSDName
+}
+
+// CmdToUpdateSpaceVariable is a struct used to update a space variable.
+type CmdToUpdateSpaceVariable struct {
+	Desc  primitive.MSDDesc
+	Value primitive.MSDName
+}
+
+func (cmd *CmdToUpdateSpaceVariable) toSpaceVariable(spaceVariable *domain.SpaceVariable) (b bool) {
+	if v := cmd.Desc; v != nil && v != spaceVariable.Desc {
+		spaceVariable.Desc = v
+		b = true
+	}
+
+	if v := cmd.Value; v != nil && v != spaceVariable.Value {
+		spaceVariable.Value = v
+		b = true
+	}
+
+	return
+}
+
+// SpaceVariableSecretDTO represents the data transfer object for spaces variable and secret.
+type SpaceVariableSecretDTO struct {
+	SpaceVariableSecret []repository.SpaceVariableSecretSummary `json:"space_variable_secret"`
+}
+
+// CmdToCreateSpaceSecret is a struct used to create a space secret.
+type CmdToCreateSpaceSecret struct {
+	Name  primitive.MSDName
+	Desc  primitive.MSDDesc
+	Value primitive.MSDName
+}
+
+// CmdToUpdateSpaceSecret is a struct used to update a space secret.
+type CmdToUpdateSpaceSecret struct {
+	Desc  primitive.MSDDesc
+	Value primitive.MSDName
+}
+
+func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret) (b bool) {
+	if v := cmd.Desc; v != nil && v != spaceSecret.Desc {
+		spaceSecret.Desc = v
+		b = true
+	}
+
+	if v := cmd.Value; v != nil && v != spaceSecret.Value {
+		spaceSecret.Value = v
+		b = true
+	}
+
+	return
+}
