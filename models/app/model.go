@@ -157,6 +157,8 @@ func (s *modelAppService) Update(
 		return
 	}
 
+	isPrivateToPublic := model.IsPrivate() && cmd.Visibility.IsPublic()
+
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
 		return
@@ -171,7 +173,7 @@ func (s *modelAppService) Update(
 		return
 	}
 
-	e := domain.NewModelUpdatedEvent(&model, user)
+	e := domain.NewModelUpdatedEvent(&model, user, isPrivateToPublic)
 	if err1 := s.msgAdapter.SendModelUpdatedEvent(&e); err1 != nil {
 		logrus.Errorf("failed to send model updated event, model id:%s", modelId.Identity())
 	}

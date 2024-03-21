@@ -52,10 +52,12 @@ func NewModelDeletedEvent(user primitive.Account, modelId primitive.Identity) mo
 
 // modelUpdatedEvent
 type modelUpdatedEvent struct {
-	Time      int64  `json:"time"`
-	Owner     string `json:"owner"`
-	ModelId   string `json:"model_id"`
-	UpdatedBy string `json:"updated_by"`
+	Time       int64  `json:"time"`
+	Repo       string `json:"repo"`
+	Owner      string `json:"owner"`
+	ModelId    string `json:"model_id"`
+	UpdatedBy  string `json:"updated_by"`
+	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
 }
 
 func (e *modelUpdatedEvent) Message() ([]byte, error) {
@@ -63,11 +65,13 @@ func (e *modelUpdatedEvent) Message() ([]byte, error) {
 }
 
 // NewModelUpdatedEvent return a modelUpdatedEvent
-func NewModelUpdatedEvent(m *Model, user primitive.Account) modelUpdatedEvent {
+func NewModelUpdatedEvent(m *Model, user primitive.Account, b bool) modelUpdatedEvent {
 	return modelUpdatedEvent{
-		Time:      m.UpdatedAt,
-		Owner:     m.Owner.Account(),
-		ModelId:   m.Id.Identity(),
-		UpdatedBy: user.Account(),
+		Time:       m.UpdatedAt,
+		Repo:       m.Name.MSDName(),
+		Owner:      m.Owner.Account(),
+		ModelId:    m.Id.Identity(),
+		UpdatedBy:  user.Account(),
+		IsPriToPub: b,
 	}
 }

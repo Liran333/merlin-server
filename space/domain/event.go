@@ -54,10 +54,12 @@ func NewSpaceDeletedEvent(user primitive.Account, space *Space) spaceDeletedEven
 
 // spaceUpdatedEvent
 type spaceUpdatedEvent struct {
-	Time      int64  `json:"time"`
-	Owner     string `json:"owner"`
-	SpaceId   string `json:"space_id"`
-	UpdatedBy string `json:"updated_by"`
+	Time       int64  `json:"time"`
+	Repo       string `json:"repo"`
+	Owner      string `json:"owner"`
+	SpaceId    string `json:"space_id"`
+	UpdatedBy  string `json:"updated_by"`
+	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
 }
 
 // Message serializes the spaceUpdatedEvent into a JSON byte array.
@@ -66,11 +68,13 @@ func (e *spaceUpdatedEvent) Message() ([]byte, error) {
 }
 
 // NewSpaceUpdatedEvent return a spaceUpdatedEvent
-func NewSpaceUpdatedEvent(user primitive.Account, space *Space) spaceUpdatedEvent {
+func NewSpaceUpdatedEvent(user primitive.Account, space *Space, b bool) spaceUpdatedEvent {
 	return spaceUpdatedEvent{
-		Time:      space.UpdatedAt,
-		Owner:     space.Owner.Account(),
-		SpaceId:   space.Id.Identity(),
-		UpdatedBy: user.Account(),
+		Time:       space.UpdatedAt,
+		Repo:       space.Name.MSDName(),
+		Owner:      space.Owner.Account(),
+		SpaceId:    space.Id.Identity(),
+		UpdatedBy:  user.Account(),
+		IsPriToPub: b,
 	}
 }
