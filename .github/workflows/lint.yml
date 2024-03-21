@@ -25,10 +25,6 @@ jobs:
           TOKEN: ${{ secrets.PKKING_PERSONAL_TOKEN }}
           USER: ${{ secrets.USER_NAME }}
         run: echo "machine github.com login $USER password $TOKEN" > ~/.netrc
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.21.0'
-          cache: true
       - name: golangci-lint
         uses: golangci/golangci-lint-action@master
         with:
