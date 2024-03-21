@@ -57,13 +57,13 @@ func (adapter *branchClientAdapter) DeleteBranch(branch *domain.BranchIndex) err
 func parseCreateError(c int, err error) error {
 	switch c {
 	case statusCodeBaseBranchNotFound:
-		return allerror.New(allerror.ErrorCodeBaseBranchNotFound, "base branch not found")
+		return allerror.New(allerror.ErrorCodeBaseBranchNotFound, "base branch not found", err)
 	case statusCodeBranchAlreadyExist:
-		return allerror.New(allerror.ErrorCodeBranchExist, "branch already exist")
+		return allerror.New(allerror.ErrorCodeBranchExist, "branch already exist", err)
 	case statusCodeInactive:
-		return allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive")
+		return allerror.New(allerror.ErrorCodeBranchInavtive, "branch inactive", err)
 	default:
 		// default case modified to return 500
-		return allerror.New(allerror.ErrorBaseCase, "unexpected error when creating branch")
+		return allerror.New(allerror.ErrorBaseCase, "unexpected error when creating branch", err)
 	}
 }

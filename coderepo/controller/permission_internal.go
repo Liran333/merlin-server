@@ -17,9 +17,6 @@ import (
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
-// nolint:golint,unused
-var errorNoPermission = allerror.NewNoPermission("no permission")
-
 // AddRouteForCodeRepoPermissionInternalController adds routes for CodeRepoPermissionInternalController.
 func AddRouteForCodeRepoPermissionInternalController(
 	r *gin.RouterGroup,
@@ -107,7 +104,7 @@ func (ctl *PermissionInternalController) parse(ctx *gin.Context) (
 		if commonrepo.IsErrorResourceNotExists(err) {
 			commonctl.SendError(
 				ctx,
-				allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo"),
+				allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo", err),
 			)
 		} else {
 			commonctl.SendError(ctx, err)

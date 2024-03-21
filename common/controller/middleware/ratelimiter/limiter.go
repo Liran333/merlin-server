@@ -28,15 +28,14 @@ const (
 	defaultClientPoolSize = 10
 	defaultIdleTimeOutNum = 30
 	// RequestNumPerSec represents the maximum number of requests allowed per second.
-	RequestNumPerSec      = 10
+	RequestNumPerSec = 10
 	// BurstNumPerSec represents the maximum number of burst requests allowed per second.
-	BurstNumPerSec        = 10
-	maxCASMultiplier      = 100
+	BurstNumPerSec   = 10
+	maxCASMultiplier = 100
 )
 
 var (
-	overLimitExec = allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests")
-	limiter       *rateLimiter
+	limiter *rateLimiter
 )
 
 // InitRateLimiter creates a new instance of the rateLimiter struct.
@@ -135,14 +134,13 @@ func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	key := fmt.Sprintf("%v", v)
 	limited, _, err := rl.limitCli.RateLimiter.RateLimitCtx(ctx.Request.Context(), key, 1)
 	if err != nil {
-		logrus.Errorf("check limit is err:%s", err)
-		commonctl.SendError(ctx, overLimitExec)
+		commonctl.SendError(ctx, allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests", err))
 		ctx.Abort()
 		return
 	}
 
 	if limited {
-		commonctl.SendError(ctx, overLimitExec)
+		commonctl.SendError(ctx, allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests", fmt.Errorf("over limit")))
 		ctx.Abort()
 	} else {
 		ctx.Next()

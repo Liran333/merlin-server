@@ -127,7 +127,7 @@ type tokenVerifyRequest struct {
 func (req *tokenVerifyRequest) ToCmd() (string, primitive.TokenPerm, error) {
 	perm, err := primitive.NewTokenPerm(req.Action)
 	if err != nil {
-		return "", nil, fmt.Errorf("invalid action: %w", err)
+		return "", nil, fmt.Errorf("invalid request: %w", err)
 	}
 
 	return req.Token, perm, nil

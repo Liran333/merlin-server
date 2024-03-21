@@ -13,9 +13,9 @@ import (
 	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
-var (
-	errorSpaceAppNotFound = allerror.NewNotFound(allerror.ErrorCodeSpaceAppNotFound, "not found")
-)
+func newSpaceAppNotFound(err error) error {
+	return allerror.NewNotFound(allerror.ErrorCodeSpaceAppNotFound, "not found", err)
+}
 
 // SpaceappInternalAppService is an interface that defines the methods for creating and managing a SpaceApp.
 type SpaceappInternalAppService interface {
@@ -68,7 +68,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsStarted(cmd *CmdToNotifyBuildI
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err
@@ -86,7 +86,7 @@ func (s *spaceappInternalAppService) NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDo
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err
@@ -113,7 +113,7 @@ func (s *spaceappInternalAppService) NotifyServiceIsStarted(cmd *CmdToNotifyServ
 	v, err := s.repo.Find(&cmd.SpaceAppIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err

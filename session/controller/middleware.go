@@ -6,6 +6,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -177,14 +178,14 @@ func (m *webAPIMiddleware) parseCSRFToken(ctx *gin.Context) (primitive.RandomId,
 	v := ctx.GetHeader(csrfTokenHeader)
 	if v == "" {
 		return nil, allerror.New(
-			allerror.ErrorCodeCSRFTokenMissing, "no csrf token",
+			allerror.ErrorCodeCSRFTokenMissing, "no csrf token", fmt.Errorf("no csrf token found"),
 		)
 	}
 
 	id, err := primitive.ToRandomId(v)
 	if err != nil {
 		err = allerror.New(
-			allerror.ErrorCodeCSRFTokenInvalid, "invalid csrf token",
+			allerror.ErrorCodeCSRFTokenInvalid, "invalid csrf token", fmt.Errorf("invalid csrf token"),
 		)
 	}
 
@@ -194,12 +195,12 @@ func (m *webAPIMiddleware) parseCSRFToken(ctx *gin.Context) (primitive.RandomId,
 func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId, error) {
 	v, err := commonctl.GetCookie(ctx, cookieSessionId)
 	if err != nil {
-		return nil, allerror.New(allerror.ErrorCodeCSRFTokenMissing, "no session id found")
+		return nil, allerror.New(allerror.ErrorCodeCSRFTokenMissing, "no session id found", err)
 	}
 
 	sessionId, err := primitive.ToRandomId(v)
 	if err != nil {
-		err = allerror.New(allerror.ErrorCodeSessionIdInvalid, "not session id")
+		err = allerror.New(allerror.ErrorCodeSessionIdInvalid, "not session id", err)
 	}
 
 	return sessionId, err

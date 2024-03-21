@@ -5,10 +5,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
-	user "github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -16,7 +17,7 @@ import (
 type InviteType = string
 
 // Organization represents a user's organization.
-type Organization = user.User
+type Organization = domain.User
 
 const (
 	// InviteTypeInvite represents the invite type for invitations.
@@ -45,11 +46,13 @@ type OrgDeletedCmd struct {
 // Validate validates the OrgDeletedCmd fields.
 func (cmd OrgDeletedCmd) Validate() error {
 	if cmd.Name == nil {
-		return allerror.NewInvalidParam("invalid org name")
+		e := fmt.Errorf("invalid param for org deleted")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor name")
+		e := fmt.Errorf("invalid actor name")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -70,11 +73,13 @@ type OrgUpdatedBasicInfoCmd struct {
 // Validate validates the OrgUpdatedBasicInfoCmd fields.
 func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("account is nil")
+		e := fmt.Errorf("invalid actor name")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.OrgName == nil {
-		return allerror.NewInvalidParam("org name is nil")
+		e := fmt.Errorf("org name is nil")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -118,7 +123,8 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool) {
 // ToOrg creates a new Organization object based on the values in the OrgCreatedCmd.
 func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
 	if cmd.FullName == nil {
-		err = allerror.NewInvalidParam("org fullname is empty")
+		e := fmt.Errorf("org fullname is empty")
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
@@ -231,15 +237,18 @@ func (a Approve) ToMember() OrgMember {
 // Validate validates the fields of the OrgInviteMemberCmd struct.
 func (cmd OrgInviteMemberCmd) Validate() error {
 	if cmd.Account == nil {
-		return allerror.NewInvalidParam("invalid account")
+		e := fmt.Errorf("invalid account")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil {
-		return allerror.NewInvalidParam("invalid org")
+		e := fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 	return nil
 }
@@ -255,15 +264,18 @@ type OrgRemoveMemberCmd struct {
 // Validate checks if the command is valid.
 func (cmd OrgRemoveMemberCmd) Validate() error {
 	if cmd.Account == nil {
-		return allerror.NewInvalidParam("invalid account")
+		e := fmt.Errorf("invalid account")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil {
-		return allerror.NewInvalidParam("invalid org")
+		e := fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -321,11 +333,13 @@ type OrgAddMemberCmd struct {
 // Validate checks if the command is valid.
 func (cmd OrgAddMemberCmd) Validate() error {
 	if cmd.User == nil {
-		return allerror.NewInvalidParam("invalid user")
+		e := fmt.Errorf("invalid user")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil {
-		return allerror.NewInvalidParam("invalid org")
+		e := fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -374,15 +388,18 @@ type OrgCancelRequestMemberCmd struct {
 // Validate checks if the command is valid.
 func (cmd OrgCancelRequestMemberCmd) Validate() error {
 	if cmd.Requester == nil {
-		return allerror.NewInvalidParam("invalid requester")
+		e := fmt.Errorf("invalid requester")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil {
-		return allerror.NewInvalidParam("invalid org")
+		e := fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -409,11 +426,13 @@ func (cmd OrgApproveRequestMemberCmd) ToListReqCmd() *OrgMemberReqListCmd {
 // Validate checks if the command is valid.
 func (cmd OrgNormalCmd) Validate() error {
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil {
-		return allerror.NewInvalidParam("invalid org")
+		e := fmt.Errorf("invalid org")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -443,16 +462,19 @@ type OrgMemberReqListCmd struct {
 // Validate checks if the command is valid.
 func (cmd OrgMemberReqListCmd) Validate() error {
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Org == nil && cmd.Requester == nil {
-		return allerror.NewInvalidParam("When list member requests, org_name/requester can't be all empty")
+		e := fmt.Errorf("when list member requests, org_name/requester can't be all empty")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
 		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
-		return allerror.NewInvalidParam("invalid status")
+		e := fmt.Errorf("invalid status %s", cmd.Status)
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -461,7 +483,8 @@ func (cmd OrgMemberReqListCmd) Validate() error {
 // Validate checks if the command is valid.
 func (cmd OrgInvitationListCmd) Validate() error {
 	if cmd.Actor == nil {
-		return allerror.NewInvalidParam("invalid actor")
+		e := fmt.Errorf("invalid actor")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	count := 0
@@ -478,16 +501,19 @@ func (cmd OrgInvitationListCmd) Validate() error {
 	}
 
 	if count > 1 {
-		return allerror.NewInvalidParam("Only one of the org_name/invitee/inviter can be used")
+		e := fmt.Errorf("only one of the org_name/invitee/inviter can be used")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if count == 0 {
-		return allerror.NewInvalidParam("When list member invitation, org_name/invitee/inviter can't be all empty")
+		e := fmt.Errorf("when list member invitation, org_name/invitee/inviter can't be all empty")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
 		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
-		return allerror.NewInvalidParam("invalid status")
+		e := fmt.Errorf("invalid status %s", cmd.Status)
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil

@@ -64,7 +64,7 @@ func (s *spaceappAppService) GetByName(
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return dto, err
@@ -72,7 +72,7 @@ func (s *spaceappAppService) GetByName(
 
 	if err = s.permission.CanRead(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return dto, err
@@ -81,7 +81,7 @@ func (s *spaceappAppService) GetByName(
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return dto, err
@@ -102,7 +102,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err
@@ -110,7 +110,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 
 	if err = s.permission.CanUpdate(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err
@@ -119,7 +119,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceAppNotFound
+			err = newSpaceAppNotFound(err)
 		}
 
 		return err
@@ -145,7 +145,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 func (s *spaceappAppService) CheckPermissionRead(user primitive.Account, index *spacedomain.SpaceIndex) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
-		err = allerror.NewNoPermission(err.Error())
+		err = newSpaceAppNotFound(err)
 		return err
 	}
 

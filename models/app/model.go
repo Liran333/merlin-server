@@ -20,11 +20,6 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-var (
-	errorModelNotFound      = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
-	errorModelCountExceeded = allerror.NewCountExceeded("model count exceed")
-)
-
 // ModelAppService is an interface for the model application service.
 type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
@@ -113,7 +108,7 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return
 	}
 	if notFound {
-		err = errorModelNotFound
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found", modelId.Identity()))
 
 		return
 	}
@@ -141,7 +136,7 @@ func (s *modelAppService) Update(
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorModelNotFound
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 		}
 
 		return
@@ -157,7 +152,7 @@ func (s *modelAppService) Update(
 		return
 	}
 	if notFound {
-		err = errorModelNotFound
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found", modelId.Identity()))
 
 		return
 	}
@@ -191,7 +186,7 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 	model, err := s.repoAdapter.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorModelNotFound
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 		}
 
 		return dto, err
@@ -199,7 +194,7 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 
 	if err := s.permission.CanRead(user, &model); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorModelNotFound
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 		}
 
 		return dto, err
@@ -258,7 +253,7 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 	}
 
 	if total >= config.MaxCountPerOwner {
-		return errorModelCountExceeded
+		return allerror.NewCountExceeded("model count exceed", fmt.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
 	}
 
 	return nil

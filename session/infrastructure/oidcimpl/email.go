@@ -106,28 +106,28 @@ func errorReturn(err error) error {
 
 	errinfo := err.Error()
 	if strings.Contains(errinfo, infoCodeError) {
-		return allerror.New(allerror.ErrorEmailCodeError, "email verify code error")
+		return allerror.New(allerror.ErrorEmailCodeError, "email verify code error", err)
 	}
 
 	if strings.Contains(errinfo, infoEmailDuplicateBind1) ||
 		strings.Contains(errinfo, infoEmailDuplicateBind2) {
-		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "email duplicate bind")
+		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "email duplicate bind", err)
 	}
 
 	if strings.Contains(errinfo, infoUserDuplicateBind1) ||
 		strings.Contains(errinfo, infoUserDuplicateBind2) {
-		return allerror.New(allerror.ErrorCodeUserDuplicateBind, "user duplicate bind")
+		return allerror.New(allerror.ErrorCodeUserDuplicateBind, "user duplicate bind", err)
 	}
 
 	if strings.Contains(errinfo, infoEmailDuplicateSend) {
-		return allerror.New(allerror.ErrorCodeEmailDuplicateSend, "verify code duplicate send")
+		return allerror.New(allerror.ErrorCodeEmailDuplicateSend, "verify code duplicate send", err)
 	}
 
 	if strings.Contains(errinfo, infoCodeInvalid) {
-		return allerror.New(allerror.ErrorEmailCodeInvalid, "email verify code invalid")
+		return allerror.New(allerror.ErrorEmailCodeInvalid, "email verify code invalid", err)
 	}
 
-	return allerror.New(allerror.ErrorEmailError, "email bind error")
+	return allerror.New(allerror.ErrorEmailError, "email bind error", err)
 }
 
 func (impl *user) sendEmail(token, channel, email, capt string) (err error) {

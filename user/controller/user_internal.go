@@ -52,13 +52,13 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 	var req tokenVerifyRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, allerror.NewInvalidParam(err.Error()))
+		commonctl.SendBadRequestBody(ctx, allerror.NewInvalidParam(err.Error(), err))
 		return
 	}
 
 	token, perm, err := req.ToCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error()))
+		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error(), err))
 
 		return
 	}
@@ -83,7 +83,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 func (ctl *UserInernalController) GetPlatformUser(ctx *gin.Context) {
 	username, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error()))
+		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error(), err))
 		return
 	}
 

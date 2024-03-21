@@ -6,6 +6,7 @@ package internalservice
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 
@@ -78,13 +79,13 @@ func (m *internalServiceAPIMiddleware) checkToken(ctx *gin.Context) error {
 	calcTokenHash, err := commonctl.EncodeToken(rawToken, config.Salt)
 	if err != nil {
 		return allerror.New(
-			allerror.ErrorCodeAccessTokenInvalid, "check token failed",
+			allerror.ErrorCodeAccessTokenInvalid, "check token failed", err,
 		)
 	}
 
 	if calcTokenHash != config.TokenHash {
 		return allerror.New(
-			allerror.ErrorCodeAccessTokenInvalid, "invalid token",
+			allerror.ErrorCodeAccessTokenInvalid, "invalid token", fmt.Errorf("token missmatch"),
 		)
 	}
 

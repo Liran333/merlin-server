@@ -7,6 +7,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -62,7 +63,8 @@ func (m *restfulAPI) check(ctx *gin.Context, ignore bool, permission primitive.T
 		if ignore {
 			ctx.Next()
 		} else {
-			err := allerror.New(allerror.ErrorCodeAccessTokenInvalid, "missing token")
+			e := fmt.Errorf("missing token")
+			err := allerror.New(allerror.ErrorCodeAccessTokenInvalid, e.Error(), e)
 			commonctl.SendError(ctx, err)
 			m.securityLog.Warn(ctx, err.Error())
 

@@ -119,7 +119,8 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 				ctx.Next()
 			} else {
 				// will call ctx.Abort() internally
-				err := allerror.New(allerror.ErrorCodeNeedBindEmail, "need bind user email firstly")
+				e := fmt.Errorf("need bind user email firstly")
+				err := allerror.New(allerror.ErrorCodeNeedBindEmail, e.Error(), e)
 				securityLog.Warn(ctx, err.Error())
 				commonctl.SendError(ctx, err)
 			}
@@ -256,7 +257,6 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 		},
 		platform,
 	)
-
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

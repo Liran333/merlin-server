@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
@@ -39,7 +40,7 @@ func (s *modelInternalAppService) ResetLabels(modelId primitive.Identity, cmd *C
 	err := s.repoAdapter.Save(modelId, cmd)
 
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		err = errorModelNotFound
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 	}
 
 	return err
@@ -50,7 +51,7 @@ func (s *modelInternalAppService) GetById(modelId primitive.Identity) (ModelDTO,
 	model, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorModelNotFound
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 		}
 		return ModelDTO{}, err
 	}

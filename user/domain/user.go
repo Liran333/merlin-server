@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"golang.org/x/crypto/pbkdf2"
 
@@ -111,15 +112,15 @@ func (t PlatformToken) isExpired() bool {
 // Check checks if the given token is valid and has the required permission.
 func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
 	if t.isExpired() {
-		return allerror.NewNoPermission(tokenExpired)
+		return allerror.NewNoPermission(tokenExpired, errors.New(tokenExpired))
 	}
 
 	if !t.Match(token) {
-		return allerror.NewNoPermission(tokenInvalid)
+		return allerror.NewNoPermission(tokenInvalid, errors.New(tokenInvalid))
 	}
 
 	if !t.Permission.PermissionAllow(perm) {
-		return allerror.NewNoPermission(tokenPermDenied)
+		return allerror.NewNoPermission(tokenPermDenied, errors.New(tokenPermDenied))
 	}
 
 	return nil
@@ -190,11 +191,13 @@ type TokenCreatedCmd struct {
 // Validate validates the TokenCreatedCmd.
 func (cmd TokenCreatedCmd) Validate() error {
 	if cmd.Name == nil {
-		return allerror.NewInvalidParam("missing name when creating token")
+		e := fmt.Errorf("missing name when creating token")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Account == nil {
-		return allerror.NewInvalidParam("missing account when creating token")
+		e := fmt.Errorf("missing account when creating token")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil
@@ -209,11 +212,13 @@ type TokenDeletedCmd struct {
 // Validate validates the TokenDeletedCmd.
 func (cmd TokenDeletedCmd) Validate() error {
 	if cmd.Account == nil {
-		return allerror.NewInvalidParam("missing account when delete token")
+		e := fmt.Errorf("missing account when delete token")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Name == nil {
-		return allerror.NewInvalidParam("missing name when delete token")
+		e := fmt.Errorf("missing name when delete token")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	return nil

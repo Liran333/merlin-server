@@ -105,30 +105,46 @@ const (
 	// ErrorCodeDisAgreedPrivacy is const
 	ErrorCodeDisAgreedPrivacy = "disagreed_privacy"
 
+	// ErrorCodeExpired
+	ErrorCodeExpired = "expired"
+
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 )
 
 // errorImpl
 type errorImpl struct {
-	code string
-	msg  string
+	code     string
+	msg      string
+	innerErr error // error info for diagnostic
 }
 
 // Error returns the error message.
+//
+// This function returns the error message of the errorImpl struct.
+//
+// No parameters.
+// Returns a string representing the error message.
 func (e errorImpl) Error() string {
 	return e.msg
 }
 
 // ErrorCode returns the error code.
+//
+// This function returns the error code of the errorImpl struct.
+// The error code is a string representing the type of the error, it could be used for error handling and diagnostic.
+//
+// No parameters.
+// Returns a string representing the error code.
 func (e errorImpl) ErrorCode() string {
 	return e.code
 }
 
 // New creates a new error with the specified code and message.
-func New(code string, msg string) errorImpl {
+func New(code string, msg string, err error) errorImpl {
 	v := errorImpl{
-		code: code,
+		code:     code,
+		innerErr: err,
 	}
 
 	if msg == "" {
@@ -149,8 +165,8 @@ type notfoudError struct {
 func (e notfoudError) NotFound() {}
 
 // NewNotFound creates a new not found error with the specified code and message.
-func NewNotFound(code string, msg string) notfoudError {
-	return notfoudError{errorImpl: New(code, msg)}
+func NewNotFound(code string, msg string, err error) notfoudError {
+	return notfoudError{errorImpl: New(code, msg, err)}
 }
 
 // IsNotFound checks if the given error is a not found error.
@@ -188,8 +204,8 @@ type noPermissionError struct {
 func (e noPermissionError) NoPermission() {}
 
 // NewNoPermission creates a new "no permission" error with the specified message.
-func NewNoPermission(msg string) noPermissionError {
-	return noPermissionError{errorImpl: New(errorCodeNoPermission, msg)}
+func NewNoPermission(msg string, err error) noPermissionError {
+	return noPermissionError{errorImpl: New(errorCodeNoPermission, msg, err)}
 }
 
 // IsNoPermission checks if the given error is a "no permission" error.
@@ -204,13 +220,13 @@ func IsNoPermission(err error) bool {
 }
 
 // NewInvalidParam creates a new error with the specified invalid parameter message.
-func NewInvalidParam(msg string) errorImpl {
-	return New(errorCodeInvalidParam, msg)
+func NewInvalidParam(msg string, err error) errorImpl {
+	return New(errorCodeInvalidParam, msg, err)
 }
 
 // NewCountExceeded creates a new error with the specified count exceeded message.
-func NewCountExceeded(msg string) errorImpl {
-	return New(ErrorCodeCountExceeded, msg)
+func NewCountExceeded(msg string, err error) errorImpl {
+	return New(ErrorCodeCountExceeded, msg, err)
 }
 
 // limitRateError
@@ -222,6 +238,10 @@ type limitRateError struct {
 func (l limitRateError) OverLimit() {}
 
 // NewOverLimit creates a new over limit error with the specified code and message.
-func NewOverLimit(code string, msg string) limitRateError {
-	return limitRateError{errorImpl: New(code, msg)}
+func NewOverLimit(code string, msg string, err error) limitRateError {
+	return limitRateError{errorImpl: New(code, msg, err)}
+}
+
+func NewExpired(msg string, err error) errorImpl {
+	return New(ErrorCodeExpired, msg, err)
 }

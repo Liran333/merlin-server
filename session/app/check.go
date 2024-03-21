@@ -49,7 +49,7 @@ func (s *sessionAppService) check(cmd *CmdToCheck) (
 	session, err = s.sessionFastRepo.Find(cmd.SessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session")
+			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session", err)
 		}
 
 		return
@@ -58,7 +58,7 @@ func (s *sessionAppService) check(cmd *CmdToCheck) (
 	csrfToken, err := s.csrfTokenRepo.Find(cmd.CSRFToken)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeCSRFTokenNotFound, "no csrf token")
+			err = allerror.New(allerror.ErrorCodeCSRFTokenNotFound, "no csrf token", err)
 		}
 
 		return
@@ -86,7 +86,7 @@ func (s *sessionAppService) CheckSession(cmd *CmdToCheck) (user primitive.Accoun
 	session, err := s.sessionFastRepo.Find(cmd.SessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session")
+			err = allerror.New(allerror.ErrorCodeSessionNotFound, "no session", err)
 		}
 
 		return

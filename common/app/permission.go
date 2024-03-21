@@ -6,12 +6,12 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
-
-var errorNoPermission = allerror.NewNoPermission("no permission")
 
 // NewResourcePermissionAppService creates a new instance of the resourcePermissionAppService.
 func NewResourcePermissionAppService(
@@ -54,7 +54,7 @@ func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r doma
 
 	// can't access private resource anonymously
 	if user == nil {
-		return errorNoPermission
+		return allerror.NewNoPermission("no permission", fmt.Errorf("anno can not access private resource"))
 	}
 
 	// my own resource
@@ -64,7 +64,7 @@ func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r doma
 
 	// can't access other individual's private resource
 	if r.OwnedByPerson() {
-		return errorNoPermission
+		return allerror.NewNoPermission("no permission", fmt.Errorf("can't access other individual's private resource"))
 	}
 
 	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead)
@@ -94,7 +94,7 @@ func (impl *resourcePermissionAppService) canModify(
 ) error {
 	// can't modify resource anonymously
 	if user == nil {
-		return errorNoPermission
+		return allerror.NewNoPermission("no permission", fmt.Errorf("can't modify resource anonymously"))
 	}
 
 	// my own resource
@@ -104,7 +104,7 @@ func (impl *resourcePermissionAppService) canModify(
 
 	// can't modify other individual's resource
 	if r.OwnedByPerson() {
-		return errorNoPermission
+		return allerror.NewNoPermission("no permission", fmt.Errorf("can't modify other individual's resource"))
 	}
 
 	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), action)

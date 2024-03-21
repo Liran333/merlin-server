@@ -5,9 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
+	"fmt"
 	"time"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -33,9 +32,8 @@ func (s *Session) LifeTime() time.Duration {
 // Validate validates the session against the provided IP address and user agent.
 func (s *Session) Validate(ip string, userAgent primitive.UserAgent) error {
 	if ip != s.IP || userAgent != s.UserAgent {
-		logrus.Errorf("ip %s or useragent %s not match", ip, userAgent.UserAgent())
-
-		return allerror.New(allerror.ErrorCodeSessionInvalid, "another login")
+		e := fmt.Errorf("ip %s or useragent %s not match", ip, userAgent.UserAgent())
+		return allerror.New(allerror.ErrorCodeSessionInvalid, "another login", e)
 	}
 
 	return nil
@@ -83,7 +81,7 @@ func (token *CSRFToken) LifeTime() time.Duration {
 // Validate validates the CSRF token against the provided login ID.
 func (token *CSRFToken) Validate(sessionId primitive.RandomId) error {
 	if sessionId != token.SessionId {
-		return allerror.New(allerror.ErrorCodeCSRFTokenInvalid, "unmatched login")
+		return allerror.New(allerror.ErrorCodeCSRFTokenInvalid, "unmatched login", fmt.Errorf("sessioinid not match"))
 	}
 
 	return nil

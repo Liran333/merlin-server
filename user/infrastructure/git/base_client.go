@@ -89,12 +89,14 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 // DeleteToken deletes a token.
 func (c *BaseAuthClient) DeleteToken(cmd *domain.TokenDeletedCmd) (err error) {
 	if cmd == nil {
-		return allerror.NewInvalidParam("nil cmd")
+		e := fmt.Errorf("delete token param is empty")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	if cmd.Account.Account() != c.username {
-		return allerror.NewNoPermission(fmt.Sprintf("username mismatched, requested user: %s, client user: %s",
-			cmd.Account.Account(), c.username))
+		e := fmt.Errorf("username mismatched, requested user: %s, client user: %s",
+			cmd.Account.Account(), c.username)
+		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	_, err = c.client.DeleteAccessToken(cmd.Name.TokenName())

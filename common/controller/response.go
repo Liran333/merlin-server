@@ -43,6 +43,7 @@ func SendBadRequestBody(ctx *gin.Context, err error) {
 	if _, ok := err.(errorCode); ok {
 		SendError(ctx, err)
 	} else {
+		_ = ctx.Error(err)
 		ctx.JSON(
 			http.StatusBadRequest,
 			newResponseCodeMsg(errorBadRequestBody, err.Error()),
@@ -55,6 +56,7 @@ func SendBadRequestParam(ctx *gin.Context, err error) {
 	if _, ok := err.(errorCode); ok {
 		SendError(ctx, err)
 	} else {
+		_ = ctx.Error(err)
 		ctx.JSON(
 			http.StatusBadRequest,
 			newResponseCodeMsg(errorBadRequestParam, err.Error()),
@@ -93,6 +95,8 @@ func SendRespOfDelete(ctx *gin.Context) {
 // SendError sends an error response based on the given error.
 func SendError(ctx *gin.Context, err error) {
 	sc, code := httpError(err)
+
 	_ = ctx.AbortWithError(sc, err)
+
 	ctx.JSON(sc, newResponseCodeMsg(code, err.Error()))
 }

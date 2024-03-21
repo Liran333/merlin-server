@@ -56,12 +56,12 @@ type modelSpaceAppService struct {
 func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) ([]SpaceModelDTO, error) {
 	space, err := s.spaceRepoAdapter.FindById(spaceId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		return []SpaceModelDTO{}, errorSpaceNotFound
+		return []SpaceModelDTO{}, newSpaceNotFound(err)
 	}
 
 	if err = s.permission.CanRead(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorSpaceNotFound
+			err = newSpaceNotFound(err)
 		}
 
 		return []SpaceModelDTO{}, err
@@ -69,7 +69,7 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 
 	modelIds, err := s.repoAdapter.GetModelsBySpaceId(spaceId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		return []SpaceModelDTO{}, errorSpaceNotFound
+		return []SpaceModelDTO{}, newSpaceNotFound(err)
 	}
 
 	var models []SpaceModelDTO
@@ -102,12 +102,12 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) ([]SpaceModelDTO, error) {
 	model, err := s.modelRepoAdapter.FindById(modelId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		return []SpaceModelDTO{}, errorModelNotFound
+		return []SpaceModelDTO{}, newModelNotFound(err)
 	}
 
 	if err = s.permission.CanRead(user, &model); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorModelNotFound
+			err = newModelNotFound(err)
 		}
 
 		return []SpaceModelDTO{}, err
@@ -115,7 +115,7 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 
 	spaceIds, err := s.repoAdapter.GetSpacesByModelId(modelId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		return []SpaceModelDTO{}, errorModelNotFound
+		return []SpaceModelDTO{}, newModelNotFound(err)
 	}
 
 	var spaces []SpaceModelDTO

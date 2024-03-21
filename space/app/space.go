@@ -20,11 +20,17 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
-var (
-	errorSpaceNotFound      = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found")
-	errorModelNotFound      = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found")
-	errorSpaceCountExceeded = allerror.NewCountExceeded("space count exceed")
-)
+func newSpaceNotFound(err error) error {
+	return allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", err)
+}
+
+func newSpaceCountExceeded(err error) error {
+	return allerror.NewCountExceeded("space count exceed", err)
+}
+
+func newModelNotFound(err error) error {
+	return allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
+}
 
 // Permission is an interface for checking permissions.
 type Permission interface {
@@ -121,7 +127,7 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		return
 	}
 	if notFound {
-		err = errorSpaceNotFound
+		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
 
 		return
 	}
@@ -149,7 +155,7 @@ func (s *spaceAppService) Update(
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceNotFound
+			err = newSpaceNotFound(err)
 		}
 
 		return
@@ -165,7 +171,7 @@ func (s *spaceAppService) Update(
 		return
 	}
 	if notFound {
-		err = errorSpaceNotFound
+		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
 
 		return
 	}
@@ -199,7 +205,7 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 	space, err := s.repoAdapter.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceNotFound
+			err = newSpaceNotFound(err)
 		}
 
 		return dto, err
@@ -207,7 +213,7 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 
 	if err := s.permission.CanRead(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = errorSpaceNotFound
+			err = newSpaceNotFound(err)
 		}
 
 		return dto, err
@@ -266,7 +272,7 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 	}
 
 	if total >= config.MaxCountPerOwner {
-		return errorSpaceCountExceeded
+		return newSpaceCountExceeded(fmt.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
 	}
 
 	return nil

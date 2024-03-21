@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -52,7 +54,7 @@ func isNoPermissionOrNotFound(
 	err := ps.CanRead(user, resource)
 	if err == nil {
 		// It is no permission when it can read
-		return false, errorNoPermission
+		return false, allerror.NewNoPermission("no permission", fmt.Errorf("It is no permission when it can read"))
 	}
 
 	if !allerror.IsNoPermission(err) {

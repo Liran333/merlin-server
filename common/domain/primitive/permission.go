@@ -4,7 +4,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 
 package primitive
 
-import "errors"
+import "fmt"
 
 // ObjType represents the type of object.
 type ObjType string
@@ -80,7 +80,7 @@ type TokenPerm interface {
 // NewTokenPerm creates a new TokenPerm instance.
 func NewTokenPerm(v string) (TokenPerm, error) {
 	if v != TokenPermWrite && v != TokenPermRead {
-		return nil, errors.New("invalid permission")
+		return nil, fmt.Errorf("invalid permission(%s) , can only be %s/%s", v, TokenPermWrite, TokenPermRead)
 	}
 
 	return tokenPerm(v), nil

@@ -90,20 +90,21 @@ func (p *permService) Check(
 	op primitive.Action,
 ) error {
 	if user == nil {
-		return allerror.NewNoPermission("user is nil")
+		e := fmt.Errorf("user is nil")
+		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	if org == nil {
-		return allerror.NewNoPermission("object is nil")
+		e := fmt.Errorf("org is nil")
+		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	m, err := p.org.GetByOrgAndUser(org.Account(), user.Account())
 	if err != nil {
-		logrus.Errorf("get member failed: %s", err)
-
-		return allerror.NewNoPermission(fmt.Sprintf(
+		e := fmt.Errorf(
 			"%s does not have a valid role in %s", user.Account(), org.Account(),
-		))
+		)
+		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	ok := p.doCheckPerm(m.Role, objType, op)
@@ -118,9 +119,10 @@ func (p *permService) Check(
 	)
 
 	if !ok {
-		return allerror.NewNoPermission(fmt.Sprintf(
+		e := fmt.Errorf(
 			"%s %s %s permission denied", user.Account(), op.String(), string(objType),
-		))
+		)
+		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	return nil

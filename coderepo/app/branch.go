@@ -96,7 +96,7 @@ func (s *branchAppService) canModify(
 	repo, err := s.resourceAdapter.GetByType(t, index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			return allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo")
+			return allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "no repo", err)
 		}
 
 		return err

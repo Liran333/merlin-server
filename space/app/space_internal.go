@@ -35,7 +35,7 @@ func (s *spaceInternalAppService) GetById(spaceId primitive.Identity) (sdk.Space
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errorSpaceNotFound
+			err = newSpaceNotFound(err)
 		}
 
 		return sdk.SpaceMetaDTO{}, err
