@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteUser used for testing
@@ -24,13 +24,13 @@ type SuiteUser struct {
 // SetupSuite used for testing
 func (s *SuiteUser) SetupSuite() {
 	s.phone = "13333333334"
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "read full name",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
 		Description: "valid desc",
 	}
 
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -39,7 +39,7 @@ func (s *SuiteUser) SetupSuite() {
 // 正常登录的用户可以获取用户信息
 func (s *SuiteUser) TestGetUser() {
 
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -58,7 +58,7 @@ func (s *SuiteUser) TestGetUser() {
 // TestGetOtherUser used for testing
 func (s *SuiteUser) TestGetOtherUser() {
 
-	data, r, err := Api.OrganizationApi.V1AccountNameGet(Auth, "test2")
+	data, r, err := ApiRest.OrganizationApi.V1AccountNameGet(AuthRest, "test2")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -77,7 +77,7 @@ func (s *SuiteUser) TestGetOtherUser() {
 // 未登录用户无法获取个人信息
 func (s *SuiteUser) TestGetUserNoToken() {
 
-	_, r, err := Api.UserApi.V1UserGet(context.Background())
+	_, r, err := ApiRest.UserApi.V1UserGet(context.Background())
 	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -86,7 +86,7 @@ func (s *SuiteUser) TestGetUserNoToken() {
 // 未登录用户获取其他人信息
 func (s *SuiteUser) TestGetOtherUserNoToken() {
 
-	data, r, err := Api.OrganizationApi.V1AccountNameGet(context.Background(), "test2")
+	data, r, err := ApiRest.OrganizationApi.V1AccountNameGet(context.Background(), "test2")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -100,15 +100,15 @@ func (s *SuiteUser) TestGetOtherUserNoToken() {
 
 // TestRequestDelete used for testing
 func (s *SuiteUser) TestRequestDelete() {
-	r, err := Api.UserApi.V1UserDelete(context.Background())
+	r, err := ApiRest.UserApi.V1UserDelete(context.Background())
 	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.UserApi.V1UserDelete(Auth)
+	r, err = ApiRest.UserApi.V1UserDelete(AuthRest)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -117,15 +117,15 @@ func (s *SuiteUser) TestRequestDelete() {
 	assert.Equalf(s.T(), user["request_delete"], bool(true), "request delete not equal")
 	assert.NotEqualf(s.T(), getInt64(s.T(), user["request_delete_at"]), int64(0), "request delete at not equal")
 
-	r, err = Api.UserApi.V1UserDelete(Auth)
+	r, err = ApiRest.UserApi.V1UserDelete(AuthRest)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		RevokeDelete: true,
 	}
 
-	data, r, err = Api.UserApi.V1UserPut(Auth, d)
+	data, r, err = ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err, data.Msg)
 

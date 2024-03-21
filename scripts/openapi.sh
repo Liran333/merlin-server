@@ -18,12 +18,24 @@ then
 	exit 1
 fi
 
-cd $ROOTDIR && swag init --exclude tests -o api && cd -
-rm -rf $ROOTDIR/tests/e2e/client
+cd $ROOTDIR && swag init --instanceName rest -o api -t Organization,User,Model,ModelRestful,Space,SpaceRestful,BranchRestful && 
+swag init --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo &&
+swag init --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp && cd -
+rm -rf $ROOTDIR/tests/e2e/client_web && rm -rf $ROOTDIR/tests/e2e/client_rest && rm -rf $ROOTDIR/tests/e2e/client_internal
 
 # using swagger codegen to generate client code
 docker run --rm -u $(id -u):$(id -g) -v ${ROOTDIR}:/local swaggerapi/swagger-codegen-cli generate \
-  -i /local/api/swagger.yaml \
+  -i /local/api/internal_swagger.yaml \
   -l go \
-  -o /local/tests/e2e/client \
+  -o /local/tests/e2e/client_internal \
+  -a "Authorization: Bearer TOKEN"
+docker run --rm -u $(id -u):$(id -g) -v ${ROOTDIR}:/local swaggerapi/swagger-codegen-cli generate \
+  -i /local/api/web_swagger.yaml \
+  -l go \
+  -o /local/tests/e2e/client_web \
+  -a "Authorization: Bearer TOKEN"
+docker run --rm -u $(id -u):$(id -g) -v ${ROOTDIR}:/local swaggerapi/swagger-codegen-cli generate \
+  -i /local/api/rest_swagger.yaml \
+  -l go \
+  -o /local/tests/e2e/client_rest \
   -a "Authorization: Bearer TOKEN"

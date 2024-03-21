@@ -29,7 +29,7 @@ swag init --instanceName rest -o api -t Organization,User,Model,ModelRestful,Spa
 
 swag init --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo
 
-swag init --instanceName internal -o api -t Session,User,SpaceInternal,ModelInternal,Permission
+swag init --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp
 ```
 
 ## run end to end test

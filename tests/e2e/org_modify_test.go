@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteOrgModify used for testing
@@ -39,7 +39,7 @@ func (s *SuiteOrgModify) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -59,25 +59,25 @@ func (s *SuiteOrgModify) TearDownSuite() {
 // 组织管理员修改组织的名称
 func (s *SuiteOrgModify) TestOrgCreate() {
 	//创建组织
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 修改组织的名称
-	d2 := swagger.ControllerOrgBasicInfoUpdateRequest{
+	d2 := swaggerRest.ControllerOrgBasicInfoUpdateRequest{
 		Fullname: "newFullName",
 	}
 
-	_, r2, err2 := Api.OrganizationApi.V1OrganizationNamePut(Auth, s.name, d2)
+	_, r2, err2 := ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name, d2)
 	assert.Equal(s.T(), http.StatusAccepted, r2.StatusCode)
 	assert.Nil(s.T(), err2)
 
-	r3, err3 := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r3, err3 := ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r3.StatusCode)
 	assert.Nil(s.T(), err3)
 }
@@ -85,7 +85,7 @@ func (s *SuiteOrgModify) TestOrgCreate() {
 // TestOrgDeleteFail used for testing
 // 其他人无法删除组织
 func (s *SuiteOrgModify) TestOrgDeleteFail() {
-	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth2, s.name)
+	r, err := ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest2, s.name)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }

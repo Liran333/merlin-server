@@ -20,7 +20,7 @@ type SuitePrivacy struct {
 // TestGetPrivacy used for testing
 func (s *SuitePrivacy) TestGetPrivacy() {
 	// 取消同意隐私协议
-	_, r, err := Api.UserApi.V1UserPrivacyPut(Auth)
+	_, r, err := ApiRest.UserApi.V1UserPrivacyPut(AuthRest)
 
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)

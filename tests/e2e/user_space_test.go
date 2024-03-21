@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteUserSpace used for testing
@@ -31,7 +31,7 @@ func (s *SuiteUserSpace) TearDownSuite() {
 // TestUserCanCreateUpdateDeleteSpace used for testing
 // 可以创建Space到自己名下, 并且可以修改和删除自己名下的Space
 func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
-	spaceParam := swagger.ControllerReqToCreateSpace{
+	spaceParam := swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -42,7 +42,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	}
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, spaceParam)
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -50,11 +50,11 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建空间返回400
-	_, r, err = Api.SpaceApi.V1SpacePost(Auth2, spaceParam)
+	_, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest2, spaceParam)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateSpace{
 		Desc:     "space desc new",
 		Fullname: "spacefullname-new",
 		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
@@ -64,14 +64,14 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
 // 使用无效仓库名创建、修改Space失败
 func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
-	_, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	_, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -86,7 +86,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -103,7 +103,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateSpace{
 		Desc:     "space desc new",
 		Fullname: "spacefullname-new",
 		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
@@ -113,7 +113,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -121,7 +121,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 // TestNotLoginCantCreateSpace used for testing
 // 没登录用户不能创建Space
 func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
-	_, r, err := Api.SpaceApi.V1SpacePost(context.Background(), swagger.ControllerReqToCreateSpace{
+	_, r, err := ApiRest.SpaceApi.V1SpacePost(context.Background(), swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -140,7 +140,7 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 // 以下用例结果异常，需排查
 // 可以访问自己名下的公有Space
 // func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
-//	 data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+//	 data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 //		 Desc:       "space desc",
 //		 Fullname:   "spacefullname",
 //		 Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -157,22 +157,22 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 //
 //	 id := getString(s.T(), data.Data)
 //
-//	 detail, r, err := Api.SpaceWebApi.V1SpaceOwnerNameGet(Auth2, "test2", "testspace")
+//	 detail, r, err := ApiRest.SpaceWebApi.V1SpaceOwnerNameGet(AuthRest2, "test2", "testspace")
 //	 assert.Equal(s.T(), 200, r.StatusCode)
 //	 assert.Nil(s.T(), err)
 //	 assert.NotEmpty(s.T(), detail.Name)
 //
-//	 spaceOwnerList, r, err := Api.SpaceWebApi.V1SpaceOwnerGet(Auth2, "test2", &swagger.SpaceWebApiV1SpaceOwnerGetOpts{})
+//	 spaceOwnerList, r, err := ApiRest.SpaceWebApi.V1SpaceOwnerGet(AuthRest2, "test2", &swaggerRest.SpaceWebApiV1SpaceOwnerGetOpts{})
 //	 assert.Equal(s.T(), 200, r.StatusCode)
 //	 assert.Nil(s.T(), err)
 //	 assert.NotEmpty(s.T(), spaceOwnerList.Spaces)
 //
-//	 spaceList, r, err := Api.SpaceWebApi.V1SpaceGet(Auth2, &swagger.SpaceWebApiV1SpaceGetOpts{})
+//	 spaceList, r, err := ApiRest.SpaceWebApi.V1SpaceGet(AuthRest2, &swaggerRest.SpaceWebApiV1SpaceGetOpts{})
 //	 assert.Equal(s.T(), 200, r.StatusCode)
 //	 assert.Nil(s.T(), err)
 //	 assert.NotEmpty(s.T(), spaceList.Spaces)
 //
-//	 r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+//	 r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 //	 assert.Equal(s.T(), 204, r.StatusCode)
 //	 assert.Nil(s.T(), err)
 // }

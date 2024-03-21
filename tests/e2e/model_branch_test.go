@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 type SuiteModelBranch struct {
@@ -41,7 +41,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -56,7 +56,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
-	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
@@ -67,7 +67,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -75,7 +75,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -90,10 +90,10 @@ func (s *SuiteModelBranch) SetupSuite() {
 }
 
 func (s *SuiteModelBranch) TearDownSuite() {
-	r, err := Api.ModelApi.V1ModelIdDelete(Auth, s.modelId)
+	r, err := ApiRest.ModelApi.V1ModelIdDelete(AuthRest, s.modelId)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -101,8 +101,8 @@ func (s *SuiteModelBranch) TearDownSuite() {
 // 拥有write权限的用户可以创建和删除分支
 func (s *SuiteModelBranch) TestOrgWriteCreateDeleteBranch() {
 	branchName := "newbranch1"
-	_, r, err := Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model", s.name, "testmodel",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err := ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "model", s.name, "testmodel",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -110,7 +110,7 @@ func (s *SuiteModelBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "model", s.name, "testmodel", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "model", s.name, "testmodel", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -118,7 +118,7 @@ func (s *SuiteModelBranch) TestOrgWriteCreateDeleteBranch() {
 // 拥有read权限的用户不可以创建分支
 func (s *SuiteModelBranch) TestOrgReadMemberCantCreateBranch() {
 	branchName := "newbranch3"
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "read",
 	}, s.name)
@@ -126,8 +126,8 @@ func (s *SuiteModelBranch) TestOrgReadMemberCantCreateBranch() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model", s.name, "testmodel",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "model", s.name, "testmodel",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -135,7 +135,7 @@ func (s *SuiteModelBranch) TestOrgReadMemberCantCreateBranch() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
@@ -147,8 +147,8 @@ func (s *SuiteModelBranch) TestOrgReadMemberCantCreateBranch() {
 // 拥有admin权限的用户可以创建和删除分支
 func (s *SuiteModelBranch) TestOrgAdminCreateDeleteBranch() {
 	branchName := "newbranch4"
-	_, r, err := Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth, "model", s.name, "testmodel",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err := ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest, "model", s.name, "testmodel",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -156,7 +156,7 @@ func (s *SuiteModelBranch) TestOrgAdminCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth, "model", s.name, "testmodel", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest, "model", s.name, "testmodel", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -164,7 +164,7 @@ func (s *SuiteModelBranch) TestOrgAdminCreateDeleteBranch() {
 // 用户可以在自己的仓库创建和删除分支
 func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 	branchName := "newbranch7"
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "test2model",
 		Owner:      s.name,
 		License:    "mit",
@@ -175,8 +175,8 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model", s.name, "test2model",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "model", s.name, "test2model",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -185,11 +185,11 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 
 	time.Sleep(1 * time.Second)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "model", s.name, "test2model", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "model", s.name, "test2model", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -197,7 +197,7 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 // 使用无效的分支名会导致创建分支失败
 func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 	branchName := "invild#branch"
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "test2model",
 		Owner:      s.name,
 		License:    "mit",
@@ -208,8 +208,8 @@ func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "model",
-		s.name, "test2model", swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "model",
+		s.name, "test2model", swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -218,7 +218,7 @@ func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 
 	time.Sleep(1 * time.Second)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

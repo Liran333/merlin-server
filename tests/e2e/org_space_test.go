@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteOrgSpace used for testing
@@ -40,7 +40,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -55,7 +55,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
-	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
@@ -66,7 +66,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -77,7 +77,7 @@ func (s *SuiteOrgSpace) SetupSuite() {
 
 // TearDownSuite used for testing
 func (s *SuiteOrgSpace) TearDownSuite() {
-	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err := ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -85,7 +85,7 @@ func (s *SuiteOrgSpace) TearDownSuite() {
 // TestDeleteSpaceContainsModel used for testing
 // 当组织下有Space，组织卡片时，删除组织失败
 func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
-	spaceParam := swagger.ControllerReqToCreateSpace{
+	spaceParam := swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "tempFullName",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -96,18 +96,18 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	}
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth, spaceParam)
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 重复创建空间返回400
-	_, r, err = Api.SpaceApi.V1SpacePost(Auth, spaceParam)
+	_, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest, spaceParam)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 删除组织失败
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
 		"can't delete the organization, while some spaces still existed")
 	assert.NotNil(s.T(), err)
@@ -115,7 +115,7 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 	// 清空Space
 	id := getString(s.T(), data.Data)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -123,7 +123,7 @@ func (s *SuiteOrgModel) TestDeleteSpaceContainsModel() {
 // TestOrgReadMemberCantCreateUpdateDeleteSpace used for testing
 // 拥有read权限的用户不能创建Space，不能修改和删除他人Space
 func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "read",
 	}, s.name)
@@ -132,7 +132,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	assert.Nil(s.T(), err)
 
 	// read用户不能创建Space
-	_, r, err = Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -147,7 +147,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -165,7 +165,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	id := getString(s.T(), data.Data)
 
 	//read用户不能修改和删除他人Space
-	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -176,11 +176,11 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
@@ -188,7 +188,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -196,7 +196,7 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 // TestOrgWriteCreateDeleteSpace used for testing
 // 拥有write权限的用户可以创建和删除Space
 func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -213,7 +213,7 @@ func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 
 	id := getString(s.T(), data.Data)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -221,7 +221,7 @@ func (s *SuiteOrgSpace) TestOrgWriteCreateDeleteSpace() {
 // TestOrgWriteUpdateDeleteOthersSpace used for testing
 // 拥有write权限的用户可以修改和删除他人的Space
 func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -239,7 +239,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 	id := getString(s.T(), data.Data)
 
 	//write用户可以修改和删除他人Space
-	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth2, id, swagger.ControllerReqToUpdateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -250,7 +250,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -258,7 +258,7 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 // TestOrgAdminUpdateDeleteOthersSpace used for testing
 // 拥有admin权限的用户可以修改和删除他人的Space
 func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -276,7 +276,7 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 	id := getString(s.T(), data.Data)
 
 	//admin用户可以修改和删除他人Space
-	_, r, err = Api.SpaceApi.V1SpaceIdPut(Auth, id, swagger.ControllerReqToUpdateSpace{
+	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest, id, swaggerRest.ControllerReqToUpdateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -287,7 +287,7 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

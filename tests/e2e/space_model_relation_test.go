@@ -12,7 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerInternal "e2e/client_internal"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteSpaceModelRelation used for testing
@@ -28,7 +29,7 @@ type SuiteSpaceModelRelation struct {
 // SetupSuite used for testing
 func (s *SuiteSpaceModelRelation) SetupSuite() {
 	// 创建模型
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel1",
 		Owner:      "test1",
 		License:    "mit",
@@ -39,7 +40,7 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 	assert.Nil(s.T(), err)
 	s.modelIdTest1Public = getString(s.T(), data.Data)
 
-	data, r, err = Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel2",
 		Owner:      "test2",
 		License:    "mit",
@@ -50,7 +51,7 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 	assert.Nil(s.T(), err)
 	s.modelIdTest2Public = getString(s.T(), data.Data)
 
-	data, r, err = Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "modelprivate",
 		Owner:      "test2",
 		License:    "mit",
@@ -62,7 +63,7 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 	s.modelIdTest2Private = getString(s.T(), data.Data)
 
 	// 创建空间
-	spaceParam := swagger.ControllerReqToCreateSpace{
+	spaceParam := swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -73,7 +74,7 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	}
-	data, r, err = Api.SpaceApi.V1SpacePost(Auth2, spaceParam)
+	data, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest2, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -85,20 +86,20 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 // TearDownSuite used for testing
 func (s *SuiteSpaceModelRelation) TearDownSuite() {
 	// 删除模型
-	r, err := Api.ModelApi.V1ModelIdDelete(Auth, s.modelIdTest1Public)
+	r, err := ApiRest.ModelApi.V1ModelIdDelete(AuthRest, s.modelIdTest1Public)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, s.modelIdTest2Public)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, s.modelIdTest2Public)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, s.modelIdTest2Private)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, s.modelIdTest2Private)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 删除空间
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, s.spaceIdTest2Public)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, s.spaceIdTest2Public)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -107,8 +108,8 @@ func (s *SuiteSpaceModelRelation) TearDownSuite() {
 // 空间关联模型成功
 func (s *SuiteSpaceModelRelation) TestUpdateSpaceModelsSuccess() {
 	ids := []string{"test1/testmodel1", "test2/testmodel2"}
-	modelIdsParam := swagger.ControllerModeIds{Ids: ids}
-	_, r, err := InteralApi.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.spaceIdTest2Public, modelIdsParam)
+	modelIdsParam := swaggerInternal.ControllerModeIds{Ids: ids}
+	_, r, err := ApiInteral.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.spaceIdTest2Public, modelIdsParam)
 
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -119,8 +120,8 @@ func (s *SuiteSpaceModelRelation) TestUpdateSpaceModelsSuccess() {
 func (s *SuiteSpaceModelRelation) TestUpdateInvalidModels() {
 	// 空间关联公开模型、私有模型、不存在的模型
 	ids := []string{"test1/testmodel1", "test2/modelprivate", "test2/modelNotExists", "invalidmodel"}
-	modelIdsParam := swagger.ControllerModeIds{Ids: ids}
-	_, r, err := InteralApi.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.spaceIdTest2Public, modelIdsParam)
+	modelIdsParam := swaggerInternal.ControllerModeIds{Ids: ids}
+	_, r, err := ApiInteral.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.spaceIdTest2Public, modelIdsParam)
 
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -130,8 +131,8 @@ func (s *SuiteSpaceModelRelation) TestUpdateInvalidModels() {
 // 不存在的空间关联模型
 func (s *SuiteSpaceModelRelation) TestUpdateNotExistSpaceModelsFail() {
 	ids := []string{"test1/testmodel1"}
-	modelIdsParam := swagger.ControllerModeIds{Ids: ids}
-	_, r, err := InteralApi.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.notExistId, modelIdsParam)
+	modelIdsParam := swaggerInternal.ControllerModeIds{Ids: ids}
+	_, r, err := ApiInteral.SpaceInternalApi.V1SpaceIdModelPut(Interal, s.notExistId, modelIdsParam)
 
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)

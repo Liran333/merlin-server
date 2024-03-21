@@ -14,17 +14,20 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	swagger "e2e/client"
+	swaggerInternal "e2e/client_internal"
+	swaggerRest "e2e/client_rest"
+	swaggerWeb "e2e/client_web"
 )
 
 const minElements = 2
 
 var (
-	Auth       context.Context
-	Auth2      context.Context
+	AuthRest   context.Context
+	AuthRest2  context.Context
 	Interal    context.Context
-	Api        *swagger.APIClient
-	InteralApi *swagger.APIClient
+	ApiInteral *swaggerInternal.APIClient
+	ApiRest    *swaggerRest.APIClient
+	ApiWeb     *swaggerWeb.APIClient
 	ComConfig  ComConfiguration
 )
 
@@ -64,15 +67,15 @@ func LoadFromYaml(path string, cfg interface{}) error {
 	return yaml.Unmarshal(b, cfg)
 }
 
-func newAuthCtx(token string) context.Context {
-	return context.WithValue(context.Background(), swagger.ContextAPIKey, swagger.APIKey{
+func newAuthRestCtx(token string) context.Context {
+	return context.WithValue(context.Background(), swaggerRest.ContextAPIKey, swaggerRest.APIKey{
 		Key:    token,
 		Prefix: "Bearer", // Omit if not necessary.
 	})
 }
 
 func newInteralCtx(token string) context.Context {
-	return context.WithValue(context.Background(), swagger.ContextAPIKey, swagger.APIKey{
+	return context.WithValue(context.Background(), swaggerInternal.ContextAPIKey, swaggerInternal.APIKey{
 		Key: token,
 	})
 }
@@ -99,13 +102,16 @@ func getToken() []string {
 
 // TestMain used for testing
 func TestMain(m *testing.M) {
-	api := swagger.NewConfiguration()
-	if err := LoadFromYaml("./api.yaml", api); err != nil {
+	apiRest := swaggerRest.NewConfiguration()
+	if err := LoadFromYaml("./rest.yaml", apiRest); err != nil {
 		logrus.Fatal(err)
 	}
-
-	internal := swagger.NewConfiguration()
-	if err := LoadFromYaml("./internal.yaml", internal); err != nil {
+	apiWeb := swaggerWeb.NewConfiguration()
+	if err := LoadFromYaml("./web.yaml", apiWeb); err != nil {
+		logrus.Fatal(err)
+	}
+	apiInteral := swaggerInternal.NewConfiguration()
+	if err := LoadFromYaml("./internal.yaml", apiInteral); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -116,11 +122,12 @@ func TestMain(m *testing.M) {
 		logrus.Fatal("Insufficient tokens provided. Need at least 2 tokens.")
 	}
 
-	Api = swagger.NewAPIClient(api)
-	InteralApi = swagger.NewAPIClient(internal)
+	ApiRest = swaggerRest.NewAPIClient(apiRest)
+	ApiWeb = swaggerWeb.NewAPIClient(apiWeb)
+	ApiInteral = swaggerInternal.NewAPIClient(apiInteral)
 
-	Auth = newAuthCtx(token[0])  // Use the first token.
-	Auth2 = newAuthCtx(token[1]) // Use the second token.
+	AuthRest = newAuthRestCtx(token[0])  // Use the first token.
+	AuthRest2 = newAuthRestCtx(token[1]) // Use the second token.
 	Interal = newInteralCtx("12345")
 
 	// Load specification config from yaml

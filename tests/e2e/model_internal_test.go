@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteInternalModel used for testing
@@ -31,7 +31,7 @@ func (s *SuiteInternalModel) TearDownSuite() {
 // 获取模型成功
 func (s *SuiteInternalModel) TestGetModel() {
 	// 创建模型
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      "test2",
 		License:    "mit",
@@ -44,7 +44,7 @@ func (s *SuiteInternalModel) TestGetModel() {
 	id := getString(s.T(), data.Data)
 
 	// 获取模型
-	modelRes, r, err := InteralApi.ModelInternalApi.V1ModelIdGet(Interal, id)
+	modelRes, r, err := ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -55,7 +55,7 @@ func (s *SuiteInternalModel) TestGetModel() {
 	assert.Equal(s.T(), "public", modelData["visibility"])
 
 	// 删除模型
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -65,13 +65,13 @@ func (s *SuiteInternalModel) TestGetModel() {
 func (s *SuiteInternalModel) TestGetModelFailed() {
 	// 模型不存在
 	unExistedId := "0"
-	_, r, err := InteralApi.ModelInternalApi.V1ModelIdGet(Interal, unExistedId)
+	_, r, err := ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, unExistedId)
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// 参数无效
 	unExistedId = "test"
-	_, r, err = InteralApi.ModelInternalApi.V1ModelIdGet(Interal, unExistedId)
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, unExistedId)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }

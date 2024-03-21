@@ -38,7 +38,7 @@ type UserInernalController struct {
 
 // @Summary  Verify token
 // @Description  verify a platform token of user
-// @Tags     User
+// @Tags     UserInternal
 // @Accept   json
 // @Param    body  body  tokenVerifyRequest  true  "body of token"
 // @Security Internal
@@ -74,7 +74,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 
 // @Summary  GetPlatformUser info
 // @Description  Get platform user info
-// @Tags     User
+// @Tags     UserInternal
 // @Accept   json
 // @Param    name  path  string  true  "name of the user"
 // @Security Internal

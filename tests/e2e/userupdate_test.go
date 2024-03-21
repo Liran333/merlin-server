@@ -11,14 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
-)
-
-const (
-	countOne   = 1
-	countTwo   = 2
-	countThree = 3
-	length     = 51
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteUserUpdate used for testing
@@ -30,12 +23,12 @@ type SuiteUserUpdate struct {
 // 用户可以正常更新个人信息
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "read full name",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
 		Description: "valid desc",
 	}
-	data, r, err := Api.UserApi.V1UserPut(Auth, d)
+	data, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), r.StatusCode, http.StatusAccepted)
 	assert.Nil(s.T(), err)
 
@@ -50,10 +43,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 // fullname不能为空
 func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname: "",
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -62,10 +55,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoEmptyFullname() {
 // fullname更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname: "testFullname",
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode, "Expected success for fullname update")
 }
@@ -74,10 +67,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidFullname() {
 // 无效的fullname会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname: string(make([]byte, http.StatusCreated)),
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -86,10 +79,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidFullname() {
 // desc更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Description: "test description",
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -98,10 +91,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidDesc() {
 // 无效的desc会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Description: string(make([]byte, 2049)),
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -110,10 +103,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 // 无效的avatar会导致更新失败
 func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		AvatarId: "invalid avatarid",
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -122,10 +115,10 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
 // 有效的avatar会导致更新成功
 func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
 
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		AvatarId: "https://avatars.githubusercontent.com/u/2853724?v=4",
 	}
-	data, r, err := Api.UserApi.V1UserPut(Auth, d)
+	data, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -136,12 +129,12 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
 
 // TearDownSuite used for testing
 func (s *SuiteUserUpdate) TearDownSuite() {
-	d := swagger.ControllerUserBasicInfoUpdateRequest{
+	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "testfullname",
 		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=1",
 		Description: "testdesc",
 	}
-	_, r, err := Api.UserApi.V1UserPut(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

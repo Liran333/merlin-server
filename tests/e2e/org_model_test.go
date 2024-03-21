@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteOrgModel used for testing
@@ -40,7 +40,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -55,7 +55,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
-	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
@@ -66,7 +66,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -77,7 +77,7 @@ func (s *SuiteOrgModel) SetupSuite() {
 
 // TearDownSuite used for testing
 func (s *SuiteOrgModel) TearDownSuite() {
-	r, err := Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err := ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -85,7 +85,7 @@ func (s *SuiteOrgModel) TearDownSuite() {
 // TestDeleteOrgContainsModel used for testing
 // 当组织下有model时，删除组织失败
 func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "tempModel",
 		Owner:      s.name,
 		License:    "mit",
@@ -96,7 +96,7 @@ func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 	assert.Nil(s.T(), err)
 
 	// 删除组织失败
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
 		"can't delete the organization, while some repos still existed")
 	assert.NotNil(s.T(), err)
@@ -104,7 +104,7 @@ func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 	// 清空Model
 	id := getString(s.T(), data.Data)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -112,7 +112,7 @@ func (s *SuiteOrgModel) TestDeleteOrgContainsModel() {
 // TestOrgReadMemberCantCreateUpdateDeleteModel used for testing
 // 拥有read权限的用户不能创建模型，不能修改和删除他人模型
 func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "read",
 	}, s.name)
@@ -120,7 +120,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	_, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -130,7 +130,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -143,17 +143,17 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	id := getString(s.T(), data.Data)
 
 	//read用户不能修改和删除他人模型
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
+	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
@@ -161,7 +161,7 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -169,13 +169,13 @@ func (s *SuiteOrgModel) TestOrgReadMemberCantCreateUpdateDeleteModel() {
 // TestOrgWriteCreateDeleteModel used for testing
 // 拥有write权限的用户可以创建和删除模型
 func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
-	modelParam := swagger.ControllerReqToCreateModel{
+	modelParam := swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
 		Visibility: "public",
 	}
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, modelParam)
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -183,11 +183,11 @@ func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建模型返回400
-	_, r, err = Api.ModelApi.V1ModelPost(Auth2, modelParam)
+	_, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -195,7 +195,7 @@ func (s *SuiteOrgModel) TestOrgWriteCreateDeleteModel() {
 // TestOrgWriteUpdateDeleteOthersModel used for testing
 // 拥有write权限的用户可以修改和删除他人的模型
 func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -208,13 +208,13 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	//write用户可以修改和删除他人Space
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth2, id, swagger.ControllerReqToUpdateModel{
+	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth2, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -222,7 +222,7 @@ func (s *SuiteOrgModel) TestOrgWriteUpdateDeleteOthersModel() {
 // TestOrgAdminUpdateDeleteOthersModel used for testing
 // 拥有admin权限的用户可以修改和删除他人的模型
 func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
-	data, r, err := Api.ModelApi.V1ModelPost(Auth2, swagger.ControllerReqToCreateModel{
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -235,13 +235,13 @@ func (s *SuiteOrgModel) TestOrgAdminUpdateDeleteOthersModel() {
 	id := getString(s.T(), data.Data)
 
 	//admin用户可以修改和删除他人模型
-	_, r, err = Api.ModelApi.V1ModelIdPut(Auth, id, swagger.ControllerReqToUpdateModel{
+	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest, id, swaggerRest.ControllerReqToUpdateModel{
 		Desc: "model desc new",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.ModelApi.V1ModelIdDelete(Auth, id)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

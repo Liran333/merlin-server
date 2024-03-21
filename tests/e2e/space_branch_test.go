@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 type SuiteSpaceBranch struct {
@@ -40,7 +40,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -55,7 +55,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
-	data, r, err = Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
@@ -66,7 +66,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = Api.OrganizationApi.V1InvitePut(Auth2, swagger.ControllerOrgAcceptMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -74,7 +74,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = Api.SpaceApi.V1SpacePost(Auth, swagger.ControllerReqToCreateSpace{
+	data, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -93,10 +93,10 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 }
 
 func (s *SuiteSpaceBranch) TearDownSuite() {
-	r, err := Api.SpaceApi.V1SpaceIdDelete(Auth, s.spaceId)
+	r, err := ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, s.spaceId)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -104,8 +104,8 @@ func (s *SuiteSpaceBranch) TearDownSuite() {
 // 拥有write权限的用户可以创建和删除分支
 func (s *SuiteSpaceBranch) TestOrgWriteCreateDeleteBranch() {
 	branchName := "newbranch1"
-	_, r, err := Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "testspace",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err := ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "space", s.name, "testspace",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -114,15 +114,15 @@ func (s *SuiteSpaceBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Nil(s.T(), err)
 
 	// 重复创建分支返回400
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "testspace",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "space", s.name, "testspace",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "space", s.name, "testspace", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "space", s.name, "testspace", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -130,7 +130,7 @@ func (s *SuiteSpaceBranch) TestOrgWriteCreateDeleteBranch() {
 // 拥有read权限的用户不可以创建分支
 func (s *SuiteSpaceBranch) TestOrgReadMemberCantCreateBranch() {
 	branchName := "newbranch3"
-	_, r, err := Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "read",
 	}, s.name)
@@ -138,8 +138,8 @@ func (s *SuiteSpaceBranch) TestOrgReadMemberCantCreateBranch() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", s.name, "testspace",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "space", s.name, "testspace",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -147,7 +147,7 @@ func (s *SuiteSpaceBranch) TestOrgReadMemberCantCreateBranch() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.OrganizationApi.V1OrganizationNameMemberPut(Auth, swagger.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
 		User: "test2",
 		Role: "write",
 	}, s.name)
@@ -159,8 +159,8 @@ func (s *SuiteSpaceBranch) TestOrgReadMemberCantCreateBranch() {
 // 拥有admin权限的用户可以创建和删除分支
 func (s *SuiteSpaceBranch) TestOrgAdminCreateDeleteBranch() {
 	branchName := "newbranch4"
-	_, r, err := Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth, "space", s.name, "testspace",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err := ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest, "space", s.name, "testspace",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -168,7 +168,7 @@ func (s *SuiteSpaceBranch) TestOrgAdminCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth, "space", s.name, "testspace", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest, "space", s.name, "testspace", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -176,7 +176,7 @@ func (s *SuiteSpaceBranch) TestOrgAdminCreateDeleteBranch() {
 // 用户可以在自己的仓库创建和删除分支
 func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	branchName := "newbranch7"
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -192,8 +192,8 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space", "test2", "test2space",
-		swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "space", "test2", "test2space",
+		swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
@@ -201,11 +201,11 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(Auth2, "space", "test2", "test2space", branchName)
+	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "space", "test2", "test2space", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -213,7 +213,7 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 // 使用无效的分支名会导致创建分支失败
 func (s *SuiteSpaceBranch) TestOrgUserCreateInvalidBranch() {
 	branchName := "invild#branch"
-	data, r, err := Api.SpaceApi.V1SpacePost(Auth2, swagger.ControllerReqToCreateSpace{
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -228,15 +228,15 @@ func (s *SuiteSpaceBranch) TestOrgUserCreateInvalidBranch() {
 	assert.Nil(s.T(), err)
 	id := getString(s.T(), data.Data)
 
-	_, r, err = Api.BranchRestfulApi.V1BranchTypeOwnerRepoPost(Auth2, "space",
-		s.name, "test2space", swagger.ControllerRestfulReqToCreateBranch{
+	_, r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoPost(AuthRest2, "space",
+		s.name, "test2space", swaggerRest.ControllerRestfulReqToCreateBranch{
 			BaseBranch: "main",
 			Branch:     branchName,
 		})
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.SpaceApi.V1SpaceIdDelete(Auth2, id)
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

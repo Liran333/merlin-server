@@ -36,7 +36,7 @@ type SessionInternalController struct {
 
 // @Summary  CheckAndRefresh
 // @Description  check and refresh session
-// @Tags     Session
+// @Tags     SessionInternal
 // @Accept   json
 // @Success  202
 // @Router   /v1/session/check [put]
@@ -68,7 +68,7 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 
 // @Summary  Clear session by session id
 // @Description  Clear session when it expired
-// @Tags     Session
+// @Tags     SessionInternal
 // @Accept   json
 // @Success  204
 // @Router   /v1/session/clear [delete]

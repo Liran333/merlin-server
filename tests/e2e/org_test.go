@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteOrg used for testing
@@ -46,7 +46,7 @@ func (s *SuiteOrg) SetupSuite() {
 	s.desc = "test org desc"
 	s.owner = "test1" // this name is hard code in init-env.sh
 
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -65,12 +65,12 @@ func (s *SuiteOrg) TearDownSuite() {
 // TestOrgCreate used for testing
 // 正常创建一个组织
 func (s *SuiteOrg) TestOrgCreate() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 	}
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -93,7 +93,7 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Equal(s.T(), false, allow)
 	assert.Nil(s.T(), org["email"])
 
-	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &swagger.OrganizationApiV1OrganizationGetOpts{})
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &swaggerRest.OrganizationApiV1OrganizationGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -107,11 +107,11 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Equal(s.T(), countOne, count)
 
 	// 重复创建组织返回400
-	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -120,29 +120,29 @@ func (s *SuiteOrg) TestOrgCreate() {
 // 创建一个组织成功，website为非必选项
 func (s *SuiteOrg) TestOrgCreateSuccess() {
 	// website为非必选项
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 	}
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 创建组织，website设置成功
-	d = swagger.ControllerOrgCreateRequest{
+	d = swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 		Website:  s.website,
 	}
-	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &swagger.OrganizationApiV1OrganizationGetOpts{})
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &swaggerRest.OrganizationApiV1OrganizationGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -156,7 +156,7 @@ func (s *SuiteOrg) TestOrgCreateSuccess() {
 	}
 	assert.Equal(s.T(), countOne, count)
 
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -165,22 +165,22 @@ func (s *SuiteOrg) TestOrgCreateSuccess() {
 // 创建一个组织名、ID必填
 func (s *SuiteOrg) TestOrgCreateFail() {
 	// 组织名必填
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: "",
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "org fullname can't be empty")
 	assert.NotNil(s.T(), err)
 
 	// 组织ID必填
-	d = swagger.ControllerOrgCreateRequest{
+	d = swaggerRest.ControllerOrgCreateRequest{
 		Name:     "",
 		Fullname: s.fullname,
 	}
 
-	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode, "name can't be empty")
 	assert.NotNil(s.T(), err)
 }
@@ -189,12 +189,12 @@ func (s *SuiteOrg) TestOrgCreateFail() {
 // 创建组织失败
 // 未登录用户
 func (s *SuiteOrg) TestOrgCreateFailedNoToken() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(context.Background(), d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(context.Background(), d)
 	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -202,11 +202,11 @@ func (s *SuiteOrg) TestOrgCreateFailedNoToken() {
 // TestOrgCreateFailedInvalidNameLen used for testing
 // 无效的组织名：名字过长
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name: string(make([]byte, length)),
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -214,20 +214,20 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
 // TestOrgCreateFailedInvalidNameConflict used for testing
 // 组织名已存在
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.owner,
 		Fullname: s.fullname,
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.OrganizationApi.V1NameHead(Auth, s.owner)
+	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, s.owner)
 	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.OrganizationApi.V1NameHead(Auth, "testnonexist")
+	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, "testnonexist")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -235,12 +235,12 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 // TestOrgCreateFailedInvalidNameReserved used for testing
 // 组织名是保留名称
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameReserved() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     "models",
 		Fullname: s.fullname,
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -248,20 +248,20 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameReserved() {
 // TestOrgCreateFailedEmptyFullname used for testing
 // 空fullname
 func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name: s.name,
 	}
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
-	d = swagger.ControllerOrgCreateRequest{
+	d = swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: "",
 	}
 
-	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 }
@@ -269,13 +269,13 @@ func (s *SuiteOrg) TestOrgCreateFailedEmptyFullname() {
 // TestOrgCreateFailedInvalidAvatarid used for testing
 // 无效的avatarid
 func (s *SuiteOrg) TestOrgCreateFailedInvalidAvatarid() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 		AvatarId: "invalid",
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -283,13 +283,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidAvatarid() {
 // TestOrgCreateFailedInvalidDesc used for testing
 // 无效的desc
 func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		Description: string(make([]byte, 256)),
 	}
 
-	_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -297,43 +297,43 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidDesc() {
 // TestOrgCreateFailedInvalidWebsite used for testing
 // 无效的website
 func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
-	d := swagger.ControllerOrgCreateRequest{
+	d := swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 		Website:  "google.com",
 	}
 
-	data, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	// website too long
-	d = swagger.ControllerOrgCreateRequest{
+	d = swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 		Website:  strings.Repeat(charA, ComConfig.WEBSITE_MAX_LEN+1),
 	}
 
-	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
 	// website repeate
-	d = swagger.ControllerOrgCreateRequest{
+	d = swaggerRest.ControllerOrgCreateRequest{
 		Name:     s.name,
 		Fullname: s.fullname,
 		Website:  s.website,
 	}
 
-	_, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, d)
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -342,13 +342,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidWebsite() {
 // 名下无组织时，查询个人组织返回一个空列表
 func (s *SuiteOrg) TestOrgListEmpty() {
 	// make sure the org is not exist
-	_, _ = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	_, _ = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 
 	// list by owner
-	d := swagger.OrganizationApiV1OrganizationGetOpts{
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{
 		Owner: optional.NewString(s.owner),
 	}
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -366,10 +366,10 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 	assert.Equal(s.T(), 0, count)
 
 	// list by member user
-	d = swagger.OrganizationApiV1OrganizationGetOpts{
+	d = swaggerRest.OrganizationApiV1OrganizationGetOpts{
 		Username: optional.NewString(s.owner),
 	}
-	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -387,8 +387,8 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 	assert.Equal(s.T(), 0, count)
 
 	// list all
-	d = swagger.OrganizationApiV1OrganizationGetOpts{}
-	data, r, err = Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	d = swaggerRest.OrganizationApiV1OrganizationGetOpts{}
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -409,11 +409,11 @@ func (s *SuiteOrg) TestOrgListEmpty() {
 // TestOrgNonexist used for testing
 // 查询不存在的组织
 func (s *SuiteOrg) TestOrgNonexist() {
-	_, r, err := Api.OrganizationApi.V1OrganizationNameGet(Auth, "nonexist")
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationNameGet(AuthRest, "nonexist")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	_, r, err = Api.OrganizationApi.V1OrganizationNameGet(context.Background(), "nonexist")
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameGet(context.Background(), "nonexist")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -422,8 +422,8 @@ func (s *SuiteOrg) TestOrgNonexist() {
 // 用户可以批量查询某个用户所拥有的组织
 func (s *SuiteOrgModel) TestOrgOwnerSearch() {
 	// list all
-	d := swagger.OrganizationApiV1OrganizationGetOpts{Owner: optional.NewString("test1")}
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{Owner: optional.NewString("test1")}
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -434,8 +434,8 @@ func (s *SuiteOrgModel) TestOrgOwnerSearch() {
 // 用户可以批量查询某个用户所属的组织
 func (s *SuiteOrgModel) TestOrgMemberSearch() {
 	// list all
-	d := swagger.OrganizationApiV1OrganizationGetOpts{Username: optional.NewString("test1")}
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{Username: optional.NewString("test1")}
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -446,11 +446,11 @@ func (s *SuiteOrgModel) TestOrgMemberSearch() {
 // 用户可以批量查询某个用户所拥有权限的组织
 func (s *SuiteOrgModel) TestOrgRolesSearch() {
 	// list all
-	d := swagger.OrganizationApiV1OrganizationGetOpts{
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{
 		Username: optional.NewString("test1"),
 		Roles:    optional.NewInterface("admin"),
 	}
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -461,11 +461,11 @@ func (s *SuiteOrgModel) TestOrgRolesSearch() {
 // 用户可以批量查询某个用户所拥有权限的组织，参数不合法验证失败
 func (s *SuiteOrgModel) TestOrgInvalidRolesSearch() {
 	// list all
-	d := swagger.OrganizationApiV1OrganizationGetOpts{
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{
 		Username: optional.NewString("test1"),
 		Roles:    optional.NewInterface("invalid"),
 	}
-	_, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err, "invalid role value")
@@ -475,11 +475,11 @@ func (s *SuiteOrgModel) TestOrgInvalidRolesSearch() {
 // 用户可以批量查询某个用户所拥有权限的组织，查询结果为空
 func (s *SuiteOrgModel) TestOrgEmptyRolesSearch() {
 	// list all
-	d := swagger.OrganizationApiV1OrganizationGetOpts{
+	d := swaggerRest.OrganizationApiV1OrganizationGetOpts{
 		Username: optional.NewString("test1"),
 		Roles:    optional.NewInterface("read"),
 	}
-	data, r, err := Api.OrganizationApi.V1OrganizationGet(Auth, &d)
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &d)
 
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -496,13 +496,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameChars() {
 	}
 
 	for _, name := range invalidNames {
-		d := swagger.ControllerOrgCreateRequest{
+		d := swaggerRest.ControllerOrgCreateRequest{
 			Name:     name,
 			Fullname: s.fullname,
 			Website:  s.website,
 		}
 
-		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+		_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 		// Expect a 400 Bad Request response due to invalid name
 		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
 			"Expected a 400 Bad Request response for invalid name: "+name)
@@ -520,13 +520,13 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 	}
 
 	for _, fullname := range invalidFullname {
-		d := swagger.ControllerOrgCreateRequest{
+		d := swaggerRest.ControllerOrgCreateRequest{
 			Name:     s.name,
 			Fullname: fullname,
 			Website:  s.website,
 		}
 
-		_, r, err := Api.OrganizationApi.V1OrganizationPost(Auth, d)
+		_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 		// Expect a 400 Bad Request response due to invalid name
 		assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode,
 			"Expected a 400 Bad Request response for invalid name: "+fullname)

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteRequest used for testing
@@ -44,7 +44,7 @@ func (s *SuiteRequest) SetupSuite() {
 	s.owner = "test1"     // this name is hard code in init-env.sh
 	s.requester = "test2" // this name is hard code in init-env.sh
 
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -53,7 +53,7 @@ func (s *SuiteRequest) SetupSuite() {
 	assert.NotEqual(s.T(), "", user["id"])
 	s.owerId = getString(s.T(), user["id"])
 
-	data, r, err = Api.UserApi.V1UserGet(Auth2)
+	data, r, err = ApiRest.UserApi.V1UserGet(AuthRest2)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -63,7 +63,7 @@ func (s *SuiteRequest) SetupSuite() {
 	s.requesterId = getString(s.T(), user["id"])
 
 	// 创建组织
-	data, r, err = Api.OrganizationApi.V1OrganizationPost(Auth, swagger.ControllerOrgCreateRequest{
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -77,7 +77,7 @@ func (s *SuiteRequest) SetupSuite() {
 	s.orgId = getString(s.T(), o["id"])
 
 	// 更新组织允许加入权限
-	data, r, err = Api.OrganizationApi.V1OrganizationNamePut(Auth, s.name, swagger.ControllerOrgBasicInfoUpdateRequest{
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name, swaggerRest.ControllerOrgBasicInfoUpdateRequest{
 		AllowRequest: true,
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
@@ -87,7 +87,7 @@ func (s *SuiteRequest) SetupSuite() {
 // TearDownSuite used for testing
 func (s *SuiteRequest) TearDownSuite() {
 	// 加入组织申请列表为空
-	data, r, err := Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+	data, r, err := ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName:   optional.NewString(s.name),
 		Requester: optional.NewString(s.requester),
 		Status:    optional.NewString("pending"),
@@ -97,7 +97,7 @@ func (s *SuiteRequest) TearDownSuite() {
 	assert.Empty(s.T(), data.Data)
 
 	// 删除组织
-	r, err = Api.OrganizationApi.V1OrganizationNameDelete(Auth, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -106,7 +106,7 @@ func (s *SuiteRequest) TearDownSuite() {
 // 创建加入组织请求成功，多次请求只保留一条记录
 func (s *SuiteRequest) TestRequestSuccess() {
 	// 创建加入组织申请
-	data, r, err := Api.OrganizationApi.V1RequestPost(Auth2, swagger.ControllerOrgReqMemberRequest{
+	data, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: s.name,
 		Msg:     "request me",
 	})
@@ -126,7 +126,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
 
 	// 多次创建只保留一条记录
-	data, r, err = Api.OrganizationApi.V1RequestPost(Auth2, swagger.ControllerOrgReqMemberRequest{
+	data, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: s.name,
 		Msg:     "request second",
 	})
@@ -138,7 +138,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 	assert.Equal(s.T(), "request second", res["msg"])
 
 	// 获取申请列表，只有一条记录
-	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName:   optional.NewString(s.name),
 		Requester: optional.NewString(s.requester),
 		Status:    optional.NewString("pending"),
@@ -157,7 +157,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 	assert.Equal(s.T(), 1, count)
 
 	// 删除申请
-	r, err = Api.OrganizationApi.V1RequestDelete(Auth, swagger.ControllerOrgRevokeMemberReqRequest{
+	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest, swaggerRest.ControllerOrgRevokeMemberReqRequest{
 		OrgName: s.name,
 		User:    s.requester,
 	})
@@ -169,7 +169,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 // 无效的组织名字
 func (s *SuiteRequest) TestRequestInvalidOrgname() {
 	// 组织名为空
-	_, r, err := Api.OrganizationApi.V1RequestPost(Auth2, swagger.ControllerOrgReqMemberRequest{
+	_, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: "",
 		Msg:     "request me",
 	})
@@ -177,7 +177,7 @@ func (s *SuiteRequest) TestRequestInvalidOrgname() {
 	assert.NotNil(s.T(), err)
 
 	// 组织不存在
-	_, r, err = Api.OrganizationApi.V1RequestPost(Auth2, swagger.ControllerOrgReqMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: "orgnonexisted",
 		Msg:     "request me",
 	})
@@ -185,7 +185,7 @@ func (s *SuiteRequest) TestRequestInvalidOrgname() {
 	assert.NotNil(s.T(), err)
 
 	// 已经是组织成员
-	_, r, err = Api.OrganizationApi.V1RequestPost(Auth, swagger.ControllerOrgReqMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: s.name,
 		Msg:     "request me",
 	})
@@ -197,7 +197,7 @@ func (s *SuiteRequest) TestRequestInvalidOrgname() {
 // 接受加入组织申请成功，其它邀请也要更新为接受状态
 func (s *SuiteRequest) TestApproveRequestSuccess() {
 	// 创建邀请
-	data, r, err := Api.OrganizationApi.V1InvitePost(Auth, swagger.ControllerOrgInviteMemberRequest{
+	data, r, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    s.requester,
 		Role:    "write",
@@ -207,7 +207,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询邀请列表不为空
-	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
@@ -216,7 +216,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.NotEmpty(s.T(), data.Data)
 
 	// 创建加入组织请求
-	_, r, err = Api.OrganizationApi.V1RequestPost(Auth2, swagger.ControllerOrgReqMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
 		OrgName: s.name,
 		Msg:     "request me",
 	})
@@ -224,7 +224,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询加入组织申请列表不为空
-	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
@@ -233,7 +233,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.NotEmpty(s.T(), data.Data)
 
 	// 不能查询其他人的申请
-	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		Requester: optional.NewString(s.requester),
 		Status:    optional.NewString("pending"),
 	})
@@ -241,7 +241,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.NotNil(s.T(), err)
 
 	// 接受加入组织申请
-	_, r, err = Api.OrganizationApi.V1RequestPut(Auth, swagger.ControllerOrgApproveMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1RequestPut(AuthRest, swaggerRest.ControllerOrgApproveMemberRequest{
 		User:    s.requester,
 		OrgName: s.name,
 		Msg:     "approve me",
@@ -250,7 +250,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询邀请列表为空
-	data, r, err = Api.OrganizationApi.V1InviteGet(Auth, &swagger.OrganizationApiV1InviteGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
@@ -259,7 +259,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Empty(s.T(), data.Data)
 
 	// 查询加入组织申请列表为空
-	data, r, err = Api.OrganizationApi.V1RequestGet(Auth, &swagger.OrganizationApiV1RequestGetOpts{
+	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
@@ -268,7 +268,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Empty(s.T(), data.Data)
 
 	// 删除组织成员
-	r, err = Api.OrganizationApi.V1OrganizationNameMemberDelete(Auth, swagger.ControllerOrgMemberRemoveRequest{
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest, swaggerRest.ControllerOrgMemberRemoveRequest{
 		User: s.requester,
 	}, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

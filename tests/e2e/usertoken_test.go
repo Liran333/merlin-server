@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	swagger "e2e/client"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteUserToken used for testing
@@ -23,7 +23,7 @@ type SuiteUserToken struct {
 
 // SetupSuite used for testing
 func (s *SuiteUserToken) SetupSuite() {
-	data, r, err := Api.UserApi.V1UserGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -33,12 +33,12 @@ func (s *SuiteUserToken) SetupSuite() {
 	s.id = getString(s.T(), user["id"])
 	s.T().Logf("user id: %s", s.id)
 
-	d := swagger.ControllerTokenCreateRequest{
+	d := swaggerRest.ControllerTokenCreateRequest{
 		Name: "testread",
 		Perm: "read",
 	}
 
-	data, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
+	data, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -47,12 +47,12 @@ func (s *SuiteUserToken) SetupSuite() {
 	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
 	assert.Equal(s.T(), s.id, m["owner_id"])
 
-	d = swagger.ControllerTokenCreateRequest{
+	d = swaggerRest.ControllerTokenCreateRequest{
 		Name: "testwrite",
 		Perm: "write",
 	}
 
-	_, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
+	_, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -64,91 +64,24 @@ func (s *SuiteUserToken) SetupSuite() {
 
 // TearDownSuite used for testing
 func (s *SuiteUserToken) TearDownSuite() {
-	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "testread")
+	r, err := ApiRest.UserApi.V1UserTokenNameDelete(AuthRest, "testread")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testwrite")
+	r, err = ApiRest.UserApi.V1UserTokenNameDelete(AuthRest, "testwrite")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
-}
-
-// TestVerifyToken verify token
-func (s *SuiteUserToken) TestVerifyToken() {
-	d := swagger.ControllerTokenCreateRequest{
-		Name: "testverify",
-		Perm: "read",
-	}
-
-	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
-	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	m := getData(s.T(), data.Data)
-
-	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
-	assert.Equal(s.T(), s.id, m["owner_id"])
-
-	t := swagger.ControllerTokenVerifyRequest{
-		Token:  getString(s.T(), m["token"]),
-		Action: "read",
-	}
-
-	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	t = swagger.ControllerTokenVerifyRequest{
-		Token:  getString(s.T(), m["token"]),
-		Action: "write",
-	}
-
-	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
-	assert.NotNil(s.T(), err)
-
-	t = swagger.ControllerTokenVerifyRequest{
-		Token:  getString(s.T(), m["token"]),
-		Action: "invalidperm",
-	}
-
-	data, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
-	assert.NotNil(s.T(), err)
-
-	r, err = Api.UserApi.V1UserTokenNameDelete(Auth, "testverify")
-	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
-	assert.Nil(s.T(), err)
-}
-
-// TestVerifyInvalidToken verify invalid token
-func (s *SuiteUserToken) TestVerifyInvalidToken() {
-
-	t := swagger.ControllerTokenVerifyRequest{
-		Token:  getString(s.T(), "2233445notok"),
-		Action: "read",
-	}
-
-	_, r, err := InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
-	assert.NotNil(s.T(), err)
-
-	t = swagger.ControllerTokenVerifyRequest{}
-
-	_, r, err = InteralApi.UserApi.V1UserTokenVerifyPost(Interal, t)
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
-	assert.NotNil(s.T(), err)
 }
 
 // TestCreateDuplicateToken used for testing
 // 无法创建同名token
 func (s *SuiteUserToken) TestCreateDuplicateToken() {
-	d := swagger.ControllerTokenCreateRequest{
+	d := swaggerRest.ControllerTokenCreateRequest{
 		Name: "testread",
 		Perm: "read",
 	}
 
-	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	data, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	s.T().Logf("create duplicate token return: %s", data.Msg)
 	assert.NotNil(s.T(), err)
@@ -158,7 +91,7 @@ func (s *SuiteUserToken) TestCreateDuplicateToken() {
 // 未登录用户无法查询用户的token信息
 func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 
-	_, r, err := Api.UserApi.V1UserTokenGet(context.Background())
+	_, r, err := ApiRest.UserApi.V1UserTokenGet(context.Background())
 	assert.Equal(s.T(), http.StatusUnauthorized, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -167,7 +100,7 @@ func (s *SuiteUserToken) TestGetUserTokenWithNoToken() {
 // 正常登录的用户可以查询toke信息
 func (s *SuiteUserToken) TestGetUserToken() {
 
-	data, r, err := Api.UserApi.V1UserTokenGet(Auth)
+	data, r, err := ApiRest.UserApi.V1UserTokenGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -211,12 +144,12 @@ func (s *SuiteUserToken) TestGetUserToken() {
 // 无效的token权限会导致创建token失败
 func (s *SuiteUserToken) TestTokenCreateTokenInvalidName() {
 	// test a read permission token
-	d := swagger.ControllerTokenCreateRequest{
+	d := swaggerRest.ControllerTokenCreateRequest{
 		Name: "read",
 		Perm: "invalidperm",
 	}
 
-	_, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -227,12 +160,12 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
 	invalidChar := string("!@#$%^&*(){}[]")
 	for _, c := range invalidChar {
 		// test a read permission token
-		d := swagger.ControllerTokenCreateRequest{
+		d := swaggerRest.ControllerTokenCreateRequest{
 			Name: "read" + string(c),
 			Perm: "invalidperm",
 		}
 
-		data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+		data, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 		assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 		assert.NotNil(s.T(), err)
 	}
@@ -242,12 +175,12 @@ func (s *SuiteUserToken) TestTokenCreateTokenInvalidNameChar() {
 // token名不能是纯数字
 func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 	// test a read permission token
-	d := swagger.ControllerTokenCreateRequest{
+	d := swaggerRest.ControllerTokenCreateRequest{
 		Name: "12",
 		Perm: "write",
 	}
 
-	_, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	_, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
@@ -257,12 +190,12 @@ func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 // read权限无权删除token
 func (s *SuiteUserToken) TestTokenCreateToken() {
 	// test a read permission token
-	d := swagger.ControllerTokenCreateRequest{
+	d := swaggerRest.ControllerTokenCreateRequest{
 		Name: "read",
 		Perm: "read",
 	}
 
-	data, r, err := Api.UserApi.V1UserTokenPost(Auth, d)
+	data, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -275,23 +208,23 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["updated_at"]))
 	assert.Equal(s.T(), s.id, m["owner_id"])
 
-	auth := newAuthCtx(getString(s.T(), m["token"]))
+	auth := newAuthRestCtx(getString(s.T(), m["token"]))
 
-	data, r, err = Api.UserApi.V1UserTokenGet(auth)
+	data, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "read")
+	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "read")
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
 	// test a write permission token
-	d = swagger.ControllerTokenCreateRequest{
+	d = swaggerRest.ControllerTokenCreateRequest{
 		Name: "write",
 		Perm: "write",
 	}
 
-	data, r, err = Api.UserApi.V1UserTokenPost(Auth, d)
+	data, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -304,16 +237,16 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["updated_at"]))
 	assert.Equal(s.T(), s.id, m["owner_id"])
 
-	auth = newAuthCtx(getString(s.T(), m["token"]))
+	auth = newAuthRestCtx(getString(s.T(), m["token"]))
 
-	data, r, err = Api.UserApi.V1UserTokenGet(auth)
+	data, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "read")
+	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "read")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
-	r, err = Api.UserApi.V1UserTokenNameDelete(auth, "write")
+	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "write")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -321,7 +254,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 // TestTokenDeleteToken used for testing
 // 删除不存在的token报404
 func (s *SuiteUserToken) TestTokenDeleteToken() {
-	r, err := Api.UserApi.V1UserTokenNameDelete(Auth, "nonexist")
+	r, err := ApiRest.UserApi.V1UserTokenNameDelete(AuthRest, "nonexist")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
