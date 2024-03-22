@@ -534,6 +534,86 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidFullNameChars() {
 	}
 }
 
+// TestListMemberSucess used for testing
+// 组织成员列表
+func (s *SuiteOrg) TestListMemberSucess() {
+	// 创建组织
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+	}
+
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 用户名搜索存在成员列表不为空
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Username: optional.NewString(s.owner)},
+	)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	count := 0
+	orgs := getArrary(s.T(), data.Data)
+	for _, v := range orgs {
+		if v != nil {
+			assert.Equal(s.T(), s.owner, v["user_name"])
+			count++
+		}
+	}
+	assert.Equal(s.T(), countOne, count)
+
+	// 用户名搜索不存在成员列表为空
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Username: optional.NewString("test2")},
+	)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	orgs = getArrary(s.T(), data.Data)
+	assert.Equal(s.T(), 0, len(orgs))
+
+	// 角色搜索存在成员列表不为空
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString(s.defaultRole)},
+	)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	count = 0
+	orgs = getArrary(s.T(), data.Data)
+	for _, v := range orgs {
+		if v != nil {
+			assert.Equal(s.T(), s.owner, v["user_name"])
+			count++
+		}
+	}
+	assert.Equal(s.T(), countOne, count)
+
+	// 角色搜索不存在成员列表为空
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString("write")},
+	)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	orgs = getArrary(s.T(), data.Data)
+	assert.Equal(s.T(), 0, len(orgs))
+
+	// 角色搜索不合法角色，返回400
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString("invalid")},
+	)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestOrg used for testing
 func TestOrg(t *testing.T) {
 	suite.Run(t, new(SuiteOrg))

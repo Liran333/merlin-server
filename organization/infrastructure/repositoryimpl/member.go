@@ -85,14 +85,22 @@ func (impl *memberRepoImpl) Delete(o *domain.OrgMember) (err error) {
 }
 
 // GetByOrg retrieves a list of members by organization name.
-func (impl *memberRepoImpl) GetByOrg(name string) (
+func (impl *memberRepoImpl) GetByOrg(cmd *domain.OrgListMemberCmd) (
 	members []domain.OrgMember, err error,
 ) {
 	var v []Member
 
 	query := impl.DB()
 
-	query = query.Where(impl.EqualQuery(fieldOrg), name)
+	query = query.Where(impl.EqualQuery(fieldOrg), cmd.Org)
+
+	if cmd.User != nil {
+		query = query.Where(impl.EqualQuery(fieldUser), cmd.User)
+	}
+
+	if cmd.Role != nil {
+		query = query.Where(impl.EqualQuery(fieldRole), cmd.Role)
+	}
 
 	err = query.Find(&v).Error
 	if err != nil || len(v) == 0 {

@@ -50,7 +50,7 @@ func (s *stubOrg) DeleteByOrg(primitive.Account) error {
 }
 
 // GetByOrg retrieves all organization members of the specified organization and returns them without any errors.
-func (s *stubOrg) GetByOrg(u string) ([]orgdomain.OrgMember, error) {
+func (s *stubOrg) GetByOrg(o *orgdomain.OrgListMemberCmd) ([]orgdomain.OrgMember, error) {
 	return []orgdomain.OrgMember{*stubMember, *stub1Member}, nil
 }
 

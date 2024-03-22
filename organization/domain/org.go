@@ -527,3 +527,10 @@ func (cmd OrgInviteMemberCmd) ToMember() OrgMember {
 		OrgName:  cmd.Org,
 	}
 }
+
+// OrgListMemberCmd represents a command to list member requests.
+type OrgListMemberCmd struct {
+	User primitive.Account
+	Org  primitive.Account
+	Role primitive.Role
+}

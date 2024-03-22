@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/controller"
@@ -443,4 +444,32 @@ type reqToCheckName struct {
 
 func (req *reqToCheckName) toAccount() (primitive.Account, error) {
 	return primitive.NewAccount(req.Name)
+}
+
+type orgListMemberRequest struct {
+	Username string `form:"username"`
+	Role     string `form:"role"`
+}
+
+func (req *orgListMemberRequest) toCmd(org primitive.Account) (cmd domain.OrgListMemberCmd, err error) {
+	if org == nil {
+		err = errors.New("organization name can not be empty")
+		return
+	}
+
+	if req.Username != "" {
+		if cmd.User, err = primitive.NewAccount(req.Username); err != nil {
+			return
+		}
+	}
+
+	if req.Role != "" {
+		if cmd.Role, err = primitive.NewRole(req.Role); err != nil {
+			return
+		}
+	}
+
+	cmd.Org = org
+
+	return
 }

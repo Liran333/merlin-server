@@ -54,7 +54,7 @@ type OrgService interface {
 	AddMember(*domain.OrgAddMemberCmd) error
 	RemoveMember(*domain.OrgRemoveMemberCmd) error
 	EditMember(*domain.OrgEditMemberCmd) (MemberDTO, error)
-	ListMember(primitive.Account) ([]MemberDTO, error)
+	ListMember(*domain.OrgListMemberCmd) ([]MemberDTO, error)
 	GetMemberByUserAndOrg(primitive.Account, primitive.Account) (MemberDTO, error)
 }
 
@@ -415,18 +415,19 @@ func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account,
 }
 
 // ListMember retrieves a list of members for a given organization.
-func (org *orgService) ListMember(acc primitive.Account) (dtos []MemberDTO, err error) {
-	if acc == nil {
-		err = fmt.Errorf("account is nil")
+func (org *orgService) ListMember(cmd *domain.OrgListMemberCmd) (dtos []MemberDTO, err error) {
+	if cmd == nil || cmd.Org == nil {
+		e := fmt.Errorf("org account is nil")
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
-	o, err := org.GetByAccount(acc)
+	o, err := org.GetByAccount(cmd.Org)
 	if err != nil {
 		return
 	}
 
-	members, e := org.member.GetByOrg(o.Name)
+	members, e := org.member.GetByOrg(cmd)
 	if e != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -484,7 +485,7 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 
 func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err error) {
 	// check if this is the only owner
-	members, err := org.member.GetByOrg(cmd.Org.Account())
+	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: cmd.Org})
 	if err != nil {
 		e := fmt.Errorf("failed to get members by org name: %s, %s", cmd.Org, err)
 		err = allerror.NewInvalidParam(e.Error(), e)

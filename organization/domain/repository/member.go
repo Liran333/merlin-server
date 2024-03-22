@@ -15,7 +15,7 @@ type OrgMember interface {
 	Save(*domain.OrgMember) (domain.OrgMember, error)
 	Delete(*domain.OrgMember) error
 	DeleteByOrg(primitive.Account) error
-	GetByOrg(string) ([]domain.OrgMember, error)
+	GetByOrg(*domain.OrgListMemberCmd) ([]domain.OrgMember, error)
 	GetByOrgAndRole(string, primitive.Role) ([]domain.OrgMember, error)
 	GetByOrgAndUser(org, user string) (domain.OrgMember, error)
 	GetByUser(string) ([]domain.OrgMember, error)

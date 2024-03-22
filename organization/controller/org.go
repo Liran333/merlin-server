@@ -326,6 +326,8 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 // @Description  list organization members
 // @Tags     Organization
 // @Param    name  path  string  true  "name"
+// @Param    username  query  string  false  "filter by username"
+// @Param    role  query  string  false  "filter by role"
 // @Accept   json
 // @Security Bearer
 // @Success  200 {object}  commonctl.ResponseData
@@ -338,7 +340,20 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 		return
 	}
 
-	if members, err := ctl.org.ListMember(orgName); err != nil {
+	var req orgListMemberRequest
+	if err := ctx.BindQuery(&req); err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+	cmd, err := req.toCmd(orgName)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if members, err := ctl.org.ListMember(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, members)

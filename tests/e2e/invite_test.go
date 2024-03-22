@@ -252,7 +252,8 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), "approved", invite["status"])
 
 	// 接收后成为member
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest2, s.name)
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest2, s.name,
+		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 

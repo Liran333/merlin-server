@@ -216,7 +216,7 @@ var memberListCmd = &cobra.Command{
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
 
-		members, err := orgAppService.ListMember(orgName)
+		members, err := orgAppService.ListMember(&domain.OrgListMemberCmd{Org: orgName})
 		if err != nil {
 			logrus.Fatalf("list member failed :%s", err.Error())
 		} else {
