@@ -328,16 +328,6 @@ definitions:
     - name
     - perm
     type: object
-  controller.tokenVerifyRequest:
-    properties:
-      action:
-        type: string
-      token:
-        type: string
-    required:
-    - action
-    - token
-    type: object
   controller.userBasicInfoUpdateRequest:
     properties:
       avatar_id:
@@ -1219,7 +1209,7 @@ paths:
           description: No Content
       security:
       - Bearer: []
-      summary: Request Delete User info
+      summary: RequestDelete User info
       tags:
       - User
     get:
@@ -1255,27 +1245,6 @@ paths:
       security:
       - Bearer: []
       summary: Update
-      tags:
-      - User
-  /v1/user/{name}/platform:
-    get:
-      consumes:
-      - application/json
-      description: Get platform user info
-      parameters:
-      - description: name of the user
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Get platform user info
       tags:
       - User
   /v1/user/email/bind:
@@ -1390,44 +1359,6 @@ paths:
       security:
       - Bearer: []
       summary: DeletePlatformToken
-      tags:
-      - User
-  /v1/user/token/verify:
-    post:
-      consumes:
-      - application/json
-      description: verify a platform token of user
-      parameters:
-      - description: body of token
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.tokenVerifyRequest'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-        "400":
-          description: Bad Request
-          schema:
-            type: token
-        "401":
-          description: Unauthorized
-          schema:
-            type: token
-        "403":
-          description: Forbidden
-          schema:
-            type: token
-        "500":
-          description: Internal Server Error
-          schema:
-            type: internal
-      security:
-      - Internal: []
-      summary: Verify token
       tags:
       - User
 securityDefinitions:

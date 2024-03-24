@@ -41,13 +41,6 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 		empty = false
 	}
 
-	if req.AvatarId != "" {
-		if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
-			return
-		}
-		empty = false
-	}
-
 	if req.Website != nil {
 		if cmd.Website, err = primitive.NewOrgWebsite(*req.Website); err != nil {
 			return

@@ -46,7 +46,6 @@ func (s *SuiteUser) TestGetUser() {
 	user := getData(s.T(), data.Data)
 
 	assert.Equalf(s.T(), user["fullname"], "read full name", "fullname is not equal")
-	assert.Equalf(s.T(), user["avatar_id"], "https://avatars.githubusercontent.com/u/2853724?v=5", "avatar_id is not equal")
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
 	assert.Equal(s.T(), getInt64(s.T(), user["type"]), int64(0))
 	assert.NotEqual(s.T(), "", user["id"])

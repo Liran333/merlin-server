@@ -1,16 +1,10 @@
 definitions:
-  app.SpaceMetaDTO:
+  controller.ModeIds:
     properties:
-      hardware:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      sdk:
-        type: string
+      ids:
+        items:
+          type: string
+        type: array
     type: object
   controller.ResponseData:
     properties:
@@ -18,21 +12,6 @@ definitions:
         type: string
       data: {}
       msg:
-        type: string
-    type: object
-  controller.bindEmailRequest:
-    properties:
-      code:
-        type: string
-      email:
-        type: string
-    required:
-    - code
-    - email
-    type: object
-  controller.logoutInfo:
-    properties:
-      id_token:
         type: string
     type: object
   controller.reqToCheckPermission:
@@ -61,32 +40,43 @@ definitions:
       visibility:
         type: string
     type: object
-  controller.reqToLogin:
+  controller.reqToCreateSpaceApp:
     properties:
-      code:
+      commit_id:
         type: string
-      redirect_uri:
+      space_id:
         type: string
     type: object
-  controller.sendEmailRequest:
+  controller.reqToSetBuildIsDone:
     properties:
-      capt:
+      commit_id:
         type: string
-      email:
+      logs:
         type: string
-    required:
-    - capt
-    - email
+      space_id:
+        type: string
+      success:
+        type: boolean
     type: object
-  controller.tokenCreateRequest:
+  controller.reqToUpdateBuildInfo:
     properties:
-      name:
+      commit_id:
         type: string
-      perm:
+      log_url:
         type: string
-    required:
-    - name
-    - perm
+      space_id:
+        type: string
+    type: object
+  controller.reqToUpdateServiceInfo:
+    properties:
+      app_url:
+        type: string
+      commit_id:
+        type: string
+      log_url:
+        type: string
+      space_id:
+        type: string
     type: object
   controller.tokenVerifyRequest:
     properties:
@@ -97,54 +87,6 @@ definitions:
     required:
     - action
     - token
-    type: object
-  controller.userBasicInfoUpdateRequest:
-    properties:
-      avatar_id:
-        type: string
-      description:
-        type: string
-      fullname:
-        type: string
-      revoke_delete:
-        type: boolean
-    type: object
-  github_com_openmerlin_merlin-server_session_app.UserDTO:
-    properties:
-      account:
-        type: string
-      allow_request:
-        type: boolean
-      avatar_id:
-        type: string
-      created_at:
-        type: integer
-      default_role:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      fullname:
-        type: string
-      id:
-        type: string
-      owner:
-        type: string
-      owner_id:
-        type: string
-      phone:
-        type: string
-      request_delete:
-        type: boolean
-      request_delete_at:
-        type: integer
-      type:
-        type: integer
-      updated_at:
-        type: integer
-      website:
-        type: string
     type: object
 info:
   contact: {}
@@ -242,38 +184,6 @@ paths:
       summary: ResetLabel
       tags:
       - ModelInternal
-  /v1/session:
-    post:
-      consumes:
-      - application/json
-      description: login
-      parameters:
-      - description: body of login
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToLogin'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/github_com_openmerlin_merlin-server_session_app.UserDTO'
-      summary: Login
-      tags:
-      - Session
-    put:
-      consumes:
-      - application/json
-      description: logout
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.logoutInfo'
-      summary: Logout
-      tags:
-      - Session
   /v1/session/check:
     put:
       consumes:
@@ -284,7 +194,7 @@ paths:
           description: Accepted
       summary: CheckAndRefresh
       tags:
-      - Session
+      - SessionInternal
   /v1/session/clear:
     delete:
       consumes:
@@ -293,9 +203,121 @@ paths:
       responses:
         "204":
           description: No Content
-      summary: Clear
+      summary: Clear session by session id
       tags:
-      - Session
+      - SessionInternal
+  /v1/space-app/:
+    post:
+      consumes:
+      - application/json
+      description: create space app
+      parameters:
+      - description: body of creating space app
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateSpaceApp'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - SpaceApp
+  /v1/space-app/{owner}/{name}/restart:
+    post:
+      consumes:
+      - application/json
+      description: restart space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: Post
+      tags:
+      - SpaceApp
+  /v1/space-app/build/done:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app build is done
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToSetBuildIsDone'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyBuildIsDone
+      tags:
+      - SpaceApp
+  /v1/space-app/build/started:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app building is started
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateBuildInfo'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyBuildIsStarted
+      tags:
+      - SpaceApp
+  /v1/space-app/service/started:
+    put:
+      consumes:
+      - application/json
+      description: notidy space app service is started
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateServiceInfo'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: NotifyServiceIsStarted
+      tags:
+      - SpaceApp
   /v1/space/{id}:
     get:
       consumes:
@@ -311,58 +333,37 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.SpaceMetaDTO'
+            $ref: '#/definitions/controller.ResponseData'
       summary: Get
       tags:
       - SpaceInternal
-  /v1/user:
-    delete:
-      consumes:
-      - application/json
-      description: delete
-      responses:
-        "204":
-          description: No Content
-      security:
-      - Bearer: []
-      summary: Request Delete User info
-      tags:
-      - User
-    get:
-      consumes:
-      - application/json
-      description: get current sign-in user info
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: Get current user info
-      tags:
-      - User
+  /v1/space/{id}/model:
     put:
       consumes:
       - application/json
-      description: update user basic info
+      description: update space models relations
       parameters:
-      - description: body of updating user
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.userBasicInfoUpdateRequest'
+          $ref: '#/definitions/controller.ModeIds'
       responses:
         "202":
           description: Accepted
           schema:
             $ref: '#/definitions/controller.ResponseData'
       security:
-      - Bearer: []
-      summary: Update
+      - Internal: []
+      summary: UpdateSpaceModels
       tags:
-      - User
+      - SpaceInternal
   /v1/user/{name}/platform:
     get:
       consumes:
@@ -381,123 +382,9 @@ paths:
             $ref: '#/definitions/controller.ResponseData'
       security:
       - Internal: []
-      summary: Get platform user info
+      summary: GetPlatformUser info
       tags:
-      - User
-  /v1/user/email/bind:
-    post:
-      consumes:
-      - application/json
-      description: bind user's email
-      parameters:
-      - description: body of bind email info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.bindEmailRequest'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: Bind User Email
-      tags:
-      - User
-  /v1/user/email/send:
-    post:
-      consumes:
-      - application/json
-      description: send user's email verify code
-      parameters:
-      - description: body of bind email info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.sendEmailRequest'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: Send User Email Verify code
-      tags:
-      - User
-  /v1/user/privacy:
-    put:
-      consumes:
-      - application/json
-      description: revoke
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: PrivacyRevoke
-      tags:
-      - User
-  /v1/user/token:
-    get:
-      consumes:
-      - application/json
-      description: list all platform tokens of user
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: GetTokenInfo
-      tags:
-      - User
-    post:
-      consumes:
-      - application/json
-      description: create a new platform token of user
-      parameters:
-      - description: body of create token
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.tokenCreateRequest'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Bearer: []
-      summary: CreatePlatformToken
-      tags:
-      - User
-  /v1/user/token/{name}:
-    delete:
-      consumes:
-      - application/json
-      description: delete a new platform token of user
-      parameters:
-      - description: token name
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      security:
-      - Bearer: []
-      summary: DeletePlatformToken
-      tags:
-      - User
+      - UserInternal
   /v1/user/token/verify:
     post:
       consumes:
@@ -535,7 +422,7 @@ paths:
       - Internal: []
       summary: Verify token
       tags:
-      - User
+      - UserInternal
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and api Bearer.

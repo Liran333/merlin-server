@@ -30,12 +30,6 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		}
 	}
 
-	if req.AvatarId != nil {
-		if cmd.AvatarId, err = primitive.NewAvatarId(*req.AvatarId); err != nil {
-			return
-		}
-	}
-
 	if req.Fullname != nil {
 		if cmd.Fullname, err = primitive.NewAccountFullname(*req.Fullname); err != nil {
 			return

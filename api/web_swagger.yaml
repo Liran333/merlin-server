@@ -42,6 +42,21 @@ definitions:
       task:
         type: string
     type: object
+  app.SpaceModelDTO:
+    properties:
+      avatar_id:
+        type: string
+      download_count:
+        type: integer
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+    type: object
   controller.OrgAcceptMemberRequest:
     properties:
       msg:
@@ -395,16 +410,6 @@ definitions:
     - name
     - perm
     type: object
-  controller.tokenVerifyRequest:
-    properties:
-      action:
-        type: string
-      token:
-        type: string
-    required:
-    - action
-    - token
-    type: object
   controller.userBasicInfoUpdateRequest:
     properties:
       avatar_id:
@@ -570,7 +575,7 @@ paths:
           description: OK
           schema:
             type: boolean
-      summary: Check
+      summary: Get coderepo and check it
       tags:
       - CodeRepo
   /v1/invite:
@@ -853,6 +858,27 @@ paths:
           schema:
             $ref: '#/definitions/controller.modelDetail'
       summary: Get
+      tags:
+      - ModelWeb
+  /v1/model/relation/{id}/space:
+    get:
+      consumes:
+      - application/json
+      description: get spaces related to a model
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.SpaceModelDTO'
+            type: array
+      summary: GetSpacesByModelId
       tags:
       - ModelWeb
   /v1/name:
@@ -1213,28 +1239,6 @@ paths:
       summary: Logout
       tags:
       - Session
-  /v1/session/check:
-    put:
-      consumes:
-      - application/json
-      description: check and refresh session
-      responses:
-        "202":
-          description: Accepted
-      summary: CheckAndRefresh
-      tags:
-      - Session
-  /v1/session/clear:
-    delete:
-      consumes:
-      - application/json
-      description: Clear session when it expired
-      responses:
-        "204":
-          description: No Content
-      summary: Clear
-      tags:
-      - Session
   /v1/space:
     get:
       consumes:
@@ -1307,6 +1311,30 @@ paths:
       summary: Create
       tags:
       - Space
+  /v1/space-app/:owner/:name/spacelog/realtime:
+    get:
+      consumes:
+      - application/json
+      description: get space app real-time space log
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpaceAppDTO'
+      summary: GetSpaceLog
+      tags:
+      - SpaceAppWeb
   /v1/space-app/{owner}/{name}:
     get:
       consumes:
@@ -1329,6 +1357,54 @@ paths:
           schema:
             $ref: '#/definitions/app.SpaceAppDTO'
       summary: Get
+      tags:
+      - SpaceAppWeb
+  /v1/space-app/{owner}/{name}/buildlog/realtime:
+    get:
+      consumes:
+      - application/json
+      description: get space app real-time build log
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SpaceAppDTO'
+      summary: GetBuildLog
+      tags:
+      - SpaceAppWeb
+  /v1/space-app/{owner}/{name}/read:
+    get:
+      consumes:
+      - application/json
+      description: check permission for read space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: CanRead
       tags:
       - SpaceAppWeb
   /v1/space/{id}:
@@ -1440,6 +1516,27 @@ paths:
       summary: Get
       tags:
       - SpaceWeb
+  /v1/space/relation/{id}/model:
+    get:
+      consumes:
+      - application/json
+      description: get models related to a space
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/app.SpaceModelDTO'
+            type: array
+      summary: GetModelsBySpaceId
+      tags:
+      - SpaceWeb
   /v1/user:
     delete:
       consumes:
@@ -1450,7 +1547,7 @@ paths:
           description: No Content
       security:
       - Bearer: []
-      summary: Request Delete User info
+      summary: RequestDelete User info
       tags:
       - User
     get:
@@ -1486,27 +1583,6 @@ paths:
       security:
       - Bearer: []
       summary: Update
-      tags:
-      - User
-  /v1/user/{name}/platform:
-    get:
-      consumes:
-      - application/json
-      description: Get platform user info
-      parameters:
-      - description: name of the user
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Get platform user info
       tags:
       - User
   /v1/user/email/bind:
@@ -1621,44 +1697,6 @@ paths:
       security:
       - Bearer: []
       summary: DeletePlatformToken
-      tags:
-      - User
-  /v1/user/token/verify:
-    post:
-      consumes:
-      - application/json
-      description: verify a platform token of user
-      parameters:
-      - description: body of token
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.tokenVerifyRequest'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-        "400":
-          description: Bad Request
-          schema:
-            type: token
-        "401":
-          description: Unauthorized
-          schema:
-            type: token
-        "403":
-          description: Forbidden
-          schema:
-            type: token
-        "500":
-          description: Internal Server Error
-          schema:
-            type: internal
-      security:
-      - Internal: []
-      summary: Verify token
       tags:
       - User
 securityDefinitions:

@@ -25,7 +25,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 
 	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
 		Fullname:    "read full name",
-		AvatarId:    "https://avatars.githubusercontent.com/u/2853724?v=5",
 		Description: "valid desc",
 	}
 	data, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
@@ -35,7 +34,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoValidData() {
 	user := getData(s.T(), data.Data)
 
 	assert.Equalf(s.T(), user["fullname"], "read full name", "fullname is not equal")
-	assert.Equalf(s.T(), user["avatar_id"], "https://avatars.githubusercontent.com/u/2853724?v=5", "avatar_id is not equal")
 	assert.Equalf(s.T(), user["description"], "valid desc", "description is not equal")
 }
 
@@ -97,34 +95,6 @@ func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidDesc() {
 	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
-}
-
-// TestUpdateUserInfoInvalidAvatar used for testing
-// 无效的avatar会导致更新失败
-func (s *SuiteUserUpdate) TestUpdateUserInfoInvalidAvatar() {
-
-	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
-		AvatarId: "invalid avatarid",
-	}
-	_, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
-	assert.NotNil(s.T(), err)
-}
-
-// TestUpdateUserInfoValidAvatar used for testing
-// 有效的avatar会导致更新成功
-func (s *SuiteUserUpdate) TestUpdateUserInfoValidAvatar() {
-
-	d := swaggerRest.ControllerUserBasicInfoUpdateRequest{
-		AvatarId: "https://avatars.githubusercontent.com/u/2853724?v=4",
-	}
-	data, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
-	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	user := getData(s.T(), data.Data)
-
-	assert.Equal(s.T(), "https://avatars.githubusercontent.com/u/2853724?v=4", user["avatar_id"])
 }
 
 // TearDownSuite used for testing

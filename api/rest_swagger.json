@@ -1354,7 +1354,7 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Request Delete User info",
+                "summary": "RequestDelete User info",
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -1518,66 +1518,6 @@
                 }
             }
         },
-        "/v1/user/token/verify": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "verify a platform token of user",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Verify token",
-                "parameters": [
-                    {
-                        "description": "body of token",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.tokenVerifyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "internal"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/user/token/{name}": {
             "delete": {
                 "security": [
@@ -1605,40 +1545,6 @@
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/v1/user/{name}/platform": {
-            "get": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "Get platform user info",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get platform user info",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name of the user",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
                     }
                 }
             }
@@ -2144,21 +2050,6 @@
                     "type": "string"
                 },
                 "perm": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.tokenVerifyRequest": {
-            "type": "object",
-            "required": [
-                "action",
-                "token"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "token": {
                     "type": "string"
                 }
             }

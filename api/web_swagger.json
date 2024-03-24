@@ -51,7 +51,7 @@
                 "tags": [
                     "CodeRepo"
                 ],
-                "summary": "Check",
+                "summary": "Get coderepo and check it",
                 "parameters": [
                     {
                         "type": "string",
@@ -345,6 +345,38 @@
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/relation/{id}/space": {
+            "get": {
+                "description": "get spaces related to a model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelWeb"
+                ],
+                "summary": "GetSpacesByModelId",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.SpaceModelDTO"
+                            }
                         }
                     }
                 }
@@ -1086,40 +1118,6 @@
                 }
             }
         },
-        "/v1/session/check": {
-            "put": {
-                "description": "check and refresh session",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Session"
-                ],
-                "summary": "CheckAndRefresh",
-                "responses": {
-                    "202": {
-                        "description": "Accepted"
-                    }
-                }
-            }
-        },
-        "/v1/session/clear": {
-            "delete": {
-                "description": "Clear session when it expired",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Session"
-                ],
-                "summary": "Clear",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
         "/v1/space": {
             "get": {
                 "description": "list global public space",
@@ -1230,6 +1228,42 @@
                 }
             }
         },
+        "/v1/space-app/:owner/:name/spacelog/realtime": {
+            "get": {
+                "description": "get space app real-time space log",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceAppWeb"
+                ],
+                "summary": "GetSpaceLog",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.SpaceAppDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space-app/{owner}/{name}": {
             "get": {
                 "description": "get space app",
@@ -1261,6 +1295,110 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/app.SpaceAppDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/{owner}/{name}/buildlog/realtime": {
+            "get": {
+                "description": "get space app real-time build log",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceAppWeb"
+                ],
+                "summary": "GetBuildLog",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.SpaceAppDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/{owner}/{name}/read": {
+            "get": {
+                "description": "check permission for read space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceAppWeb"
+                ],
+                "summary": "CanRead",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/relation/{id}/model": {
+            "get": {
+                "description": "get models related to a space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceWeb"
+                ],
+                "summary": "GetModelsBySpaceId",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/app.SpaceModelDTO"
+                            }
                         }
                     }
                 }
@@ -1504,7 +1642,7 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Request Delete User info",
+                "summary": "RequestDelete User info",
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -1668,66 +1806,6 @@
                 }
             }
         },
-        "/v1/user/token/verify": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "verify a platform token of user",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Verify token",
-                "parameters": [
-                    {
-                        "description": "body of token",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.tokenVerifyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "token"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "internal"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/user/token/{name}": {
             "delete": {
                 "security": [
@@ -1755,40 +1833,6 @@
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/v1/user/{name}/platform": {
-            "get": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "Get platform user info",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get platform user info",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name of the user",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
                     }
                 }
             }
@@ -1858,6 +1902,29 @@
                 },
                 "task": {
                     "type": "string"
+                }
+            }
+        },
+        "app.SpaceModelDTO": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },
@@ -2396,21 +2463,6 @@
                     "type": "string"
                 },
                 "perm": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.tokenVerifyRequest": {
-            "type": "object",
-            "required": [
-                "action",
-                "token"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "token": {
                     "type": "string"
                 }
             }

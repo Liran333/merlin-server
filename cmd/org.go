@@ -88,12 +88,11 @@ var orgAddCmd = &cobra.Command{
 			logrus.Fatalf("invalid fullname :%s", err.Error())
 		}
 		var website primitive.Website
-		if viper.GetString("org.create.website") != "" {
-			website, err = primitive.NewOrgWebsite(viper.GetString("org.create.website"))
-			if err != nil {
-				logrus.Fatalf("invalid website :%s", err.Error())
-			}
+		website, err = primitive.NewOrgWebsite(viper.GetString("org.create.website"))
+		if err != nil {
+			logrus.Fatalf("invalid website :%s", err.Error())
 		}
+
 		ava, err := primitive.NewAvatarId(viper.GetString("org.create.avatarid"))
 		if err != nil {
 			logrus.Fatalf("invalid avatarid :%s", err.Error())
