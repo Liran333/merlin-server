@@ -10,15 +10,16 @@ import (
 	"math"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"github.com/openmerlin/merlin-sdk/space"
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/space/app"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -403,4 +404,10 @@ func (p *reqToUpdateSpaceSecret) toCmd() (cmd app.CmdToUpdateSpaceSecret, err er
 	}
 
 	return
+}
+
+type localCMD space.LocalCMD
+
+func (req *localCMD) toCmd() string {
+	return req.Cmd
 }

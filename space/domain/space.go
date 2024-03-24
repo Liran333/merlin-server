@@ -28,6 +28,7 @@ type Space struct {
 	Fullname primitive.MSDFullname
 	Hardware spaceprimitive.Hardware
 
+	LocalCmd      string
 	Version       int
 	CreatedAt     int64
 	UpdatedAt     int64

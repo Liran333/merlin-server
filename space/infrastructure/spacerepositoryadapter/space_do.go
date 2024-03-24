@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	filedId         = "id"
 	fieldName       = "name"
 	fieldTask       = "task"
 	fieldOwner      = "owner"
@@ -23,6 +24,7 @@ const (
 	fieldLicense    = "license"
 	fieldVersion    = "version"
 	fieldFullName   = "fullname"
+	fieldLocalCMD   = "local_cmd"
 	fieldUpdatedAt  = "updated_at"
 	fieldCreatedAt  = "created_at"
 	fieldVisibility = "visibility"
@@ -48,6 +50,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		CreatedAt:  m.CreatedAt,
 		UpdatedAt:  m.UpdatedAt,
 		Version:    m.Version,
+		LocalCmd:   m.LocalCmd,
 	}
 }
 
@@ -74,6 +77,8 @@ type spaceDO struct {
 	UpdatedAt  int64  `gorm:"column:updated_at"`
 	Version    int    `gorm:"column:version"`
 
+	// local cmd
+	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
 	// labels
 	Task       string         `gorm:"column:task;index:task"`
 	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
@@ -102,7 +107,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		CreatedAt: do.CreatedAt,
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,
-
+		LocalCmd:  do.LocalCmd,
 		Labels: domain.SpaceLabels{
 			Task:       do.Task,
 			Others:     sets.New[string](do.Others...),

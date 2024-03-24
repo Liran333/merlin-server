@@ -27,6 +27,7 @@ func AddRouterForSpaceInternalController(
 
 	r.GET("/v1/space/:id", m.Write, ctl.Get)
 	r.PUT("/v1/space/:id/model", m.Write, ctl.UpdateSpaceModels)
+	r.PUT("/v1/space/:id/local_cmd", m.Write, ctl.UpdateSpaceLocalCMD)
 }
 
 // SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
@@ -40,6 +41,7 @@ type SpaceInternalController struct {
 // @Tags     SpaceInternal
 // @Param    id  path  string  true  "id of space"
 // @Accept   json
+// @Security Internal
 // @Success  200  {object} commonctl.ResponseData
 // @Router   /v1/space/{id} [get]
 func (ctl *SpaceInternalController) Get(ctx *gin.Context) {
@@ -89,6 +91,40 @@ func (ctl *SpaceInternalController) UpdateSpaceModels(ctx *gin.Context) {
 	modelsIndex := req.toCmd()
 
 	err = ctl.modelSpaceService.UpdateRelation(spaceId, modelsIndex)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  UpdateSpaceLocalCmd
+// @Description  update space local cmd
+// @Tags     SpaceInternal
+// @Param    id    path  string   true  "id of space"
+// @Param    body  body  string  true  "local cmd to reproduce the space"
+// @Accept   json
+// @Security Internal
+// @Success  202  {object}  commonctl.ResponseData
+// @Router   /v1/space/{id}/local_cmd [put]
+func (ctl *SpaceInternalController) UpdateSpaceLocalCMD(ctx *gin.Context) {
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	var req localCMD
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd := req.toCmd()
+
+	err = ctl.appService.UpdateLocalCMD(spaceId, cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

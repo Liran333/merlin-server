@@ -76,6 +76,7 @@ type SpaceDTO struct {
 	CreatedAt     int64          `json:"created_at"`
 	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
+	LocalCMD      string         `json:"local_cmd"`
 	Visibility    string         `json:"visibility"`
 	DownloadCount int            `json:"download_count"`
 }
@@ -112,6 +113,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		LikeCount:     space.LikeCount,
 		Visibility:    space.Visibility.Visibility(),
 		DownloadCount: space.DownloadCount,
+		LocalCMD:      space.LocalCmd,
 	}
 
 	if space.Desc != nil {
