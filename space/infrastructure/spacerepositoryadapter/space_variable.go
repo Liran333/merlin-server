@@ -78,7 +78,7 @@ func (adapter *spaceVariableAdapter) CountVariable(spaceId primitive.Identity) (
 
 // Count is a method of spaceAdapter that takes a ListOption pointer as input
 // and returns the total count of space variables and an error if any occurs.
-func (adapter *spaceVariableAdapter) ListVariableSecret(spaceId primitive.Identity) (
+func (adapter *spaceVariableAdapter) ListVariableSecret(spaceId string) (
 	[]repository.SpaceVariableSecretSummary, error) {
 
 	// list

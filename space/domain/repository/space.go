@@ -93,7 +93,7 @@ type SpaceVariableRepositoryAdapter interface {
 	DeleteVariable(primitive.Identity) error
 	SaveVariable(*domain.SpaceVariable) error
 	CountVariable(primitive.Identity) (int, error)
-	ListVariableSecret(primitive.Identity) ([]SpaceVariableSecretSummary, error)
+	ListVariableSecret(string) ([]SpaceVariableSecretSummary, error)
 }
 
 // SpaceSecretRepositoryAdapter is an interface for interacting with space secret repositories.

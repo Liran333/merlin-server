@@ -23,7 +23,7 @@ type SpaceVariableService interface {
 	CreateVariable(primitive.Account, primitive.Identity, *CmdToCreateSpaceVariable) (string, string, error)
 	DeleteVariable(primitive.Account, primitive.Identity, primitive.Identity) (string, error)
 	UpdateVariable(primitive.Account, primitive.Identity, primitive.Identity, *CmdToUpdateSpaceVariable) (string, error)
-	ListVariableSecret(primitive.Identity) (SpaceVariableSecretDTO, error)
+	ListVariableSecret(string) (SpaceVariableSecretDTO, error)
 }
 
 // NewSpaceVariableService creates a new instance of the space secret variable.
@@ -222,7 +222,7 @@ func (s *spaceVariableService) UpdateVariable(
 }
 
 // List retrieves a list of spaces based on the provided command parameters and returns the corresponding SpacesDTO.
-func (s *spaceVariableService) ListVariableSecret(spaceId primitive.Identity) (
+func (s *spaceVariableService) ListVariableSecret(spaceId string) (
 	SpaceVariableSecretDTO, error,
 ) {
 

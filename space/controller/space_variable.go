@@ -30,7 +30,7 @@ func addRouteForSpaceVariableController(
 		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.DeleteVariable)
 	r.PUT("/v1/space/:id/variable/:vid", m.Write,
 		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.UpdateVariable)
-	r.GET("/v1/space/id/:id/variable-secret", m.Read,
+	r.GET("/v1/space/:owner/:name/variable-secret", m.Read,
 		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.GetVariableSecret)
 }
 
@@ -173,15 +173,23 @@ func (ctl *SpaceController) UpdateVariable(ctx *gin.Context) {
 // @Tags     SpaceWeb
 // @Accept   json
 // @Success  200  {object}  userSpacesInfo
-// @Router   /v1/space/id/{id}/variable-secret [get]
+// @Router   /v1/space/:owner/:name/variable-secret [get]
 func (ctl *SpaceController) GetVariableSecret(ctx *gin.Context) {
-	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	index, err := ctl.parseIndex(ctx)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	space, err := ctl.appService.GetByName(user, &index)
+	if err != nil {
+		commonctl.SendError(ctx, err)
 
 		return
 	}
-	dto, err := ctl.variableService.ListVariableSecret(spaceId)
+
+	dto, err := ctl.variableService.ListVariableSecret(space.Id)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
