@@ -110,3 +110,15 @@ func (app *SpaceApp) RestartService(oldRestartTime int64) error {
 	app.RestartedAt = now
 	return nil
 }
+
+// IsAppStatusAllow get status can be update.
+func (app *SpaceApp) IsAppStatusAllow(status appprimitive.AppStatus) error {
+	if !status.IsUpdateStatusAccept() {
+		e := fmt.Errorf("app status not accept")
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = status
+
+	return nil
+}

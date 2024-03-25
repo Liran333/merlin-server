@@ -27,6 +27,7 @@ func AddRouteForSpaceappInternalController(
 	r.PUT(`/v1/space-app/build/started`, m.Write, ctl.NotifyBuildIsStarted)
 	r.PUT(`/v1/space-app/build/done`, m.Write, ctl.NotifyBuildIsDone)
 	r.PUT(`/v1/space-app/service/started`, m.Write, ctl.NotifyServiceIsStarted)
+	r.PUT(`/v1/space-app/status`, m.Write, ctl.NotifyUpdateStatus)
 }
 
 // SpaceAppInternalController is a struct that holds the app service
@@ -41,7 +42,7 @@ type SpaceAppInternalController struct {
 // @Param    body  body  reqToCreateSpaceApp  true  "body of creating space app"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
-// @Security Bearer
+// @Security Internal
 // @Router   /v1/space-app/ [post]
 func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
 	req := reqToCreateSpaceApp{}
@@ -66,12 +67,12 @@ func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
 }
 
 // @Summary  NotifyBuildIsStarted
-// @Description  notidy space app building is started
+// @Description  notify space app building is started
 // @Tags     SpaceApp
 // @Param    body  body  reqToUpdateBuildInfo  true  "body"
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData
-// @Security Bearer
+// @Security Internal
 // @Router   /v1/space-app/build/started [put]
 func (ctl *SpaceAppInternalController) NotifyBuildIsStarted(ctx *gin.Context) {
 	req := reqToUpdateBuildInfo{}
@@ -97,12 +98,12 @@ func (ctl *SpaceAppInternalController) NotifyBuildIsStarted(ctx *gin.Context) {
 }
 
 // @Summary  NotifyBuildIsDone
-// @Description  notidy space app build is done
+// @Description  notify space app build is done
 // @Tags     SpaceApp
 // @Param    body  body  reqToSetBuildIsDone  true  "body"
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData
-// @Security Bearer
+// @Security Internal
 // @Router   /v1/space-app/build/done [put]
 func (ctl *SpaceAppInternalController) NotifyBuildIsDone(ctx *gin.Context) {
 	req := reqToSetBuildIsDone{}
@@ -128,12 +129,12 @@ func (ctl *SpaceAppInternalController) NotifyBuildIsDone(ctx *gin.Context) {
 }
 
 // @Summary  NotifyServiceIsStarted
-// @Description  notidy space app service is started
+// @Description  notify space app service is started
 // @Tags     SpaceApp
 // @Param    body  body  reqToUpdateServiceInfo  true  "body"
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData
-// @Security Bearer
+// @Security Internal
 // @Router   /v1/space-app/service/started [put]
 func (ctl *SpaceAppInternalController) NotifyServiceIsStarted(ctx *gin.Context) {
 	req := reqToUpdateServiceInfo{}
@@ -152,6 +153,38 @@ func (ctl *SpaceAppInternalController) NotifyServiceIsStarted(ctx *gin.Context) 
 	}
 
 	if err := ctl.appService.NotifyServiceIsStarted(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+
+// @Summary  NotifyUpdateStatus
+// @Description  notify space app status
+// @Tags     SpaceApp
+// @Param    body  body  reqToSetStatus  true  "body"
+// @Accept   json
+// @Success  202   {object}  commonctl.ResponseData
+// @Security Internal
+// @Router   /v1/space-app/status [put]
+func (ctl *SpaceAppInternalController) NotifyUpdateStatus(ctx *gin.Context) {
+	req := reqToSetStatus{}
+
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if err := ctl.appService.NotifyUpdateStatus(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)

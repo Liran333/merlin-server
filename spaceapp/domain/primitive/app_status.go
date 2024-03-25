@@ -8,9 +8,13 @@ package primitive
 import (
 	"errors"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
+	appInvalid = "invalid"
+
 	appInit = "init"
 
 	building    = "building"
@@ -46,6 +50,8 @@ var (
 	AppStatusRestarted = appStatus(restarting)
 )
 
+var acceptAppStatusSets = sets.NewString(appInvalid)
+
 // AppStatus is an interface that defines methods for working with application statuses.
 type AppStatus interface {
 	IsInit() bool
@@ -54,6 +60,7 @@ type AppStatus interface {
 	IsBuildSuccessful() bool
 	IsRestarting() bool
 	IsReadyToRestart() bool
+	IsUpdateStatusAccept() bool
 }
 
 // NewAppStatus creates a new instance of AppStatus based on the provided value.
@@ -61,6 +68,7 @@ func NewAppStatus(v string) (AppStatus, error) {
 	v = strings.ToLower(v)
 
 	switch v {
+	case appInvalid:
 	case appInit:
 	case serving:
 	case building:
@@ -111,4 +119,9 @@ func (r appStatus) IsRestarting() bool {
 // IsReadyToRestart checks if the appStatus can be restart
 func (r appStatus) IsReadyToRestart() bool {
 	return string(r) == serving || string(r) == startFailed
+}
+
+// checks if the appStatus can be update
+func (r appStatus) IsUpdateStatusAccept() bool {
+	return acceptAppStatusSets.Has(string(r))
 }

@@ -54,6 +54,7 @@ func Init(cfg *Config) (err error) {
 	}
 
 	acceptableAvatarDomains = cfg.AcceptableAvatarDomains
+
 	return
 }
 

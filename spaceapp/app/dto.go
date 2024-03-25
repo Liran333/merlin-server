@@ -7,6 +7,7 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
 
 // CmdToCreateApp is a command to create an app.
@@ -62,4 +63,11 @@ func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {
 	}
 
 	return dto
+}
+
+// CmdToNotifyUpdateStatus is a command to notify that status has update.
+type CmdToNotifyUpdateStatus struct {
+	domain.SpaceAppIndex
+
+	Status appprimitive.AppStatus
 }

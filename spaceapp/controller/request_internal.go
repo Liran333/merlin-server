@@ -7,6 +7,7 @@ package controller
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/spaceapp/app"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
 
 // reqToCreateSpaceApp
@@ -76,5 +77,21 @@ func (req *reqToUpdateServiceInfo) toCmd() (cmd app.CmdToNotifyServiceIsStarted,
 
 	cmd.AppURL, err = primitive.NewURL(req.AppURL)
 
+	return
+}
+
+// reqToSetStatus
+type reqToSetStatus struct {
+	reqToCreateSpaceApp
+
+	Status string `json:"status"`
+}
+
+func (req *reqToSetStatus) toCmd() (cmd app.CmdToNotifyUpdateStatus, err error) {
+	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
+		return
+	}
+
+	cmd.Status, err = appprimitive.NewAppStatus(req.Status)
 	return
 }

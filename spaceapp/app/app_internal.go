@@ -23,6 +23,7 @@ type SpaceappInternalAppService interface {
 	NotifyBuildIsStarted(cmd *CmdToNotifyBuildIsStarted) error
 	NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error
 	NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error
+	NotifyUpdateStatus(cmd *CmdToNotifyUpdateStatus) error
 }
 
 // NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
@@ -120,6 +121,24 @@ func (s *spaceappInternalAppService) NotifyServiceIsStarted(cmd *CmdToNotifyServ
 	}
 
 	if err := v.StartService(cmd.AppURL, cmd.LogURL); err != nil {
+		return err
+	}
+
+	return s.repo.Save(&v)
+}
+
+// NotifyUpdateStatus notifies change SpaceApp status.
+func (s *spaceappInternalAppService) NotifyUpdateStatus(cmd *CmdToNotifyUpdateStatus) error {
+	v, err := s.repo.Find(&cmd.SpaceAppIndex)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(err)
+		}
+
+		return err
+	}
+
+	if err := v.IsAppStatusAllow(cmd.Status); err != nil {
 		return err
 	}
 
