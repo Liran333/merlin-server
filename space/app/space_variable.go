@@ -6,6 +6,7 @@ package app
 
 import (
 	"fmt"
+
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 
@@ -152,7 +153,7 @@ func (s *spaceVariableService) DeleteVariable(
 		return
 	}
 
-	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(domain.VariablePath+space.Id.Identity(), variable.Name.MSDName())
+	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(variable.GetVariablePath(), variable.Name.MSDName())
 	if err != nil {
 		logrus.Errorf("failed to delete variable, variable id:%s", variable.Id.Identity())
 		return

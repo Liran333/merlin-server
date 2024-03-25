@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	VariablePath = "variable/"
-	SecretePath  = "secret/"
+	variablePath = "variable/"
+	secretePath  = "secret/"
 )
 
 // Space represents a space with its associated properties and methods.
@@ -65,10 +65,15 @@ type SpaceVariable struct {
 // NewSpaceVariableVault return a space env secret vault by space variable
 func NewSpaceVariableVault(variable *SpaceVariable) securestorage.SpaceEnvSecret {
 	return securestorage.SpaceEnvSecret{
-		Path:  VariablePath + variable.SpaceId.Identity(),
+		Path:  variablePath + variable.SpaceId.Identity(),
 		Name:  variable.Name.MSDName(),
 		Value: variable.Value.MSDName(),
 	}
+}
+
+// GetVariablePath return vault space variable path
+func (variable *SpaceVariable) GetVariablePath() string {
+	return variablePath + variable.SpaceId.Identity()
 }
 
 type SpaceSecret struct {
@@ -85,8 +90,13 @@ type SpaceSecret struct {
 // NewSpaceSecretVault return a space env secret vault by space secret
 func NewSpaceSecretVault(secret *SpaceSecret) securestorage.SpaceEnvSecret {
 	return securestorage.SpaceEnvSecret{
-		Path:  SecretePath + secret.SpaceId.Identity(),
+		Path:  secretePath + secret.SpaceId.Identity(),
 		Name:  secret.Name.MSDName(),
 		Value: secret.Value.MSDName(),
 	}
+}
+
+// GetSecretPath return vault space secret path
+func (secret *SpaceSecret) GetSecretPath() string {
+	return secretePath + secret.SpaceId.Identity()
 }
