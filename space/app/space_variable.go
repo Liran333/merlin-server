@@ -152,7 +152,7 @@ func (s *spaceVariableService) DeleteVariable(
 		return
 	}
 
-	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(space.Id.Identity(), domain.VariablePath+variable.Name.MSDName())
+	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(domain.VariablePath+space.Id.Identity(), variable.Name.MSDName())
 	if err != nil {
 		logrus.Errorf("failed to delete variable, variable id:%s", variable.Id.Identity())
 		return

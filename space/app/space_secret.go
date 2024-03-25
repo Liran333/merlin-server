@@ -149,7 +149,7 @@ func (s *spaceSecretService) DeleteSecret(
 		return
 	}
 
-	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(space.Id.Identity(), domain.SecretePath+secret.Name.MSDName())
+	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(domain.SecretePath+space.Id.Identity(), secret.Name.MSDName())
 	if err != nil {
 		return
 	}
