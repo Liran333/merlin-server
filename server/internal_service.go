@@ -30,6 +30,8 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setRouterOfModelInternal(rg, services)
 
+	setRouterOfActivityInternal(rg, services)
+
 	setRouterOfSpaceAppInternal(rg, services, cfg)
 
 	setRouterOfCodeRepoPermissionInternal(rg, services)

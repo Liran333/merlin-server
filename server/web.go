@@ -50,6 +50,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfSearchWeb(rg, services)
 
+	setRouterOfActivityWeb(rg, services)
+
 	api.SwaggerInfoweb.Title = apiTitle
 	api.SwaggerInfoweb.Version = version
 	api.SwaggerInfoweb.Description = apiDesc

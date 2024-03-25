@@ -15,6 +15,7 @@ const (
 	SortByMostDownloads   = "most_downloads"
 	SortByRecentlyUpdated = "recently_updated"
 	SortByRecentlyCreated = "recently_created"
+	TrueCondition         = "1"
 )
 
 var (

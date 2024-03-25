@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package server
 
 import (
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -41,6 +42,9 @@ type allServices struct {
 
 	spaceApp spaceapp.SpaceAppService
 
+
+	activityApp activityapp.ActivityAppService
+
 	modelSpace spaceapp.ModelSpaceAppService
 
 	spaceVariable spaceapp.SpaceVariableService
@@ -72,6 +76,10 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	}
 
 	if err = initSpaceApp(cfg, &services); err != nil {
+		return
+	}
+
+	if err = initActivity(cfg, &services); err != nil {
 		return
 	}
 

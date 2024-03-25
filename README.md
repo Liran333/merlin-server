@@ -27,9 +27,9 @@ switch into root dir of the project
 ```
 swag init --instanceName rest -o api -t Organization,User,Model,ModelRestful,Space,SpaceRestful,BranchRestful
 
-swag init --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo
+swag init --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo, Activity
 
-swag init --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp
+swag init --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp, Activity
 ```
 
 ## run end to end test

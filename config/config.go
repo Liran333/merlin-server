@@ -10,6 +10,7 @@ import (
 
 	redislib "github.com/opensourceways/redis-lib"
 
+	"github.com/openmerlin/merlin-server/activity"
 	"github.com/openmerlin/merlin-server/coderepo"
 	common "github.com/openmerlin/merlin-server/common/config"
 	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
@@ -56,6 +57,7 @@ type Config struct {
 	Kafka       kafka.Config       `json:"kafka"`
 	Model       models.Config      `json:"model"`
 	Space       space.Config       `json:"space"`
+	Activity    activity.Config    `json:"activity"`
 	Session     session.Config     `json:"session"`
 	SpaceApp    spaceapp.Config    `json:"space_app"`
 	CodeRepo    coderepo.Config    `json:"coderepo"`
@@ -81,6 +83,8 @@ func (cfg *Config) Init() error {
 	cfg.SpaceApp.Init()
 
 	cfg.CodeRepo.Init()
+
+	cfg.Activity.Init()
 
 	internal.Init(&cfg.Internal)
 

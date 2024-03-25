@@ -13,7 +13,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/openmerlin/git-access-sdk v0.0.0-20240318034535-9f147766bb45
 	github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458
-	github.com/openmerlin/merlin-sdk v0.0.0-20240324053610-2076e681173c
+	github.com/openmerlin/merlin-sdk v0.0.0-20240324080120-61897d0ac9b0
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771
 	github.com/opensourceways/kafka-lib v0.0.0-20231114071554-b2af9944cf3a
 	github.com/opensourceways/redis-lib v0.0.0-20240229112647-bcce13fb1094
@@ -25,7 +25,7 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	github.com/throttled/throttled/v2 v2.12.0
-	golang.org/x/crypto v0.20.0
+	golang.org/x/crypto v0.21.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 	k8s.io/apimachinery v0.28.4
@@ -113,7 +113,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

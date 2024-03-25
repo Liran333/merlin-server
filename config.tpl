@@ -131,6 +131,10 @@ redis:
   db_cert: {{(ds "secret").data.REDIS_CERT }}
   db: 0
 
+activity:
+  tables:
+    activity: activity
+
 user:
   tables:
     user: user
