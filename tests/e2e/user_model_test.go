@@ -111,40 +111,68 @@ func (s *SuiteUserModel) TestNotLoginCantCreateModel() {
 	assert.NotNil(s.T(), err)
 }
 
-// 以下用例结果异常，需排查，建议Space相关接口一并排查
+// TestUserCanVisitSelfPublicModel used for testing
 // 可以访问自己名下的公有模型
-// func (s *SuiteUserModel) TestUserCanVisitSelfPublicModel() {
-//	 data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
-//		 Name:       "testmodel",
-//		 Owner:      "test2",
-//		 License:    "mit",
-//		 Visibility: "public",
-//	 })
-//
-//	 assert.Equal(s.T(), 201, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//
-//	 id := getString(s.T(), data.Data)
-//
-//	 detail, r, err := ApiRest.ModelWebApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel")
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), detail.Name)
-//
-//	 modelOwnerList, r, err := ApiRest.ModelWebApi.V1ModelOwnerGet(AuthRest2, "test2", &swaggerRest.ModelWebApiV1ModelOwnerGetOpts{})
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), modelOwnerList.Models)
-//
-//	 modelList, r, err := ApiRest.ModelWebApi.V1ModelGet(AuthRest2, &swaggerRest.ModelWebApiV1ModelGetOpts{})
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), modelList.Models)
-//
-//	 r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
-//	 assert.Equal(s.T(), 204, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-// }
+func (s *SuiteUserModel) TestUserCanVisitSelfPublicModel() {
+	// 创建testmodel
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	// 获取test2名下的model成功
+	detail, r, err := ApiRest.ModelRestfulApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	model := getData(s.T(), detail.Data)
+	assert.Equal(s.T(), "testmodel", model["name"])
+
+	// 创建testmodel2
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel2",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id2 := getString(s.T(), data.Data)
+
+	// 获取用户名下的所有model list
+	list, r, err := ApiRest.ModelRestfulApi.V1ModelGet(AuthRest2, "test2", &swaggerRest.ModelRestfulApiV1ModelGetOpts{})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	count := 0
+	modelLists := getData(s.T(), list.Data)
+
+	for i := 0; i < len(modelLists["models"].([]interface{})); i++ {
+		model := modelLists["models"].([]interface{})[i].(map[string]interface{})
+		_, ok := model["name"]
+		if ok {
+			count++
+		}
+	}
+	assert.Equal(s.T(), countTwo, count)
+
+	// 删除创建的模型
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id2)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
 
 // TestUserModel used for testing
 func TestUserModel(t *testing.T) {

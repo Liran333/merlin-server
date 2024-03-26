@@ -49,7 +49,7 @@ type ModelRestfulController struct {
 // @Param    owner  path  string  true  "owner of model"
 // @Param    name   path  string  true  "name of model"
 // @Accept   json
-// @Success  200  {object}  app.ModelDTO
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/model/{owner}/{name} [get]
 func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -81,7 +81,7 @@ func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 // @Param    page_num        query  int     false  "page num which starts from 1"
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json
-// @Success  200  {object}  app.ModelsDTO
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/model [get]
 func (ctl *ModelRestfulController) List(ctx *gin.Context) {
 	var req restfulReqToListModels

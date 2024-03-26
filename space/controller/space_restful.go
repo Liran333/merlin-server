@@ -82,7 +82,7 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Param    page_num        query  int     false  "page num which starts from 1"
 // @Param    count_per_page  query  int     false  "count per page"
 // @Accept   json
-// @Success  200  {object}  app.SpacesDTO
+// @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/space [get]
 func (ctl *SpaceRestfulController) List(ctx *gin.Context) {
 	var req restfulReqToListSpaces

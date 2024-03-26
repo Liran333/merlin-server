@@ -29,6 +29,7 @@ type SuiteOrg struct {
 	desc         string
 	owner        string
 	owerId       string
+	invitee      string
 }
 
 const (
@@ -44,7 +45,8 @@ func (s *SuiteOrg) SetupSuite() {
 	s.defaultRole = "admin"
 	s.website = "https://www.modelfoundry.cn"
 	s.desc = "test org desc"
-	s.owner = "test1" // this name is hard code in init-env.sh
+	s.owner = "test1"   // this name is hard code in init-env.sh
+	s.invitee = "test2" // this name is hard code in init-env.sh
 
 	data, r, err := ApiRest.UserApi.V1UserGet(AuthRest)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
@@ -607,6 +609,55 @@ func (s *SuiteOrg) TestListMemberSucess() {
 	)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
+
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestOrgLeaveFailed used for testing
+// 离开组织失败：未加入组织
+func (s *SuiteOrg) TestOrgLeaveFailed() {
+	r, err := ApiRest.OrganizationApi.V1OrganizationNamePost(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+}
+
+// TestOrgLeaveSuccess used for testing
+// 离开组织成功
+func (s *SuiteOrg) TestOrgLeaveSuccess() {
+	// 创建组织
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+	}
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 邀请进入组织
+	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	// 被邀请人接受邀请
+	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+		OrgName: s.name,
+		Msg:     "ok",
+	})
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	// 离开组织成功
+	r, err = ApiRest.OrganizationApi.V1OrganizationNamePost(AuthRest2, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
 
 	// 删除组织
 	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)

@@ -37,8 +37,10 @@ type SessionInternalController struct {
 // @Summary  CheckAndRefresh
 // @Description  check and refresh session
 // @Tags     SessionInternal
+// @Param    body  body  sdk.RequestToCheckAndRefresh  true  "body of new member"
 // @Accept   json
-// @Success  202
+// @Security Internal
+// @Success  202 {object} commonctl.ResponseData
 // @Router   /v1/session/check [put]
 func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 	var req sdk.RequestToCheckAndRefresh
@@ -69,8 +71,10 @@ func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 // @Summary  Clear session by session id
 // @Description  Clear session when it expired
 // @Tags     SessionInternal
+// @Param    body  body  sdk.RequestToClear  true  "body of new member"
 // @Accept   json
-// @Success  204
+// @Security Internal
+// @Success  204 {object} commonctl.ResponseData
 // @Router   /v1/session/clear [delete]
 func (ctl *SessionInternalController) Clear(ctx *gin.Context) {
 	var req sdk.RequestToClear

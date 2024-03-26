@@ -137,45 +137,54 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 	assert.NotNil(s.T(), err)
 }
 
-// 以下用例结果异常，需排查
+// TestUserCanVisitSelfPublicSpace used for testing
 // 可以访问自己名下的公有Space
-// func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
-//	 data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
-//		 Desc:       "space desc",
-//		 Fullname:   "spacefullname",
-//		 Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-//		 InitReadme: false,
-//		 License:    "mit",
-//		 Name:       "testspace",
-//		 Owner:      "test2",
-//		 Sdk:        "gradio",
-//		 Visibility: "public",
-//	 })
-//
-//	 assert.Equal(s.T(), 201, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//
-//	 id := getString(s.T(), data.Data)
-//
-//	 detail, r, err := ApiRest.SpaceWebApi.V1SpaceOwnerNameGet(AuthRest2, "test2", "testspace")
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), detail.Name)
-//
-//	 spaceOwnerList, r, err := ApiRest.SpaceWebApi.V1SpaceOwnerGet(AuthRest2, "test2", &swaggerRest.SpaceWebApiV1SpaceOwnerGetOpts{})
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), spaceOwnerList.Spaces)
-//
-//	 spaceList, r, err := ApiRest.SpaceWebApi.V1SpaceGet(AuthRest2, &swaggerRest.SpaceWebApiV1SpaceGetOpts{})
-//	 assert.Equal(s.T(), 200, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-//	 assert.NotEmpty(s.T(), spaceList.Spaces)
-//
-//	 r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
-//	 assert.Equal(s.T(), 204, r.StatusCode)
-//	 assert.Nil(s.T(), err)
-// }
+func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		InitReadme: false,
+		License:    "mit",
+		Name:       "testspace",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	detail, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest2, "test2", "testspace")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	space := getData(s.T(), detail.Data)
+	assert.Equal(s.T(), "testspace", space["name"])
+
+	// 查询test2名下的所有space
+	list, r, err := ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest2, "test2", &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	count := 0
+	spaceLists := getData(s.T(), list.Data)
+
+	for i := 0; i < len(spaceLists["spaces"].([]interface{})); i++ {
+		model := spaceLists["spaces"].([]interface{})[i].(map[string]interface{})
+		_, ok := model["name"]
+		if ok {
+			count++
+		}
+	}
+	assert.Equal(s.T(), countOne, count)
+
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
 
 // TestUserSpace used for testing
 func TestUserSpace(t *testing.T) {
