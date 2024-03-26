@@ -15,6 +15,8 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+const DefaultPage = 1
+
 type searchAdapter struct {
 	model modelrepo.ModelRepositoryAdapter
 	space spacerepo.SpaceRepositoryAdapter
@@ -38,6 +40,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	if utils.Contains(opt.SearchType, primitive.SearchTypeModel) {
 		cmd := &modelrepo.ListOption{
 			Name:         opt.SearchKey,
+			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
 		models, err := adapter.SearchModel(cmd, opt.Account)
@@ -50,6 +53,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	if utils.Contains(opt.SearchType, primitive.SearchTypeSpace) {
 		cmd := &spacerepo.ListOption{
 			Name:         opt.SearchKey,
+			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
 		spaces, err := adapter.SearchSpace(cmd, opt.Account)
@@ -62,6 +66,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	if utils.Contains(opt.SearchType, primitive.SearchTypeUser) {
 		cmd := &repository.ListOption{
 			Name:         opt.SearchKey,
+			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
 		users, err := adapter.SearchUser(cmd)
@@ -74,6 +79,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	if utils.Contains(opt.SearchType, primitive.SearchTypeOrg) {
 		cmd := &repository.ListOption{
 			Name:         opt.SearchKey,
+			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
 		orgs, err := adapter.SearchOrg(cmd)
