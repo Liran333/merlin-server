@@ -7,8 +7,10 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
@@ -23,6 +25,7 @@ func AddRouteForSpaceRestfulController(
 	rl middleware.RateLimiter,
 	u userapp.UserService,
 	p middleware.PrivacyCheck,
+	a activityapp.ActivityAppService,
 ) {
 	ctl := SpaceRestfulController{
 		SpaceController: SpaceController{
@@ -30,6 +33,7 @@ func AddRouteForSpaceRestfulController(
 			userMiddleWare:      m,
 			rateLimitMiddleWare: rl,
 			user:                u,
+			activity:            a,
 		},
 	}
 
@@ -63,8 +67,29 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 	dto, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
+		return
+	}
+
+	liked := false
+
+	spaceId, _ := primitive.NewIdentity(dto.Id)
+	if user != nil {
+		liked, err = ctl.activity.HasLike(user, spaceId)
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
+	}
+
+	detail := spaceDetail{
+		Liked:    liked,
+		SpaceDTO: &dto,
+	}
+
+	if err != nil {
+		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, &dto)
+		commonctl.SendRespOfGet(ctx, &detail)
 	}
 }
 

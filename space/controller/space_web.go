@@ -7,6 +7,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -27,16 +28,17 @@ func AddRouteForSpaceWebController(
 	rl middleware.RateLimiter,
 	u userapp.UserService,
 	p middleware.PrivacyCheck,
+	a activityapp.ActivityAppService,
 ) {
 	ctl := SpaceWebController{
 		SpaceController: SpaceController{
 			appService:          s,
 			variableService:     sv,
-			secretService: 		 ss,
+			secretService:       ss,
 			userMiddleWare:      m,
 			rateLimitMiddleWare: rl,
 			user:                u,
-
+			activity:            a,
 		},
 		modelSpaceService: ms,
 	}
@@ -82,8 +84,19 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 		return
 	}
 
+	liked := false
+
+	spaceId, _ := primitive.NewIdentity(dto.Id)
+	if user != nil {
+		liked, err = ctl.activity.HasLike(user, spaceId)
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
+	}
+
 	detail := spaceDetail{
-		Liked:    true,
+		Liked:    liked,
 		SpaceDTO: &dto,
 	}
 

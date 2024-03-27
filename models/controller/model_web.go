@@ -7,6 +7,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -26,12 +27,14 @@ func AddRouteForModelWebController(
 	u userapp.UserService,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
+	a activityapp.ActivityAppService,
 ) {
 	ctl := ModelWebController{
 		ModelController: ModelController{
 			appService:     s,
 			userMiddleWare: m,
 			user:           u,
+			activity:       a,
 		},
 		modelSpaceService: ms,
 	}
@@ -73,8 +76,19 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 		return
 	}
 
+	liked := false
+
+	modelId, _ := primitive.NewIdentity(dto.Id)
+	if user != nil {
+		liked, err = ctl.activity.HasLike(user, modelId)
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
+	}
+
 	detail := modelDetail{
-		Liked:    true,
+		Liked:    liked,
 		ModelDTO: &dto,
 	}
 

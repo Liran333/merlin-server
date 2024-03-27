@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -36,6 +37,7 @@ type ModelController struct {
 	user           userapp.UserService
 	appService     app.ModelAppService
 	userMiddleWare middleware.UserMiddleWare
+	activity       activityapp.ActivityAppService
 }
 
 // @Summary  Create

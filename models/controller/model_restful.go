@@ -7,8 +7,10 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
@@ -23,12 +25,14 @@ func AddRouteForModelRestfulController(
 	u userapp.UserService,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
+	a activityapp.ActivityAppService,
 ) {
 	ctl := ModelRestfulController{
 		ModelController: ModelController{
 			appService:     s,
 			userMiddleWare: m,
 			user:           u,
+			activity:       a,
 		},
 	}
 
@@ -62,8 +66,29 @@ func (ctl *ModelRestfulController) Get(ctx *gin.Context) {
 	dto, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
+		return
+	}
+
+	liked := false
+
+	modelId, _ := primitive.NewIdentity(dto.Id)
+	if user != nil {
+		liked, err = ctl.activity.HasLike(user, modelId)
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
+	}
+
+	detail := modelDetail{
+		Liked:    liked,
+		ModelDTO: &dto,
+	}
+
+	if err != nil {
+		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, &dto)
+		commonctl.SendRespOfGet(ctx, &detail)
 	}
 }
 

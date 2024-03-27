@@ -2,8 +2,6 @@ package activityrepositoryadapter
 
 import (
 	"errors"
-	"strconv"
-
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
@@ -68,22 +66,16 @@ func (adapter *activityAdapter) Delete(cmd *domain.Activity) error {
 }
 
 // Check if the database has a record with specified Type, Owner, and ResourceId and return true if found.
-func (adapter *activityAdapter) HasLike(acc primitive.Account, id string) (bool, error) {
+func (adapter *activityAdapter) HasLike(acc primitive.Account, id primitive.Identity) (bool, error) {
 	db := adapter.daoImpl.db() // Get the gorm.DB instance.
 	if db == nil {
 		return false, errors.New("database instance is not initialized")
 	}
 
 	var count int64
-	// Convert id string to int64 as ResourceId is int64.
-	resourceId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return false, err // Return error if id string to int64 conversion fails.
-	}
-
 	// Check if there's any record matching the conditions.
-	err = db.Model(&activityDO{}).
-		Where("type = ? AND owner = ? AND resource_id = ?", fieldLike, acc, resourceId).
+	err := db.Model(&activityDO{}).
+		Where("type = ? AND owner = ? AND resource_id = ?", fieldLike, acc, id).
 		Count(&count).Error
 
 	// If err is not nil, return the error.

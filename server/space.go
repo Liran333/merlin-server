@@ -79,6 +79,7 @@ func setRouterOfSpaceWeb(rg *gin.RouterGroup, services *allServices) {
 		services.rateLimiterMiddleWare,
 		services.userApp,
 		services.privacyCheck,
+		services.activityApp,
 	)
 }
 
@@ -92,6 +93,7 @@ func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
 		services.rateLimiterMiddleWare,
 		services.userApp,
 		services.privacyCheck,
+		services.activityApp,
 	)
 }
 

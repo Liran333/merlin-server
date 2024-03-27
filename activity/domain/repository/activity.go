@@ -16,7 +16,7 @@ type ActivitiesRepositoryAdapter interface {
 	List([]primitive.Account, *ListOption) ([]domain.Activity, int, error)
 	Save(activities *domain.Activity) error
 	Delete(activities *domain.Activity) error
-	HasLike(primitive.Account, string) (bool, error)
+	HasLike(primitive.Account, primitive.Identity) (bool, error)
 }
 
 // ListOption represents options for listing models.

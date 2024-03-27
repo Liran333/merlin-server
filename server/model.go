@@ -42,6 +42,7 @@ func setRouterOfModelWeb(rg *gin.RouterGroup, services *allServices) {
 		services.userApp,
 		services.rateLimiterMiddleWare,
 		services.privacyCheck,
+		services.activityApp,
 	)
 }
 
@@ -55,6 +56,7 @@ func setRouterOfModelRestful(rg *gin.RouterGroup, services *allServices) {
 		services.userApp,
 		services.rateLimiterMiddleWare,
 		services.privacyCheck,
+		services.activityApp,
 	)
 }
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -43,6 +44,7 @@ type SpaceController struct {
 	userMiddleWare      middleware.UserMiddleWare
 	user                userapp.UserService
 	rateLimitMiddleWare middleware.RateLimiter
+	activity            activityapp.ActivityAppService
 }
 
 // @Summary  Create

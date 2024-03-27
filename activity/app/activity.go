@@ -12,7 +12,7 @@ type ActivityAppService interface {
 	List([]primitive.Account, *CmdToListActivities) (AcctivityDTO, error)
 	Create(*CmdToAddActivity) error
 	Delete(*CmdToAddActivity) error
-	HasLike(primitive.Account, string) (bool, error)
+	HasLike(primitive.Account, primitive.Identity) (bool, error)
 }
 
 type activityAppService struct {
@@ -61,7 +61,7 @@ func (s *activityAppService) Delete(cmd *CmdToAddActivity) error {
 }
 
 // HasLike check if a user like a model or space
-func (s *activityAppService) HasLike(acc primitive.Account, id string) (bool, error) {
+func (s *activityAppService) HasLike(acc primitive.Account, id primitive.Identity) (bool, error) {
 	has, _ := s.repoAdapter.HasLike(acc, id)
 
 	return has, nil
