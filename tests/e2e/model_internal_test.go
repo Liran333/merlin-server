@@ -96,7 +96,6 @@ func (s *SuiteInternalModel) TestInternalModelSetLabel() {
 	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, swaggerInternal.ControllerReqToCreateModel{
 		Desc:       "testmodel",
 		Fullname:   "fullName",
-		InitReadme: true,
 		License:    "mit",
 		Name:       "testmodel",
 		Owner:      "testuser1",

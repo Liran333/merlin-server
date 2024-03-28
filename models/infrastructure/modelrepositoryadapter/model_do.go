@@ -50,7 +50,8 @@ func toModelDO(m *domain.Model) modelDO {
 
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
 	do := modelDO{
-		Task: labels.Task,
+		Task:    labels.Task,
+		License: labels.License,
 	}
 
 	if labels.Others != nil {

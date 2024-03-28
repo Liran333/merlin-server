@@ -80,7 +80,6 @@ func (s *SuiteModelBranch) SetupSuite() {
 		Owner:      s.name,
 		License:    "mit",
 		Visibility: "public",
-		InitReadme: true,
 	})
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
@@ -169,7 +168,6 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 		Owner:      s.name,
 		License:    "mit",
 		Visibility: "public",
-		InitReadme: true,
 	})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -202,7 +200,6 @@ func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 		Owner:      s.name,
 		License:    "mit",
 		Visibility: "public",
-		InitReadme: true,
 	})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)

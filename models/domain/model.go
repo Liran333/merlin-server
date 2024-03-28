@@ -34,6 +34,7 @@ func (m *Model) ResourceType() primitive.ObjType {
 // ModelLabels represents the labels associated with a model, including task labels, other labels, and framework labels.
 type ModelLabels struct {
 	Task       string           // task label
+	License    string           // license label
 	Others     sets.Set[string] // other labels
 	Frameworks sets.Set[string] // framework labels
 }

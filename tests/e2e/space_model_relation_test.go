@@ -6,7 +6,6 @@ package e2e
 
 import (
 	"net/http"
-
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -67,7 +66,6 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace1",
 		Owner:      "test2",

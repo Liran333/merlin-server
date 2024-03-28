@@ -39,7 +39,6 @@ func (s *SuiteSpaceInternal) TestSpaceInternalGetById() {
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		InitReadme: false,
 		License:    "mit",
 		Name:       "testspace",
 		Owner:      "test2",

@@ -38,7 +38,6 @@ type reqToCreateSpace struct {
 	Hardware   string `json:"hardware"   required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
-	InitReadme bool   `json:"init_readme"`
 }
 
 func (req *reqToCreateSpace) action() string {
@@ -78,7 +77,8 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 		return
 	}
 
-	cmd.InitReadme = req.InitReadme
+	// always init readme
+	cmd.InitReadme = true
 
 	return
 }

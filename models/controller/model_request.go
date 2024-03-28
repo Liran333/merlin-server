@@ -30,7 +30,6 @@ type reqToCreateModel struct {
 	License    string `json:"license"    required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
-	InitReadme bool   `json:"init_readme"`
 }
 
 func (req *reqToCreateModel) action() string {
@@ -62,7 +61,8 @@ func (req *reqToCreateModel) toCmd() (cmd app.CmdToCreateModel, err error) {
 		return
 	}
 
-	cmd.InitReadme = req.InitReadme
+	// always init readme
+	cmd.InitReadme = true
 
 	return
 }
