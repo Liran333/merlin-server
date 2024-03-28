@@ -40,4 +40,6 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 	api.SwaggerInfointernal.Version = version
 	api.SwaggerInfointernal.Description = apiDesc
 	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.InstanceName("internal")))
+
+	rg.GET("/heartbeat", func(*gin.Context) {})
 }
