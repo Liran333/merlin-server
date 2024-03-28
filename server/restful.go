@@ -32,6 +32,10 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	services.privacyCheck = privacycheck.PrivacyCheck(services.userMiddleWare, services.userApp)
 
+	if cfg.NeedTokenForEachAPI {
+		rg.Use(services.userMiddleWare.Read)
+	}
+
 	// set routers
 	setRouterOfOrg(rg, cfg, services)
 
