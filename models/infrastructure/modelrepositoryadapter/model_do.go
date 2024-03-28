@@ -114,12 +114,14 @@ func (do *modelDO) toModel() domain.Model {
 
 func (do *modelDO) toModelSummary() repository.ModelSummary {
 	return repository.ModelSummary{
-		Id:        primitive.CreateIdentity(do.Id).Identity(),
-		Name:      do.Name,
-		Desc:      do.Desc,
-		Task:      do.Task,
-		Owner:     do.Owner,
-		Fullname:  do.Fullname,
-		UpdatedAt: do.UpdatedAt,
+		Id:         primitive.CreateIdentity(do.Id).Identity(),
+		Name:       do.Name,
+		Desc:       do.Desc,
+		Task:       do.Task,
+		Owner:      do.Owner,
+		License:    do.License,
+		Fullname:   do.Fullname,
+		UpdatedAt:  do.UpdatedAt,
+		Frameworks: do.Frameworks,
 	}
 }

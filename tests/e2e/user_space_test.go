@@ -58,7 +58,6 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Desc:     "space desc new",
 		Fullname: "spacefullname-new",
 		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
-		Name:     "testspace-new",
 	})
 
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
@@ -69,7 +68,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 	assert.Nil(s.T(), err)
 }
 
-// 使用无效仓库名创建、修改Space失败
+// 使用无效仓库名创建Space失败
 func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	_, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
@@ -102,16 +101,6 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
-
-	_, r, err = ApiRest.SpaceApi.V1SpaceIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateSpace{
-		Desc:     "space desc new",
-		Fullname: "spacefullname-new",
-		Hardware: "NPU basic 8 vCPU · 32GB · FREE",
-		Name:     "invalid#testspace",
-	})
-
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
-	assert.NotNil(s.T(), err)
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

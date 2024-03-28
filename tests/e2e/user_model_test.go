@@ -50,7 +50,6 @@ func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
 	assert.NotNil(s.T(), err)
 
 	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateModel{
-		Name:       "testmodel-new",
 		Visibility: "public",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
@@ -61,7 +60,7 @@ func (s *SuiteUserModel) TestUserCanCreateUpdateDeleteModel() {
 	assert.Nil(s.T(), err)
 }
 
-// 使用无效仓库名创建、修改模型失败
+// 使用无效仓库名创建模型失败
 func (s *SuiteUserModel) TestUserCreateUpdateInvalidModel() {
 	_, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "invalid#testmodel",
@@ -84,13 +83,6 @@ func (s *SuiteUserModel) TestUserCreateUpdateInvalidModel() {
 	assert.Nil(s.T(), err)
 
 	id := getString(s.T(), data.Data)
-
-	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest2, id, swaggerRest.ControllerReqToUpdateModel{
-		Name:       "invalid#testmodel",
-		Visibility: "public",
-	})
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
-	assert.NotNil(s.T(), err)
 
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

@@ -31,20 +31,21 @@ type OrganizationDTO struct {
 
 // ApproveDTO represents the data transfer object for an approval request.
 type ApproveDTO struct {
-	Id        string `json:"id"`
-	OrgName   string `json:"org_name"`
-	OrgId     string `json:"org_id"`
-	UserName  string `json:"user_name"`
-	UserId    string `json:"user_id"`
-	Role      string `json:"role"`
-	ExpiresAt int64  `json:"expires_at"`
-	Fullname  string `json:"fullname"`
-	Inviter   string `json:"inviter"`
-	Status    string `json:"status"`
-	By        string `json:"by"`
-	Msg       string `json:"msg"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
+	Id          string `json:"id"`
+	OrgName     string `json:"org_name"`
+	OrgFullName string `json:"org_full_name"`
+	OrgId       string `json:"org_id"`
+	UserName    string `json:"user_name"`
+	UserId      string `json:"user_id"`
+	Role        string `json:"role"`
+	ExpiresAt   int64  `json:"expires_at"`
+	Fullname    string `json:"fullname"`
+	Inviter     string `json:"inviter"`
+	Status      string `json:"status"`
+	By          string `json:"by"`
+	Msg         string `json:"msg"`
+	CreatedAt   int64  `json:"created_at"`
+	UpdatedAt   int64  `json:"updated_at"`
 }
 
 // ToApproveDTO converts a domain.Approve object to an ApproveDTO object.
@@ -57,21 +58,28 @@ func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 		fullname = u.Fullname
 	}
 
+	var orgFullName string
+	orgFullName, err = user.GetUserFullname(m.OrgName)
+	if err != nil {
+		logrus.Warnf("failed to get org fullname for %s, err:%s", m.OrgName, err)
+	}
+
 	return ApproveDTO{
-		Id:        m.Id.Identity(),
-		OrgName:   m.OrgName.Account(),
-		OrgId:     m.OrgId.Identity(),
-		UserName:  m.Username.Account(),
-		UserId:    m.UserId.Identity(),
-		Role:      m.Role.Role(),
-		ExpiresAt: m.ExpireAt, // will expire in 14 days
-		Inviter:   m.Inviter.Account(),
-		Status:    string(m.Status),
-		Fullname:  fullname,
-		Msg:       m.Msg,
-		By:        m.By,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
+		Id:          m.Id.Identity(),
+		OrgName:     m.OrgName.Account(),
+		OrgFullName: orgFullName,
+		OrgId:       m.OrgId.Identity(),
+		UserName:    m.Username.Account(),
+		UserId:      m.UserId.Identity(),
+		Role:        m.Role.Role(),
+		ExpiresAt:   m.ExpireAt, // will expire in 14 days
+		Inviter:     m.Inviter.Account(),
+		Status:      string(m.Status),
+		Fullname:    fullname,
+		Msg:         m.Msg,
+		By:          m.By,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
 }
 

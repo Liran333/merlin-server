@@ -69,17 +69,12 @@ func (req *reqToCreateModel) toCmd() (cmd app.CmdToCreateModel, err error) {
 
 // reqToUpdateModel
 type reqToUpdateModel struct {
-	Name       *string `json:"name"`
 	Desc       *string `json:"desc"`
 	Fullname   *string `json:"fullname"`
 	Visibility *string `json:"visibility"`
 }
 
 func (p *reqToUpdateModel) action() (str string) {
-	if p.Name != nil {
-		str += fmt.Sprintf("name = %s", *p.Name)
-	}
-
 	if p.Visibility != nil {
 		str += fmt.Sprintf("visibility = %s", *p.Visibility)
 	}
@@ -88,12 +83,6 @@ func (p *reqToUpdateModel) action() (str string) {
 }
 
 func (p *reqToUpdateModel) toCmd() (cmd app.CmdToUpdateModel, err error) {
-	if p.Name != nil {
-		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
-			return
-		}
-	}
-
 	if p.Desc != nil {
 		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
 			return
@@ -156,7 +145,6 @@ func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 // reqToListGlobalModels
 type reqToListGlobalModels struct {
 	Task       string `form:"task"`
-	Others     string `form:"others"`
 	License    string `form:"license"`
 	Frameworks string `form:"frameworks"`
 
@@ -179,7 +167,6 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 		}
 	}
 
-	cmd.Labels.Others = toStringsSets(req.Others)
 	cmd.Labels.Frameworks = toStringsSets(req.Frameworks)
 
 	return cmd, nil

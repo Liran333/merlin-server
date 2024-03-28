@@ -12,15 +12,17 @@ import (
 
 // ModelSummary represents a summary of a model.
 type ModelSummary struct {
-	Id            string `json:"id"`
-	Name          string `json:"name"`
-	Desc          string `json:"desc"`
-	Task          string `json:"task"`
-	Owner         string `json:"owner"`
-	Fullname      string `json:"fullname"`
-	UpdatedAt     int64  `json:"updated_at"`
-	LikeCount     int    `json:"like_count"`
-	DownloadCount int    `json:"download_count"`
+	Id            string   `json:"id"`
+	Name          string   `json:"name"`
+	Desc          string   `json:"desc"`
+	Task          string   `json:"task"`
+	Owner         string   `json:"owner"`
+	License       string   `json:"license"`
+	Fullname      string   `json:"fullname"`
+	UpdatedAt     int64    `json:"updated_at"`
+	LikeCount     int      `json:"like_count"`
+	Frameworks    []string `json:"frameworks"`
+	DownloadCount int      `json:"download_count"`
 }
 
 // ListOption represents options for listing models.

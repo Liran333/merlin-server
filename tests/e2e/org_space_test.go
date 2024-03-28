@@ -169,7 +169,6 @@ func (s *SuiteOrgSpace) TestOrgReadMemberCantCreateUpdateDeleteSpace() {
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		Name:       "testspace",
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
@@ -243,7 +242,6 @@ func (s *SuiteOrgSpace) TestOrgWriteUpdateDeleteOthersSpace() {
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		Name:       "testspace",
 		Sdk:        "gradio",
 		Visibility: "public",
 	})
@@ -280,7 +278,6 @@ func (s *SuiteOrgSpace) TestOrgAdminUpdateDeleteOthersSpace() {
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		Name:       "testspace",
 		Sdk:        "gradio",
 		Visibility: "public",
 	})

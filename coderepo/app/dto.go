@@ -37,11 +37,6 @@ type CmdToUpdateRepo struct {
 }
 
 func (cmd *CmdToUpdateRepo) toRepo(repo *domain.CodeRepo) (b bool) {
-	if v := cmd.Name; v != nil && v != repo.Name {
-		repo.Name = v
-		b = true
-	}
-
 	if v := cmd.Visibility; v != nil && v != repo.Visibility {
 		repo.Visibility = v
 		b = true

@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-sdk/space"
+
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
@@ -85,7 +86,6 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 // reqToUpdateSpace
 type reqToUpdateSpace struct {
 	SDK        *string `json:"sdk"`
-	Name       *string `json:"name"`
 	Desc       *string `json:"desc"`
 	Fullname   *string `json:"fullname"`
 	Hardware   *string `json:"hardware"`
@@ -93,10 +93,6 @@ type reqToUpdateSpace struct {
 }
 
 func (p *reqToUpdateSpace) action() (str string) {
-	if p.Name != nil {
-		str += fmt.Sprintf("name = %s", *p.Name)
-	}
-
 	if p.Visibility != nil {
 		str += fmt.Sprintf("visibility = %s", *p.Visibility)
 	}
@@ -105,12 +101,6 @@ func (p *reqToUpdateSpace) action() (str string) {
 }
 
 func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
-	if p.Name != nil {
-		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
-			return
-		}
-	}
-
 	if p.Desc != nil {
 		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
 			return
