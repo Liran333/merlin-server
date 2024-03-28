@@ -105,7 +105,7 @@ func logRequest() gin.HandlerFunc {
 			errmsg = fmt.Sprintf("%s%s", errmsg, ginErr.Error())
 		}
 
-		if strings.Contains(c.Request.RequestURI, "/swagger/") {
+		if strings.Contains(c.Request.RequestURI, "/swagger/") || strings.Contains(c.Request.RequestURI, "/internal/heartbeat") {
 			return
 		}
 
