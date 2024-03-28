@@ -7,6 +7,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/openmerlin/merlin-server/space/domain/message"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 
@@ -33,12 +34,14 @@ func NewSpaceVariableService(
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
 	variableAdapter spacerepo.SpaceVariableRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
+	msgAdapter message.SpaceMessage,
 ) SpaceVariableService {
 	return &spaceVariableService{
 		permission:           permission,
 		repoAdapter:          repoAdapter,
 		variableAdapter:      variableAdapter,
 		secureStorageAdapter: secureStorageAdapter,
+		msgAdapter:           msgAdapter,
 	}
 }
 
@@ -47,6 +50,7 @@ type spaceVariableService struct {
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
 	variableAdapter      spacerepo.SpaceVariableRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
+	msgAdapter           message.SpaceMessage
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -91,11 +95,22 @@ func (s *spaceVariableService) CreateVariable(
 	es := domain.NewSpaceVariableVault(variable)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to create space variable, space variable name:%s", variable.Name.MSDName())
+		logrus.Errorf("failed to create space variable, space variable name:%s, err:%s",
+			variable.Name.MSDName(), err)
 		return "", action, err
 	}
 
-	err = s.variableAdapter.AddVariable(variable)
+	if err = s.variableAdapter.AddVariable(variable); err != nil {
+		logrus.Errorf("failed to create space variable db, space variable name:%s, err:%s",
+			variable.Name.MSDName(), err)
+		return "", action, err
+	}
+
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send add space variable event, space id:%s, err:%s",
+			spaceId.Identity(), err)
+	}
 
 	return "successful", action, err
 }
@@ -155,13 +170,21 @@ func (s *spaceVariableService) DeleteVariable(
 
 	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(variable.GetVariablePath(), variable.Name.MSDName())
 	if err != nil {
-		logrus.Errorf("failed to delete variable, variable id:%s", variable.Id.Identity())
+		logrus.Errorf("failed to delete variable, variable id:%s, err:%s",
+			variable.Id.Identity(), err)
 		return
 	}
 
 	if err = s.variableAdapter.DeleteVariable(variable.Id); err != nil {
-		logrus.Errorf("failed to delete space variable, space variable id:%s", variable.Id.Identity())
+		logrus.Errorf("failed to delete space variable db, space variable id:%s, err:%s",
+			variable.Id.Identity(), err)
 		return
+	}
+
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send delete space variable event, space id:%s, err:%s",
+			spaceId.Identity(), err)
 	}
 
 	return
@@ -207,18 +230,31 @@ func (s *spaceVariableService) UpdateVariable(
 
 	b := cmd.toSpaceVariable(&variable)
 	if !b {
-		logrus.Errorf("failed to change variable, variable id:%s", variable.Id.Identity())
+		logrus.Errorf("failed to change variable, variable id:%s, err:%s",
+			variable.Id.Identity(), err)
 		return
 	}
 
 	es := domain.NewSpaceVariableVault(&variable)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to update variable, variable id:%s", variable.Id.Identity())
+		logrus.Errorf("failed to update variable, variable id:%s, err:%s",
+			variable.Id.Identity(), err)
 		return
 	}
 
-	err = s.variableAdapter.SaveVariable(&variable)
+	if err = s.variableAdapter.SaveVariable(&variable); err != nil {
+		logrus.Errorf("failed to update variable db, variable id:%s, err:%s",
+			variable.Id.Identity(), err)
+		return
+	}
+
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send update space variable event, space id:%s, err:%s",
+			spaceId.Identity(), err)
+	}
+
 	return
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/space/domain/message"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 	"github.com/openmerlin/merlin-server/utils"
@@ -31,12 +32,14 @@ func NewSpaceSecretService(
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
 	secretAdapter spacerepo.SpaceSecretRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
+	msgAdapter message.SpaceMessage,
 ) SpaceSecretService {
 	return &spaceSecretService{
 		permission:           permission,
 		repoAdapter:          repoAdapter,
 		secretAdapter:        secretAdapter,
 		secureStorageAdapter: secureStorageAdapter,
+		msgAdapter:           msgAdapter,
 	}
 }
 
@@ -45,6 +48,7 @@ type spaceSecretService struct {
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
 	secretAdapter        spacerepo.SpaceSecretRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
+	msgAdapter           message.SpaceMessage
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -87,11 +91,22 @@ func (s *spaceSecretService) CreateSecret(
 	es := domain.NewSpaceSecretVault(secret)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to create space secret, space secret id:%s", secret.Name.MSDName())
+		logrus.Errorf("failed to create space secret, space secret name:%s, err:%s",
+			secret.Name.MSDName(), err)
 		return "", action, err
 	}
 
-	err = s.secretAdapter.AddSecret(secret)
+	if err := s.secretAdapter.AddSecret(secret); err != nil {
+		logrus.Errorf("failed to create space secret db, space secret name:%s, err:%s",
+			secret.Name.MSDName(), err)
+		return "", action, err
+	}
+
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send create space secret event, space id:%s, err:%s",
+			spaceId.Identity(), err)
+	}
 
 	return "successful", action, err
 }
@@ -158,6 +173,12 @@ func (s *spaceSecretService) DeleteSecret(
 		return
 	}
 
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send delete space secret event, space id:%s, err:%s",
+			spaceId.Identity(), err)
+	}
+
 	return
 }
 
@@ -211,5 +232,15 @@ func (s *spaceSecretService) UpdateSecret(
 	}
 
 	err = s.secretAdapter.SaveSecret(&secret)
+	if err != nil {
+		return
+	}
+
+	e := domain.NewSpaceEnvChangedEvent(user, &space)
+	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
+		logrus.Errorf("failed to send update space secret event, space id:%s, err:%s",
+			spaceId.Identity(), err)
+	}
+
 	return
 }

@@ -38,6 +38,12 @@ func (p *messageAdapter) SendSpaceUpdatedEvent(e message.EventMessage) error {
 	return send(p.topics.SpaceUpdated, e)
 }
 
+// SendSpaceEnvChangedEvent is a method on the messageAdapter struct that takes an EventMessage
+// and sends it to the SpaceEnvChanged topic.
+func (p *messageAdapter) SendSpaceEnvChangedEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceEnvChanged, e)
+}
+
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {

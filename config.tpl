@@ -44,6 +44,7 @@ space:
     space_created: space_created
     space_updated: space_updated
     space_deleted: space_deleted
+    space_env_changed: space_env_changed
 
 permission:
   permissions:

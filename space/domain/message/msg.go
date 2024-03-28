@@ -15,4 +15,5 @@ type SpaceMessage interface {
 	SendSpaceCreatedEvent(EventMessage) error
 	SendSpaceDeletedEvent(EventMessage) error
 	SendSpaceUpdatedEvent(EventMessage) error
+	SendSpaceEnvChangedEvent(EventMessage) error
 }

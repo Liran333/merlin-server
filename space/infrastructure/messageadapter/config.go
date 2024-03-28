@@ -10,4 +10,5 @@ type Topics struct {
 	SpaceCreated string `json:"space_created" required:"true"`
 	SpaceDeleted string `json:"space_deleted" required:"true"`
 	SpaceUpdated string `json:"space_updated" required:"true"`
+	SpaceEnvChanged string `json:"space_env_changed" required:"true"`
 }

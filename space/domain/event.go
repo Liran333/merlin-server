@@ -78,3 +78,22 @@ func NewSpaceUpdatedEvent(user primitive.Account, space *Space, b bool) spaceUpd
 		IsPriToPub: b,
 	}
 }
+
+// spaceEnvChangedEvent
+type spaceEnvChangedEvent struct {
+	SpaceId   string `json:"space_id"`
+	ChangedBy string `json:"changed_by"`
+}
+
+// Message serializes the spaceEnvChangedEvent into a JSON byte array.
+func (e *spaceEnvChangedEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceDeletedEvent creates a new spaceDeletedEvent instance with the given Space.
+func NewSpaceEnvChangedEvent(user primitive.Account, space *Space) spaceEnvChangedEvent {
+	return spaceEnvChangedEvent{
+		SpaceId:   space.Id.Identity(),
+		ChangedBy: user.Account(),
+	}
+}

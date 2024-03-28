@@ -54,6 +54,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.SpaceAdapter(),
 		spacerepositoryadapter.SpaceVariableAdapter(),
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
+		messageadapter.MessageAdapter(&cfg.Space.Topics),
 	)
 
 	services.spaceSecret = app.NewSpaceSecretService(
@@ -61,6 +62,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.SpaceAdapter(),
 		spacerepositoryadapter.SpaceSecretAdapter(),
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
+		messageadapter.MessageAdapter(&cfg.Space.Topics),
 	)
 
 	return nil
