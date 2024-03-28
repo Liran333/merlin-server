@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	userctl "github.com/openmerlin/merlin-server/user/controller"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 func addRouteForSpaceSecretController(
@@ -45,6 +46,7 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 
 		return
 	}
+	defer utils.ClearStringMemory(*req.Value)
 
 	cmd, err := req.toCmd()
 	if err != nil {
@@ -127,6 +129,7 @@ func (ctl *SpaceController) UpdateSecret(ctx *gin.Context) {
 
 		return
 	}
+	defer utils.ClearStringMemory(*req.Value)
 
 	cmd, err := req.toCmd()
 	if err != nil {
