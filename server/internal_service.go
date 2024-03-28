@@ -6,10 +6,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/securitylog"
 	"github.com/openmerlin/merlin-server/config"
@@ -35,11 +32,6 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 	setRouterOfSpaceAppInternal(rg, services, cfg)
 
 	setRouterOfCodeRepoPermissionInternal(rg, services)
-
-	api.SwaggerInfointernal.Title = apiTitle
-	api.SwaggerInfointernal.Version = version
-	api.SwaggerInfointernal.Description = apiDesc
-	rg.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.InstanceName("internal")))
 
 	rg.GET("/heartbeat", func(*gin.Context) {})
 }
