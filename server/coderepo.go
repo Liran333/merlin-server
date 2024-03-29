@@ -28,7 +28,7 @@ func initCodeRepo(cfg *config.Config, services *allServices) error {
 	}
 
 	services.codeRepoApp = app.NewCodeRepoAppService(
-		coderepoadapter.NewRepoAdapter(gitea.Client(), services.userApp),
+		coderepoadapter.NewRepoAdapter(gitea.Client(), services.userApp, &cfg.CodeRepo.Repository),
 	)
 
 	return nil

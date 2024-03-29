@@ -27,12 +27,13 @@ type UserInfoAdapter interface {
 
 type codeRepoAdapter struct {
 	client      *gitea.Client
+	config      Config
 	userAdapter UserInfoAdapter
 }
 
 // NewRepoAdapter creates a new instance of the codeRepoAdapter.
-func NewRepoAdapter(c *gitea.Client, userAdapter UserInfoAdapter) *codeRepoAdapter {
-	return &codeRepoAdapter{client: c, userAdapter: userAdapter}
+func NewRepoAdapter(c *gitea.Client, userAdapter UserInfoAdapter, cfg *Config) *codeRepoAdapter {
+	return &codeRepoAdapter{client: c, userAdapter: userAdapter, config: *cfg}
 }
 
 // Add adds a new code repository to the code repository service.
@@ -42,7 +43,7 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 	opt := gitea.CreateRepoOption{
 		Name:          repo.Name.MSDName(),
 		License:       repo.License.License(),
-		Private:       repo.Visibility.IsPrivate(),
+		Private:       repo.Visibility.IsPrivate() || adapter.config.ForceToBePrivate,
 		DefaultBranch: defaultRef,
 	}
 
@@ -91,7 +92,7 @@ func (adapter *codeRepoAdapter) Save(index *domain.CodeRepoIndex, repo *domain.C
 	name := repo.Name.MSDName()
 	opt.Name = &name
 
-	private := repo.IsPrivate()
+	private := repo.IsPrivate() || adapter.config.ForceToBePrivate
 	opt.Private = &private
 
 	_, _, err := adapter.client.EditRepo(
