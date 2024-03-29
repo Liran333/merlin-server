@@ -37,13 +37,8 @@ func (v vaultAdapter) SaveSpaceEnvSecret(es securestorage.SpaceEnvSecret) error 
 		logrus.Errorf("get storage value failed: %v", err)
 		return err
 	}
-	if storageValueList == nil {
-		_, err = v.client.KVv2(v.basePath).Put(context.Background(), es.Path, storageData)
-		if err != nil && !errors.Is(err, vaultApi.ErrSecretNotFound) {
-			logrus.Errorf("unable to write storage value: %v", err)
-			return err
-		}
-		return nil
+	if storageValueList == nil || len(storageValueList.Data) == 0 {
+		return v.setSpaceEnvSecret(es, storageData)
 	}
 	for key, value := range storageData {
 		storageValueList.Data[key] = value
@@ -51,6 +46,15 @@ func (v vaultAdapter) SaveSpaceEnvSecret(es securestorage.SpaceEnvSecret) error 
 	_, err = v.client.KVv2(v.basePath).Patch(context.Background(), es.Path, storageValueList.Data)
 	if err != nil && !errors.Is(err, vaultApi.ErrSecretNotFound) {
 		logrus.Errorf("unable to patch storage value: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (v vaultAdapter) setSpaceEnvSecret(es securestorage.SpaceEnvSecret, storageData map[string]interface{}) error {
+	_, err := v.client.KVv2(v.basePath).Put(context.Background(), es.Path, storageData)
+	if err != nil && !errors.Is(err, vaultApi.ErrSecretNotFound) {
+		logrus.Errorf("unable to write storage value: %v", err)
 		return err
 	}
 	return nil

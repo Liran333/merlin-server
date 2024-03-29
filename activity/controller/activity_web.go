@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	sdk "github.com/openmerlin/merlin-sdk/activityapp"
+
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/common/controller"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"

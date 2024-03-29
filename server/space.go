@@ -17,6 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/securestoragadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
 )
 
 func initSpace(cfg *config.Config, services *allServices) error {
@@ -34,6 +35,10 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		services.permissionApp,
 		messageadapter.MessageAdapter(&cfg.Space.Topics),
 		services.codeRepoApp,
+		repositoryadapter.AppRepositoryAdapter(),
+		spacerepositoryadapter.SpaceVariableAdapter(),
+		spacerepositoryadapter.SpaceSecretAdapter(),
+		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		spacerepositoryadapter.SpaceAdapter(),
 	)
 

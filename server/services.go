@@ -42,7 +42,6 @@ type allServices struct {
 
 	spaceApp spaceapp.SpaceAppService
 
-
 	activityApp activityapp.ActivityAppService
 
 	modelSpace spaceapp.ModelSpaceAppService
@@ -70,12 +69,12 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	// initSpace depends on initCodeRepo and initOrg
-	if err = initSpace(cfg, &services); err != nil {
+	if err = initSpaceApp(cfg, &services); err != nil {
 		return
 	}
 
-	if err = initSpaceApp(cfg, &services); err != nil {
+	// initSpace depends on initCodeRepo and initOrg and initSpaceApp
+	if err = initSpace(cfg, &services); err != nil {
 		return
 	}
 

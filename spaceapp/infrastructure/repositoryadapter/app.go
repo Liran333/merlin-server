@@ -21,6 +21,7 @@ type dao interface {
 	EqualQuery(field string) string
 	IsRecordExists(err error) bool
 	GetRecord(filter, result interface{}) error
+	DeleteByPrimaryKey(row interface{}) error
 }
 
 type appRepositoryAdapter struct {
@@ -104,4 +105,9 @@ func (adapter *appRepositoryAdapter) Save(m *domain.SpaceApp) error {
 	}
 
 	return nil
+}
+
+// DeleteBySpaceId delete space app by the space ID.
+func (adapter *appRepositoryAdapter) DeleteBySpaceId(spaceId primitive.Identity) error {
+	return adapter.dao.DB().Where(equalQuery(fieldSpaceId), spaceId.Identity()).Delete(&spaceappDO{}).Error
 }

@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryadapter
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
@@ -96,4 +98,8 @@ func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 	}
 
 	return v
+}
+
+func equalQuery(field string) string {
+	return fmt.Sprintf(`%s = ?`, field)
 }

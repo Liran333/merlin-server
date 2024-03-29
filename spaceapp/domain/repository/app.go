@@ -16,6 +16,7 @@ type Repository interface {
 	Find(*domain.SpaceAppIndex) (domain.SpaceApp, error)
 	Save(*domain.SpaceApp) error
 	FindBySpaceId(primitive.Identity) (domain.SpaceApp, error)
+	DeleteBySpaceId(primitive.Identity) error
 }
 
 type SpaceAppBuildLogAdapter interface {

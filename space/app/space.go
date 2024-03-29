@@ -17,7 +17,14 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/openmerlin/merlin-server/space/domain/securestorage"
+	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
+)
+
+const (
+	variableTypeName = "variable"
+	secretTypeName   = "secret"
 )
 
 func newSpaceNotFound(err error) error {
@@ -67,21 +74,33 @@ func NewSpaceAppService(
 	permission commonapp.ResourcePermissionAppService,
 	msgAdapter message.SpaceMessage,
 	codeRepoApp coderepoapp.CodeRepoAppService,
+	spaceappRepository spaceappRepository.Repository,
+	variableAdapter repository.SpaceVariableRepositoryAdapter,
+	secretAdapter repository.SpaceSecretRepositoryAdapter,
+	secureStorageAdapter securestorage.SpaceSecureManager,
 	repoAdapter repository.SpaceRepositoryAdapter,
 ) SpaceAppService {
 	return &spaceAppService{
-		permission:  permission,
-		msgAdapter:  msgAdapter,
-		codeRepoApp: codeRepoApp,
-		repoAdapter: repoAdapter,
+		permission:           permission,
+		msgAdapter:           msgAdapter,
+		codeRepoApp:          codeRepoApp,
+		spaceappRepository:   spaceappRepository,
+		variableAdapter:      variableAdapter,
+		secretAdapter:        secretAdapter,
+		secureStorageAdapter: secureStorageAdapter,
+		repoAdapter:          repoAdapter,
 	}
 }
 
 type spaceAppService struct {
-	permission  commonapp.ResourcePermissionAppService
-	msgAdapter  message.SpaceMessage
-	codeRepoApp coderepoapp.CodeRepoAppService
-	repoAdapter repository.SpaceRepositoryAdapter
+	permission           commonapp.ResourcePermissionAppService
+	msgAdapter           message.SpaceMessage
+	codeRepoApp          coderepoapp.CodeRepoAppService
+	spaceappRepository   spaceappRepository.Repository
+	variableAdapter      repository.SpaceVariableRepositoryAdapter
+	secretAdapter        repository.SpaceSecretRepositoryAdapter
+	secureStorageAdapter securestorage.SpaceSecureManager
+	repoAdapter          repository.SpaceRepositoryAdapter
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -152,6 +171,16 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		return
 	}
 
+	// del space app
+	if err = s.spaceappRepository.DeleteBySpaceId(space.Id); err != nil {
+		return
+	}
+
+	// del space variable secret
+	if err = s.delSpaceVariableSecret(space.Id); err != nil {
+		return
+	}
+
 	if err = s.repoAdapter.Delete(space.Id); err != nil {
 		return
 	}
@@ -162,6 +191,53 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 	}
 
 	return
+}
+
+func (s *spaceAppService) delSpaceVariableSecret(spaceId primitive.Identity) error {
+	spaceVariableSecretList, err := s.variableAdapter.ListVariableSecret(spaceId.Identity())
+	if err != nil {
+		return err
+	}
+	for _, envSecret := range spaceVariableSecretList {
+		envSecretId, err := primitive.NewIdentity(envSecret.Id)
+		if err != nil {
+			logrus.Errorf("failed to get envSecretId, err:%s", err)
+			continue
+		}
+		if envSecret.Type == variableTypeName {
+			variable, err := s.variableAdapter.FindVariableById(envSecretId)
+			if err != nil {
+				logrus.Errorf("failed to get variable, err:%s", err)
+				continue
+			}
+			if err = s.secureStorageAdapter.DeleteSpaceEnvSecret(
+				variable.GetVariablePath(), variable.Name.MSDName()); err != nil {
+				logrus.Errorf("failed to delete variable, err:%s", err)
+				continue
+			}
+			if err = s.variableAdapter.DeleteVariable(envSecretId); err != nil {
+				logrus.Errorf("failed to delete variable db, err:%s", err)
+				continue
+			}
+		}
+		if envSecret.Type == secretTypeName {
+			secret, err := s.secretAdapter.FindSecretById(envSecretId)
+			if err != nil {
+				logrus.Errorf("failed to get secret, err:%s", err)
+				continue
+			}
+			if err = s.secureStorageAdapter.DeleteSpaceEnvSecret(
+				secret.GetSecretPath(), secret.Name.MSDName()); err != nil {
+				logrus.Errorf("failed to delete secret, err:%s", err)
+				continue
+			}
+			if err = s.secretAdapter.DeleteSecret(envSecretId); err != nil {
+				logrus.Errorf("failed to delete secret db, err:%s", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 // Update updates the space with the given space ID using the provided command and returns the action performed.
