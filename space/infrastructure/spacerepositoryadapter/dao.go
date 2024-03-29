@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 var dbInstance *gorm.DB
@@ -67,7 +68,7 @@ func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
 func likeFilter(field, value string) (query, arg string) {
 	query = fmt.Sprintf(`%s ilike ?`, field)
 
-	arg = `%` + value + `%`
+	arg = `%` + utils.EscapePgsqlValue(value) + `%`
 
 	return
 }

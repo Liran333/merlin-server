@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // Impl is an interface for database operations.
@@ -93,7 +94,7 @@ func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
 func (dao *daoImpl) LikeFilter(field, value string) (query, arg string) {
 	query = fmt.Sprintf(`%s ilike ?`, field)
 
-	arg = `%` + value + `%`
+	arg = `%` + utils.EscapePgsqlValue(value) + `%`
 
 	return
 }
