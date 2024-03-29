@@ -66,8 +66,8 @@ func (s *spaceSecretService) CreateSecret(
 	}
 
 	action = fmt.Sprintf(
-		"owner:%s create spaceId:%s space secret name:%s",
-		spaceId.Identity(), space.Owner.Account(), cmd.Name,
+		"add space secret of %s:%s/%s",
+		spaceId.Identity(), space.Owner.Account(), cmd.Name.MSDName(),
 	)
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
@@ -150,8 +150,8 @@ func (s *spaceSecretService) DeleteSecret(
 	}
 
 	action = fmt.Sprintf(
-		"%s:%s delete space secret name:%s",
-		spaceId.Identity(), space.Owner.Account(), secret.Name.MSDName(),
+		"delete space secret of %s:%s/%s",
+		secretId.Identity(), space.Owner.Account(), secret.Name.MSDName(),
 	)
 
 	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
@@ -206,7 +206,7 @@ func (s *spaceSecretService) UpdateSecret(
 	}
 
 	action = fmt.Sprintf(
-		"%s:%s update space secret name:%s",
+		"update space secret of %s:%s/%s",
 		spaceId.Identity(), space.Owner.Account(), secret.Name.MSDName(),
 	)
 

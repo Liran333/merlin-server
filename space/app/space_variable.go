@@ -68,8 +68,8 @@ func (s *spaceVariableService) CreateVariable(
 	}
 
 	action = fmt.Sprintf(
-		"owner:%s create spaceId:%s space variable name:%s value:%s",
-		spaceId.Identity(), space.Owner.Account(), cmd.Name, cmd.Value,
+		"add space variable of %s:%s/%s:%s",
+		spaceId.Identity(), space.Owner.Account(), cmd.Name.MSDName(), cmd.Value.MSDName(),
 	)
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
@@ -154,8 +154,8 @@ func (s *spaceVariableService) DeleteVariable(
 	}
 
 	action = fmt.Sprintf(
-		"%s:%s delete space variable name:%s value:%s",
-		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(), variable.Value.MSDName(),
+		"delete space variable of %s:%s/%s",
+		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
 	)
 
 	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
@@ -214,7 +214,7 @@ func (s *spaceVariableService) UpdateVariable(
 	}
 
 	action = fmt.Sprintf(
-		"%s:%s update space variable name:%s",
+		"update space variable of %s:%s/%s",
 		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
 	)
 
