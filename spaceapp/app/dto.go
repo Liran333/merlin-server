@@ -39,9 +39,9 @@ type CmdToNotifyServiceIsStarted struct {
 type SpaceAppDTO struct {
 	Id          int64  `json:"id"`
 	Status      string `json:"status"`
-	AppURL      string `json:"app_url"`
-	AppLogURL   string `json:"app_log_url"`
-	BuildLogURL string `json:"build_log_url"`
+	AppURL      string `json:"-"`
+	AppLogURL   string `json:"-"`
+	BuildLogURL string `json:"-"`
 }
 
 func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {
