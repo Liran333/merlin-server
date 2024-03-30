@@ -304,7 +304,7 @@ func (p *reqToCreateSpaceVariable) toCmd() (cmd app.CmdToCreateSpaceVariable, er
 	}
 
 	if p.Value != nil {
-		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
 			return
 		}
 	}
@@ -338,7 +338,7 @@ func (p *reqToUpdateSpaceVariable) toCmd() (cmd app.CmdToUpdateSpaceVariable, er
 	}
 
 	if p.Value != nil {
-		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
 			return
 		}
 	}
@@ -366,7 +366,7 @@ func (p *reqToCreateSpaceSecret) toCmd() (cmd app.CmdToCreateSpaceSecret, err er
 	}
 
 	if p.Value != nil {
-		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
 			return
 		}
 	}
@@ -388,7 +388,7 @@ func (p *reqToUpdateSpaceSecret) toCmd() (cmd app.CmdToUpdateSpaceSecret, err er
 	}
 
 	if p.Value != nil {
-		if cmd.Value, err = primitive.NewMSDName(*p.Value); err != nil {
+		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
 			return
 		}
 	}

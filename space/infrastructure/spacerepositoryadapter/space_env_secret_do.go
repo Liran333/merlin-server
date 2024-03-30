@@ -7,6 +7,7 @@ package spacerepositoryadapter
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
@@ -27,7 +28,7 @@ func toSpaceVariableDO(m *domain.SpaceVariable) spaceEnvSecretDO {
 		SpaceId:   m.SpaceId.Integer(),
 		Desc:      m.Desc.MSDDesc(),
 		Name:      m.Name.MSDName(),
-		Value:     m.Value.MSDName(),
+		Value:     m.Value.ENVValue(),
 		Type:      variableTypeName,
 		UpdatedAt: m.UpdatedAt,
 	}
@@ -64,7 +65,7 @@ func (do *spaceEnvSecretDO) toSpaceVariable() domain.SpaceVariable {
 		SpaceId:   primitive.CreateIdentity(do.SpaceId),
 		Name:      primitive.CreateMSDName(do.Name),
 		Desc:      primitive.CreateMSDDesc(do.Desc),
-		Value:     primitive.CreateMSDName(do.Value),
+		Value:     spaceprimitive.CreateENVValue(do.Value),
 		UpdatedAt: do.UpdatedAt,
 	}
 }
@@ -75,7 +76,7 @@ func (do *spaceEnvSecretDO) toSpaceSecret() domain.SpaceSecret {
 		SpaceId:   primitive.CreateIdentity(do.SpaceId),
 		Name:      primitive.CreateMSDName(do.Name),
 		Desc:      primitive.CreateMSDDesc(do.Desc),
-		Value:     primitive.CreateMSDName(do.Value),
+		Value:     spaceprimitive.CreateENVValue(do.Value),
 		UpdatedAt: do.UpdatedAt,
 	}
 }

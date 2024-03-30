@@ -162,13 +162,13 @@ type SpaceModelDTO struct {
 type CmdToCreateSpaceVariable struct {
 	Name  primitive.MSDName
 	Desc  primitive.MSDDesc
-	Value primitive.MSDName
+	Value spaceprimitive.ENVValue
 }
 
 // CmdToUpdateSpaceVariable is a struct used to update a space variable.
 type CmdToUpdateSpaceVariable struct {
 	Desc  primitive.MSDDesc
-	Value primitive.MSDName
+	Value spaceprimitive.ENVValue
 }
 
 func (cmd *CmdToUpdateSpaceVariable) toSpaceVariable(spaceVariable *domain.SpaceVariable) (b bool) {
@@ -194,13 +194,13 @@ type SpaceVariableSecretDTO struct {
 type CmdToCreateSpaceSecret struct {
 	Name  primitive.MSDName
 	Desc  primitive.MSDDesc
-	Value primitive.MSDName
+	Value spaceprimitive.ENVValue
 }
 
 // CmdToUpdateSpaceSecret is a struct used to update a space secret.
 type CmdToUpdateSpaceSecret struct {
 	Desc  primitive.MSDDesc
-	Value primitive.MSDName
+	Value spaceprimitive.ENVValue
 }
 
 func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret) (b bool) {

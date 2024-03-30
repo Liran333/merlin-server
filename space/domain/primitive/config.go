@@ -12,12 +12,20 @@ import (
 )
 
 var (
+	envConfig  ENVConfig
 	sdkObjects map[string]sets.Set[string]
 )
 
 // Config represents the configuration structure for initialization.
 type Config struct {
 	SDKObjects []SDKObject `json:"sdk"`
+	ENVConfig  ENVConfig   `json:"env"`
+}
+
+// ENVConfig represents the configuration for env.
+type ENVConfig struct {
+	MinValueLength int `json:"env_value_min_length"      required:"true"`
+	MaxValueLength int `json:"env_value_max_length"      required:"true"`
 }
 
 type SDKObject struct {
@@ -39,5 +47,18 @@ func Init(cfg *Config) {
 		}
 		sdkObjects[sdkType] = sets.New[string]()
 		sdkObjects[sdkType].Insert(sdkobj.Hardware...)
+	}
+
+	envConfig = cfg.ENVConfig
+}
+
+// SetDefault sets default values for PasswordConfig if they are not provided.
+func (cfg *Config) SetDefault() {
+	if cfg.ENVConfig.MinValueLength <= 0 {
+		cfg.ENVConfig.MinValueLength = 8
+	}
+
+	if cfg.ENVConfig.MaxValueLength <= 0 {
+		cfg.ENVConfig.MaxValueLength = 20
 	}
 }

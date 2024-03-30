@@ -56,7 +56,7 @@ type SpaceVariable struct {
 	SpaceId primitive.Identity
 	Name    primitive.MSDName
 	Desc    primitive.MSDDesc
-	Value   primitive.MSDName
+	Value   spaceprimitive.ENVValue
 
 	CreatedAt int64
 	UpdatedAt int64
@@ -67,7 +67,7 @@ func NewSpaceVariableVault(variable *SpaceVariable) securestorage.SpaceEnvSecret
 	return securestorage.SpaceEnvSecret{
 		Path:  variablePath + variable.SpaceId.Identity(),
 		Name:  variable.Name.MSDName(),
-		Value: variable.Value.MSDName(),
+		Value: variable.Value.ENVValue(),
 	}
 }
 
@@ -81,7 +81,7 @@ type SpaceSecret struct {
 	SpaceId primitive.Identity
 	Name    primitive.MSDName
 	Desc    primitive.MSDDesc
-	Value   primitive.MSDName
+	Value   spaceprimitive.ENVValue
 
 	CreatedAt int64
 	UpdatedAt int64
@@ -92,7 +92,7 @@ func NewSpaceSecretVault(secret *SpaceSecret) securestorage.SpaceEnvSecret {
 	return securestorage.SpaceEnvSecret{
 		Path:  secretePath + secret.SpaceId.Identity(),
 		Name:  secret.Name.MSDName(),
-		Value: secret.Value.MSDName(),
+		Value: secret.Value.ENVValue(),
 	}
 }
 

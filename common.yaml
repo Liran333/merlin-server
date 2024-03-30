@@ -38,6 +38,9 @@ SPACE_SDK:
   HARDWARE:
   - 'CPU basic 2 vCPU · 16GB · FREE'
 
+ENV_VALUE_MIN_LEN: 1
+ENV_VALUE_MAX_LEN: 100
+
 LICENSES:
   - 'apache-2.0'
   - 'mit'

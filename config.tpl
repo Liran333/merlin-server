@@ -40,6 +40,9 @@ space:
       - '{{.}}'
     {{- end }}
   {{- end }}
+    env:
+      env_value_min_length: {{(ds "common").ENV_VALUE_MIN_LEN }}
+      env_value_max_length: {{(ds "common").ENV_VALUE_MAX_LEN }}
   topics:
     space_created: space_created
     space_updated: space_updated

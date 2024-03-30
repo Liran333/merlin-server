@@ -69,7 +69,7 @@ func (s *spaceVariableService) CreateVariable(
 
 	action = fmt.Sprintf(
 		"add space variable of %s:%s/%s:%s",
-		spaceId.Identity(), space.Owner.Account(), cmd.Name.MSDName(), cmd.Value.MSDName(),
+		spaceId.Identity(), space.Owner.Account(), cmd.Name.MSDName(), cmd.Value.ENVValue(),
 	)
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
