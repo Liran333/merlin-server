@@ -251,3 +251,8 @@ func NewOverLimit(code string, msg string, err error) limitRateError {
 func NewExpired(msg string, err error) errorImpl {
 	return New(ErrorCodeExpired, msg, err)
 }
+
+// NewCommonRespError creates a new error with the common resp error.
+func NewCommonRespError(msg string, err error) errorImpl {
+	return New(ErrorBaseCase, msg, err)
+}

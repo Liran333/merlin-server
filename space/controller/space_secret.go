@@ -43,15 +43,14 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 	req := reqToCreateSpaceSecret{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
-
 		return
 	}
+
 	defer utils.ClearStringMemory(*req.Value)
 
 	cmd, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
@@ -60,7 +59,6 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
@@ -85,22 +83,19 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/space/{id}/secret/{sid} [delete]
 func (ctl *SpaceController) DeleteSecret(ctx *gin.Context) {
-	user := ctl.userMiddleWare.GetUser(ctx)
-
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	secretId, err := primitive.NewIdentity(ctx.Param("sid"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
+	user := ctl.userMiddleWare.GetUser(ctx)
 	action, err := ctl.secretService.DeleteSecret(user, spaceId, secretId)
 
 	middleware.SetAction(ctx, action)
@@ -126,29 +121,26 @@ func (ctl *SpaceController) UpdateSecret(ctx *gin.Context) {
 	req := reqToUpdateSpaceSecret{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
-
 		return
 	}
+
 	defer utils.ClearStringMemory(*req.Value)
 
 	cmd, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	secretId, err := primitive.NewIdentity(ctx.Param("sid"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 

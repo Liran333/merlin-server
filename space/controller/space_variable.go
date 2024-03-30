@@ -46,26 +46,22 @@ func (ctl *SpaceController) CreateVariable(ctx *gin.Context) {
 	req := reqToCreateSpaceVariable{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
-
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
-
-	user := ctl.userMiddleWare.GetUser(ctx)
 
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
+	user := ctl.userMiddleWare.GetUser(ctx)
 	v, action, err := ctl.variableService.CreateVariable(user, spaceId, &cmd)
 
 	middleware.SetAction(ctx, action)
@@ -87,22 +83,19 @@ func (ctl *SpaceController) CreateVariable(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/space/{id}/variable/{vid} [delete]
 func (ctl *SpaceController) DeleteVariable(ctx *gin.Context) {
-	user := ctl.userMiddleWare.GetUser(ctx)
-
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	variableId, err := primitive.NewIdentity(ctx.Param("vid"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
+	user := ctl.userMiddleWare.GetUser(ctx)
 	action, err := ctl.variableService.DeleteVariable(user, spaceId, variableId)
 
 	middleware.SetAction(ctx, action)
@@ -128,33 +121,28 @@ func (ctl *SpaceController) UpdateVariable(ctx *gin.Context) {
 	req := reqToUpdateSpaceVariable{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
-
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	variableId, err := primitive.NewIdentity(ctx.Param("vid"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-
 	action, err := ctl.variableService.UpdateVariable(
 		user, spaceId, variableId, &cmd,
 	)
@@ -181,18 +169,15 @@ func (ctl *SpaceController) GetVariableSecret(ctx *gin.Context) {
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-
 	space, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
-
 		return
 	}
 
 	dto, err := ctl.variableService.ListVariableSecret(space.Id)
 	if err != nil {
 		commonctl.SendError(ctx, err)
-
 		return
 	} else {
 		commonctl.SendRespOfGet(ctx, &dto)

@@ -7,16 +7,14 @@ package app
 import (
 	"fmt"
 
-	"github.com/openmerlin/merlin-server/space/domain/message"
-	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
-	"github.com/openmerlin/merlin-server/space/domain/securestorage"
-
-	"github.com/sirupsen/logrus"
-
 	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/space/domain/message"
+	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -63,7 +61,6 @@ func (s *spaceVariableService) CreateVariable(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -74,11 +71,16 @@ func (s *spaceVariableService) CreateVariable(
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
 	if err != nil {
+		err = newSpaceNotFound(err)
+		return "", action, err
+	}
+
+	if err := s.spaceVariableCountCheck(space.Id); err != nil {
+		err = newSpaceVariableCountExceeded(err)
 		return "", action, err
 	}
 
 	now := utils.Now()
-
 	variable := &domain.SpaceVariable{
 		SpaceId:   space.Id,
 		Desc:      cmd.Desc,
@@ -87,31 +89,25 @@ func (s *spaceVariableService) CreateVariable(
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
-
-	if err := s.spaceVariableCountCheck(space.Id); err != nil {
-		return "", action, err
-	}
-
 	es := domain.NewSpaceVariableVault(variable)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to create space variable, space variable name:%s, err:%s",
-			variable.Name.MSDName(), err)
+		err = allerror.NewCommonRespError("failed to create space variable",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	if err = s.variableAdapter.AddVariable(variable); err != nil {
-		logrus.Errorf("failed to create space variable db, space variable name:%s, err:%s",
-			variable.Name.MSDName(), err)
+		err = allerror.NewCommonRespError("failed to create space variable db",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send add space variable event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send add space variable event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return "successful", action, err
 }
 
@@ -123,7 +119,7 @@ func (s *spaceVariableService) spaceVariableCountCheck(spaceId primitive.Identit
 
 	if total >= config.MaxCountSpaceVariable {
 		err = fmt.Errorf("space varibale count(now:%d max:%d) exceed", total, config.MaxCountSpaceVariable)
-		return newSpaceVariableCountExceeded(err)
+		return err
 	}
 
 	return nil
@@ -140,7 +136,6 @@ func (s *spaceVariableService) DeleteVariable(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -149,7 +144,6 @@ func (s *spaceVariableService) DeleteVariable(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceVariableNotFound(err)
 		}
-
 		return
 	}
 
@@ -164,29 +158,27 @@ func (s *spaceVariableService) DeleteVariable(
 	}
 	if notFound {
 		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
-
 		return
 	}
 
 	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(variable.GetVariablePath(), variable.Name.MSDName())
 	if err != nil {
-		logrus.Errorf("failed to delete variable, variable id:%s, err:%s",
-			variable.Id.Identity(), err)
+		err = allerror.NewCommonRespError("failed to delete space variable",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return
 	}
 
 	if err = s.variableAdapter.DeleteVariable(variable.Id); err != nil {
-		logrus.Errorf("failed to delete space variable db, space variable id:%s, err:%s",
-			variable.Id.Identity(), err)
+		err = allerror.NewCommonRespError("failed to delete space variable db",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send delete space variable event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send delete space variable event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return
 }
 
@@ -200,7 +192,6 @@ func (s *spaceVariableService) UpdateVariable(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -209,7 +200,6 @@ func (s *spaceVariableService) UpdateVariable(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceVariableNotFound(err)
 		}
-
 		return
 	}
 
@@ -224,37 +214,34 @@ func (s *spaceVariableService) UpdateVariable(
 	}
 	if notFound {
 		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
-
 		return
 	}
 
 	b := cmd.toSpaceVariable(&variable)
 	if !b {
-		logrus.Errorf("failed to change variable, variable id:%s, err:%s",
-			variable.Id.Identity(), err)
+		err = newSpaceVariableNotFound(fmt.Errorf("%s not found", variableId.Identity()))
 		return
 	}
 
 	es := domain.NewSpaceVariableVault(&variable)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to update variable, variable id:%s, err:%s",
-			variable.Id.Identity(), err)
+		err = allerror.NewCommonRespError("failed to update space variable",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return
 	}
 
 	if err = s.variableAdapter.SaveVariable(&variable); err != nil {
-		logrus.Errorf("failed to update variable db, variable id:%s, err:%s",
-			variable.Id.Identity(), err)
+		err = allerror.NewCommonRespError("failed to update space variable db",
+			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send update space variable event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send update space variable event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return
 }
 
@@ -262,8 +249,11 @@ func (s *spaceVariableService) UpdateVariable(
 func (s *spaceVariableService) ListVariableSecret(spaceId string) (
 	SpaceVariableSecretDTO, error,
 ) {
-
 	variableSecretList, err := s.variableAdapter.ListVariableSecret(spaceId)
+	if err != nil {
+		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId))
+		return SpaceVariableSecretDTO{}, err
+	}
 
 	return SpaceVariableSecretDTO{
 		SpaceVariableSecret: variableSecretList,

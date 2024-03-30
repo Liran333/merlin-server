@@ -7,9 +7,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
 	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
@@ -61,7 +60,6 @@ func (s *spaceSecretService) CreateSecret(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -72,10 +70,12 @@ func (s *spaceSecretService) CreateSecret(
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
 	if err != nil {
+		err = newSpaceNotFound(err)
 		return "", action, err
 	}
 
 	if err := s.spaceSecretCountCheck(space.Id); err != nil {
+		err = newSpaceSecretCountExceeded(err)
 		return "", action, err
 	}
 
@@ -91,23 +91,22 @@ func (s *spaceSecretService) CreateSecret(
 	es := domain.NewSpaceSecretVault(secret)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
-		logrus.Errorf("failed to create space secret, space secret name:%s, err:%s",
-			secret.Name.MSDName(), err)
+		err = allerror.NewCommonRespError("failed to create space secret",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	if err := s.secretAdapter.AddSecret(secret); err != nil {
-		logrus.Errorf("failed to create space secret db, space secret name:%s, err:%s",
-			secret.Name.MSDName(), err)
+		err = allerror.NewCommonRespError("failed to create space secret db",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send create space secret event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send create space secret event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return "successful", action, err
 }
 
@@ -119,7 +118,7 @@ func (s *spaceSecretService) spaceSecretCountCheck(spaceId primitive.Identity) e
 
 	if total >= config.MaxCountSpaceSecret {
 		err = fmt.Errorf("space secret count(now:%d max:%d) exceed", total, config.MaxCountSpaceSecret)
-		return newSpaceSecretCountExceeded(err)
+		return err
 	}
 
 	return nil
@@ -136,7 +135,6 @@ func (s *spaceSecretService) DeleteSecret(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -145,7 +143,6 @@ func (s *spaceSecretService) DeleteSecret(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceSecretNotFound(err)
 		}
-
 		return
 	}
 
@@ -160,25 +157,27 @@ func (s *spaceSecretService) DeleteSecret(
 	}
 	if notFound {
 		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
-
 		return
 	}
 
 	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(secret.GetSecretPath(), secret.Name.MSDName())
 	if err != nil {
+		err = allerror.NewCommonRespError("failed to delete secret",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return
 	}
 
 	if err = s.secretAdapter.DeleteSecret(secret.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to delete secret db",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send delete space secret event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send delete space secret event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return
 }
 
@@ -192,7 +191,6 @@ func (s *spaceSecretService) UpdateSecret(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
 		return
 	}
 
@@ -201,7 +199,6 @@ func (s *spaceSecretService) UpdateSecret(
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceSecretNotFound(err)
 		}
-
 		return
 	}
 
@@ -216,7 +213,6 @@ func (s *spaceSecretService) UpdateSecret(
 	}
 	if notFound {
 		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
-
 		return
 	}
 
@@ -228,19 +224,22 @@ func (s *spaceSecretService) UpdateSecret(
 	es := domain.NewSpaceSecretVault(&secret)
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
+		err = allerror.NewCommonRespError("failed to update secret",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return
 	}
 
 	err = s.secretAdapter.SaveSecret(&secret)
 	if err != nil {
+		err = allerror.NewCommonRespError("failed to update secret db",
+			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
-		logrus.Errorf("failed to send update space secret event, space id:%s, err:%s",
-			spaceId.Identity(), err)
+		err = allerror.NewCommonRespError("failed to send update space secret event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
-
 	return
 }
