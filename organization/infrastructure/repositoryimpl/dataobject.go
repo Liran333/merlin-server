@@ -13,6 +13,7 @@ import (
 func toMemberDoc(o *domain.OrgMember) Member {
 	do := Member{
 		Username: o.Username.Account(),
+		FullName: o.FullName.AccountFullname(),
 		UserId:   o.UserId.Integer(),
 		Orgname:  o.OrgName.Account(),
 		OrgId:    o.OrgId.Integer(),
@@ -32,6 +33,7 @@ func toOrgMember(doc *Member) domain.OrgMember {
 		OrgId:     primitive.CreateIdentity(doc.OrgId),
 		Role:      primitive.CreateRole(doc.Role),
 		Username:  primitive.CreateAccount(doc.Username),
+		FullName:  primitive.CreateAccountFullname(doc.FullName),
 		UserId:    primitive.CreateIdentity(doc.UserId),
 		UpdatedAt: doc.CreatedAt.Unix(),
 		CreatedAt: doc.CreatedAt.Unix(),

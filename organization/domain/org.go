@@ -174,15 +174,16 @@ const (
 
 // OrgMember represents an organization member with its details.
 type OrgMember struct {
-	Id        primitive.Identity `json:"id"`
-	Username  primitive.Account  `json:"user_name"`
-	UserId    primitive.Identity `json:"user_id"`
-	OrgName   primitive.Account  `json:"org_name"`
-	OrgId     primitive.Identity `json:"org_id"`
-	Role      primitive.Role     `json:"role"`
-	Type      InviteType         `json:"type"`
-	CreatedAt int64              `json:"created_at"`
-	UpdatedAt int64              `json:"updated_at"`
+	Id        primitive.Identity        `json:"id"`
+	Username  primitive.Account         `json:"user_name"`
+	FullName  primitive.AccountFullname `json:"full_name"`
+	UserId    primitive.Identity        `json:"user_id"`
+	OrgName   primitive.Account         `json:"org_name"`
+	OrgId     primitive.Identity        `json:"org_id"`
+	Role      primitive.Role            `json:"role"`
+	Type      InviteType                `json:"type"`
+	CreatedAt int64                     `json:"created_at"`
+	UpdatedAt int64                     `json:"updated_at"`
 	Version   int
 }
 
@@ -346,9 +347,10 @@ func (cmd OrgAddMemberCmd) Validate() error {
 }
 
 // ToMember converts the command to an OrgMember.
-func (cmd OrgAddMemberCmd) ToMember() OrgMember {
+func (cmd OrgAddMemberCmd) ToMember(memberInfo domain.User) OrgMember {
 	return OrgMember{
 		Username: cmd.User,
+		FullName: memberInfo.Fullname,
 		UserId:   cmd.UserId,
 		OrgName:  cmd.Org,
 		OrgId:    cmd.OrgId,

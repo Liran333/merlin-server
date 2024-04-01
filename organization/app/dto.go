@@ -132,6 +132,7 @@ type MemberDTO struct {
 	OrgId       string `json:"org_id"`
 	OrgFullName string `json:"org_fullname"`
 	UserName    string `json:"user_name"`
+	FullName    string `json:"full_name"`
 	UserId      string `json:"user_id"`
 	Role        string `json:"role"`
 	CreatedAt   int64  `json:"created_at"`
@@ -157,6 +158,7 @@ func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 	return MemberDTO{
 		Id:        member.Id.Identity(),
 		UserName:  member.Username.Account(),
+		FullName:  member.FullName.AccountFullname(),
 		UserId:    member.UserId.Identity(),
 		Role:      member.Role.Role(),
 		OrgName:   member.OrgName.Account(),

@@ -30,6 +30,7 @@ const (
 type Member struct {
 	postgresql.CommonModel
 	Username string `gorm:"column:user_name;index:username_index"`
+	FullName string `gorm:"column:full_name"`
 	UserId   int64  `gorm:"column:user_id;index:userid_index"`
 	Orgname  string `gorm:"column:org_name;index:orgname_index"`
 	OrgId    int64  `gorm:"column:org_id;index:orgid_index"`

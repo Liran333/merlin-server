@@ -143,6 +143,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 		OrgName:  cmd.Name,
 		OrgId:    orgTemp.Id,
 		Username: cmd.Owner,
+		FullName: owner.Fullname,
 		UserId:   owner.Id,
 		Role:     primitive.NewAdminRole(),
 	})
@@ -459,7 +460,12 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 		return allerror.NewInvalidParam("failed to get org info", fmt.Errorf("failed to get org info, %w", err))
 	}
 
-	m := cmd.ToMember()
+	memberInfo, err := org.repo.GetByAccount(cmd.User)
+	if err != nil {
+		return allerror.NewInvalidParam("failed to get member info", fmt.Errorf("failed to get member info, %w", err))
+	}
+
+	m := cmd.ToMember(memberInfo)
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
