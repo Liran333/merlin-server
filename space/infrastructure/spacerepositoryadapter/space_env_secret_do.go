@@ -24,9 +24,13 @@ const (
 )
 
 func toSpaceVariableDO(m *domain.SpaceVariable) spaceEnvSecretDO {
+	resDesc := ""
+	if m.Desc != nil {
+		resDesc = m.Desc.MSDDesc()
+	}
 	return spaceEnvSecretDO{
 		SpaceId:   m.SpaceId.Integer(),
-		Desc:      m.Desc.MSDDesc(),
+		Desc:      resDesc,
 		Name:      m.Name.MSDName(),
 		Value:     m.Value.ENVValue(),
 		Type:      variableTypeName,
@@ -35,9 +39,13 @@ func toSpaceVariableDO(m *domain.SpaceVariable) spaceEnvSecretDO {
 }
 
 func toSpaceSecretDO(m *domain.SpaceSecret) spaceEnvSecretDO {
+	resDesc := ""
+	if m.Desc != nil {
+		resDesc = m.Desc.MSDDesc()
+	}
 	return spaceEnvSecretDO{
 		SpaceId:   m.SpaceId.Integer(),
-		Desc:      m.Desc.MSDDesc(),
+		Desc:      resDesc,
 		Name:      m.Name.MSDName(),
 		Type:      secretTypeName,
 		UpdatedAt: m.UpdatedAt,
