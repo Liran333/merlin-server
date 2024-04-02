@@ -56,6 +56,8 @@ type SpaceController struct {
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/space [post]
 func (ctl *SpaceController) Create(ctx *gin.Context) {
+	middleware.SetAction(ctx, "create space")
+
 	req := reqToCreateSpace{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
@@ -90,6 +92,8 @@ func (ctl *SpaceController) Create(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/space/{id} [delete]
 func (ctl *SpaceController) Delete(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("delete space of %s", ctx.Param("id")))
+
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -120,6 +124,8 @@ func (ctl *SpaceController) Delete(ctx *gin.Context) {
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/space/{id} [put]
 func (ctl *SpaceController) Update(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("update space of %s", ctx.Param("id")))
+
 	req := reqToUpdateSpace{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)

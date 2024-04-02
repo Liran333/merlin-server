@@ -92,6 +92,8 @@ type OrgController struct {
 // @Success  202  {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name} [put]
 func (ctl *OrgController) Update(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("update basic info of %s", ctx.Param("name")))
+
 	var req orgBasicInfoUpdateRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -104,8 +106,6 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 	if user == nil {
 		return
 	}
-
-	middleware.SetAction(ctx, fmt.Sprintf("update basic info of %s", ctx.Param("name")))
 
 	cmd, err := req.toCmd(user, ctx.Param("name"))
 	if err != nil {
@@ -256,6 +256,8 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 // @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/organization [post]
 func (ctl *OrgController) Create(ctx *gin.Context) {
+	middleware.SetAction(ctx, "create organization")
+
 	var req orgCreateRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
@@ -297,6 +299,8 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/organization/{name} [delete]
 func (ctl *OrgController) Delete(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("delete organization %s", ctx.Param("name")))
+
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
@@ -308,8 +312,6 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 	if user == nil {
 		return
 	}
-
-	middleware.SetAction(ctx, fmt.Sprintf("delete organization %s", orgName))
 
 	err = ctl.org.Delete(&domain.OrgDeletedCmd{
 		Actor: user,
@@ -370,6 +372,8 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 // @Success  202 {object}  commonctl.ResponseData
 // @Router   /v1/organization/{name}/member [put]
 func (ctl *OrgController) EditMember(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("edit member of %s", ctx.Param("name")))
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -410,6 +414,8 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/organization/{name}/member [delete]
 func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("remove member of %s", ctx.Param("name")))
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -449,6 +455,8 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/organization/{name} [post]
 func (ctl *OrgController) Leave(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("leave organization of %s", ctx.Param("name")))
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -484,6 +492,8 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 // @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/invite [post]
 func (ctl *OrgController) InviteMember(ctx *gin.Context) {
+	middleware.SetAction(ctx, "invite member")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -572,6 +582,8 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/request [delete]
 func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
+	middleware.SetAction(ctx, "remove member")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -610,6 +622,8 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 // @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/request [post]
 func (ctl *OrgController) RequestMember(ctx *gin.Context) {
+	middleware.SetAction(ctx, "request to be a member")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -648,6 +662,8 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 // @Success  201 {object}  commonctl.ResponseData
 // @Router   /v1/request [put]
 func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
+	middleware.SetAction(ctx, "approve request to be a member")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -726,6 +742,8 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/invite [delete]
 func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
+	middleware.SetAction(ctx, "remove invite")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
@@ -764,6 +782,8 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 // @Success  202 {object}  commonctl.ResponseData
 // @Router   /v1/invite [put]
 func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
+	middleware.SetAction(ctx, "accept invite")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return

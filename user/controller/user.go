@@ -69,6 +69,8 @@ type UserController struct {
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/user [put]
 func (ctl *UserController) Update(ctx *gin.Context) {
+	middleware.SetAction(ctx, "update user basic info")
+
 	var req userBasicInfoUpdateRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
@@ -137,12 +139,16 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/user/email/bind [post]
 func (ctl *UserController) BindEmail(ctx *gin.Context) {
+	middleware.SetAction(ctx, "bind email")
+
 	var req bindEmailRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -155,8 +161,6 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 
 		return
 	}
-
-	middleware.SetAction(ctx, req.action())
 
 	if err := ctl.s.VerifyBindEmail(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -174,12 +178,16 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/user/email/send [post]
 func (ctl *UserController) SendEmail(ctx *gin.Context) {
+	middleware.SetAction(ctx, "send email verify code")
+
 	var req sendEmailRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
 
 		return
 	}
+
+	middleware.SetAction(ctx, req.action())
 
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -192,8 +200,6 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 
 		return
 	}
-
-	middleware.SetAction(ctx, req.action())
 
 	if err := ctl.s.SendBindEmail(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -234,6 +240,8 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 // @Security Bearer
 // @Router   /v1/user/token/{name} [delete]
 func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
+	middleware.SetAction(ctx, "delete token")
+
 	user := ctl.m.GetUser(ctx)
 
 	platform, err := ctl.s.GetPlatformUser(user)
@@ -273,6 +281,8 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 // @Success  201  {object}  commonctl.ResponseData
 // @Router   /v1/user/token [post]
 func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
+	middleware.SetAction(ctx, "create a new platform token")
+
 	var req tokenCreateRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
@@ -337,12 +347,12 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/user/privacy [put]
 func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
+	middleware.SetAction(ctx, "privacy revoke")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return
 	}
-
-	middleware.SetAction(ctx, "privacy revoke")
 
 	if idToken, err := ctl.s.PrivacyRevoke(user); err != nil {
 		commonctl.SendError(ctx, err)
@@ -359,6 +369,8 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/user [delete]
 func (ctl *UserController) RequestDelete(ctx *gin.Context) {
+	middleware.SetAction(ctx, "request delete user")
+
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {
 		return

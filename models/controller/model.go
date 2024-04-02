@@ -49,6 +49,8 @@ type ModelController struct {
 // @Success  201   {object}  commonctl.ResponseData
 // @Router   /v1/model [post]
 func (ctl *ModelController) Create(ctx *gin.Context) {
+	middleware.SetAction(ctx, "create model")
+
 	req := reqToCreateModel{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
@@ -83,6 +85,8 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 // @Success  204
 // @Router   /v1/model/{id} [delete]
 func (ctl *ModelController) Delete(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("delete model of %s", ctx.Param("id")))
+
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -113,6 +117,8 @@ func (ctl *ModelController) Delete(ctx *gin.Context) {
 // @Success  202   {object}  commonctl.ResponseData
 // @Router   /v1/model/{id} [put]
 func (ctl *ModelController) Update(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("update model of %s", ctx.Param("id")))
+
 	req := reqToUpdateModel{}
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
