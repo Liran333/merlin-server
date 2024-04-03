@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package activityrepositoryadapter provides an adapter for the model repository
 package activityrepositoryadapter
 
 import (

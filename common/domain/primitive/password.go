@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package primitive provides a primitive function in the application.
 package primitive
 
 import (

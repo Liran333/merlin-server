@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package controller provides the controllers for handling restful requests and converting them into commands
 package controller
 
 import (

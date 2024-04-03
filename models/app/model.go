@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package app provides functionality for the application.
 package app
 
 import (
@@ -110,7 +111,8 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return
 	}
 	if notFound {
-		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found", modelId.Identity()))
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+			fmt.Errorf("%s not found", modelId.Identity()))
 
 		return
 	}
@@ -154,7 +156,8 @@ func (s *modelAppService) Update(
 		return
 	}
 	if notFound {
-		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found", modelId.Identity()))
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+			fmt.Errorf("%s not found", modelId.Identity()))
 
 		return
 	}
@@ -257,7 +260,8 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 	}
 
 	if total >= config.MaxCountPerOwner {
-		return allerror.NewCountExceeded("model count exceed", fmt.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
+		return allerror.NewCountExceeded("model count exceed",
+			fmt.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
 	}
 
 	return nil

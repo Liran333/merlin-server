@@ -81,12 +81,13 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppServiceStartedPut(Interal, swaggerInternal.ControllerReqToUpdateServiceInfo{
-		SpaceId:  id,
-		CommitId: "12345",
-		AppUrl:   "https://www.modelfoundry.cn",
-		LogUrl:   "https://www.modelfoundry.cn",
-	})
+	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppServiceStartedPut(Interal,
+		swaggerInternal.ControllerReqToUpdateServiceInfo{
+			SpaceId:  id,
+			CommitId: "12345",
+			AppUrl:   "https://www.modelfoundry.cn",
+			LogUrl:   "https://www.modelfoundry.cn",
+		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 

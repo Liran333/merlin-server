@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package primitive provides primitive types and utility functions for working with basic concepts.
 package primitive
 
 import "regexp"

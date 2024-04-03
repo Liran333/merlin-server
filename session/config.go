@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package session provides an config for the session repository,
 package session
 
 import (

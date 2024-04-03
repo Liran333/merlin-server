@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package resourceadapterimpl provides rimpl models and configuration for a specific functionality.
 package resourceadapterimpl
 
 import (
@@ -92,7 +93,8 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	return result, nil
 }
 
-func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (domain.SearchResultModel, error) {
+func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (
+	domain.SearchResultModel, error) {
 	var result domain.SearchResultModel
 
 	v, count, err := adapter.model.SearchModel(cmd, account)
@@ -112,7 +114,8 @@ func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account dom
 	return result, nil
 }
 
-func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account domain.Account) (domain.SearchResultSpace, error) {
+func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account domain.Account) (
+	domain.SearchResultSpace, error) {
 	var result domain.SearchResultSpace
 
 	v, count, err := adapter.space.SearchSpace(cmd, account)

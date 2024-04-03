@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package app provides application services for resource permission management.
 package app
 
 import (
@@ -54,7 +55,7 @@ func isNoPermissionOrNotFound(
 	err := ps.CanRead(user, resource)
 	if err == nil {
 		// It is no permission when it can read
-		return false, allerror.NewNoPermission("no permission", fmt.Errorf("It is no permission when it can read"))
+		return false, allerror.NewNoPermission("no permission", fmt.Errorf("no permission to read"))
 	}
 
 	if !allerror.IsNoPermission(err) {

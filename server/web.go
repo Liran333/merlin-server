@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package server provides functionality for setting up and configuring a server for handling code repo operations.
 package server
 
 import (
@@ -20,8 +21,10 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	rg := engine.Group(prefix)
 
 	services.securityLog = securitylog.SecurityLog()
-	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog, &cfg.Session.Controller)
-	services.tokenMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog, &cfg.Session.Controller)
+	services.userMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog,
+		&cfg.Session.Controller)
+	services.tokenMiddleWare = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog,
+		&cfg.Session.Controller)
 	services.operationLog = operationlog.OperationLog(services.userMiddleWare)
 	services.rateLimiterMiddleWare = ratelimiter.Limiter()
 	if services.rateLimiterMiddleWare == nil {

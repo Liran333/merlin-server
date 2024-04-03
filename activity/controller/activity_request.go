@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package controller provides functionality for managing the application's controllers.
 package controller
 
 import (

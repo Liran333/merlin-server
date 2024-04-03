@@ -53,7 +53,8 @@ type modelSpaceAppService struct {
 }
 
 // GetModelsBySpaceId return models that exits and user can read
-func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) ([]SpaceModelDTO, error) {
+func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) (
+	[]SpaceModelDTO, error) {
 	space, err := s.spaceRepoAdapter.FindById(spaceId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
 		return []SpaceModelDTO{}, newSpaceNotFound(err)
@@ -77,7 +78,9 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 		// check if model exists
 		model, err := s.modelRepoAdapter.FindById(id)
 		if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-			_ = s.DeleteByModelId(id)
+			if errDel := s.DeleteByModelId(id); errDel != nil {
+				continue
+			}
 			continue
 		}
 
@@ -99,7 +102,8 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 	return models, nil
 }
 
-func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) ([]SpaceModelDTO, error) {
+func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) (
+	[]SpaceModelDTO, error) {
 	model, err := s.modelRepoAdapter.FindById(modelId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
 		return []SpaceModelDTO{}, newModelNotFound(err)
@@ -123,7 +127,9 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 		// check if model exists
 		space, err := s.spaceRepoAdapter.FindById(id)
 		if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-			_ = s.DeleteBySpaceId(id)
+			if errDel := s.DeleteBySpaceId(id); errDel != nil {
+				continue
+			}
 			continue
 		}
 

@@ -95,7 +95,8 @@ func (s *SuiteOrg) TestOrgCreate() {
 	assert.Equal(s.T(), false, allow)
 	assert.Nil(s.T(), org["email"])
 
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &swaggerRest.OrganizationApiV1OrganizationGetOpts{})
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest,
+		&swaggerRest.OrganizationApiV1OrganizationGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -144,7 +145,8 @@ func (s *SuiteOrg) TestOrgCreateSuccess() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &swaggerRest.OrganizationApiV1OrganizationGetOpts{})
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest,
+		&swaggerRest.OrganizationApiV1OrganizationGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 

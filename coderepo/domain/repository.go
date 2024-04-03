@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package domain provides domain models and types for the code repository branch.
 package domain
 
 import (

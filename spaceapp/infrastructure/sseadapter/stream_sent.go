@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package sseadapter provides an adapter implementation for working with the repository of space applications.
 package sseadapter
 
 import (
@@ -9,8 +14,13 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+const (
+	httpMaxRetries = 3
+	httpTimeout    = 3600
+)
+
 func StreamSentAdapter() *streamSentAdapter {
-	return &streamSentAdapter{utils.NewHttpClient(3, 3600)}
+	return &streamSentAdapter{utils.NewHttpClient(httpMaxRetries, httpTimeout)}
 }
 
 type streamSentAdapter struct {

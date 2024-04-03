@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 
-	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -28,7 +28,7 @@ type SpaceVariableService interface {
 
 // NewSpaceVariableService creates a new instance of the space secret variable.
 func NewSpaceVariableService(
-	permission commonapp.ResourcePermissionAppService,
+	permission app.ResourcePermissionAppService,
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
 	variableAdapter spacerepo.SpaceVariableRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
@@ -44,7 +44,7 @@ func NewSpaceVariableService(
 }
 
 type spaceVariableService struct {
-	permission           commonapp.ResourcePermissionAppService
+	permission           app.ResourcePermissionAppService
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
 	variableAdapter      spacerepo.SpaceVariableRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
@@ -152,7 +152,7 @@ func (s *spaceVariableService) DeleteVariable(
 		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanDeleteOrNotFound(user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -208,7 +208,7 @@ func (s *spaceVariableService) UpdateVariable(
 		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanUpdateOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanUpdateOrNotFound(user, &space, s.permission)
 	if err != nil {
 		return
 	}

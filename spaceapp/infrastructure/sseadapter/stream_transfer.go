@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package sseadapter provides an adapter implementation for working with the repository of space applications.
 package sseadapter
 
 import (
@@ -5,6 +10,10 @@ import (
 	"bytes"
 	"errors"
 	"io"
+)
+
+const (
+	lineSplitSize = 2
 )
 
 type streamTransfer struct {
@@ -66,7 +75,7 @@ func (impl *streamTransfer) parseProtocolData(line []byte) (*Event, error) {
 	if len(line) == 0 {
 		return event, nil
 	}
-	parts := bytes.SplitN(line, []byte(":"), 2)
+	parts := bytes.SplitN(line, []byte(":"), lineSplitSize)
 
 	// Make sure parts[1] always exist
 	if len(parts) == 1 {

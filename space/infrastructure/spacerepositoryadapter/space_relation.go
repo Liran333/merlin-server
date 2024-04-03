@@ -7,8 +7,9 @@ package spacerepositoryadapter
 import (
 	"fmt"
 
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"gorm.io/gorm"
+
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
 type modelSpaceRelationAdapter struct {

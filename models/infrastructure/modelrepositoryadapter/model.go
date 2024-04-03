@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package modelrepositoryadapter provides an adapter for the model repository
 package modelrepositoryadapter
 
 import (
@@ -183,7 +184,8 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	return db
 }
 
-func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account) ([]repository.ModelSummary, int, error) {
+func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account) (
+	[]repository.ModelSummary, int, error) {
 	db := adapter.db()
 
 	queryName, argName := likeFilter(fieldName, opt.Name)

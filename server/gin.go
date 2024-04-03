@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package server provides functionality for setting up and configuring a server for handling code repo operations.
 package server
 
 import (
@@ -105,7 +106,8 @@ func logRequest() gin.HandlerFunc {
 			errmsg = fmt.Sprintf("%s%s", errmsg, ginErr.Error())
 		}
 
-		if strings.Contains(c.Request.RequestURI, "/swagger/") || strings.Contains(c.Request.RequestURI, "/internal/heartbeat") {
+		if strings.Contains(c.Request.RequestURI, "/swagger/") ||
+			strings.Contains(c.Request.RequestURI, "/internal/heartbeat") {
 			return
 		}
 

@@ -46,11 +46,12 @@ func (s *SuitPermissionInternal) TestPermissionRead() {
 
 	id := getString(s.T(), data.Data)
 
-	_, r, err = ApiInteral.PermissionApi.V1CoderepoPermissionReadPost(Interal, swaggerInternal.ControllerReqToCheckPermission{
-		Owner: "test2",
-		Name:  "testspace",
-		User:  "test2",
-	})
+	_, r, err = ApiInteral.PermissionApi.V1CoderepoPermissionReadPost(Interal,
+		swaggerInternal.ControllerReqToCheckPermission{
+			Owner: "test2",
+			Name:  "testspace",
+			User:  "test2",
+		})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -77,11 +78,12 @@ func (s *SuitPermissionInternal) TestPermissionUpdate() {
 
 	id := getString(s.T(), data.Data)
 
-	_, r, err = ApiInteral.PermissionApi.V1CoderepoPermissionUpdatePost(Interal, swaggerInternal.ControllerReqToCheckPermission{
-		Owner: "test2",
-		Name:  "testspace",
-		User:  "test2",
-	})
+	_, r, err = ApiInteral.PermissionApi.V1CoderepoPermissionUpdatePost(Interal,
+		swaggerInternal.ControllerReqToCheckPermission{
+			Owner: "test2",
+			Name:  "testspace",
+			User:  "test2",
+		})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 

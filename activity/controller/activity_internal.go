@@ -2,12 +2,13 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package controller provides functionality for managing the application's controllers.
 package controller
 
 import (
 	"github.com/gin-gonic/gin"
-
 	"github.com/openmerlin/merlin-sdk/activityapp"
+
 	"github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"

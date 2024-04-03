@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package utils provides utility functions for various purposes.
 package utils
 
 import (
@@ -7,6 +12,12 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	statusCodeUpLimit   = 200
+	statusCodeDownLimit = 299
+	defaultBackoff      = 10 * time.Millisecond
 )
 
 type HttpClient struct {
@@ -36,7 +47,7 @@ func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, 
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	if resp.StatusCode < statusCodeUpLimit || resp.StatusCode > statusCodeDownLimit {
 		rb, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
@@ -57,7 +68,7 @@ func (hc *HttpClient) do(req *http.Request) (resp *http.Response, err error) {
 	}
 
 	maxRetries := hc.maxRetries
-	backoff := 10 * time.Millisecond
+	backoff := defaultBackoff
 
 	for retries := 1; retries < maxRetries; retries++ {
 		time.Sleep(backoff)

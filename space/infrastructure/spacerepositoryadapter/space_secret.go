@@ -8,7 +8,7 @@ import (
 	"errors"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 )
 
@@ -57,7 +57,7 @@ func (adapter *spaceSecretAdapter) SaveSecret(secret *domain.SpaceSecret) error 
 	}
 
 	if v.RowsAffected == 0 {
-		return commonrepo.NewErrorConcurrentUpdating(
+		return repository.NewErrorConcurrentUpdating(
 			errors.New("concurrent updating"),
 		)
 	}

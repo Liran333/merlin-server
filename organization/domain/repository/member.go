@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package repository provides interfaces for managing approvals in an organization.
 package repository
 
 import (

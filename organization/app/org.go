@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package app provides functionality for handling organization-related operations.
 package app
 
 import (

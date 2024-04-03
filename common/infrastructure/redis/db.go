@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package redis provides functionality for interacting with Redis.
 package redis
 
 import (

@@ -148,9 +148,12 @@ func (s *SuiteUserModel) TestUserCanVisitSelfPublicModel() {
 	modelLists := getData(s.T(), list.Data)
 
 	for i := 0; i < len(modelLists["models"].([]interface{})); i++ {
-		model := modelLists["models"].([]interface{})[i].(map[string]interface{})
-		_, ok := model["name"]
-		if ok {
+		model, ok := modelLists["models"].([]interface{})[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		if _, ok := model["name"]; ok {
 			count++
 		}
 	}

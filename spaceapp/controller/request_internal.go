@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package controller provides the controllers for handling HTTP requests and managing the application's business logic.
 package controller
 
 import (

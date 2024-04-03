@@ -185,7 +185,8 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	return db
 }
 
-func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primitive.Account) ([]repository.SpaceSummary, int, error) {
+func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primitive.Account) (
+	[]repository.SpaceSummary, int, error) {
 	db := adapter.db()
 
 	queryName, argName := likeFilter(fieldName, opt.Name)

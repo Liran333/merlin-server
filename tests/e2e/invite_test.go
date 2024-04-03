@@ -311,16 +311,18 @@ func (s *SuiteInvite) TestInviteAprove() {
 	}
 
 	// 唯一的owner不能离开组织
-	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest, swaggerRest.ControllerOrgMemberRemoveRequest{
-		User: s.owner,
-	}, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.owner,
+		}, s.name)
 
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 
-	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest, swaggerRest.ControllerOrgMemberRemoveRequest{
-		User: s.invitee,
-	}, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.invitee,
+		}, s.name)
 
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -450,9 +452,10 @@ func (s *SuiteInvite) TestRemoveOwner() {
 	assert.Equal(s.T(), "approved", invite["status"])
 
 	// 移除原本的owner
-	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest2, swaggerRest.ControllerOrgMemberRemoveRequest{
-		User: s.owner,
-	}, name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest2,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.owner,
+		}, name)
 
 	assert.Equalf(s.T(), http.StatusNoContent, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
@@ -602,10 +605,11 @@ func (s *SuiteInvite) TestInviteListByAdmin() {
 	assert.NotNil(s.T(), err)
 
 	// READ角色不能列出成员
-	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest, swaggerRest.ControllerOrgMemberEditRequest{
-		Role: "read",
-		User: "test2",
-	}, s.name)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest,
+		swaggerRest.ControllerOrgMemberEditRequest{
+			Role: "read",
+			User: "test2",
+		}, s.name)
 
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -617,9 +621,10 @@ func (s *SuiteInvite) TestInviteListByAdmin() {
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest, swaggerRest.ControllerOrgMemberRemoveRequest{
-		User: "test2",
-	}, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: "test2",
+		}, s.name)
 
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)

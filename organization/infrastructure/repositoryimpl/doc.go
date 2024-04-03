@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package repositoryimpl provides implementations of repository interfaces for the organization domain.
 package repositoryimpl
 
 import (

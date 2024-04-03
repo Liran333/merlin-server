@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 
-	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -27,7 +27,7 @@ type SpaceSecretService interface {
 
 // NewSpaceSecretService creates a new instance of the space secret service.
 func NewSpaceSecretService(
-	permission commonapp.ResourcePermissionAppService,
+	permission app.ResourcePermissionAppService,
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
 	secretAdapter spacerepo.SpaceSecretRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
@@ -43,7 +43,7 @@ func NewSpaceSecretService(
 }
 
 type spaceSecretService struct {
-	permission           commonapp.ResourcePermissionAppService
+	permission           app.ResourcePermissionAppService
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
 	secretAdapter        spacerepo.SpaceSecretRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
@@ -151,7 +151,7 @@ func (s *spaceSecretService) DeleteSecret(
 		secretId.Identity(), space.Owner.Account(), secret.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanDeleteOrNotFound(user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -207,7 +207,7 @@ func (s *spaceSecretService) UpdateSecret(
 		spaceId.Identity(), space.Owner.Account(), secret.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanUpdateOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanUpdateOrNotFound(user, &space, s.permission)
 	if err != nil {
 		return
 	}

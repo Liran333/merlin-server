@@ -157,9 +157,12 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 	spaceLists := getData(s.T(), list.Data)
 
 	for i := 0; i < len(spaceLists["spaces"].([]interface{})); i++ {
-		model := spaceLists["spaces"].([]interface{})[i].(map[string]interface{})
-		_, ok := model["name"]
-		if ok {
+		model, ok := spaceLists["spaces"].([]interface{})[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		if _, ok := model["name"]; ok {
 			count++
 		}
 	}

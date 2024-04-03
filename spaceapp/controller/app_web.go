@@ -10,7 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	spacedomain "github.com/openmerlin/merlin-server/space/domain"
@@ -65,23 +65,23 @@ func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if dto, err := ctl.appService.GetByName(user, &index); err != nil {
-		commonctl.SendError(ctx, err)
+		controller.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, &dto)
+		controller.SendRespOfGet(ctx, &dto)
 	}
 }
 
 func (ctl *SpaceAppWebController) parseIndex(ctx *gin.Context) (index spacedomain.SpaceIndex, err error) {
 	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		controller.SendBadRequestParam(ctx, err)
 
 		return
 	}
 
 	index.Name, err = primitive.NewMSDName(ctx.Param("name"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		controller.SendBadRequestParam(ctx, err)
 	}
 
 	return
@@ -199,7 +199,7 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 // @Param    owner  path  string  true  "owner of space"
 // @Param    name   path  string  true  "name of space"
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  controller.ResponseData
 // @Router   /v1/space-app/{owner}/{name}/read [get]
 func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -210,8 +210,8 @@ func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if err := ctl.appService.CheckPermissionRead(user, &index); err != nil {
-		commonctl.SendError(ctx, err)
+		controller.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, "successfully")
+		controller.SendRespOfGet(ctx, "successfully")
 	}
 }

@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package controller provides utility functions for handling HTTP errors and error codes.
 package controller
 
 import (

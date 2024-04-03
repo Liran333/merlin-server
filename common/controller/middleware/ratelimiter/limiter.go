@@ -140,7 +140,8 @@ func (rl *rateLimiter) CheckLimit(ctx *gin.Context) {
 	}
 
 	if limited {
-		commonctl.SendError(ctx, allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests", fmt.Errorf("over limit")))
+		commonctl.SendError(ctx, allerror.NewOverLimit(allerror.ErrorRateLimitOver, "too many requests",
+			fmt.Errorf("over limit")))
 		ctx.Abort()
 	} else {
 		ctx.Next()

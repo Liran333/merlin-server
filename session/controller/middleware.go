@@ -26,7 +26,8 @@ const (
 var noUserError = errors.New("no user")
 
 // WebAPIMiddleware creates a new instance of webAPIMiddleware with the given session and securityLog.
-func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog, cfg *Config) *webAPIMiddleware {
+func WebAPIMiddleware(session app.SessionAppService, securityLog middleware.SecurityLog,
+	cfg *Config) *webAPIMiddleware {
 	return &webAPIMiddleware{
 		session:     session,
 		securityLog: securityLog,

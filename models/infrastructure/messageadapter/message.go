@@ -2,11 +2,13 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package messageadapter provides an adapter for working with message-related functionality.
 package messageadapter
 
 import (
-	"github.com/openmerlin/merlin-server/models/domain/message"
 	kfklib "github.com/opensourceways/kafka-lib/agent"
+
+	"github.com/openmerlin/merlin-server/models/domain/message"
 )
 
 // MessageAdapter is a function that takes a pointer to a Topics struct and returns a pointer to a messageAdapter struct

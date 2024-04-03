@@ -10,19 +10,19 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	vaultApi "github.com/hashicorp/vault/api"
-	authApi "github.com/hashicorp/vault/api/auth/userpass"
+	"github.com/hashicorp/vault/api"
+	"github.com/hashicorp/vault/api/auth/userpass"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	cli *vaultApi.Client
+	cli *api.Client
 )
 
 // Init initializes the vault client with the given configuration.
 func Init(config *Config) error {
 	// init vault client
-	defaultConfig := vaultApi.DefaultConfig()
+	defaultConfig := api.DefaultConfig()
 
 	defaultConfig.Address = config.Address
 
@@ -34,12 +34,12 @@ func Init(config *Config) error {
 	}
 	defaultConfig.HttpClient.Transport = tr
 
-	client, err := vaultApi.NewClient(defaultConfig)
+	client, err := api.NewClient(defaultConfig)
 	if err != nil {
 		logrus.Errorf("unable to initialize Vault client: %v", err)
 		return err
 	}
-	userpassAuth, err := authApi.NewUserpassAuth(config.UserName, &authApi.Password{FromString: config.PassWord})
+	userpassAuth, err := userpass.NewUserpassAuth(config.UserName, &userpass.Password{FromString: config.PassWord})
 	if err != nil {
 		logrus.Errorf("initialize vault userpass auth failed: %v", err)
 		return err
@@ -58,6 +58,6 @@ func Init(config *Config) error {
 }
 
 // GetClient returns the vault client.
-func GetClient() *vaultApi.Client {
+func GetClient() *api.Client {
 	return cli
 }

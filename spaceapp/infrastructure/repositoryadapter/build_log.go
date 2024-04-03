@@ -1,9 +1,14 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package domain provides domain models and functionality for managing space apps.
 package repositoryadapter
 
 import (
 	"errors"
 
-	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 )
 
@@ -23,7 +28,7 @@ func (adapter *buildLogAdapterImpl) Save(log *domain.SpaceAppBuildLog) error {
 	}
 
 	if v.RowsAffected == 0 {
-		return commonrepo.NewErrorResourceNotExists(
+		return repository.NewErrorResourceNotExists(
 			errors.New("not found"),
 		)
 	}

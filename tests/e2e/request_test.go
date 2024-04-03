@@ -77,9 +77,10 @@ func (s *SuiteRequest) SetupSuite() {
 	s.orgId = getString(s.T(), o["id"])
 
 	// 更新组织允许加入权限
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name, swaggerRest.ControllerOrgBasicInfoUpdateRequest{
-		AllowRequest: true,
-	})
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
+		swaggerRest.ControllerOrgBasicInfoUpdateRequest{
+			AllowRequest: true,
+		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
@@ -268,9 +269,10 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Empty(s.T(), data.Data)
 
 	// 删除组织成员
-	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest, swaggerRest.ControllerOrgMemberRemoveRequest{
-		User: s.requester,
-	}, s.name)
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.requester,
+		}, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

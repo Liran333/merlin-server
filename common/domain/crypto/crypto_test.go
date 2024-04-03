@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package crypto provides encryption and decryption functionality using AES-GCM encryption mode.
 package crypto
 
 import (

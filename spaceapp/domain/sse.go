@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package domain provides domain models and functionality for managing space apps.
 package domain
 
 import (

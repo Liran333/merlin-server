@@ -1,7 +1,13 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package server provides functionality for setting up and configuring a server for handling code repo operations.
 package server
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/activity/controller"
 	"github.com/openmerlin/merlin-server/activity/insfrastructure/activityrepositoryadapter"

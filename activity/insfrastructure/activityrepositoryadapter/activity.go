@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
+// Package activityrepositoryadapter provides an adapter for the model repository
 package activityrepositoryadapter
 
 import (
@@ -102,7 +107,8 @@ func order(t primitive.SortType) string {
 }
 
 // List retrieves a list of activities based on the provided options.
-func (adapter *activityAdapter) List(names []primitive.Account, opt *repository.ListOption) ([]domain.Activity, int, error) {
+func (adapter *activityAdapter) List(names []primitive.Account, opt *repository.ListOption) (
+	[]domain.Activity, int, error) {
 	query := adapter.toQuery(names, opt)
 
 	// Pagination

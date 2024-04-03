@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+*/
+
 //nolint:typecheck
 package controller
 
@@ -6,7 +10,7 @@ import (
 	"math"
 
 	"github.com/gin-gonic/gin"
-	sdk "github.com/openmerlin/merlin-sdk/activityapp"
+	"github.com/openmerlin/merlin-sdk/activityapp"
 
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/common/controller"
@@ -138,7 +142,7 @@ func (ctl *ActivityWebController) List(ctx *gin.Context) {
 // @Failure  400  {object}  commonctl.ResponseData
 // @Router /web/v1/like [post]
 func (ctl *ActivityWebController) Add(ctx *gin.Context) {
-	var req sdk.ReqToCreateActivity
+	var req activityapp.ReqToCreateActivity
 
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
@@ -184,7 +188,7 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 // @Failure  400  {object}  commonctl.ResponseData
 // @Router /web/v1/like [delete]
 func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
-	var req sdk.ReqToDeleteActivity
+	var req activityapp.ReqToDeleteActivity
 
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
