@@ -37,6 +37,18 @@ func setRouterOfActivityWeb(rg *gin.RouterGroup, services *allServices) {
 	)
 }
 
+func setRouterOfActivityRestful(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouteForActivityRestfulController(
+		rg,
+		services.activityApp,
+		services.userMiddleWare,
+		services.orgApp,
+		services.userApp,
+		services.modelApp,
+		services.spaceApp,
+	)
+}
+
 func setRouterOfActivityInternal(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForActivityInternalController(
 		rg,

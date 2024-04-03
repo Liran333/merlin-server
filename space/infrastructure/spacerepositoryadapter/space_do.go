@@ -16,19 +16,21 @@ import (
 )
 
 const (
-	filedId         = "id"
-	fieldName       = "name"
-	fieldTask       = "task"
-	fieldOwner      = "owner"
-	fieldOthers     = "others"
-	fieldLicense    = "license"
-	fieldVersion    = "version"
-	fieldFullName   = "fullname"
-	fieldLocalCMD   = "local_cmd"
-	fieldUpdatedAt  = "updated_at"
-	fieldCreatedAt  = "created_at"
-	fieldVisibility = "visibility"
-	fieldFrameworks = "frameworks"
+	filedId            = "id"
+	fieldName          = "name"
+	fieldTask          = "task"
+	fieldOwner         = "owner"
+	fieldOthers        = "others"
+	fieldLicense       = "license"
+	fieldVersion       = "version"
+	fieldFullName      = "fullname"
+	fieldLocalCMD      = "local_cmd"
+	fieldUpdatedAt     = "updated_at"
+	fieldCreatedAt     = "created_at"
+	fieldVisibility    = "visibility"
+	fieldFrameworks    = "frameworks"
+	filedLikeCount     = "like_count"
+	filedDownloadCount = "download_count"
 )
 
 var (
@@ -63,19 +65,21 @@ func toLabelsDO(labels *domain.SpaceLabels) spaceDO {
 }
 
 type spaceDO struct {
-	Id         int64  `gorm:"column:id;"`
-	SDK        string `gorm:"column:sdk"`
-	Desc       string `gorm:"column:desc"`
-	Name       string `gorm:"column:name;index:space_index,unique,priority:2"`
-	Owner      string `gorm:"column:owner;index:space_index,unique,priority:1"`
-	License    string `gorm:"column:license"`
-	Hardware   string `gorm:"column:hardware"`
-	Fullname   string `gorm:"column:fullname"`
-	CreatedBy  string `gorm:"column:created_by"`
-	Visibility string `gorm:"column:visibility"`
-	CreatedAt  int64  `gorm:"column:created_at"`
-	UpdatedAt  int64  `gorm:"column:updated_at"`
-	Version    int    `gorm:"column:version"`
+	Id            int64  `gorm:"column:id;"`
+	SDK           string `gorm:"column:sdk"`
+	Desc          string `gorm:"column:desc"`
+	Name          string `gorm:"column:name;index:space_index,unique,priority:2"`
+	Owner         string `gorm:"column:owner;index:space_index,unique,priority:1"`
+	License       string `gorm:"column:license"`
+	Hardware      string `gorm:"column:hardware"`
+	Fullname      string `gorm:"column:fullname"`
+	CreatedBy     string `gorm:"column:created_by"`
+	Visibility    string `gorm:"column:visibility"`
+	CreatedAt     int64  `gorm:"column:created_at"`
+	UpdatedAt     int64  `gorm:"column:updated_at"`
+	Version       int    `gorm:"column:version"`
+	LikeCount     int    `gorm:"column:like_count"`
+	DownloadCount int    `gorm:"column:download_count"`
 
 	// local cmd
 	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
@@ -118,12 +122,14 @@ func (do *spaceDO) toSpace() domain.Space {
 
 func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 	return repository.SpaceSummary{
-		Id:        primitive.CreateIdentity(do.Id).Identity(),
-		Name:      do.Name,
-		Desc:      do.Desc,
-		Task:      do.Task,
-		Owner:     do.Owner,
-		Fullname:  do.Fullname,
-		UpdatedAt: do.UpdatedAt,
+		Id:            primitive.CreateIdentity(do.Id).Identity(),
+		Name:          do.Name,
+		Desc:          do.Desc,
+		Task:          do.Task,
+		Owner:         do.Owner,
+		Fullname:      do.Fullname,
+		UpdatedAt:     do.UpdatedAt,
+		LikeCount:     do.LikeCount,
+		DownloadCount: do.DownloadCount,
 	}
 }

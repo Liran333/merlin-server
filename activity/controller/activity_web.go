@@ -6,8 +6,6 @@ import (
 	"math"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-
 	sdk "github.com/openmerlin/merlin-sdk/activityapp"
 
 	"github.com/openmerlin/merlin-server/activity/app"
@@ -88,14 +86,14 @@ type reqToListUserActivities struct {
 
 // @Summary  List
 // @Description  get activities
-// @Tags     Activity
+// @Tags     ActivityWeb
 // @Param    space     query  string  false "filter by space"
 // @Param    model  query  string  false "filter by model"
 // @Param    like  query  string  false "filter by like"
 // @Accept   json
 // @Success  200  {object}  commonctl.ResponseData
 // @Failure  400  {object}  commonctl.ResponseData
-// @Router /web/v1/user/activity [get]
+// @Router /v1/user/activity [get]
 func (ctl *ActivityWebController) List(ctx *gin.Context) {
 	// Bind query parameters to request struct
 	var req reqToListUserActivities
@@ -114,30 +112,22 @@ func (ctl *ActivityWebController) List(ctx *gin.Context) {
 	// Get user from middleware
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	// Find organizations visible to the user
-	orgNames, _ := ctl.org.GetByUser(user, user)
-
-	// Prepare list of names including the user's account name
 	var list []primitive.Account
 
 	list = append(list, user)
-	for _, org := range orgNames {
-		acc := primitive.CreateAccount(org.Name)
-		if err != nil {
-			logrus.Errorf("Error creating account for org %s: %v", org.Name, err)
-			continue
-		}
-		list = append(list, acc)
-	}
 
 	// List activities based on the prepared list and command
-	dto, err := ctl.appService.List(list, &cmd)
+	dto, err := ctl.appService.List(user, list, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return
 	}
 
-	commonctl.SendRespOfGet(ctx, &dto)
+	if v, err := ctl.setAvatars(&dto); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, v)
+	}
 }
 
 // @Summary  Add
@@ -167,17 +157,17 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 		return
 	}
 
-	//_, err = ctl.model.AddLike(cmd.Resource.Index)
-	//
-	//if err != nil {
-	//	return
-	//}
-	//
-	//_, err = ctl.space.AddLike(primitive.CreateIdentity(cmd.ResourceId))
-	//
-	//if err != nil {
-	//	return
-	//}
+	if req.ResourceType == typeModel {
+		err = ctl.model.AddLike(cmd.Resource.Index)
+	} else {
+		err = ctl.space.AddLike(cmd.Resource.Index)
+	}
+
+	// Check for errors from AddLike operation
+	if err != nil {
+		commonctl.SendError(ctx, err)
+		return
+	}
 
 	if err := ctl.appService.Create(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
@@ -201,16 +191,78 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	cmd, err := ConvertReqToDeleteActivityToCmd(&req)
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	cmd, err := ConvertReqToDeleteActivityToCmd(user, &req)
 
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
 		return
 	}
 
+	if req.ResourceType == typeModel {
+		err = ctl.model.DeleteLike(cmd.Resource.Index)
+	} else {
+		err = ctl.space.DeleteLike(cmd.Resource.Index)
+	}
+
+	// Check for errors from DeleteLike operation
+	if err != nil {
+		commonctl.SendError(ctx, err)
+		return
+	}
+
 	if err := ctl.appService.Delete(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx, nil)
+		commonctl.SendRespOfDelete(ctx)
 	}
+}
+
+func (ctl *ActivityWebController) setAvatars(dto *app.ActivityDTO) (activitiesInfo, error) {
+	ac := dto.Activities
+
+	// get avatars
+
+	v := map[string]bool{}
+	for i := range ac {
+		v[ac[i].Resource.Owner.Account()] = true
+	}
+
+	accounts := make([]primitive.Account, len(v))
+
+	i := 0
+	for k := range v {
+		accounts[i] = primitive.CreateAccount(k)
+		i++
+	}
+
+	avatars, err := ctl.user.GetUsersAvatarId(accounts)
+	if err != nil {
+		return activitiesInfo{}, err
+	}
+
+	// set avatars
+
+	am := map[string]string{}
+	for i := range avatars {
+		item := &avatars[i]
+
+		am[item.Name] = item.AvatarId
+	}
+
+	infos := make([]activityInfo, len(ac))
+	for i := range ac {
+		item := &ac[i]
+
+		infos[i] = activityInfo{
+			AvatarId: am[item.Resource.Owner.Account()],
+			Activity: item,
+		}
+	}
+
+	return activitiesInfo{
+		Total:      dto.Total,
+		Activities: infos,
+	}, nil
 }

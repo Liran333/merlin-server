@@ -83,7 +83,7 @@ func (ctl *ActivityInternalController) DeleteActivity(ctx *gin.Context) {
 		return
 	}
 
-	cmd, err := ConvertReqToDeleteActivityToCmd(&req)
+	cmd, err := ConvertInternalReqToDeleteActivityToCmd(&req)
 
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)

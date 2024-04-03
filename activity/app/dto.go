@@ -5,9 +5,10 @@ import (
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
 )
 
-// AcctivityDTO is a struct that represents a data transfer object for an activity.
-type AcctivityDTO struct {
+// ActivityDTO is a struct that represents a data transfer object for an activity.
+type ActivityDTO struct {
 	Total      int               `json:"total"`
+	AvatarId   string            `json:"avatar_id"`
 	Activities []domain.Activity `json:"activity"`
 }
 

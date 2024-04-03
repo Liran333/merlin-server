@@ -13,5 +13,6 @@ import (
 // ResourceAdapter represents an interface for retrieving resources from a code repository.
 type ResourceAdapter interface {
 	GetByName(*domain.CodeRepoIndex) (domain.Resource, error)
+	GetByIndex(identity primitive.Identity) (domain.Resource, error)
 	GetByType(primitive.RepoType, *domain.CodeRepoIndex) (domain.Resource, error)
 }

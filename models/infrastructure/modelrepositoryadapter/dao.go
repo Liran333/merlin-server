@@ -91,3 +91,21 @@ func notEqualQuery(field string) string {
 func orderByDesc(field string) string {
 	return field + " desc"
 }
+
+// IncrementLikeCount increments the LikeCount field by 1 for a record with the specified primary key.
+func (dao *daoImpl) IncrementLikeCount(id int64) error {
+	result := dao.db().Model(&modelDO{}).Where(fieldId+" = ?", id).Update(fieldLikeCount, gorm.Expr(fieldLikeCount+" + ?", 1))
+	if result.RowsAffected == 0 {
+		return repository.NewErrorResourceNotExists(errors.New("resource not found"))
+	}
+	return nil
+}
+
+// DescendLikeCount Descend the LikeCount field by 1 for a record with the specified primary key.
+func (dao *daoImpl) DescendLikeCount(id int64) error {
+	result := dao.db().Model(&modelDO{}).Where(fieldId+" = ?", id).Update(fieldLikeCount, gorm.Expr(fieldLikeCount+" - ?", 1))
+	if result.RowsAffected == 0 {
+		return repository.NewErrorResourceNotExists(errors.New("resource not found"))
+	}
+	return nil
+}

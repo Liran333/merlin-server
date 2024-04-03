@@ -101,3 +101,25 @@ func (adapter *codeRepoAdapter) Save(index *domain.CodeRepoIndex, repo *domain.C
 
 	return err
 }
+
+// FindByIndex finds a codeRepo by its index.
+func (adapter *codeRepoAdapter) FindByIndex(index primitive.Identity) (domain.CodeRepo, error) {
+	repoID := index.Integer()
+	repo, _, err := adapter.client.GetRepoByID(repoID)
+	if err != nil {
+		return domain.CodeRepo{}, err
+	}
+	visibility := "public"
+	if repo.Private {
+		visibility = "private"
+	}
+	return domain.CodeRepo{
+		Id:    primitive.CreateIdentity(repo.ID),
+		Name:  primitive.CreateMSDName(repo.Name),
+		Owner: primitive.CreateAccount(repo.Owner.UserName),
+		//todo fix license
+		License:    primitive.CreateLicense("unkown"),
+		Visibility: primitive.CreateVisibility(visibility),
+		CreatedBy:  primitive.CreateAccount(repo.Owner.UserName),
+	}, err
+}

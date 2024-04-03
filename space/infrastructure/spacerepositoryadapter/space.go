@@ -245,3 +245,15 @@ func order(t primitive.SortType) string {
 		return ""
 	}
 }
+
+func (adapter *spaceAdapter) AddLike(spaceId primitive.Identity) error {
+	id := spaceId.Integer()
+
+	return adapter.IncrementLikeCount(id)
+}
+
+func (adapter *spaceAdapter) DeleteLike(spaceId primitive.Identity) error {
+	id := spaceId.Integer()
+
+	return adapter.DescendLikeCount(id)
+}

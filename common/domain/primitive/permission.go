@@ -10,13 +10,14 @@ import "fmt"
 type ObjType string
 
 const (
-	ObjTypeUser    ObjType = "user"
-	ObjTypeOrg     ObjType = "organization"
-	ObjTypeModel   ObjType = "model"
-	ObjTypeDataset ObjType = "dataset"
-	ObjTypeSpace   ObjType = "space"
-	ObjTypeMember  ObjType = "member"
-	ObjTypeInvite  ObjType = "invite"
+	ObjTypeUser     ObjType = "user"
+	ObjTypeOrg      ObjType = "organization"
+	ObjTypeModel    ObjType = "model"
+	ObjTypeDataset  ObjType = "dataset"
+	ObjTypeSpace    ObjType = "space"
+	ObjTypeMember   ObjType = "member"
+	ObjTypeInvite   ObjType = "invite"
+	ObjTypeCodeRepo ObjType = "codeRepo"
 
 	TokenPermWrite string = "write"
 	TokenPermRead  string = "read"

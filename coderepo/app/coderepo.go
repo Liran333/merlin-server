@@ -17,6 +17,7 @@ type CodeRepoAppService interface {
 	Create(primitive.Account, *CmdToCreateRepo) (domain.CodeRepo, error)
 	Delete(domain.CodeRepoIndex) error
 	Update(*domain.CodeRepo, *CmdToUpdateRepo) (bool, error)
+	GetById(primitive.Identity) (domain.CodeRepo, error)
 }
 
 // NewCodeRepoAppService creates a new instance of CodeRepoAppService.
@@ -41,6 +42,13 @@ func (s *codeRepoAppService) Create(user primitive.Account, cmd *CmdToCreateRepo
 	}
 
 	return repo, nil
+}
+
+// Get a coderepo object by id.
+func (s *codeRepoAppService) GetById(index primitive.Identity) (domain.CodeRepo, error) {
+	repo, err := s.repoAdapter.FindByIndex(index)
+
+	return repo, err
 }
 
 // Delete deletes a code repository by its index.

@@ -15,17 +15,20 @@ import (
 )
 
 const (
-	fieldName       = "name"
-	fieldTask       = "task"
-	fieldOwner      = "owner"
-	fieldOthers     = "others"
-	fieldLicense    = "license"
-	fieldVersion    = "version"
-	fieldFullName   = "fullname"
-	fieldUpdatedAt  = "updated_at"
-	fieldCreatedAt  = "created_at"
-	fieldVisibility = "visibility"
-	fieldFrameworks = "frameworks"
+	fieldId            = "id"
+	fieldName          = "name"
+	fieldTask          = "task"
+	fieldOwner         = "owner"
+	fieldOthers        = "others"
+	fieldLicense       = "license"
+	fieldVersion       = "version"
+	fieldFullName      = "fullname"
+	fieldUpdatedAt     = "updated_at"
+	fieldCreatedAt     = "created_at"
+	fieldVisibility    = "visibility"
+	fieldFrameworks    = "frameworks"
+	fieldLikeCount     = "like_count"
+	fieldDownloadCount = "download_count"
 )
 
 var (
@@ -66,17 +69,19 @@ func toLabelsDO(labels *domain.ModelLabels) modelDO {
 }
 
 type modelDO struct {
-	Id         int64  `gorm:"column:id;"`
-	Desc       string `gorm:"column:desc"`
-	Name       string `gorm:"column:name;index:model_index,unique,priority:2"`
-	Owner      string `gorm:"column:owner;index:model_index,unique,priority:1"`
-	License    string `gorm:"column:license"`
-	Fullname   string `gorm:"column:fullname"`
-	CreatedBy  string `gorm:"column:created_by"`
-	Visibility string `gorm:"column:visibility"`
-	CreatedAt  int64  `gorm:"column:created_at"`
-	UpdatedAt  int64  `gorm:"column:updated_at"`
-	Version    int    `gorm:"column:version"`
+	Id            int64  `gorm:"column:id;"`
+	Desc          string `gorm:"column:desc"`
+	Name          string `gorm:"column:name;index:model_index,unique,priority:2"`
+	Owner         string `gorm:"column:owner;index:model_index,unique,priority:1"`
+	License       string `gorm:"column:license"`
+	Fullname      string `gorm:"column:fullname"`
+	CreatedBy     string `gorm:"column:created_by"`
+	Visibility    string `gorm:"column:visibility"`
+	CreatedAt     int64  `gorm:"column:created_at"`
+	UpdatedAt     int64  `gorm:"column:updated_at"`
+	Version       int    `gorm:"column:version"`
+	LikeCount     int    `gorm:"column:like_count"`
+	DownloadCount int    `gorm:"column:download_count"`
 
 	// labels
 	Task       string         `gorm:"column:task;index:task"`
@@ -104,6 +109,7 @@ func (do *modelDO) toModel() domain.Model {
 		CreatedAt: do.CreatedAt,
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,
+		LikeCount: do.LikeCount,
 
 		Labels: domain.ModelLabels{
 			Task:       do.Task,
@@ -115,14 +121,16 @@ func (do *modelDO) toModel() domain.Model {
 
 func (do *modelDO) toModelSummary() repository.ModelSummary {
 	return repository.ModelSummary{
-		Id:         primitive.CreateIdentity(do.Id).Identity(),
-		Name:       do.Name,
-		Desc:       do.Desc,
-		Task:       do.Task,
-		Owner:      do.Owner,
-		License:    do.License,
-		Fullname:   do.Fullname,
-		UpdatedAt:  do.UpdatedAt,
-		Frameworks: do.Frameworks,
+		Id:            primitive.CreateIdentity(do.Id).Identity(),
+		Name:          do.Name,
+		Desc:          do.Desc,
+		Task:          do.Task,
+		Owner:         do.Owner,
+		License:       do.License,
+		Fullname:      do.Fullname,
+		UpdatedAt:     do.UpdatedAt,
+		Frameworks:    do.Frameworks,
+		LikeCount:     do.LikeCount,
+		DownloadCount: do.DownloadCount,
 	}
 }

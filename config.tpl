@@ -120,6 +120,23 @@ permission:
         - role: read
           operation:
           - read
+    - object_type: codeRepo
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: write
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: read
+          operation:
+          - read
 
 model:
   tables:

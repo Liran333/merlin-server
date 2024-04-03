@@ -7,16 +7,17 @@ import (
 type ActivityType string
 
 const (
-	Create ActivityType = "Create"
-	Update ActivityType = "Update"
-	Like   ActivityType = "Like"
+	Create ActivityType = "create"
+	Update ActivityType = "update"
+	Like   ActivityType = "like"
 )
 
 // Activity struct represents the user activity entity.
 type Activity struct {
-	Owner    primitive.Account
 	Type     ActivityType
 	Time     int64
+	Name     primitive.MSDName
+	Owner    primitive.Account
 	Resource Resource
 }
 
@@ -24,4 +25,5 @@ type Activity struct {
 type Resource struct {
 	Type  primitive.ObjType  // Resource type
 	Index primitive.Identity // Resource index
+	Owner primitive.Account
 }

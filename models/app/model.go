@@ -27,6 +27,8 @@ type ModelAppService interface {
 	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) (string, error)
 	GetByName(primitive.Account, *domain.ModelIndex) (ModelDTO, error)
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
+	AddLike(primitive.Identity) error
+	DeleteLike(primitive.Identity) error
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -258,5 +260,19 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 		return allerror.NewCountExceeded("model count exceed", fmt.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
 	}
 
+	return nil
+}
+
+func (s *modelAppService) AddLike(modelId primitive.Identity) error {
+	if err := s.repoAdapter.AddLike(modelId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *modelAppService) DeleteLike(modelId primitive.Identity) error {
+	if err := s.repoAdapter.DeleteLike(modelId); err != nil {
+		return err
+	}
 	return nil
 }

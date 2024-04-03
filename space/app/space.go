@@ -67,6 +67,8 @@ type SpaceAppService interface {
 	Update(primitive.Account, primitive.Identity, *CmdToUpdateSpace) (string, error)
 	GetByName(primitive.Account, *domain.SpaceIndex) (SpaceDTO, error)
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
+	AddLike(primitive.Identity) error
+	DeleteLike(primitive.Identity) error
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -369,5 +371,19 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 		return newSpaceCountExceeded(fmt.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
 	}
 
+	return nil
+}
+
+func (s *spaceAppService) AddLike(spaceId primitive.Identity) error {
+	if err := s.repoAdapter.AddLike(spaceId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
+	if err := s.repoAdapter.DeleteLike(spaceId); err != nil {
+		return err
+	}
 	return nil
 }

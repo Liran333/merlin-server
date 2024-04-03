@@ -2,7 +2,6 @@ package activityrepositoryadapter
 
 import (
 	"github.com/openmerlin/merlin-server/activity/domain"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 

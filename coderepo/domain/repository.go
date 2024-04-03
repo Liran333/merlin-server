@@ -21,6 +21,10 @@ type CodeRepo struct {
 	Visibility primitive.Visibility
 }
 
+func (r *CodeRepo) ResourceType() primitive.ObjType {
+	return primitive.ObjTypeCodeRepo
+}
+
 // IsPrivate checks if the code repository is private.
 func (r *CodeRepo) IsPrivate() bool {
 	return r.Visibility.IsPrivate()

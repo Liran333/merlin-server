@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // spaceCreatedEvent
@@ -26,7 +27,7 @@ func (e *spaceCreatedEvent) Message() ([]byte, error) {
 // NewSpaceCreatedEvent return a spaceCreatedEvent
 func NewSpaceCreatedEvent(space *Space) spaceCreatedEvent {
 	return spaceCreatedEvent{
-		Time:      space.CreatedAt,
+		Time:      utils.Now(),
 		Owner:     space.Owner.Account(),
 		SpaceId:   space.Id.Identity(),
 		CreatedBy: space.CreatedBy.Account(),
@@ -70,7 +71,7 @@ func (e *spaceUpdatedEvent) Message() ([]byte, error) {
 // NewSpaceUpdatedEvent return a spaceUpdatedEvent
 func NewSpaceUpdatedEvent(user primitive.Account, space *Space, b bool) spaceUpdatedEvent {
 	return spaceUpdatedEvent{
-		Time:       space.UpdatedAt,
+		Time:       utils.Now(),
 		Repo:       space.Name.MSDName(),
 		Owner:      space.Owner.Account(),
 		SpaceId:    space.Id.Identity(),

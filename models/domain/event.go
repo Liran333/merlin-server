@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // modelCreatedEvent
@@ -25,7 +26,7 @@ func (e *modelCreatedEvent) Message() ([]byte, error) {
 // NewModelCreatedEvent return a modelCreatedEvent
 func NewModelCreatedEvent(m *Model) modelCreatedEvent {
 	return modelCreatedEvent{
-		Time:      m.CreatedAt,
+		Time:      utils.Now(),
 		Owner:     m.Owner.Account(),
 		ModelId:   m.Id.Identity(),
 		CreatedBy: m.CreatedBy.Account(),
@@ -67,7 +68,7 @@ func (e *modelUpdatedEvent) Message() ([]byte, error) {
 // NewModelUpdatedEvent return a modelUpdatedEvent
 func NewModelUpdatedEvent(m *Model, user primitive.Account, b bool) modelUpdatedEvent {
 	return modelUpdatedEvent{
-		Time:       m.UpdatedAt,
+		Time:       utils.Now(),
 		Repo:       m.Name.MSDName(),
 		Owner:      m.Owner.Account(),
 		ModelId:    m.Id.Identity(),

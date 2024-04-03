@@ -243,3 +243,17 @@ func order(t primitive.SortType) string {
 		return ""
 	}
 }
+
+// AddLike Add a like to a model by its ID.
+func (adapter *modelAdapter) AddLike(modelId primitive.Identity) error {
+	id := modelId.Integer() // Adjusted to use the Integer() method for conversion.
+
+	return adapter.IncrementLikeCount(id)
+}
+
+// DeleteLike Delete a like to a model by its ID.
+func (adapter *modelAdapter) DeleteLike(modelId primitive.Identity) error {
+	id := modelId.Integer() // Adjusted to use the Integer() method for conversion.
+
+	return adapter.DescendLikeCount(id)
+}

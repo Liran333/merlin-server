@@ -65,3 +65,18 @@ func (adapter *resourceAdapterImpl) GetByType(t primitive.RepoType,
 
 	return nil, commonrepo.NewErrorResourceNotExists(errors.New("unknown repo type"))
 }
+
+// GetByIndex retrieves a resource by index.
+func (adapter *resourceAdapterImpl) GetByIndex(index primitive.Identity) (domain.Resource, error) {
+	r, err := adapter.model.FindById(index)
+	if err == nil {
+		return &r, nil
+	}
+	if !commonrepo.IsErrorResourceNotExists(err) {
+		return nil, err
+	}
+
+	space, err := adapter.space.FindById(index)
+
+	return &space, err
+}

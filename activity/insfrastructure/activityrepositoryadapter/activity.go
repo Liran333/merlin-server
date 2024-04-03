@@ -2,12 +2,14 @@ package activityrepositoryadapter
 
 import (
 	"errors"
+
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonerror "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 type activityAdapter struct {
@@ -41,7 +43,7 @@ func (adapter *activityAdapter) Save(activity *domain.Activity) error {
 	actDO := activityDO{
 		Owner:         activity.Owner.Account(),
 		Type:          string(activity.Type),
-		Time:          activity.Time,
+		Time:          utils.Now(),
 		ResourceIndex: activity.Resource.Index.Integer(),
 		ResourceType:  string(activity.Resource.Type),
 	}
@@ -52,7 +54,7 @@ func (adapter *activityAdapter) Save(activity *domain.Activity) error {
 		return result.Error // Return the error if the save operation fails.
 	}
 
-	return nil // Return nil if the operation is successful.
+	return nil
 }
 
 // Delete function now using the newly created deleteByOwnerAndIndex function.
@@ -115,6 +117,9 @@ func (adapter *activityAdapter) List(names []primitive.Account, opt *repository.
 	// Sorting
 	if v := order(opt.SortType); v != "" {
 		query = query.Order(v)
+	} else {
+		//default order
+		query = query.Order(orderByDesc(fieldTime))
 	}
 
 	var dos []activityDO

@@ -44,7 +44,29 @@ func ConvertReqToCreateActivityToCmd(req *activityapp.ReqToCreateActivity) (app.
 	return cmd, nil
 }
 
-func ConvertReqToDeleteActivityToCmd(req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
+func ConvertReqToDeleteActivityToCmd(user primitive.Account, req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
+	var cmd app.CmdToAddActivity
+
+	resourceIdInt, err := strconv.ParseInt(req.ResourceId, 10, 64)
+	if err != nil {
+		logrus.Errorf("failed to convert to int: %s", err)
+		return cmd, err
+	}
+
+	resource := domain.Resource{
+		Type:  primitive.ObjType(req.ResourceType),
+		Index: primitive.CreateIdentity(resourceIdInt),
+	}
+
+	cmd = app.CmdToAddActivity{
+		Owner:    user,
+		Resource: resource,
+	}
+
+	return cmd, nil
+}
+
+func ConvertInternalReqToDeleteActivityToCmd(req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 
 	resourceIdInt, err := strconv.ParseInt(req.ResourceId, 10, 64)

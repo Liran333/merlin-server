@@ -11,7 +11,7 @@ type ActivityInternalAdapter interface {
 	DeleteAll(activities *domain.Activity) error
 }
 
-// ActivitiesRepositoryAdapter represents an interface for managing models.
+// ActivitiesRepositoryAdapter represents an interface for managing activities.
 type ActivitiesRepositoryAdapter interface {
 	List([]primitive.Account, *ListOption) ([]domain.Activity, int, error)
 	Save(activities *domain.Activity) error
@@ -19,7 +19,7 @@ type ActivitiesRepositoryAdapter interface {
 	HasLike(primitive.Account, primitive.Identity) (bool, error)
 }
 
-// ListOption represents options for listing models.
+// ListOption represents options for listing activities.
 type ListOption struct {
 	Name  []string
 	Space string

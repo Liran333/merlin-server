@@ -15,6 +15,12 @@ const (
 	repoTypeSpace = "space"
 )
 
+// Identity is an interface that represents an identity with both a string and integer representation.
+type Identity interface {
+	Identity() string
+	Integer() int64
+}
+
 // BranchName represents a branch name.
 type BranchName interface {
 	BranchName() string
