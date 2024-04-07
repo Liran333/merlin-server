@@ -134,6 +134,27 @@ func (s *SuiteUser) TestRequestDelete() {
 	assert.Equalf(s.T(), getInt64(s.T(), user["request_delete_at"]), int64(0), "request delete at not equal")
 }
 
+// TestRequestDelete used for testing
+// when user is admin role of organization, do not to be deleted
+func (s *SuiteUser) TestRequestDeleteCheckAdmin() {
+	orgName := "testorg"
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     orgName,
+		Fullname: "testorgfull",
+	}
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.UserApi.V1UserDelete(AuthRest)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, orgName)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUser used for testing
 func TestUser(t *testing.T) {
 	suite.Run(t, new(SuiteUser))
