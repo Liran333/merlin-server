@@ -42,6 +42,35 @@
                 }
             }
         },
+        "/v1/analytics/key": {
+            "get": {
+                "description": "get analyse key",
+                "tags": [
+                    "Other"
+                ],
+                "summary": "Ayalyse key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.tokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/exists/:owner/:name": {
             "get": {
                 "description": "check whether the repo exists",
@@ -616,7 +645,6 @@
                         "items": {
                             "type": "string"
                         },
-                        "collectionFormat": "csv",
                         "description": "filter by roles",
                         "name": "roles",
                         "in": "query"
@@ -1928,6 +1956,52 @@
                 }
             }
         },
+        "/v1/user/activity": {
+            "get": {
+                "description": "get activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityWeb"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by space",
+                        "name": "space",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by model",
+                        "name": "model",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by like",
+                        "name": "like",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/email/bind": {
             "post": {
                 "security": [
@@ -2143,13 +2217,7 @@
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
-                "app_log_url": {
-                    "type": "string"
-                },
                 "app_url": {
-                    "type": "string"
-                },
-                "build_log_url": {
                     "type": "string"
                 },
                 "id": {
@@ -2413,10 +2481,19 @@
                 "download_count": {
                     "type": "integer"
                 },
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "license": {
                     "type": "string"
                 },
                 "like_count": {
@@ -2516,9 +2593,6 @@
                 "fullname": {
                     "type": "string"
                 },
-                "init_readme": {
-                    "type": "boolean"
-                },
                 "license": {
                     "type": "string"
                 },
@@ -2544,9 +2618,6 @@
                 },
                 "hardware": {
                     "type": "string"
-                },
-                "init_readme": {
-                    "type": "boolean"
                 },
                 "license": {
                     "type": "string"
@@ -2613,9 +2684,6 @@
                 "fullname": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "visibility": {
                     "type": "string"
                 }
@@ -2631,9 +2699,6 @@
                     "type": "string"
                 },
                 "hardware": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 },
                 "sdk": {
@@ -2714,6 +2779,9 @@
                 "liked": {
                     "type": "boolean"
                 },
+                "local_cmd": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2792,6 +2860,17 @@
                 },
                 "perm": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.tokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
                 }
             }
         },
@@ -2917,10 +2996,19 @@
                 "download_count": {
                     "type": "integer"
                 },
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "license": {
                     "type": "string"
                 },
                 "like_count": {

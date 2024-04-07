@@ -51,4 +51,6 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	setRouterOfSearchWeb(rg, services)
 
 	setRouterOfActivityWeb(rg, services)
+
+	setRouterOfOther(rg, &cfg.OtherConfig)
 }

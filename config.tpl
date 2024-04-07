@@ -260,3 +260,9 @@ vault:
   user_name: {{(ds "secret").data.VAULT_USER }}
   pass_word: {{(ds "secret").data.VAULT_PASS }}
   base_path: {{(ds "secret").data.VAULT_BASE_PATH }}
+
+other_config:
+  analyse:
+    client_id: {{(ds "secret").data.CLIENT_ID }}
+    client_secret: {{(ds "secret").data.CLIENT_SECRET }}
+    get_token_url: "https://connect-drcn.dbankcloud.cn/agc/apigw/oauth2/v1/token"

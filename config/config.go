@@ -24,6 +24,7 @@ import (
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
+	"github.com/openmerlin/merlin-server/other"
 	"github.com/openmerlin/merlin-server/session"
 	"github.com/openmerlin/merlin-server/space"
 	spaceapp "github.com/openmerlin/merlin-server/spaceapp"
@@ -69,6 +70,7 @@ type Config struct {
 	Postgresql  postgresql.Config    `json:"postgresql"`
 	Permission  permission.Config    `json:"permission"`
 	RateLimiter ratelimiter.Config   `json:"ratelimit"`
+	OtherConfig other.Config         `json:"other_config"`
 }
 
 // Init initializes the application using the configuration settings provided in the Config struct.
@@ -115,6 +117,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Primitive,
 		&cfg.Postgresql,
 		&cfg.Vault,
+		&cfg.OtherConfig,
 	}
 }
 
