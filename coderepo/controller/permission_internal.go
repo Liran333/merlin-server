@@ -77,11 +77,12 @@ func (ctl *PermissionInternalController) Read(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.ps.CanRead(user, r); err != nil {
+	notFound, err := commonapp.CanReadOrNotFound(user, r, ctl.ps)
+	if notFound {
 		commonctl.SendError(ctx, err)
-	} else {
-		commonctl.SendRespOfPost(ctx, "successfully")
+		return
 	}
+	commonctl.SendRespOfPost(ctx, "successfully")
 }
 
 func (ctl *PermissionInternalController) parse(ctx *gin.Context) (

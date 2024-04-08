@@ -65,3 +65,17 @@ func isNoPermissionOrNotFound(
 	// It is not found when it can't read,
 	return true, nil
 }
+
+// CanReadOrNotFound checks if the user has permission to read the specified resource or
+// the resource is not found for user.
+func CanReadOrNotFound(
+	user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
+) (bool, error) {
+	err := ps.CanRead(user, resource)
+	if err == nil {
+		// has permission
+		return false, nil
+	}
+
+	return true, allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "not found" , err)
+}
