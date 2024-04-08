@@ -136,7 +136,7 @@ services:
     ports:
     - "${SERVER_PORT}:${SERVER_PORT}"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:${SERVER_PORT}/api/swagger/index.html"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:${SERVER_PORT}/internal/heartbeat"]
       interval: 5s
       timeout: 30s
       retries: 10
