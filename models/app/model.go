@@ -268,6 +268,18 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 }
 
 func (s *modelAppService) AddLike(modelId primitive.Identity) error {
+	// Retrieve the code repository information.
+	codeRepo, err := s.codeRepoApp.GetById(modelId)
+	if err != nil {
+		return err
+	}
+
+	// Only proceed if the repository is public.
+	isPublic := codeRepo.IsPublic()
+	if !isPublic {
+		return nil
+	}
+
 	if err := s.repoAdapter.AddLike(modelId); err != nil {
 		return err
 	}
