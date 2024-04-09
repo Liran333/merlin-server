@@ -116,6 +116,63 @@ const (
 
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
+
+	// dulicate creating
+	ErrorDulicateCreating = "dulicate_creating"
+
+	// failed to get user info when checking privacy agreement"
+	ErrorFailGetUserInfoWhenCheckPrivacyAgreement = "fail_get_user_info_when_checking_privacy_agreement"
+
+	// failed to get owner info
+	ErrorFailedGetOwnerInfo = "failed_to_get_owner_info"
+
+	// failed to get platform user
+	ErrorFailGetPlatformUser = "failed_to_get_platform_user"
+
+	// failed to create org
+	ErrorFailedCreateOrg = "failed_to_create_org"
+
+	// failed to create to org
+	ErrorFailedCreateToOrg = "failed_to_create_to_org"
+
+	// failed to save org member
+	ErrorFailSaveOrgMember = "failed_to_save_org_member"
+
+	// cmd is nil
+	ErrorCmdIsNil = "cmd_is_nil"
+
+	// list options is nil
+	ErrorListOptionsIsNil = "list_options_is_nil"
+
+	// account is nil
+	ErrorAccountIsNil = "account is nil"
+
+	// org account is nil
+	ErrorOrgAccountIsNil = "org_account_is_nil"
+
+	// the org has only one member
+	ErrorOrgHasOnlyOneMember = "the_org_has_only_one_member"
+
+	// failed to get platform user
+	ErrorFailedToGetPlatformUser = "failed_to_get_platform_user"
+
+	// failed to remove member
+	ErrorFailedToRemoveMember = "failed_to_remove_member"
+
+	// the user is already a member of the org
+	ErrorUserAlreadyInOrg = "the_user_is_already_a_member_of_the_org"
+
+	// org not allow request member
+	ErrorOrgNotAllowRequestMember = "org_not_allow_request_member"
+
+	// invalid param for request member
+	ErrorInvalidParamForRequestMember = "invalid_param_for_request_member"
+
+	// invalid param for cancel request member
+	ErrorInvalidParamForCancelRequestMember = "invalid_param_for_cancel_request_member"
+
+	// invalid param for list member request
+	ErrorInvalidParamForListMemberRequest = "invalid_param_for_list_member_request"
 )
 
 // errorImpl

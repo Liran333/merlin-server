@@ -113,19 +113,19 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	owner, err := org.repo.GetByAccount(cmd.Owner)
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to get owner info", err)
+		err = allerror.New(allerror.ErrorFailedGetOwnerInfo, "failed to get owner info", err)
 		return
 	}
 
 	pl, err := org.user.GetPlatformUser(orgTemp.Owner)
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to get platform user", err)
+		err = allerror.New(allerror.ErrorFailGetPlatformUser, "failed to get platform user", err)
 		return
 	}
 
 	err = pl.CreateOrg(orgTemp)
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to create org", err)
+		err = allerror.New(allerror.ErrorFailedCreateOrg, "failed to create org", err)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	*orgTemp, err = org.repo.AddOrg(orgTemp)
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to create to org", err)
+		err = allerror.New(allerror.ErrorFailedCreateToOrg, "failed to create to org", err)
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
@@ -149,7 +149,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 		Role:     primitive.NewAdminRole(),
 	})
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to save org member", err)
+		err = allerror.New(allerror.ErrorFailSaveOrgMember, "failed to save org member", err)
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
@@ -274,7 +274,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 // and returns the updated organization as a UserDTO.
 func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto userapp.UserDTO, err error) {
 	if cmd == nil {
-		err = allerror.NewInvalidParam("cmd is nil", fmt.Errorf("cmd is nil"))
+		err = allerror.New(allerror.ErrorCmdIsNil, "cmd is nil", err)
 		return
 	}
 
@@ -335,7 +335,7 @@ func (org *orgService) GetByOwner(actor, acc primitive.Account) (orgs []userapp.
 func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.UserDTO, err error) {
 	if acc == nil {
 		e := fmt.Errorf("account is nil")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorAccountIsNil, "account is nil", e)
 		return
 	}
 
@@ -366,7 +366,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err error) {
 	if l == nil {
 		e := fmt.Errorf("list options is nil")
-		return nil, allerror.NewInvalidParam(e.Error(), e)
+		return nil, allerror.New(allerror.ErrorListOptionsIsNil, "list options is nil", e)
 	}
 	orgs = []userapp.UserDTO{}
 
@@ -420,7 +420,7 @@ func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account,
 func (org *orgService) ListMember(cmd *domain.OrgListMemberCmd) (dtos []MemberDTO, err error) {
 	if cmd == nil || cmd.Org == nil {
 		e := fmt.Errorf("org account is nil")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorOrgAccountIsNil, "org account is nil", e)
 		return
 	}
 
@@ -504,7 +504,7 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 	count := len(members)
 	if count == 1 {
 		e := fmt.Errorf("the org has only one member")
-		err = allerror.NewNoPermission(e.Error(), e)
+		err = allerror.New(allerror.ErrorOrgHasOnlyOneMember, "the org has only one member", e)
 		return
 	}
 
@@ -599,14 +599,14 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to get platform user", err)
+		return allerror.New(allerror.ErrorFailedToGetPlatformUser, "", err)
 	}
 
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
 	if err != nil {
 		e := fmt.Errorf("failed to get member when remove member by org %s and user %s, %w",
 			cmd.Org.Account(), cmd.Account.Account(), err)
-		return allerror.NewInvalidParam("failed to remove member", e)
+		return allerror.New(allerror.ErrorFailedToRemoveMember, "", e)
 	}
 
 	err = pl.RemoveMember(&o, &m)
@@ -699,7 +699,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 
 	if org.hasMember(cmd.Org, cmd.Account) {
 		e := fmt.Errorf("the user is already a member of the org")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorUserAlreadyInOrg, "", e)
 		return
 	}
 
@@ -770,7 +770,7 @@ func (org *orgService) hasMember(o, user primitive.Account) bool {
 func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto MemberRequestDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for request member")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorInvalidParamForRequestMember, "", e)
 		return
 	}
 
@@ -806,7 +806,7 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 	}
 
 	if !o.AllowRequest {
-		err = allerror.NewInvalidParam("org not allow request member", fmt.Errorf("org not allow request member"))
+		err = allerror.New(allerror.ErrorOrgNotAllowRequestMember, "", fmt.Errorf("org not allow request member"))
 		return
 	}
 
@@ -828,7 +828,7 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto ApproveDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for cancel request member")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorInvalidParamForCancelRequestMember, "", e)
 		return
 	}
 
@@ -912,7 +912,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (dto MemberRequestDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for cancel request member")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorInvalidParamForCancelRequestMember, "", e)
 		return
 	}
 
@@ -983,7 +983,7 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (dto MemberRequestDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for cancel request member")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorInvalidParamForCancelRequestMember, "", e)
 		return
 	}
 
@@ -1029,7 +1029,7 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []MemberRequestDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for list member request")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorInvalidParamForListMemberRequest, "", e)
 		return
 	}
 
