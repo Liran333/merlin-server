@@ -434,7 +434,7 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
 
 	enc, salt, err := domain.EncryptToken(t.Token)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToEncryptToken, "", err)
+		err = allerror.New(allerror.ErrorFailedToEcryptToken, "", err)
 		return
 	}
 

@@ -234,8 +234,8 @@ const (
 	// failed to create token
 	ErrorFailedToCreateToken = "failed_to_create_token"
 
-	// failed to encrypt token
-	ErrorFailedToEncryptToken = "failed_to_encrypt_token"
+	// failed to ecrypt token
+	ErrorFailedToEcryptToken = "failed_to_ecrypt_token"
 
 	// input param is empty
 	ErrorInputParamIsEmpty = "input_param_is_empty"
