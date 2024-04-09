@@ -103,7 +103,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	if !org.repo.CheckName(cmd.Name) {
 		e := fmt.Errorf("name %s is already been taken", cmd.Name.Account())
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorNameAlreadyBeenTaken, "", e)
 		return
 	}
 
@@ -113,19 +113,19 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	owner, err := org.repo.GetByAccount(cmd.Owner)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedGetOwnerInfo, "failed to get owner info", err)
+		err = allerror.New(allerror.ErrorFailedGetOwnerInfo, "", err)
 		return
 	}
 
 	pl, err := org.user.GetPlatformUser(orgTemp.Owner)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailGetPlatformUser, "failed to get platform user", err)
+		err = allerror.New(allerror.ErrorFailGetPlatformUser, "", err)
 		return
 	}
 
 	err = pl.CreateOrg(orgTemp)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedCreateOrg, "failed to create org", err)
+		err = allerror.New(allerror.ErrorFailedCreateOrg, "", err)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 
 	*orgTemp, err = org.repo.AddOrg(orgTemp)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedCreateToOrg, "failed to create to org", err)
+		err = allerror.New(allerror.ErrorFailedCreateToOrg, "", err)
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
@@ -149,7 +149,7 @@ func (org *orgService) Create(cmd *domain.OrgCreatedCmd) (o userapp.UserDTO, err
 		Role:     primitive.NewAdminRole(),
 	})
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailSaveOrgMember, "failed to save org member", err)
+		err = allerror.New(allerror.ErrorFailSaveOrgMember, "", err)
 		_ = pl.DeleteOrg(cmd.Name)
 		return
 	}
@@ -235,12 +235,12 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to get platform user", fmt.Errorf("failed to get platform user, %w", err))
+		return allerror.New(allerror.ErrorFailGetPlatformUser, "", fmt.Errorf("failed to get platform user, %w", err))
 	}
 
 	can, err := pl.CanDelete(cmd.Name)
 	if err != nil {
-		return allerror.NewInvalidParam(fmt.Sprintf("%s can't delete the org", cmd.Name.Account()),
+		return allerror.New(allerror.ErrorAccountCannotDeleteTheOrg, "",
 			fmt.Errorf("%s can't delete the org, %w", cmd.Name.Account(), err))
 	}
 
@@ -301,14 +301,14 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 	if change {
 		o, err = org.repo.SaveOrg(&o)
 		if err != nil {
-			err = allerror.NewInvalidParam("failed to save org", fmt.Errorf("failed to save org, %w", err))
+			err = allerror.New(allerror.ErrorFailedToSaveOrg, "", fmt.Errorf("failed to save org, %w", err))
 			return
 		}
 		dto = ToDTO(&o)
 		return
 	}
 
-	err = allerror.NewInvalidParam("nothing changed", fmt.Errorf("nothing changed when update basic info %v", cmd))
+	err = allerror.New(allerror.ErrorNothingChanged, "", fmt.Errorf("nothing changed when update basic info %v", cmd))
 	return
 }
 
@@ -353,7 +353,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 		o, e := org.repo.GetOrgByName(members[i].OrgName)
 		if e != nil {
 			e := fmt.Errorf("failed to get org when get org by user, %w", e)
-			err = allerror.NewInvalidParam(e.Error(), e)
+			err = allerror.New(allerror.ErrorFailedToGetOrgWhenGetOrgByUser, "", e)
 			return
 		}
 		orgs[i] = ToDTO(&o)
@@ -453,37 +453,36 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	err := cmd.Validate()
 	if err != nil {
 		e := fmt.Errorf("failed to validate cmd, %w", err)
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorFailedToValidateCmd, "", e)
 	}
 
 	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to get org info", fmt.Errorf("failed to get org info, %w", err))
+		return allerror.New(allerror.ErrorFailedToGetOrgInfo, "", fmt.Errorf("failed to get org info, %w", err))
 	}
 
 	memberInfo, err := org.repo.GetByAccount(cmd.User)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to get member info", fmt.Errorf("failed to get member info, %w", err))
+		return allerror.New(allerror.ErrorFailedToGetMemberInfo, "", fmt.Errorf("failed to get member info, %w", err))
 	}
 
 	m := cmd.ToMember(memberInfo)
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to get platform user for adding member",
-			fmt.Errorf("failed to get platform user for adding member, %w", err))
+		return allerror.New(allerror.ErrorFailedToGetPlatformUserForAddingMember,
+			"", fmt.Errorf("failed to get platform user for adding member, %w", err))
 	}
 
 	err = pl.AddMember(&o, &m)
 	if err != nil {
-		return allerror.NewInvalidParam(fmt.Sprintf("failed to add member:%s to org:%s",
-			m.Username.Account(), o.Account.Account()), fmt.Errorf("failed to add member:%s to org:%s, %w",
+		return allerror.New(allerror.ErrorFailedToAddMemberToOrg, "", fmt.Errorf("failed to add member:%s to org:%s, %w",
 			m.Username.Account(), o.Account.Account(), err))
 	}
 
 	_, err = org.member.Add(&m)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to save member for adding member",
+		return allerror.New(allerror.ErrorFailedToSaveMemberForAddingMember, "",
 			fmt.Errorf("failed to save member for adding member, %w", err))
 	}
 
@@ -495,7 +494,7 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: cmd.Org})
 	if err != nil {
 		e := fmt.Errorf("failed to get members by org name: %s, %s", cmd.Org, err)
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorFailedToGetMembersByOrgName, "", e)
 		return
 	}
 
@@ -532,7 +531,7 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 
 	if ownerCount == 1 && removeOwner {
 		e := fmt.Errorf("the only owner can not be removed")
-		err = allerror.NewNoPermission(e.Error(), e)
+		err = allerror.New(allerror.ErrorOnlyOwnerCanNotBeRemoved, "", e)
 		return
 	}
 
@@ -549,12 +548,12 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 	err := cmd.Validate()
 	if err != nil {
-		return allerror.NewInvalidParam("failed to validate cmd", fmt.Errorf("failed to validate cmd, %w", err))
+		return allerror.New(allerror.ErrorFailedToValidateCmd, "", fmt.Errorf("failed to validate cmd, %w", err))
 	}
 
 	err = org.canRemoveMember(cmd)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to remove member", fmt.Errorf("failed to remove member, %w", err))
+		return allerror.New(allerror.ErrorFailedToRemoveMember, "", fmt.Errorf("failed to validate cmd, %w", err))
 	}
 
 	o, err := org.repo.GetOrgByName(cmd.Org)
@@ -611,14 +610,13 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	err = pl.RemoveMember(&o, &m)
 	if err != nil {
-		return allerror.NewInvalidParam("failed to delete git member",
-			fmt.Errorf("failed to delete git member, %w", err))
+		return allerror.New(allerror.ErrorFailedToDeleteGitMember, "", fmt.Errorf("failed to delete git member, %w", err))
 	}
 
 	err = org.member.Delete(&m)
 	if err != nil {
 		_ = pl.AddMember(&o, &m)
-		return allerror.NewInvalidParam("failed to delete member",
+		return allerror.New(allerror.ErrorFailedToDeleteMember, "",
 			fmt.Errorf("failed to delete member, %w", err))
 	}
 
@@ -627,7 +625,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 		o.Owner = cmd.Actor
 		_, err = org.repo.SaveOrg(&o)
 		if err != nil {
-			return allerror.NewInvalidParam("failed to change owner of org",
+			return allerror.New(allerror.ErrorFailedToChangeOwnerOfOrg, "",
 				fmt.Errorf("failed to change owner of org, %w", err))
 		}
 	}
@@ -780,7 +778,7 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 
 	if org.hasMember(cmd.Org, cmd.Actor) {
 		e := fmt.Errorf(" user %s is already a member of the org %s", cmd.Actor.Account(), cmd.Org.Account())
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorUserAccountIsAlreadyAMemberOfOrgAccount, "", e)
 		return
 	}
 
@@ -838,7 +836,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 
 	if org.hasMember(cmd.Org, cmd.Actor) {
 		e := fmt.Errorf("the user %s is already a member of the org %s", cmd.Actor.Account(), cmd.Org.Account())
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorUserAccountIsAlreadyAMemberOfOrgAccount, "", e)
 		return
 	}
 

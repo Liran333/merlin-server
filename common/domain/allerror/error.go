@@ -173,6 +173,153 @@ const (
 
 	// invalid param for list member request
 	ErrorInvalidParamForListMemberRequest = "invalid_param_for_list_member_request"
+
+	// invalid param for org deleted
+	ErrorInvalidParamForOrgDeleted = "invalid_param_for_org_deleted"
+
+	// invalid actor name
+	ErrorInvalidActorName = "invalid_actor_name"
+
+	// org name is nil
+	ErrorOrgNameIsNil = "org_name_is_nil"
+
+	// org fullname is empty
+	ErrorOrgFullnameIsEmpty = "org_fullname_is_empty"
+
+	// invalid account
+	ErrorInvalidAccount = "invalid_account"
+
+	// invalid org
+	ErrorInvalidOrg = "invalid_org"
+
+	// invalid actor
+	ErrorInvalidActor = "invalid_actor"
+
+	// invalid user
+	ErrorInvalidUser = "invalid_user"
+
+	// invalid requester
+	ErrorInvalidRequester = "invalid_requester"
+
+	// when list member requests, org_name/requester can't be all empty
+	ErrorWhenListMemberRequest = "when_list_member_requests,_org_name/requester_can't_be_all_empty"
+
+	// only one of the org_name/invitee/inviter can be used
+	ErrorOverOrgnameInviteeInviter = "only_one_of_the_org_name/invitee/inviter_can_be_used"
+
+	// when list member invitation, org_name/invitee/inviter can't be all empty
+	ErrorEmptyOrgnameInviteeInviter = "when_list_member_invitation,_org_name/invitee/inviter_can't_be_all_empty"
+
+	// fullname can't be empty
+	ErrorFullnameCanNotBeEmpty = "fullname_can't_be_empty"
+
+	// failed to update user info
+	ErrorFailedToUpdateUserInfo = "failed_to_update_user_info"
+
+	// failed to update git user info
+	ErrorFailedToUPdateGitUserInfo = "failed_to_update_git_userinfo"
+
+	// username invalid
+	ErrorUsernameInvalid = "username_invalid"
+
+	// failed to delete user in db
+	ErrorFailedToDeleteUserInDb = "failed_to_delete_user_in_db"
+
+	// failed to delete user in git server
+	ErrorFailedToDeleteUserInGitServer = "failed_to_delete_user_in_git_server"
+
+	// user already requested to be delete
+	ErrorUserAlreadyRequestedToBeDelete = "user_already_requested_to_be_delete"
+
+	// failed to create token
+	ErrorFailedToCreateToken = "failed_to_create_token"
+
+	// failed to encrypt token
+	ErrorFailedToEncryptToken = "failed_to_encrypt_token"
+
+	// input param is empty
+	ErrorInputParamIsEmpty = "input_param_is_empty"
+
+	// failed to get user info
+	ErrorFailedToGetUserInfo = "failed_to_get_user_info"
+
+	// delete token param is empty
+	ErrorDeleteTokenParamIsEmpty = "delete_token_param_is_empty"
+
+	// failed to save org
+	ErrorFailedToSaveOrg = "failed_to_save_org"
+
+	// nothing changed
+	ErrorNothingChanged = "nothing_changed"
+
+	// failed to get org info
+	ErrorFailedToGetOrgInfo = "failed_to_get_org_info"
+
+	// failed to get member info
+	ErrorFailedToGetMemberInfo = "failed_to_get_member_info"
+
+	// failed to get platform user for adding member
+	ErrorFailedToGetPlatformUserForAddingMember = "failed_to_get_platform_user_for_adding_member"
+
+	// failed to save member for adding member
+	ErrorFailedToSaveMemberForAddingMember = "failed_to_save_member_for_adding_member"
+
+	// the only owner can not be removed
+	ErrorOnlyOwnerCanNotBeRemoved = "the_only_owner_can_not_be_removed"
+
+	// failed to validate cmd
+	ErrorFailedToValidateCmd = "failed_to_validate_cmd"
+
+	// failed to delete git member
+	ErrorFailedToDeleteGitMember = "failed_to_delete_git_member"
+
+	// failed to delete member
+	ErrorFailedToDeleteMember = "failed_to_delete_member"
+
+	// failed to change owner of org
+	ErrorFailedToChangeOwnerOfOrg = "failed_to_change_owner_of_org"
+
+	// name %s is already been taken
+	ErrorNameAlreadyBeenTaken = "name_%s_is_already_been_taken"
+
+	// %s can't delete the org
+	ErrorAccountCannotDeleteTheOrg = "%s_can't_delete_the_org"
+
+	// failed to get org when get org by user, %w
+	ErrorFailedToGetOrgWhenGetOrgByUser = "failed_to_get_org_when_get_org_by_user, %w"
+
+	// failed to get members by org name: %s, %s
+	ErrorFailedToGetMembersByOrgName = "failed_to_get_members_by_org_name: %s, %s"
+
+	// user %s is already a member of the org %s
+	ErrorUserAccountIsAlreadyAMemberOfOrgAccount = "user_%s_is_already_a_member_of_the_org_%s"
+
+	// failed to add member:%s to org:%s
+	ErrorFailedToAddMemberToOrg = "failed_to_add_member:%s_to_org:%s"
+
+	// invalid status %s
+	ErrorInvalidStatus = "invalid_status_%s"
+
+	// missing name when creating token
+	ErrorMissingNameWhenCreatingToken = "missing_name_when_creating_token"
+
+	// missing account when creating token
+	ErrorMissingAccountWhenCreatingToken = "missing_account_when_creating_token"
+
+	// missing account when delete token
+	ErrorMissingAccountWhenDeleteToken = "missing_account_when_delete_token"
+
+	// missing name when delete token
+	ErrorMissingNameWhenDeleteToken = "missing_name_when_delete_token"
+
+	// user name %s is already taken
+	ErrorUsernameIsAlreadyTaken = "user_name_%s_is_already_taken"
+
+	// failed to create platform user: %s
+	ErrorFailedToCreatePlatformUser = "failed_to_create_platform_user:_%s"
+
+	// failed to save user in db: %s
+	ErrorFailToSaveUserInDb = "failed_to_save_user_in_db:_%s"
 )
 
 // errorImpl

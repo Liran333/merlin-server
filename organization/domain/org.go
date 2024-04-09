@@ -48,12 +48,12 @@ type OrgDeletedCmd struct {
 func (cmd OrgDeletedCmd) Validate() error {
 	if cmd.Name == nil {
 		e := fmt.Errorf("invalid param for org deleted")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidParamForOrgDeleted, "", e)
 	}
 
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor name")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActorName, "", e)
 	}
 
 	return nil
@@ -75,12 +75,12 @@ type OrgUpdatedBasicInfoCmd struct {
 func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor name")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActorName, "", e)
 	}
 
 	if cmd.OrgName == nil {
 		e := fmt.Errorf("org name is nil")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorOrgNameIsNil, "", e)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool) {
 func (cmd *OrgCreatedCmd) ToOrg() (o *Organization, err error) {
 	if cmd.FullName == nil {
 		e := fmt.Errorf("org fullname is empty")
-		err = allerror.NewInvalidParam(e.Error(), e)
+		err = allerror.New(allerror.ErrorOrgFullnameIsEmpty, "", e)
 		return
 	}
 
@@ -240,17 +240,17 @@ func (a Approve) ToMember() OrgMember {
 func (cmd OrgInviteMemberCmd) Validate() error {
 	if cmd.Account == nil {
 		e := fmt.Errorf("invalid account")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidAccount, "", e)
 	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidOrg, "", e)
 	}
 
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 	return nil
 }
@@ -267,17 +267,17 @@ type OrgRemoveMemberCmd struct {
 func (cmd OrgRemoveMemberCmd) Validate() error {
 	if cmd.Account == nil {
 		e := fmt.Errorf("invalid account")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidAccount, "", e)
 	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidOrg, "", e)
 	}
 
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 
 	return nil
@@ -336,12 +336,12 @@ type OrgAddMemberCmd struct {
 func (cmd OrgAddMemberCmd) Validate() error {
 	if cmd.User == nil {
 		e := fmt.Errorf("invalid user")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidUser, "", e)
 	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidOrg, "", e)
 	}
 
 	return nil
@@ -392,17 +392,17 @@ type OrgCancelRequestMemberCmd struct {
 func (cmd OrgCancelRequestMemberCmd) Validate() error {
 	if cmd.Requester == nil {
 		e := fmt.Errorf("invalid requester")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidRequester, "", e)
 	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidOrg, "", e)
 	}
 
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 
 	return nil
@@ -430,12 +430,12 @@ func (cmd OrgApproveRequestMemberCmd) ToListReqCmd() *OrgMemberReqListCmd {
 func (cmd OrgNormalCmd) Validate() error {
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidOrg, "", e)
 	}
 
 	return nil
@@ -466,18 +466,18 @@ type OrgMemberReqListCmd struct {
 func (cmd OrgMemberReqListCmd) Validate() error {
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 
 	if cmd.Org == nil && cmd.Requester == nil {
 		e := fmt.Errorf("when list member requests, org_name/requester can't be all empty")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorWhenListMemberRequest, "", e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
 		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
 		e := fmt.Errorf("invalid status %s", cmd.Status)
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidStatus, "", e)
 	}
 
 	return nil
@@ -487,7 +487,7 @@ func (cmd OrgMemberReqListCmd) Validate() error {
 func (cmd OrgInvitationListCmd) Validate() error {
 	if cmd.Actor == nil {
 		e := fmt.Errorf("invalid actor")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidActor, "", e)
 	}
 
 	count := 0
@@ -505,18 +505,18 @@ func (cmd OrgInvitationListCmd) Validate() error {
 
 	if count > 1 {
 		e := fmt.Errorf("only one of the org_name/invitee/inviter can be used")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorOverOrgnameInviteeInviter, "", e)
 	}
 
 	if count == 0 {
 		e := fmt.Errorf("when list member invitation, org_name/invitee/inviter can't be all empty")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorEmptyOrgnameInviteeInviter, "", e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
 		ApproveStatusApproved && cmd.Status != ApproveStatusRejected {
 		e := fmt.Errorf("invalid status %s", cmd.Status)
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorInvalidStatus, "", e)
 	}
 
 	return nil

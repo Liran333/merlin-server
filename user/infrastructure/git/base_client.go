@@ -90,7 +90,7 @@ func (c *BaseAuthClient) CreateToken(cmd *domain.TokenCreatedCmd) (token domain.
 func (c *BaseAuthClient) DeleteToken(cmd *domain.TokenDeletedCmd) (err error) {
 	if cmd == nil {
 		e := fmt.Errorf("delete token param is empty")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorDeleteTokenParamIsEmpty, "", e)
 	}
 
 	if cmd.Account.Account() != c.username {
