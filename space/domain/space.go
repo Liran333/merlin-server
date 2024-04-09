@@ -29,6 +29,7 @@ type Space struct {
 	Hardware spaceprimitive.Hardware
 
 	LocalCmd      string
+	LocalEnvInfo  string
 	Version       int
 	CreatedAt     int64
 	UpdatedAt     int64

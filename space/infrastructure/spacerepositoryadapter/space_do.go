@@ -54,6 +54,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		LikeCount:  m.LikeCount,
 		Version:    m.Version,
 		LocalCmd:   m.LocalCmd,
+		LocalEnvInfo:   m.LocalEnvInfo,
 	}
 }
 
@@ -84,6 +85,9 @@ type spaceDO struct {
 
 	// local cmd
 	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
+	// local EnvInfo
+	LocalEnvInfo string `gorm:"column:local_envInfo;type:text;default:'{}'"`
+
 	// labels
 	Task       string         `gorm:"column:task;index:task"`
 	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
@@ -114,6 +118,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		Version:   do.Version,
 		LocalCmd:  do.LocalCmd,
 		LikeCount: do.LikeCount,
+		LocalEnvInfo:  do.LocalEnvInfo,
 		Labels: domain.SpaceLabels{
 			Task:       do.Task,
 			Others:     sets.New[string](do.Others...),

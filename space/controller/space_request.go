@@ -400,3 +400,9 @@ type localCMD space.LocalCMD
 func (req *localCMD) toCmd() string {
 	return req.Cmd
 }
+
+type localEnvInfo space.LocalEnvInfo
+
+func (req *localEnvInfo) toCmd() string {
+	return req.EnvInfo
+}

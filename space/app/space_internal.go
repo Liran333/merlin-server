@@ -16,6 +16,7 @@ import (
 type SpaceInternalAppService interface {
 	GetById(primitive.Identity) (sdk.SpaceMetaDTO, error)
 	UpdateLocalCMD(spaceId primitive.Identity, cmd string) error
+	UpdateEnvInfo(spaceId primitive.Identity, envInfo string) error
 }
 
 // NewSpaceInternalAppService creates a new instance of SpaceInternalAppService
@@ -56,5 +57,19 @@ func (s *spaceInternalAppService) UpdateLocalCMD(spaceId primitive.Identity, cmd
 	}
 
 	space.LocalCmd = cmd
+	return s.repoAdapter.Save(&space)
+}
+
+func (s *spaceInternalAppService) UpdateEnvInfo(spaceId primitive.Identity, envInfo string) error {
+	space, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(err)
+		}
+
+		return err
+	}
+
+	space.LocalEnvInfo = envInfo
 	return s.repoAdapter.Save(&space)
 }
