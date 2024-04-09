@@ -16,15 +16,8 @@ const (
 	SortByMostDownloads   = "most_downloads"
 	SortByRecentlyUpdated = "recently_updated"
 	SortByRecentlyCreated = "recently_created"
+	SortByGlobal          = "global"
 	TrueCondition         = "1"
-)
-
-var (
-	SortTypeMostLikes       = sortType(SortByMostLikes)
-	SortTypeAlphabetical    = sortType(SortByAlphabetical)
-	SortTypeMostDownloads   = sortType(SortByMostDownloads)
-	SortTypeRecentlyUpdated = sortType(SortByRecentlyUpdated)
-	SortTypeRecentlyCreated = sortType(SortByRecentlyCreated)
 )
 
 // SortType is an interface that defines a method to return the sort type as a string.
@@ -36,19 +29,22 @@ type SortType interface {
 func NewSortType(v string) (SortType, error) {
 	switch strings.ToLower(v) {
 	case SortByMostLikes:
-		return SortTypeMostLikes, nil
+		return sortType(SortByMostLikes), nil
 
 	case SortByAlphabetical:
-		return SortTypeAlphabetical, nil
+		return sortType(SortByAlphabetical), nil
 
 	case SortByMostDownloads:
-		return SortTypeMostDownloads, nil
+		return sortType(SortByMostDownloads), nil
 
 	case SortByRecentlyUpdated:
-		return SortTypeRecentlyUpdated, nil
+		return sortType(SortByRecentlyUpdated), nil
 
 	case SortByRecentlyCreated:
-		return SortTypeRecentlyCreated, nil
+		return sortType(SortByRecentlyCreated), nil
+
+	case SortByGlobal:
+		return sortType(SortByGlobal), nil
 
 	default:
 		return nil, errors.New("unknown sort type")

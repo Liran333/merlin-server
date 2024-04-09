@@ -149,7 +149,10 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 		return
 	}
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	req.Owner = user.Account()
 
@@ -195,7 +198,10 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	cmd, err := ConvertReqToDeleteActivityToCmd(user, &req)
 

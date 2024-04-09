@@ -47,6 +47,7 @@ func toModelDO(m *domain.Model) modelDO {
 		CreatedBy:  m.CreatedBy.Account(),
 		Visibility: m.Visibility.Visibility(),
 		CreatedAt:  m.CreatedAt,
+		LikeCount:  m.LikeCount,
 		UpdatedAt:  m.UpdatedAt,
 		Version:    m.Version,
 	}
@@ -81,8 +82,8 @@ type modelDO struct {
 	CreatedAt     int64  `gorm:"column:created_at"`
 	UpdatedAt     int64  `gorm:"column:updated_at"`
 	Version       int    `gorm:"column:version"`
-	LikeCount     int    `gorm:"column:like_count"`
-	DownloadCount int    `gorm:"column:download_count"`
+	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
+	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
 
 	// labels
 	Task       string         `gorm:"column:task;index:task"`

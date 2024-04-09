@@ -29,8 +29,8 @@ const (
 	fieldCreatedAt     = "created_at"
 	fieldVisibility    = "visibility"
 	fieldFrameworks    = "frameworks"
-	filedLikeCount     = "like_count"
-	filedDownloadCount = "download_count"
+	fieldLikeCount     = "like_count"
+	fieldDownloadCount = "download_count"
 )
 
 var (
@@ -51,6 +51,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		Visibility: m.Visibility.Visibility(),
 		CreatedAt:  m.CreatedAt,
 		UpdatedAt:  m.UpdatedAt,
+		LikeCount:  m.LikeCount,
 		Version:    m.Version,
 		LocalCmd:   m.LocalCmd,
 	}
@@ -78,8 +79,8 @@ type spaceDO struct {
 	CreatedAt     int64  `gorm:"column:created_at"`
 	UpdatedAt     int64  `gorm:"column:updated_at"`
 	Version       int    `gorm:"column:version"`
-	LikeCount     int    `gorm:"column:like_count"`
-	DownloadCount int    `gorm:"column:download_count"`
+	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
+	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
 
 	// local cmd
 	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
@@ -112,6 +113,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		UpdatedAt: do.UpdatedAt,
 		Version:   do.Version,
 		LocalCmd:  do.LocalCmd,
+		LikeCount: do.LikeCount,
 		Labels: domain.SpaceLabels{
 			Task:       do.Task,
 			Others:     sets.New[string](do.Others...),
