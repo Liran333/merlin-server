@@ -164,16 +164,21 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 		return
 	}
 
-	if req.ResourceType == typeModel {
-		err = ctl.model.AddLike(cmd.Resource.Index)
-	} else {
-		err = ctl.space.AddLike(cmd.Resource.Index)
-	}
-
-	// Check for errors from AddLike operation
+	liked, err := ctl.appService.HasLike(user, cmd.Resource.Index)
 	if err != nil {
-		commonctl.SendError(ctx, err)
 		return
+	}
+	if !liked {
+		if req.ResourceType == typeModel {
+			err = ctl.model.AddLike(cmd.Resource.Index)
+		} else {
+			err = ctl.space.AddLike(cmd.Resource.Index)
+		}
+		// Check for errors from AddLike operation
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
 	}
 
 	if err := ctl.appService.Create(&cmd); err != nil {
