@@ -114,6 +114,15 @@ const (
 	// ErrorCodeExpired
 	ErrorCodeExpired = "expired"
 
+	// privilege org not existed
+	ErrorCodeNoPrivilegeOrg = "no_privilege_org"
+
+	// privilege org id mismatch
+	ErrorCodePrivilegeOrgIdMismatch = "privilege_org_id_mismatch"
+
+	// not in a privilege org
+	ErrorCodeNotInPrivilegeOrg = "not_in_privilege_org"
+
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 )

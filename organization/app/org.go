@@ -42,6 +42,7 @@ type OrgService interface {
 	GetByOwner(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
 	GetByUser(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
 	List(*OrgListOptions) ([]userapp.UserDTO, error)
+	HasMember(primitive.Account, primitive.Account) bool
 	InviteMember(*domain.OrgInviteMemberCmd) (ApproveDTO, error)
 	RequestMember(*domain.OrgRequestMemberCmd) (MemberRequestDTO, error)
 	CancelReqMember(*domain.OrgCancelRequestMemberCmd) (MemberRequestDTO, error)
@@ -697,7 +698,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 		return
 	}
 
-	if org.hasMember(cmd.Org, cmd.Account) {
+	if org.HasMember(cmd.Org, cmd.Account) {
 		e := fmt.Errorf("the user is already a member of the org")
 		err = allerror.NewInvalidParam(e.Error(), e)
 		return
@@ -751,7 +752,8 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 	return
 }
 
-func (org *orgService) hasMember(o, user primitive.Account) bool {
+// HasMember returns true if the user is already a member of the organization.
+func (org *orgService) HasMember(o, user primitive.Account) bool {
 	_, err := org.member.GetByOrgAndUser(o.Account(), user.Account())
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		logrus.Errorf("failed to get member when check existence by org:%s and user:%s, %s", o.Account(), user.Account(), err)
@@ -778,7 +780,7 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 		return
 	}
 
-	if org.hasMember(cmd.Org, cmd.Actor) {
+	if org.HasMember(cmd.Org, cmd.Actor) {
 		e := fmt.Errorf(" user %s is already a member of the org %s", cmd.Actor.Account(), cmd.Org.Account())
 		err = allerror.NewInvalidParam(e.Error(), e)
 		return
@@ -836,7 +838,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 		return
 	}
 
-	if org.hasMember(cmd.Org, cmd.Actor) {
+	if org.HasMember(cmd.Org, cmd.Actor) {
 		e := fmt.Errorf("the user %s is already a member of the org %s", cmd.Actor.Account(), cmd.Org.Account())
 		err = allerror.NewInvalidParam(e.Error(), e)
 		return

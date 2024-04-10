@@ -12,6 +12,8 @@ import (
 // Hardware is an interface that defines hardware-related operations.
 type Hardware interface {
 	Hardware() string
+	IsNpu() bool
+	IsCpu() bool
 }
 
 // NewHardware creates a new Hardware instance decided by sdk based on the given string.
@@ -40,4 +42,12 @@ type hardware string
 // Hardware returns the string representation of the hardware.
 func (r hardware) Hardware() string {
 	return string(r)
+}
+
+func (r hardware) IsNpu() bool {
+	return strings.Contains(strings.ToLower(string(r)), "npu")
+}
+
+func (r hardware) IsCpu() bool {
+	return strings.Contains(strings.ToLower(string(r)), "cpu")
 }

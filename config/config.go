@@ -24,6 +24,7 @@ import (
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
+	"github.com/openmerlin/merlin-server/organization/domain/privilege"
 	"github.com/openmerlin/merlin-server/other"
 	"github.com/openmerlin/merlin-server/session"
 	"github.com/openmerlin/merlin-server/space"
@@ -52,25 +53,26 @@ type Config struct {
 	ReadHeaderTimeout   int  `json:"read_header_timeout"`
 	NeedTokenForEachAPI bool `json:"need_token_for_each_api"`
 
-	Git         gitea.Config         `json:"gitea"`
-	Org         orgdomain.Config     `json:"organization"`
-	User        userdomain.Config    `json:"user"`
-	Vault       securestorage.Config `json:"vault"`
-	Redis       redislib.Config      `json:"redis"`
-	Kafka       kafka.Config         `json:"kafka"`
-	Model       models.Config        `json:"model"`
-	Space       space.Config         `json:"space"`
-	Activity    activity.Config      `json:"activity"`
-	Session     session.Config       `json:"session"`
-	SpaceApp    spaceapp.Config      `json:"space_app"`
-	CodeRepo    coderepo.Config      `json:"coderepo"`
-	Internal    internal.Config      `json:"internal"`
-	Primitive   primitive.Config     `json:"primitive"`
-	GitAccess   gitaccess.Config     `json:"git_access"`
-	Postgresql  postgresql.Config    `json:"postgresql"`
-	Permission  permission.Config    `json:"permission"`
-	RateLimiter ratelimiter.Config   `json:"ratelimit"`
-	OtherConfig other.Config         `json:"other_config"`
+	Git          gitea.Config         `json:"gitea"`
+	Org          orgdomain.Config     `json:"organization"`
+	User         userdomain.Config    `json:"user"`
+	Vault        securestorage.Config `json:"vault"`
+	Redis        redislib.Config      `json:"redis"`
+	Kafka        kafka.Config         `json:"kafka"`
+	Model        models.Config        `json:"model"`
+	Space        space.Config         `json:"space"`
+	Activity     activity.Config      `json:"activity"`
+	Session      session.Config       `json:"session"`
+	SpaceApp     spaceapp.Config      `json:"space_app"`
+	CodeRepo     coderepo.Config      `json:"coderepo"`
+	Internal     internal.Config      `json:"internal"`
+	Primitive    primitive.Config     `json:"primitive"`
+	GitAccess    gitaccess.Config     `json:"git_access"`
+	Postgresql   postgresql.Config    `json:"postgresql"`
+	Permission   permission.Config    `json:"permission"`
+	RateLimiter  ratelimiter.Config   `json:"ratelimit"`
+	OtherConfig  other.Config         `json:"other_config"`
+	PrivilegeOrg privilege.Config     `json:"privilege_org"`
 }
 
 // Init initializes the application using the configuration settings provided in the Config struct.
