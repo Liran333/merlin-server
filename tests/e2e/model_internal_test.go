@@ -77,9 +77,9 @@ func (s *SuiteInternalModel) TestGetModelFailed() {
 	assert.NotNil(s.T(), err)
 }
 
-// TestInternalModelSetLabel used for testing
-// 模型label设置
-func (s *SuiteInternalModel) TestInternalModelSetLabel() {
+// TestInternalModelResetLabelSuccess used for testing
+// 模型label设置成功
+func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	// 创建模型
 	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
@@ -93,16 +93,68 @@ func (s *SuiteInternalModel) TestInternalModelSetLabel() {
 
 	id := getString(s.T(), data.Data)
 
-	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, swaggerInternal.ControllerReqToCreateModel{
-		Desc:       "testmodel",
-		Fullname:   "fullName",
-		License:    "mit",
-		Name:       "testmodel",
-		Owner:      "testuser1",
-		Visibility: "1",
-	})
+	// 修改模型label
+	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
+		Frameworks: []string{"PyTorch"},
+		License:    "apache-2.0",
+		Task:       "copa",
+	}
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
+
+	// 获取修改成功后的模型label信息
+	modelRes, r, err := ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelData := getData(s.T(), modelRes.Data)
+	assert.Equal(s.T(),
+		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch"}, "license": "apache-2.0", "others": []interface{}{}, "task": "copa"}),
+		modelData["labels"])
+
+	// 删除模型
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestInternalModelResetLabelfail used for testing
+// 模型label设置失败
+func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
+	// 创建模型
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	// 修改模型label
+	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
+		Frameworks: []string{"PyTorch123"},
+		License:    "apache-2.0",
+		Task:       "copa123",
+	}
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 获取修改失败后的模型label信息
+	modelRes, r, err := ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelData := getData(s.T(), modelRes.Data)
+	// 非法的Frameworks与Task不会修改成功
+	assert.Equal(s.T(),
+		map[string]interface{}{"frameworks": []interface{}{}, "license": "apache-2.0", "others": []interface{}{}, "task": ""},
+		modelData["labels"])
 
 	// 删除模型
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)

@@ -145,6 +145,16 @@ model:
     model_created: model_created
     model_updated: model_updated
     model_deleted: model_deleted
+  controller:
+    max_count_per_page: 100
+    tasks:
+  {{- range (ds "common").PIPELINE_TAGS}}
+    - "{{ . }}"
+  {{- end }}
+    frameworks:
+  {{- range (ds "common").FRAMEWORKS}}
+    - "{{ . }}"
+  {{- end }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}

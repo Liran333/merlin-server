@@ -19,8 +19,10 @@ type reqToResetLabel struct {
 }
 
 func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
-	cmd := app.CmdToResetLabels{
-		Task: req.Task,
+	cmd := app.CmdToResetLabels{}
+
+	if config.tasks.Has(req.Task) {
+		cmd.Task = req.Task
 	}
 
 	if len(req.Tags) > 0 {
@@ -31,8 +33,11 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 		cmd.License = req.License
 	}
 
-	if len(req.Frameworks) > 0 {
-		cmd.Frameworks = sets.New[string](req.Frameworks...)
+	for _, framework := range req.Frameworks {
+		if config.frameworks.Has(framework) {
+			cmd.Frameworks = sets.New[string]()
+			cmd.Frameworks.Insert(framework)
+		}
 	}
 
 	return cmd

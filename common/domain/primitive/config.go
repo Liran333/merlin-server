@@ -61,7 +61,7 @@ func Init(cfg *Config) (err error) {
 
 // Config represents the main configuration structure.
 type Config struct {
-	Licenses                []string       `json:"licenses" required:"true"`
+	Licenses                []string       `json:"licenses"                  required:"true"`
 	MSDConfig               MSDConfig      `json:"msd"`
 	EmailConfig             EmailConfig    `json:"email"`
 	PhoneConfig             PhoneConfig    `json:"phone"`
@@ -104,7 +104,7 @@ type MSDConfig struct {
 	nameRegexp *regexp.Regexp
 }
 
-// SetDefault sets default values for MSDConfig whether they are valid.
+// Validate check values for MSDConfig whether they are valid.
 func (cfg *MSDConfig) Validate() (err error) {
 	cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp)
 
@@ -119,7 +119,7 @@ type EmailConfig struct {
 	regexp *regexp.Regexp
 }
 
-// SetDefault sets default values for EmailConfig whether they are valid.
+// Validate check values for EmailConfig whether they are valid.
 func (cfg *EmailConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
@@ -134,7 +134,7 @@ type PhoneConfig struct {
 	regexp *regexp.Regexp
 }
 
-// SetDefault sets default values for PhoneConfig whether they are valid.
+// Validate check values for PhoneConfig whether they are valid.
 func (cfg *PhoneConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
@@ -150,7 +150,7 @@ type TokenConfig struct {
 	regexp *regexp.Regexp
 }
 
-// SetDefault sets default values for TokenConfig whether they are valid.
+// Validate check values for TokenConfig whether they are valid.
 func (cfg *TokenConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
@@ -165,7 +165,7 @@ type WebsiteConfig struct {
 	regexp *regexp.Regexp
 }
 
-// SetDefault sets default values for WebsiteConfig whether they are valid.
+// Validate check values for WebsiteConfig whether they are valid.
 func (cfg *WebsiteConfig) Validate() (err error) {
 	cfg.regexp, err = regexp.Compile(cfg.Regexp)
 
@@ -186,7 +186,7 @@ type AccountConfig struct {
 	reservedAccounts sets.Set[string]
 }
 
-// SetDefault sets default values for AccountConfig whether they are valid.
+// Validate check values for AccountConfig whether they are valid.
 func (cfg *AccountConfig) Validate() (err error) {
 	if cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp); err != nil {
 		return err

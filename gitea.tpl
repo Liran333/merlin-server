@@ -68,3 +68,6 @@ JWT_SECRET =
 SERVER_ADDR = {{(ds "data").KAFKA_ADDR }}
 MESSAGE_TYPE = "kafka"
 TOPIC_NAME = "testtopic"
+
+[merlin]
+LICENSE = apache-2.0,mit,cc-by-sa-3.0,afl-3.0,cc-by-sa-4.0,lgpl-3.0,lgpl-lr,cc-by-nc-3.0,bsd-2-clause,ecl-2.0,cc-by-nc-sa-4.0,cc-by-nc-4.0,gpl-3.0,cc0-1.0,cc,bsd-3-clause,agpl-3.0,wtfpl,artistic-2.0,postgresql,gpl-2.0,isc,eupl-1.1,pddl,bsd-3-clause-clear,mpl-2.0,odbl-1.0,cc-by-4.0,other
