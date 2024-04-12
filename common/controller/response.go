@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 )
 
 // ResponseData is a struct that holds the response data for an API request.
@@ -97,7 +98,7 @@ func SendRespOfDelete(ctx *gin.Context) {
 func SendError(ctx *gin.Context, err error) {
 	sc, code := httpError(err)
 
-	_ = ctx.AbortWithError(sc, err)
+	_ = ctx.AbortWithError(sc, allerror.InnerErr(err))
 
 	ctx.JSON(sc, newResponseCodeMsg(code, err.Error()))
 }

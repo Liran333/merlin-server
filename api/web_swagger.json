@@ -42,35 +42,6 @@
                 }
             }
         },
-        "/v1/analytics/key": {
-            "get": {
-                "description": "get analyse key",
-                "tags": [
-                    "Other"
-                ],
-                "summary": "Ayalyse key",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/controller.ResponseData"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/controller.tokenResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/v1/exists/:owner/:name": {
             "get": {
                 "description": "check whether the repo exists",
@@ -645,6 +616,7 @@
                         "items": {
                             "type": "string"
                         },
+                        "collectionFormat": "csv",
                         "description": "filter by roles",
                         "name": "roles",
                         "in": "query"
@@ -2782,6 +2754,9 @@
                 "local_cmd": {
                     "type": "string"
                 },
+                "local_env_info": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2860,17 +2835,6 @@
                 },
                 "perm": {
                     "type": "string"
-                }
-            }
-        },
-        "controller.tokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
                 }
             }
         },

@@ -223,8 +223,11 @@ func (c *BaseAuthClient) AddMember(o *org.Organization, member *org.OrgMember) (
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
 	}
+	if err != nil {
+		err = fmt.Errorf("failed to add member to org %s: %w", o.Account.Account(), err)
+	}
 
-	return err
+	return
 }
 
 // RemoveMember removes a member from an organization.
@@ -247,8 +250,11 @@ func (c *BaseAuthClient) RemoveMember(o *org.Organization, member *org.OrgMember
 	default:
 		return fmt.Errorf("member role %s is not supported", member.Role)
 	}
+	if err != nil {
+		err = fmt.Errorf("failed to remove member from org %s: %w", o.Account.Account(), err)
+	}
 
-	return err
+	return
 }
 
 // CanDelete checks if an organization can be deleted.
@@ -268,21 +274,7 @@ func (c *BaseAuthClient) CanDelete(name primitive.Account) (can bool, err error)
 
 // EditMemberRole edits the role of a member in an organization.
 func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig primitive.Role, now *org.OrgMember) (err error) {
-	switch orig {
-	case primitive.Read:
-		_, err = c.client.RemoveTeamMember(o.ReadTeamId, now.Username.Account())
-	case primitive.Write:
-		_, err = c.client.RemoveTeamMember(o.WriteTeamId, now.Username.Account())
-	case primitive.Admin:
-		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username.Account())
-	default:
-		return fmt.Errorf("member role %s is not supported", now.Role)
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to remove team member when editing member role: %w", err)
-	}
-
+	// we must add first, then remove
 	switch now.Role {
 	case primitive.Read:
 		_, err = c.client.AddTeamMember(o.ReadTeamId, now.Username.Account())
@@ -295,7 +287,22 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig primitive.Role
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to add team member when editing member role: %w", err)
+		return fmt.Errorf("failed to add team member when editing member role from orig %s to now %s: %w", orig.Role(), now.Role.Role(), err)
+	}
+
+	switch orig {
+	case primitive.Read:
+		_, err = c.client.RemoveTeamMember(o.ReadTeamId, now.Username.Account())
+	case primitive.Write:
+		_, err = c.client.RemoveTeamMember(o.WriteTeamId, now.Username.Account())
+	case primitive.Admin:
+		_, err = c.client.RemoveTeamMember(o.OwnerTeamId, now.Username.Account())
+	default:
+		return fmt.Errorf("member role %s is not supported", now.Role)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to remove team member when editing member role from orig %s to now %s: %w", orig.Role(), now.Role.Role(), err)
 	}
 
 	return

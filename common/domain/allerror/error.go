@@ -155,6 +155,17 @@ func (e errorImpl) ErrorCode() string {
 	return e.code
 }
 
+func (e errorImpl) InnerError() error {
+	return e.innerErr
+}
+
+func InnerErr(err error) error {
+	if e, ok := err.(errorImpl); ok {
+		return e.innerErr
+	}
+	return err
+}
+
 // New creates a new error with the specified code and message.
 func New(code string, msg string, err error) errorImpl {
 	v := errorImpl{

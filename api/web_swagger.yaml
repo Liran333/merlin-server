@@ -385,6 +385,8 @@ definitions:
         type: boolean
       local_cmd:
         type: string
+      local_env_info:
+        type: string
       name:
         type: string
       owner:
@@ -437,13 +439,6 @@ definitions:
     required:
     - name
     - perm
-    type: object
-  controller.tokenResponse:
-    properties:
-      access_token:
-        type: string
-      expires_in:
-        type: integer
     type: object
   controller.userBasicInfoUpdateRequest:
     properties:
@@ -595,22 +590,6 @@ paths:
       summary: User or organization info
       tags:
       - Organization
-  /v1/analytics/key:
-    get:
-      description: get analyse key
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/controller.ResponseData'
-            - properties:
-                data:
-                  $ref: '#/definitions/controller.tokenResponse'
-              type: object
-      summary: Ayalyse key
-      tags:
-      - Other
   /v1/exists/:owner/:name:
     get:
       consumes:
@@ -973,7 +952,8 @@ paths:
         in: query
         name: username
         type: string
-      - description: filter by roles
+      - collectionFormat: csv
+        description: filter by roles
         in: query
         items:
           type: string

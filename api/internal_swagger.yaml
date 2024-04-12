@@ -1,4 +1,24 @@
 definitions:
+  activityapp.ReqToCreateActivity:
+    properties:
+      owner:
+        type: string
+      resource_index:
+        type: string
+      resource_type:
+        type: string
+      time:
+        type: string
+      type:
+        type: string
+    type: object
+  activityapp.ReqToDeleteActivity:
+    properties:
+      resource_index:
+        type: string
+      resource_type:
+        type: string
+    type: object
   controller.ModeIds:
     properties:
       ids:
@@ -23,28 +43,26 @@ definitions:
       user:
         type: string
     type: object
-  controller.reqToCreateModel:
-    properties:
-      desc:
-        type: string
-      fullname:
-        type: string
-      init_readme:
-        type: boolean
-      license:
-        type: string
-      name:
-        type: string
-      owner:
-        type: string
-      visibility:
-        type: string
-    type: object
   controller.reqToCreateSpaceApp:
     properties:
       commit_id:
         type: string
       space_id:
+        type: string
+    type: object
+  controller.reqToResetLabel:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      task:
         type: string
     type: object
   controller.reqToSetBuildIsDone:
@@ -57,6 +75,15 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  controller.reqToSetStatus:
+    properties:
+      commit_id:
+        type: string
+      space_id:
+        type: string
+      status:
+        type: string
     type: object
   controller.reqToUpdateBuildInfo:
     properties:
@@ -88,9 +115,76 @@ definitions:
     - action
     - token
     type: object
+  session.RequestToCheckAndRefresh:
+    properties:
+      csrf_token:
+        type: string
+      ip:
+        type: string
+      session_id:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  session.RequestToClear:
+    properties:
+      session_id:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /v1/activity:
+    delete:
+      consumes:
+      - application/json
+      description: delete all the record of an resource in the DB
+      parameters:
+      - description: body of delete activity app
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/activityapp.ReqToDeleteActivity'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: DeleteActivity
+      tags:
+      - ActivityInternal
+    post:
+      consumes:
+      - application/json
+      description: add activities to DB
+      parameters:
+      - description: body of create activity app
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/activityapp.ReqToCreateActivity'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: AddActivity
+      tags:
+      - ActivityInternal
   /v1/coderepo/permission/read:
     post:
       consumes:
@@ -173,7 +267,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.reqToCreateModel'
+          $ref: '#/definitions/controller.reqToResetLabel'
       responses:
         "202":
           description: Accepted
@@ -189,9 +283,20 @@ paths:
       consumes:
       - application/json
       description: check and refresh session
+      parameters:
+      - description: body of new member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/session.RequestToCheckAndRefresh'
       responses:
         "202":
           description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
       summary: CheckAndRefresh
       tags:
       - SessionInternal
@@ -200,9 +305,20 @@ paths:
       consumes:
       - application/json
       description: Clear session when it expired
+      parameters:
+      - description: body of new member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/session.RequestToClear'
       responses:
         "204":
           description: No Content
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
       summary: Clear session by session id
       tags:
       - SessionInternal
@@ -224,39 +340,15 @@ paths:
           schema:
             $ref: '#/definitions/controller.ResponseData'
       security:
-      - Bearer: []
+      - Internal: []
       summary: Create
-      tags:
-      - SpaceApp
-  /v1/space-app/{owner}/{name}/restart:
-    post:
-      consumes:
-      - application/json
-      description: restart space app
-      parameters:
-      - description: owner of space
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of space
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      summary: Post
       tags:
       - SpaceApp
   /v1/space-app/build/done:
     put:
       consumes:
       - application/json
-      description: notidy space app build is done
+      description: notify space app build is done
       parameters:
       - description: body
         in: body
@@ -270,7 +362,7 @@ paths:
           schema:
             $ref: '#/definitions/controller.ResponseData'
       security:
-      - Bearer: []
+      - Internal: []
       summary: NotifyBuildIsDone
       tags:
       - SpaceApp
@@ -278,7 +370,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: notidy space app building is started
+      description: notify space app building is started
       parameters:
       - description: body
         in: body
@@ -292,7 +384,7 @@ paths:
           schema:
             $ref: '#/definitions/controller.ResponseData'
       security:
-      - Bearer: []
+      - Internal: []
       summary: NotifyBuildIsStarted
       tags:
       - SpaceApp
@@ -300,7 +392,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: notidy space app service is started
+      description: notify space app service is started
       parameters:
       - description: body
         in: body
@@ -314,8 +406,30 @@ paths:
           schema:
             $ref: '#/definitions/controller.ResponseData'
       security:
-      - Bearer: []
+      - Internal: []
       summary: NotifyServiceIsStarted
+      tags:
+      - SpaceApp
+  /v1/space-app/status:
+    put:
+      consumes:
+      - application/json
+      description: notify space app status
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToSetStatus'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: NotifyUpdateStatus
       tags:
       - SpaceApp
   /v1/space/{id}:
@@ -334,7 +448,63 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
       summary: Get
+      tags:
+      - SpaceInternal
+  /v1/space/{id}/local_cmd:
+    put:
+      consumes:
+      - application/json
+      description: update space local cmd
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: local cmd to reproduce the space
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: UpdateSpaceLocalCmd
+      tags:
+      - SpaceInternal
+  /v1/space/{id}/local_env_info:
+    put:
+      consumes:
+      - application/json
+      description: update space local env info
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: local env info to update local space env info
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: UpdateSpaceLocalEnvInfo
       tags:
       - SpaceInternal
   /v1/space/{id}/model:

@@ -469,7 +469,7 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 
 	m := cmd.ToMember(memberInfo)
 
-	pl, err := org.user.GetPlatformUser(o.Owner)
+	pl, err := org.user.GetPlatformUser(cmd.Actor)
 	if err != nil {
 		return allerror.NewInvalidParam("failed to get platform user for adding member",
 			fmt.Errorf("failed to get platform user for adding member, %w", err))
@@ -491,18 +491,50 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	return nil
 }
 
-func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err error) {
-	// check if this is the only owner
-	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: cmd.Org})
+func (org *orgService) canEditMember(cmd *domain.OrgEditMemberCmd) (err error) {
+	return org.canRemoveMember(&domain.OrgRemoveMemberCmd{
+		Org:     cmd.Org,
+		Account: cmd.Account,
+		Actor:   cmd.Actor,
+		Msg:     "",
+	})
+}
+
+func (org *orgService) members(orgName primitive.Account) ([]domain.OrgMember, int, error) {
+	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: orgName})
 	if err != nil {
-		e := fmt.Errorf("failed to get members by org name: %s, %s", cmd.Org, err)
+		e := fmt.Errorf("failed to get members by org name: %s, %s", orgName, err)
 		err = allerror.NewInvalidParam(e.Error(), e)
-		return
+		return []domain.OrgMember{}, 0, err
 	}
 
-	member := cmd.ToMember()
+	return members, len(members), nil
 
-	count := len(members)
+}
+
+func (org *orgService) getOwners(orgName primitive.Account) ([]domain.OrgMember, error) {
+	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: orgName, Role: primitive.Admin})
+	if err != nil {
+		e := fmt.Errorf("failed to get members by org name: %s, %s", orgName, err)
+		err = allerror.NewInvalidParam(e.Error(), e)
+		return []domain.OrgMember{}, err
+	}
+
+	if len(members) == 0 {
+		e := fmt.Errorf("no owners found in org %s", orgName.Account())
+		err = allerror.NewInvalidParam(e.Error(), e)
+		return []domain.OrgMember{}, err
+	}
+
+	return members, nil
+}
+
+func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err error) {
+	// check if this is the only owner
+	members, count, err := org.members(cmd.Org)
+	if err != nil {
+		return err
+	}
 	if count == 1 {
 		e := fmt.Errorf("the org has only one member")
 		err = allerror.NewNoPermission(e.Error(), e)
@@ -514,6 +546,8 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 		err = allerror.NewNoPermission(e.Error(), e)
 		return
 	}
+
+	member := cmd.ToMember()
 
 	ownerCount := 0
 	removeOwner := false
@@ -598,7 +632,13 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 		}
 	}
 
-	pl, err := org.user.GetPlatformUser(o.Owner)
+	owners, err := org.getOwners(cmd.Org)
+	if err != nil {
+		e := fmt.Errorf("failed to get owners of org when add new member: %s, %s", cmd.Org.Account(), err)
+		return allerror.NewInvalidParam(e.Error(), e)
+	}
+
+	pl, err := org.user.GetPlatformUser(owners[0].Username)
 	if err != nil {
 		return allerror.NewInvalidParam("failed to get platform user", err)
 	}
@@ -638,6 +678,10 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 // EditMember edits the role of a member in an organization.
 func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, err error) {
+	if err = org.canEditMember(cmd); err != nil {
+		return
+	}
+
 	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionWrite)
 	if err != nil {
 		return
@@ -659,12 +703,7 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 		return
 	}
 
-	if o.Owner == cmd.Account {
-		err = fmt.Errorf("can't edit owner's role")
-		return
-	}
-
-	pl, err := org.user.GetPlatformUser(o.Owner)
+	pl, err := org.user.GetPlatformUser(cmd.Actor)
 	if err != nil {
 		err = fmt.Errorf("failed to get platform user, %w", err)
 		return
@@ -880,6 +919,13 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 		return
 	}
 
+	owners, err := org.getOwners(cmd.Org)
+	if err != nil {
+		e := fmt.Errorf("failed to get owners of org when add new member: %s, %s", cmd.Org.Account(), err)
+		err = allerror.NewInvalidParam(e.Error(), e)
+		return
+	}
+
 	approve.By = cmd.Actor.Account()
 	approve.Status = domain.ApproveStatusApproved
 	approve.Msg = cmd.Msg
@@ -890,6 +936,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 	}
 
 	err = org.AddMember(&domain.OrgAddMemberCmd{
+		Actor:  owners[0].Username,
 		Org:    cmd.Org,
 		OrgId:  approve.OrgId,
 		User:   cmd.Actor,
@@ -964,6 +1011,7 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 	}
 
 	err = org.AddMember(&domain.OrgAddMemberCmd{
+		Actor:  cmd.Actor,
 		Org:    cmd.Org,
 		OrgId:  request.OrgId,
 		User:   cmd.Requester,
