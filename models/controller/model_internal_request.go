@@ -33,9 +33,9 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 		cmd.License = req.License
 	}
 
+	cmd.Frameworks = sets.New[string]()
 	for _, framework := range req.Frameworks {
 		if config.frameworks.Has(framework) {
-			cmd.Frameworks = sets.New[string]()
 			cmd.Frameworks.Insert(framework)
 		}
 	}

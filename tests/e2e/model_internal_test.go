@@ -97,7 +97,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch"},
 		License:    "apache-2.0",
-		Task:       "copa",
+		Task:       "document-question-answering",
 	}
 	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
@@ -110,7 +110,27 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 
 	modelData := getData(s.T(), modelRes.Data)
 	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch"}, "license": "apache-2.0", "others": []interface{}{}, "task": "copa"}),
+		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch"}, "license": "apache-2.0", "others": []interface{}{}, "task": "document-question-answering"}),
+		modelData["labels"])
+
+	// 修改模型label，其中frameworks有多个
+	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
+		Frameworks: []string{"PyTorch", "MindSpore"},
+		License:    "apache-2.0",
+		Task:       "copa",
+	}
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 获取修改成功后的模型label信息
+	modelRes, r, err = ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelData = getData(s.T(), modelRes.Data)
+	assert.Equal(s.T(),
+		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch", "MindSpore"}, "license": "apache-2.0", "others": []interface{}{}, "task": "copa"}),
 		modelData["labels"])
 
 	// 删除模型
@@ -135,7 +155,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 
 	id := getString(s.T(), data.Data)
 
-	// 修改模型label
+	// 使用非法字段修改模型label
 	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch123"},
 		License:    "apache-2.0",
@@ -145,7 +165,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	// 获取修改失败后的模型label信息
+	// 获取修改后的模型label信息
 	modelRes, r, err := ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -154,6 +174,27 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	// 非法的Frameworks与Task不会修改成功
 	assert.Equal(s.T(),
 		map[string]interface{}{"frameworks": []interface{}{}, "license": "apache-2.0", "others": []interface{}{}, "task": ""},
+		modelData["labels"])
+
+	// 使用部分合法的字段修改模型label
+	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
+		Frameworks: []string{"PyTorch123", "MindSpore"},
+		License:    "apache-2.0",
+		Task:       "copa123",
+	}
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 获取修改后的模型label信息
+	modelRes, r, err = ApiInteral.ModelInternalApi.V1ModelIdGet(Interal, id)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelData = getData(s.T(), modelRes.Data)
+	// 只有合法的Frameworks会修改成功
+	assert.Equal(s.T(),
+		map[string]interface{}{"frameworks": []interface{}{"MindSpore"}, "license": "apache-2.0", "others": []interface{}{}, "task": ""},
 		modelData["labels"])
 
 	// 删除模型
