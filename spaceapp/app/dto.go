@@ -32,7 +32,7 @@ type CmdToNotifyBuildIsDone struct {
 type CmdToNotifyServiceIsStarted struct {
 	CmdToNotifyBuildIsStarted
 
-	AppURL primitive.URL
+	AppURL appprimitive.AppURL
 }
 
 // SpaceAppDTO is a data transfer object for space app.
@@ -51,7 +51,7 @@ func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {
 	}
 
 	if app.AppURL != nil {
-		dto.AppURL = app.AppURL.URL()
+		dto.AppURL = app.AppURL.AppURL()
 	}
 
 	if app.AppLogURL != nil {

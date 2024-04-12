@@ -36,7 +36,7 @@ func toSpaceAppDO(m *domain.SpaceApp) spaceappDO {
 	do.Id = m.Id
 
 	if m.AppURL != nil {
-		do.AppURL = m.AppURL.URL()
+		do.AppURL = m.AppURL.AppURL()
 	}
 
 	if m.AppLogURL != nil {
@@ -87,7 +87,7 @@ func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 	}
 
 	if do.AppURL != "" {
-		v.AppURL = primitive.CreateURL(do.AppURL)
+		v.AppURL = appprimitive.CreateAppURL(do.AppURL)
 	}
 
 	if do.AppLogURL != "" {
