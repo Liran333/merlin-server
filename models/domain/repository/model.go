@@ -8,6 +8,7 @@ package repository
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 )
 
 // ModelSummary represents a summary of a model.
@@ -70,7 +71,7 @@ type ModelRepositoryAdapter interface {
 	Save(*domain.Model) error
 	List(*ListOption) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
-	SearchModel(*ListOption, primitive.Account) ([]ModelSummary, int, error)
+	SearchModel(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
 }
