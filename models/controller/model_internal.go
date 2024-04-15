@@ -37,7 +37,7 @@ type ModelInternalController struct {
 // @Description  reset label of model
 // @Tags     ModelInternal
 // @Param    id    path  string            true  "id of model"
-// @Param    body  body  reqToCreateModel  true  "body"
+// @Param    body  body  reqToResetLabel  true  "body"
 // @Accept   json
 // @Security Internal
 // @Success  202  {object}  commonctl.ResponseData

@@ -1,6 +1,6 @@
-ACCOUNT_NAME_REGEXP: ^[a-zA-Z0-9_-]+$
-ACCOUNT_NAME_MIN_LEN: 1
-ACCOUNT_NAME_MAX_LEN: 40
+ACCOUNT_NAME_REGEXP: ^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]$
+ACCOUNT_NAME_MIN_LEN: 3
+ACCOUNT_NAME_MAX_LEN: 20
 ACCOUNT_DESC_MAX_LEN: 255
 ACCOUNT_FULLNAME_MAX_LEN: 100
 
@@ -23,7 +23,7 @@ WEBSITE_MAX_LEN: 300
 
 TOKEN_NAME_REGEXP: ^[a-zA-Z0-9_-]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$
 TOKEN_NAME_MIN_LEN: 1
-TOKEN_NAME_MAX_LEN: 255
+TOKEN_NAME_MAX_LEN: 50
 
 BRANCH_REGEXP: ^[a-zA-Z0-9_-]+$
 BRANCH_NAME_MIN_LEN: 1
@@ -70,6 +70,42 @@ LICENSES:
   - 'mpl-2.0'
   - 'odbl-1.0'
   - 'cc-by-4.0'
+  - 'other'
+
+PIPELINE_TAGS:
+  - 'audio-classification'
+  - 'automatic-speech-recognition'
+  - 'text-to-audio'
+  - 'visual-question-answering'
+  - 'document-question-answering'
+  - 'zero-shot-image-classification'
+  - 'image-classification'
+  - 'image-segmentation'
+  - 'object-detection'
+  - 'zero-shot-object-detection'
+  - 'depth-estimation'
+  - 'video-classification'
+  - 'mask-generation'
+  - 'image-to-image'
+  - 'image-feature-extraction'
+  - 'feature-extraction'
+  - 'text-classification'
+  - 'token-classification'
+  - 'question-answering'
+  - 'table-question-answering'
+  - 'fill-mask'
+  - 'summarization'
+  - 'translation'
+  - 'text2text-generation'
+  - 'text-generation'
+  - 'zero-shot-classification'
+  - 'conversational'
+  - 'copa'
+
+FRAMEWORKS:
+  - 'MindSpore'
+  - 'PyTorch'
+
 ACCEPTABLE_AVATAR_DOMAINS: 
   - "https://gitee.com"
   - "https://files.authing.co"

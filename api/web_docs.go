@@ -1939,6 +1939,52 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/user/activity": {
+            "get": {
+                "description": "get activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityWeb"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by space",
+                        "name": "space",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by model",
+                        "name": "model",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by like",
+                        "name": "like",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/email/bind": {
             "post": {
                 "security": [
@@ -2154,13 +2200,7 @@ const docTemplateweb = `{
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
-                "app_log_url": {
-                    "type": "string"
-                },
                 "app_url": {
-                    "type": "string"
-                },
-                "build_log_url": {
                     "type": "string"
                 },
                 "id": {
@@ -2424,10 +2464,19 @@ const docTemplateweb = `{
                 "download_count": {
                     "type": "integer"
                 },
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "license": {
                     "type": "string"
                 },
                 "like_count": {
@@ -2527,9 +2576,6 @@ const docTemplateweb = `{
                 "fullname": {
                     "type": "string"
                 },
-                "init_readme": {
-                    "type": "boolean"
-                },
                 "license": {
                     "type": "string"
                 },
@@ -2555,9 +2601,6 @@ const docTemplateweb = `{
                 },
                 "hardware": {
                     "type": "string"
-                },
-                "init_readme": {
-                    "type": "boolean"
                 },
                 "license": {
                     "type": "string"
@@ -2624,9 +2667,6 @@ const docTemplateweb = `{
                 "fullname": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "visibility": {
                     "type": "string"
                 }
@@ -2642,9 +2682,6 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "hardware": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 },
                 "sdk": {
@@ -2724,6 +2761,12 @@ const docTemplateweb = `{
                 },
                 "liked": {
                     "type": "boolean"
+                },
+                "local_cmd": {
+                    "type": "string"
+                },
+                "local_env_info": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -2928,10 +2971,19 @@ const docTemplateweb = `{
                 "download_count": {
                     "type": "integer"
                 },
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "license": {
                     "type": "string"
                 },
                 "like_count": {

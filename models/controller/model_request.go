@@ -116,11 +116,10 @@ func (req *reqToListUserModels) toCmd() (cmd app.CmdToListModels, err error) {
 	cmd.Count = req.Count
 
 	if req.SortBy == "" {
-		cmd.SortType = primitive.SortTypeRecentlyUpdated
-	} else {
-		if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
-			return
-		}
+		req.SortBy = primitive.SortByGlobal
+	}
+	if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
+		return
 	}
 
 	if v := req.CountPerPage; v <= 0 || v > config.MaxCountPerPage {

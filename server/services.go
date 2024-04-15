@@ -39,7 +39,8 @@ type allServices struct {
 	privacyCheck          middleware.PrivacyCheck
 	tokenMiddleWare       middleware.TokenMiddleWare
 
-	modelApp modelapp.ModelAppService
+	npuGatekeeper orgapp.PrivilegeOrg
+	modelApp      modelapp.ModelAppService
 
 	spaceApp spaceapp.SpaceAppService
 

@@ -12,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	orgrepository "github.com/openmerlin/merlin-server/organization/domain/repository"
 	session "github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/platform"
@@ -78,6 +79,7 @@ type UserService interface {
 // NewUserService creates a new UserService instance with the provided dependencies.
 func NewUserService(
 	repo repository.User,
+	mem orgrepository.OrgMember,
 	git git.User,
 	token repository.Token,
 	session session.SessionRepositoryAdapter,
@@ -86,6 +88,7 @@ func NewUserService(
 ) UserService {
 	return userService{
 		repo:         repo,
+		member:       mem,
 		git:          git,
 		oidc:         oidc,
 		token:        token,
@@ -96,6 +99,7 @@ func NewUserService(
 
 type userService struct {
 	repo         repository.User
+	member       orgrepository.OrgMember
 	git          git.User
 	oidc         session.OIDCAdapter
 	token        repository.Token
@@ -280,6 +284,15 @@ func (s userService) RequestDelete(user domain.Account) error {
 	if u.RequestDelete {
 		e := fmt.Errorf("user already requested to be delete")
 		return allerror.New(allerror.ErrorUserAlreadyRequestedToBeDelete, "", e)
+	}
+
+	memList, err := s.member.GetByUserAndRoles(user, []primitive.Role{primitive.Admin})
+	if err != nil {
+		return err
+	}
+	if len(memList) > 0 {
+		e := fmt.Errorf("user is admin role of organization, do not to be deleted")
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	u.RequestDelete = true

@@ -41,6 +41,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.SpaceSecretAdapter(),
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		spacerepositoryadapter.SpaceAdapter(),
+		services.npuGatekeeper,
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(

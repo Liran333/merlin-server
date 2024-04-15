@@ -12,7 +12,6 @@ import (
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
-	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
@@ -50,15 +49,16 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 	activities, _, err := s.repoAdapter.List(names, cmd)
 	var filteredActivities []domain.Activity
 	for _, activity := range activities {
-		codeRepo, _ := s.codeRepoApp.GetById(activity.Resource.Index)
+		codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
+		if err != nil {
+			logrus.Errorf("failed to get by repo id: %s", err)
+			continue
+		}
 		activity.Name = codeRepo.Name
 		activity.Resource.Owner = codeRepo.Owner
 		if err := s.permission.CanRead(user, &codeRepo); err != nil {
-			if allerror.IsNoPermission(err) {
-				continue
-			} else {
-				logrus.Errorf("failed to read permission: %s", err)
-			}
+			logrus.Errorf("failed to read permission: %s", err)
+			continue
 		}
 		filteredActivities = append(filteredActivities, activity)
 	}

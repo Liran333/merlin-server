@@ -133,11 +133,10 @@ func (req *reqToListUserSpaces) toCmd() (cmd app.CmdToListSpaces, err error) {
 	cmd.Count = req.Count
 
 	if req.SortBy == "" {
-		cmd.SortType = primitive.SortTypeRecentlyUpdated
-	} else {
-		if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
-			return
-		}
+		req.SortBy = primitive.SortByGlobal
+	}
+	if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
+		return
 	}
 
 	if v := req.CountPerPage; v <= 0 || v > config.MaxCountPerPage {
@@ -400,4 +399,10 @@ type localCMD space.LocalCMD
 
 func (req *localCMD) toCmd() string {
 	return req.Cmd
+}
+
+type localEnvInfo space.LocalEnvInfo
+
+func (req *localEnvInfo) toCmd() string {
+	return req.EnvInfo
 }

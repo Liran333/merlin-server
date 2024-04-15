@@ -16,11 +16,7 @@ definitions:
     type: object
   app.SpaceAppDTO:
     properties:
-      app_log_url:
-        type: string
       app_url:
-        type: string
-      build_log_url:
         type: string
       id:
         type: integer
@@ -193,9 +189,15 @@ definitions:
         type: string
       download_count:
         type: integer
+      frameworks:
+        items:
+          type: string
+        type: array
       fullname:
         type: string
       id:
+        type: string
+      license:
         type: string
       like_count:
         type: integer
@@ -260,8 +262,6 @@ definitions:
         type: string
       fullname:
         type: string
-      init_readme:
-        type: boolean
       license:
         type: string
       name:
@@ -279,8 +279,6 @@ definitions:
         type: string
       hardware:
         type: string
-      init_readme:
-        type: boolean
       license:
         type: string
       name:
@@ -323,8 +321,6 @@ definitions:
         type: string
       fullname:
         type: string
-      name:
-        type: string
       visibility:
         type: string
     type: object
@@ -335,8 +331,6 @@ definitions:
       fullname:
         type: string
       hardware:
-        type: string
-      name:
         type: string
       sdk:
         type: string
@@ -389,6 +383,10 @@ definitions:
         type: integer
       liked:
         type: boolean
+      local_cmd:
+        type: string
+      local_env_info:
+        type: string
       name:
         type: string
       owner:
@@ -522,9 +520,15 @@ definitions:
         type: string
       download_count:
         type: integer
+      frameworks:
+        items:
+          type: string
+        type: array
       fullname:
         type: string
       id:
+        type: string
+      license:
         type: string
       like_count:
         type: integer
@@ -1793,6 +1797,36 @@ paths:
       summary: Update
       tags:
       - User
+  /v1/user/activity:
+    get:
+      consumes:
+      - application/json
+      description: get activities
+      parameters:
+      - description: filter by space
+        in: query
+        name: space
+        type: string
+      - description: filter by model
+        in: query
+        name: model
+        type: string
+      - description: filter by like
+        in: query
+        name: like
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      summary: List
+      tags:
+      - ActivityWeb
   /v1/user/email/bind:
     post:
       consumes:

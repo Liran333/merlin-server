@@ -8,6 +8,7 @@ package modelrepositoryadapter
 import (
 	"errors"
 	"fmt"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"strings"
 
 	"gorm.io/gorm"
@@ -184,17 +185,20 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	return db
 }
 
-func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account) (
+func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
 	[]repository.ModelSummary, int, error) {
 	db := adapter.db()
-
 	queryName, argName := likeFilter(fieldName, opt.Name)
 
 	db = db.Where(queryName, argName)
 
 	if login != nil {
-		sql := fmt.Sprintf(`%s = ? or %s = ?`, fieldVisibility, fieldOwner)
-		db = db.Where(sql, primitive.VisibilityPublic, login)
+		orgNames, err := member.GetOrgNamesByUserName(fieldOwner)
+		if err != nil {
+			return nil, 0, err
+		}
+		sql := fmt.Sprintf(`%s = ? or %s = ? or %s in (?)`, fieldVisibility, fieldOwner, fieldOwner)
+		db = db.Where(sql, primitive.VisibilityPublic, login, orgNames)
 	} else {
 		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
 	}
@@ -240,6 +244,16 @@ func order(t primitive.SortType) string {
 
 	case primitive.SortByRecentlyCreated:
 		return orderByDesc(fieldCreatedAt)
+
+	case primitive.SortByMostDownloads:
+		return orderByDesc(fieldDownloadCount)
+
+	case primitive.SortByMostLikes:
+		return orderByDesc(fieldLikeCount)
+
+	case primitive.SortByGlobal:
+		return fmt.Sprintf("%s, %s, %s", orderByDesc(fieldDownloadCount), orderByDesc(fieldLikeCount),
+			orderByDesc(fieldUpdatedAt))
 
 	default:
 		return ""

@@ -145,6 +145,16 @@ model:
     model_created: model_created
     model_updated: model_updated
     model_deleted: model_deleted
+  controller:
+    max_count_per_page: 100
+    tasks:
+  {{- range (ds "common").PIPELINE_TAGS}}
+    - "{{ . }}"
+  {{- end }}
+    frameworks:
+  {{- range (ds "common").FRAMEWORKS}}
+    - "{{ . }}"
+  {{- end }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}
@@ -260,3 +270,9 @@ vault:
   user_name: {{(ds "secret").data.VAULT_USER }}
   pass_word: {{(ds "secret").data.VAULT_PASS }}
   base_path: {{(ds "secret").data.VAULT_BASE_PATH }}
+
+other_config:
+  analyse:
+    client_id: {{(ds "secret").data.CLIENT_ID }}
+    client_secret: {{(ds "secret").data.CLIENT_SECRET }}
+    get_token_url: "https://connect-drcn.dbankcloud.cn/agc/apigw/oauth2/v1/token"

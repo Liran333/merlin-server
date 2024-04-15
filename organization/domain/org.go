@@ -323,6 +323,7 @@ func (cmd OrgInviteMemberCmd) ToApprove(expire int64) *Approve {
 
 // OrgAddMemberCmd represents a command to add a member to an organization.
 type OrgAddMemberCmd struct {
+	Actor  primitive.Account
 	User   primitive.Account
 	UserId primitive.Identity
 	Org    primitive.Account

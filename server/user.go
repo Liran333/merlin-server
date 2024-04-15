@@ -14,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
+	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
@@ -32,6 +33,8 @@ func initUser(cfg *config.Config, services *allServices) {
 	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User),
 		crypto.NewEncryption(cfg.User.Key))
 
+	member := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
+
 	session := sessionapp.NewSessionClearAppService(
 		loginrepositoryadapter.LoginAdapter(),
 		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
@@ -39,6 +42,7 @@ func initUser(cfg *config.Config, services *allServices) {
 
 	services.userApp = app.NewUserService(
 		services.userRepo,
+		member,
 		git,
 		token,
 		loginrepositoryadapter.LoginAdapter(),

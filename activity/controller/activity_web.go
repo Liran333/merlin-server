@@ -149,7 +149,10 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 		return
 	}
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	req.Owner = user.Account()
 
@@ -161,16 +164,21 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 		return
 	}
 
-	if req.ResourceType == typeModel {
-		err = ctl.model.AddLike(cmd.Resource.Index)
-	} else {
-		err = ctl.space.AddLike(cmd.Resource.Index)
-	}
-
-	// Check for errors from AddLike operation
+	liked, err := ctl.appService.HasLike(user, cmd.Resource.Index)
 	if err != nil {
-		commonctl.SendError(ctx, err)
 		return
+	}
+	if !liked {
+		if req.ResourceType == typeModel {
+			err = ctl.model.AddLike(cmd.Resource.Index)
+		} else {
+			err = ctl.space.AddLike(cmd.Resource.Index)
+		}
+		// Check for errors from AddLike operation
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
 	}
 
 	if err := ctl.appService.Create(&cmd); err != nil {
@@ -195,7 +203,10 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
 
 	cmd, err := ConvertReqToDeleteActivityToCmd(user, &req)
 

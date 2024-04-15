@@ -39,6 +39,8 @@ func initOrg(cfg *config.Config, services *allServices) {
 		services.userApp, org, orgMember,
 		invitation, permission, &cfg.Org, git,
 	)
+
+	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu)
 }
 
 func setRouterOfOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {

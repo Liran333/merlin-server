@@ -76,7 +76,7 @@ func (req *reqToUpdateServiceInfo) toCmd() (cmd app.CmdToNotifyServiceIsStarted,
 		return
 	}
 
-	cmd.AppURL, err = primitive.NewURL(req.AppURL)
+	cmd.AppURL, err = appprimitive.NewAppURL(req.AppURL)
 
 	return
 }

@@ -29,7 +29,7 @@ type SpaceApp struct {
 	Status      appprimitive.AppStatus
 	RestartedAt int64
 
-	AppURL    primitive.URL
+	AppURL    appprimitive.AppURL
 	AppLogURL primitive.URL
 
 	AllBuildLog string
@@ -68,7 +68,7 @@ func (app *SpaceApp) SetBuildIsDone(success bool) error {
 }
 
 // StartService starts the service for the space app with the specified app URL and log URL.
-func (app *SpaceApp) StartService(appURL, logURL primitive.URL) error {
+func (app *SpaceApp) StartService(appURL appprimitive.AppURL, logURL primitive.URL) error {
 	if !app.Status.IsBuildSuccessful() && !app.Status.IsRestarting() {
 		e := fmt.Errorf("not build successful or restarting")
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)

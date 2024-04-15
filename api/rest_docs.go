@@ -401,7 +401,7 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.ModelsDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -543,7 +543,7 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.ModelDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -822,6 +822,18 @@ const docTemplaterest = `{
                         "name": "name",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by username",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by role",
+                        "name": "role",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1146,7 +1158,7 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.SpacesDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -1174,6 +1186,47 @@ const docTemplaterest = `{
                         "schema": {
                             "$ref": "#/definitions/controller.reqToCreateSpace"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/{owner}/{name}/restart": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "restart space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceAppRestful"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1258,6 +1311,216 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/space/{id}/secret/{sid}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete space secret",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "DeleteSecret",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of secret",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/secret/{vid}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "update space secret",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "UpdateSecret",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of secret",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating space secret",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateSpaceSecret"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/variable": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create space variable",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "CreateVariable",
+                "parameters": [
+                    {
+                        "description": "body of creating space variable",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateSpaceVariable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/variable/{vid}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "update space variable",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "UpdateVariable",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of variable",
+                        "name": "vid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating space variable",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateSpaceVariable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete space variable",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "DeleteVariable",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id of variable",
+                        "name": "vid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v1/space/{owner}/{name}": {
             "get": {
                 "description": "get space",
@@ -1288,7 +1551,43 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.SpaceDTO"
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space{id}/secret": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create space secret",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "CreateSecret",
+                "parameters": [
+                    {
+                        "description": "body of creating space secret",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateSpaceSecret"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -1369,6 +1668,57 @@ const docTemplaterest = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/user/activity": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityRestful"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by space",
+                        "name": "space",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by model",
+                        "name": "model",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter by like",
+                        "name": "like",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
@@ -1567,162 +1917,6 @@ const docTemplaterest = `{
             "properties": {
                 "branch_name": {
                     "type": "string"
-                }
-            }
-        },
-        "app.ModelDTO": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "desc": {
-                    "type": "string"
-                },
-                "download_count": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "labels": {
-                    "$ref": "#/definitions/app.ModelLabelsDTO"
-                },
-                "like_count": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "visibility": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.ModelLabelsDTO": {
-            "type": "object",
-            "properties": {
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "license": {
-                    "type": "string"
-                },
-                "others": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "task": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.ModelsDTO": {
-            "type": "object",
-            "properties": {
-                "models": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/repository.ModelSummary"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "app.SpaceDTO": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "desc": {
-                    "type": "string"
-                },
-                "download_count": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "hardware": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "labels": {
-                    "$ref": "#/definitions/app.SpaceLabelsDTO"
-                },
-                "like_count": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "sdk": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "visibility": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.SpaceLabelsDTO": {
-            "type": "object",
-            "properties": {
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "license": {
-                    "type": "string"
-                },
-                "others": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "task": {
-                    "type": "string"
-                }
-            }
-        },
-        "app.SpacesDTO": {
-            "type": "object",
-            "properties": {
-                "spaces": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/repository.SpaceSummary"
-                    }
-                },
-                "total": {
-                    "type": "integer"
                 }
             }
         },
@@ -1935,9 +2129,6 @@ const docTemplaterest = `{
                 "fullname": {
                     "type": "string"
                 },
-                "init_readme": {
-                    "type": "boolean"
-                },
                 "license": {
                     "type": "string"
                 },
@@ -1964,9 +2155,6 @@ const docTemplaterest = `{
                 "hardware": {
                     "type": "string"
                 },
-                "init_readme": {
-                    "type": "boolean"
-                },
                 "license": {
                     "type": "string"
                 },
@@ -1984,6 +2172,34 @@ const docTemplaterest = `{
                 }
             }
         },
+        "controller.reqToCreateSpaceSecret": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToCreateSpaceVariable": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToUpdateModel": {
             "type": "object",
             "properties": {
@@ -1991,9 +2207,6 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "fullname": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 },
                 "visibility": {
@@ -2013,13 +2226,32 @@ const docTemplaterest = `{
                 "hardware": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "sdk": {
                     "type": "string"
                 },
                 "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateSpaceSecret": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateSpaceVariable": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
@@ -2079,70 +2311,6 @@ const docTemplaterest = `{
                 },
                 "revoke_delete": {
                     "type": "boolean"
-                }
-            }
-        },
-        "repository.ModelSummary": {
-            "type": "object",
-            "properties": {
-                "desc": {
-                    "type": "string"
-                },
-                "download_count": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "like_count": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "task": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "repository.SpaceSummary": {
-            "type": "object",
-            "properties": {
-                "desc": {
-                    "type": "string"
-                },
-                "download_count": {
-                    "type": "integer"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "like_count": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "task": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
                 }
             }
         }

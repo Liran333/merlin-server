@@ -211,6 +211,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 
 	data2, r3, err3 := ApiRest.OrganizationApi.V1InviteGet(AuthRest2, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		Invitee: optional.NewString(s.invitee),
+		Status:  optional.NewString("pending"),
 	})
 
 	assert.Equalf(s.T(), http.StatusOK, r3.StatusCode, data.Msg)
@@ -667,6 +668,65 @@ func (s *SuiteInvite) TestInviteListBySelf() {
 
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
 	assert.NotNil(s.T(), err)
+}
+
+// TestInviteOrg used for testing
+// 新的管理员可以修改原管理员的角色
+func (s *SuiteInvite) TestCanEditOwner() {
+	data, r, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: s.name,
+		User:    s.invitee,
+		Role:    "admin",
+		Msg:     "invite me",
+	})
+
+	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	invite := getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), s.name, invite["org_name"])
+	assert.Equal(s.T(), s.orgId, invite["org_id"])
+	assert.Equal(s.T(), s.invitee, invite["user_name"])
+	assert.Equal(s.T(), s.inviteeId, invite["user_id"])
+	assert.NotEqual(s.T(), "", invite["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), invite["updated_at"]))
+	assert.Equal(s.T(), "admin", invite["role"])
+	assert.Equal(s.T(), "invite me", invite["msg"])
+	assert.Equal(s.T(), s.owner, invite["inviter"])
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+		OrgName: s.name,
+	})
+
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
+		Role: "write",
+		User: s.owner,
+	}, s.name)
+
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
+		Role: "admin",
+		User: s.owner,
+	}, s.name)
+
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+
+	// 清理环境
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.invitee,
+		}, s.name)
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
 }
 
 // TestInvite used for testing

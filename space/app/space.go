@@ -14,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
@@ -81,6 +82,7 @@ func NewSpaceAppService(
 	secretAdapter repository.SpaceSecretRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
 	repoAdapter repository.SpaceRepositoryAdapter,
+	npuGatekeeper orgapp.PrivilegeOrg,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -91,6 +93,7 @@ func NewSpaceAppService(
 		secretAdapter:        secretAdapter,
 		secureStorageAdapter: secureStorageAdapter,
 		repoAdapter:          repoAdapter,
+		npuGatekeeper:        npuGatekeeper,
 	}
 }
 
@@ -103,6 +106,7 @@ type spaceAppService struct {
 	secretAdapter        repository.SpaceSecretRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
 	repoAdapter          repository.SpaceRepositoryAdapter
+	npuGatekeeper        orgapp.PrivilegeOrg
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -110,6 +114,14 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeSpace)
 	if err != nil {
 		return "", err
+	}
+
+	if cmd.Hardware.IsNpu() && s.npuGatekeeper != nil {
+		err = s.npuGatekeeper.Contains(user)
+		if err != nil {
+			logrus.Errorf("user:%s cant alloc npu err:%s", user.Account(), err)
+			return "", err
+		}
 	}
 
 	if err := s.spaceCountCheck(cmd.Owner); err != nil {
@@ -375,6 +387,18 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 }
 
 func (s *spaceAppService) AddLike(spaceId primitive.Identity) error {
+	// Retrieve the code repository information.
+	codeRepo, err := s.codeRepoApp.GetById(spaceId)
+	if err != nil {
+		return err
+	}
+
+	// Only proceed if the repository is public.
+	isPublic := codeRepo.IsPublic()
+	if !isPublic {
+		return nil
+	}
+
 	if err := s.repoAdapter.AddLike(spaceId); err != nil {
 		return err
 	}

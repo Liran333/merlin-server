@@ -10,6 +10,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/search/domain"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
@@ -19,20 +20,23 @@ import (
 const DefaultPage = 1
 
 type searchAdapter struct {
-	model modelrepo.ModelRepositoryAdapter
-	space spacerepo.SpaceRepositoryAdapter
-	user  repository.User
+	model  modelrepo.ModelRepositoryAdapter
+	space  spacerepo.SpaceRepositoryAdapter
+	user   repository.User
+	member orgrepo.OrgMember
 }
 
 func NewSearchRepositoryAdapter(
 	model modelrepo.ModelRepositoryAdapter,
 	space spacerepo.SpaceRepositoryAdapter,
 	user repository.User,
+	member orgrepo.OrgMember,
 ) *searchAdapter {
 	return &searchAdapter{
-		model: model,
-		space: space,
-		user:  user,
+		model:  model,
+		space:  space,
+		user:   user,
+		member: member,
 	}
 }
 
@@ -96,8 +100,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (
 	domain.SearchResultModel, error) {
 	var result domain.SearchResultModel
-
-	v, count, err := adapter.model.SearchModel(cmd, account)
+	v, count, err := adapter.model.SearchModel(cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}

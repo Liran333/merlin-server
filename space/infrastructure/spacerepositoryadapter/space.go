@@ -242,6 +242,12 @@ func order(t primitive.SortType) string {
 	case primitive.SortByRecentlyCreated:
 		return orderByDesc(fieldCreatedAt)
 
+	case primitive.SortByMostLikes:
+		return orderByDesc(fieldLikeCount)
+
+	case primitive.SortByGlobal:
+		return fmt.Sprintf("%s, %s", orderByDesc(fieldLikeCount), orderByDesc(fieldUpdatedAt))
+
 	default:
 		return ""
 	}

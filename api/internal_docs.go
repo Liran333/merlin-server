@@ -15,6 +15,88 @@ const docTemplateinternal = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/activity": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "add activities to DB",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityInternal"
+                ],
+                "summary": "AddActivity",
+                "parameters": [
+                    {
+                        "description": "body of create activity app",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/activityapp.ReqToCreateActivity"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "delete all the record of an resource in the DB",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityInternal"
+                ],
+                "summary": "DeleteActivity",
+                "parameters": [
+                    {
+                        "description": "body of delete activity app",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/activityapp.ReqToDeleteActivity"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/coderepo/permission/read": {
             "post": {
                 "security": [
@@ -150,7 +232,7 @@ const docTemplateinternal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.reqToCreateModel"
+                            "$ref": "#/definitions/controller.reqToResetLabel"
                         }
                     }
                 ],
@@ -166,6 +248,11 @@ const docTemplateinternal = `{
         },
         "/v1/session/check": {
             "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
                 "description": "check and refresh session",
                 "consumes": [
                     "application/json"
@@ -174,15 +261,34 @@ const docTemplateinternal = `{
                     "SessionInternal"
                 ],
                 "summary": "CheckAndRefresh",
+                "parameters": [
+                    {
+                        "description": "body of new member",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/session.RequestToCheckAndRefresh"
+                        }
+                    }
+                ],
                 "responses": {
                     "202": {
-                        "description": "Accepted"
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
         },
         "/v1/session/clear": {
             "delete": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
                 "description": "Clear session when it expired",
                 "consumes": [
                     "application/json"
@@ -191,9 +297,23 @@ const docTemplateinternal = `{
                     "SessionInternal"
                 ],
                 "summary": "Clear session by session id",
+                "parameters": [
+                    {
+                        "description": "body of new member",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/session.RequestToClear"
+                        }
+                    }
+                ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
@@ -202,7 +322,7 @@ const docTemplateinternal = `{
             "post": {
                 "security": [
                     {
-                        "Bearer": []
+                        "Internal": []
                     }
                 ],
                 "description": "create space app",
@@ -238,10 +358,10 @@ const docTemplateinternal = `{
             "put": {
                 "security": [
                     {
-                        "Bearer": []
+                        "Internal": []
                     }
                 ],
-                "description": "notidy space app build is done",
+                "description": "notify space app build is done",
                 "consumes": [
                     "application/json"
                 ],
@@ -274,10 +394,10 @@ const docTemplateinternal = `{
             "put": {
                 "security": [
                     {
-                        "Bearer": []
+                        "Internal": []
                     }
                 ],
-                "description": "notidy space app building is started",
+                "description": "notify space app building is started",
                 "consumes": [
                     "application/json"
                 ],
@@ -310,10 +430,10 @@ const docTemplateinternal = `{
             "put": {
                 "security": [
                     {
-                        "Bearer": []
+                        "Internal": []
                     }
                 ],
-                "description": "notidy space app service is started",
+                "description": "notify space app service is started",
                 "consumes": [
                     "application/json"
                 ],
@@ -342,35 +462,35 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "/v1/space-app/{owner}/{name}/restart": {
-            "post": {
-                "description": "restart space app",
+        "/v1/space-app/status": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "notify space app status",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "SpaceApp"
                 ],
-                "summary": "Post",
+                "summary": "NotifyUpdateStatus",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "owner of space",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "name of space",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToSetStatus"
+                        }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }
@@ -380,6 +500,11 @@ const docTemplateinternal = `{
         },
         "/v1/space/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
                 "description": "get space",
                 "consumes": [
                     "application/json"
@@ -400,6 +525,92 @@ const docTemplateinternal = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/local_cmd": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update space local cmd",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "UpdateSpaceLocalCmd",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "local cmd to reproduce the space",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/local_env_info": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update space local env info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "UpdateSpaceLocalEnvInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "local env info to update local space env info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }
@@ -546,6 +757,37 @@ const docTemplateinternal = `{
         }
     },
     "definitions": {
+        "activityapp.ReqToCreateActivity": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "type": "string"
+                },
+                "resource_index": {
+                    "type": "string"
+                },
+                "resource_type": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "activityapp.ReqToDeleteActivity": {
+            "type": "object",
+            "properties": {
+                "resource_index": {
+                    "type": "string"
+                },
+                "resource_type": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.ModeIds": {
             "type": "object",
             "properties": {
@@ -583,32 +825,6 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "controller.reqToCreateModel": {
-            "type": "object",
-            "properties": {
-                "desc": {
-                    "type": "string"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "init_readme": {
-                    "type": "boolean"
-                },
-                "license": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "visibility": {
-                    "type": "string"
-                }
-            }
-        },
         "controller.reqToCreateSpaceApp": {
             "type": "object",
             "properties": {
@@ -616,6 +832,29 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "space_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToResetLabel": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
                     "type": "string"
                 }
             }
@@ -634,6 +873,20 @@ const docTemplateinternal = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "controller.reqToSetStatus": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "space_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -679,6 +932,31 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "session.RequestToCheckAndRefresh": {
+            "type": "object",
+            "properties": {
+                "csrf_token": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                }
+            }
+        },
+        "session.RequestToClear": {
+            "type": "object",
+            "properties": {
+                "session_id": {
                     "type": "string"
                 }
             }

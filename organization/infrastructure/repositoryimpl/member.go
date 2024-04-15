@@ -187,6 +187,24 @@ func (impl *memberRepoImpl) GetByUser(name string) (
 	return
 }
 
+// GetOrgNamesByUserName get orgNames by user name.
+func (impl *memberRepoImpl) GetOrgNamesByUserName(name string) (
+	orgNames []string, err error,
+) {
+	var v []string
+
+	query := Member{}
+	query.Username = name
+
+	err = impl.DB().Debug().Select(fieldOrg).Where(&query).Find(&v).Error
+	if err != nil || len(v) == 0 {
+		return
+	}
+
+	orgNames = make([]string, len(v))
+	return
+}
+
 // GetByUserAndRoles retrieves members by user and roles.
 func (impl *memberRepoImpl) GetByUserAndRoles(user primitive.Account,
 	roles []primitive.Role) (members []domain.OrgMember, err error) {

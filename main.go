@@ -96,6 +96,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) (options, error) {
 // @name TOKEN
 // @description Type "Internal" followed by a space and internal token.
 func main() {
+	logrus.SetReportCaller(true)
+
 	o, err := gatherOptions(
 		flag.NewFlagSet(os.Args[0], flag.ExitOnError),
 		os.Args[1:]...,

@@ -57,11 +57,10 @@ func initorg() {
 		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
 	)
 
-	userAppService := userapp.NewUserService(
-		user, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session)
+	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
+		oidcimpl.NewAuthingUser(), session)
 
-	orgAppService = orgapp.NewOrgService(
-		userAppService, user, member, invite, p, &cfg.Org, git)
+	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org, git)
 }
 
 var orgCmd = &cobra.Command{
