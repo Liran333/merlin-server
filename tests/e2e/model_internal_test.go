@@ -129,8 +129,20 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	assert.Nil(s.T(), err)
 
 	modelData = getData(s.T(), modelRes.Data)
-	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch", "MindSpore"}, "license": "apache-2.0", "others": []interface{}{}, "task": "copa"}),
+	expectedValue1 := map[string]interface{}{
+		"frameworks": []interface{}{"PyTorch", "MindSpore"},
+		"license":    "apache-2.0",
+		"others":     []interface{}{},
+		"task":       "copa",
+	}
+	expectedValue2 := map[string]interface{}{
+		"frameworks": []interface{}{"MindSpore", "PyTorch"},
+		"license":    "apache-2.0",
+		"others":     []interface{}{},
+		"task":       "copa",
+	}
+	assert.Contains(s.T(),
+		[]map[string]interface{}{expectedValue1, expectedValue2},
 		modelData["labels"])
 
 	// 删除模型
