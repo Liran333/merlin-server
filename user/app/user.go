@@ -122,7 +122,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 
 	if !s.repo.CheckName(cmd.Account) {
 		e := fmt.Errorf("user name %s is already taken", cmd.Account)
-		err = allerror.New(allerror.ErrorUsernameIsAlreadyTaken, "", e)
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
@@ -133,7 +133,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 		var repoUser domain.User
 		if repoUser, err = s.git.Create(cmd); err != nil {
 			e := fmt.Errorf("failed to create platform user: %s", err)
-			err = allerror.New(allerror.ErrorFailedToCreatePlatformUser, "", e)
+			err = allerror.NewInvalidParam(e.Error(), e)
 			return
 		}
 
@@ -144,7 +144,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 	u, err := s.repo.AddUser(&v)
 	if err != nil {
 		e := fmt.Errorf("failed to save user in db: %s", err)
-		err = allerror.New(allerror.ErrorFailToSaveUserInDb, "", e)
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
@@ -169,7 +169,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 
 	if user, err = s.repo.SaveUser(&user); err != nil {
 		e := fmt.Errorf("failed to update user info")
-		err = allerror.New(allerror.ErrorFailedToUpdateUserInfo, "", e)
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
@@ -182,7 +182,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 			AvatarId: user.AvatarId,
 			Desc:     user.Desc,
 		}); err != nil {
-			err = allerror.New(allerror.ErrorFailedToUPdateGitUserInfo, "", err)
+			err = allerror.NewInvalidParam("failed to update git user info", err)
 			return
 		}
 	}
@@ -196,7 +196,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 func (s userService) GetPlatformUserInfo(account domain.Account) (string, error) {
 	if account == nil {
 		e := fmt.Errorf("username invalid")
-		return "", allerror.New(allerror.ErrorUsernameInvalid, "", e)
+		return "", allerror.NewInvalidParam(e.Error(), e)
 	}
 	// get user from db
 	usernew, err := s.repo.GetByAccount(account)
@@ -255,7 +255,8 @@ func (s userService) Delete(account domain.Account) (err error) {
 	// delete user
 	err = s.repo.DeleteUser(&u)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToDeleteUser, "", fmt.Errorf("failed to delete user in db, %w", err))
+		err = allerror.NewInvalidParam("failed to delete user in db",
+			fmt.Errorf("failed to delete user in db, %w", err))
 		return
 	}
 
@@ -263,7 +264,8 @@ func (s userService) Delete(account domain.Account) (err error) {
 		// delete git user when email is valid
 		err = s.git.Delete(u.Account)
 		if err != nil {
-			err = allerror.New(allerror.ErrorFailedToDeleteUserInGitServer, "", fmt.Errorf("failed to delete user in git server, %w", err))
+			err = allerror.NewInvalidParam("failed to delete user in git server",
+				fmt.Errorf("failed to delete user in git server, %w", err))
 		}
 	}
 
@@ -283,7 +285,7 @@ func (s userService) RequestDelete(user domain.Account) error {
 
 	if u.RequestDelete {
 		e := fmt.Errorf("user already requested to be delete")
-		return allerror.New(allerror.ErrorUserAlreadyRequestedToBeDelete, "", e)
+		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	memList, err := s.member.GetByUserAndRoles(user, []primitive.Role{primitive.Admin})
@@ -429,25 +431,25 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
 
 	owner, err := s.repo.GetByAccount(cmd.Account)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToCreateToken, "", err)
+		err = allerror.NewInvalidParam("failed to create token", err)
 		return
 	}
 
 	_, err = s.token.GetByName(cmd.Account, cmd.Name)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
-		err = allerror.New(allerror.ErrorFailedToCreateToken, "", err)
+		err = allerror.NewInvalidParam("failed to create token", err)
 		return
 	}
 
 	t, err := client.CreateToken(cmd)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToCreateToken, "", err)
+		err = allerror.NewInvalidParam("failed to create token", err)
 		return
 	}
 
 	enc, salt, err := domain.EncryptToken(t.Token)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToEcryptToken, "", err)
+		err = allerror.NewInvalidParam("failed to encrypt token", err)
 		return
 	}
 
@@ -499,13 +501,13 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error) {
 	if u == nil {
 		e := fmt.Errorf("input param is empty")
-		err = allerror.New(allerror.ErrorInputParamIsEmpty, "", e)
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 
 	ts, err := s.token.GetByAccount(u)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToGetUserInfo, "", err)
+		err = allerror.NewInvalidParam("failed to get user info", err)
 		return
 	}
 

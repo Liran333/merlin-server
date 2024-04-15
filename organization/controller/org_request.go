@@ -130,7 +130,7 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 
 	if req.FullName == "" {
 		e := fmt.Errorf("fullname can't be empty")
-		err = allerror.New(allerror.ErrorFullnameCanNotBeEmpty, "", e)
+		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
 

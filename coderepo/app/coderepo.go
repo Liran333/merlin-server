@@ -36,7 +36,7 @@ func (s *codeRepoAppService) Create(user primitive.Account, cmd *CmdToCreateRepo
 
 	if err := s.repoAdapter.Add(&repo, cmd.InitReadme); err != nil {
 		if commonrepo.IsErrorDuplicateCreating(err) {
-			err = allerror.New(allerror.ErrorDuplicateCreating, "dulicate creating", err)
+			err = allerror.NewInvalidParam("dulicate creating", err)
 		}
 
 		return repo, err
