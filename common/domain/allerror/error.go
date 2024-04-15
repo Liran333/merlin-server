@@ -125,6 +125,9 @@ const (
 
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
+
+	// ErrorMsgPublishFailed
+	ErrorMsgPublishFailed = "msg_publish_failed"
 )
 
 // errorImpl

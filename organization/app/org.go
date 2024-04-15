@@ -14,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	"github.com/openmerlin/merlin-server/organization/domain/message"
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
@@ -69,6 +70,7 @@ func NewOrgService(
 	perm *permService,
 	cfg *domain.Config,
 	git git.User,
+	message message.OrgnizationMessage,
 ) OrgService {
 	return &orgService{
 		user:             user,
@@ -80,6 +82,7 @@ func NewOrgService(
 		inviteExpiry:     cfg.InviteExpiry,
 		MaxCountPerOwner: cfg.MaxCountPerOwner,
 		git:              git,
+		message:          message,
 	}
 }
 
@@ -93,6 +96,7 @@ type orgService struct {
 	invite           repository.Approve
 	perm             *permService
 	git              git.User
+	message          message.OrgnizationMessage
 }
 
 // Create creates a new organization with the given command and returns the created organization as a UserDTO.
@@ -268,7 +272,19 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 			fmt.Errorf("failed to delete git org, %w", err))
 	}
 
-	return org.repo.DeleteOrg(&o)
+	err = org.repo.DeleteOrg(&o)
+	if err != nil {
+		return err
+	}
+
+	event := domain.NewOrgDeleteEvent(cmd)
+	err = org.message.SendComputilityOrgDeleteEvent(&event)
+	if err != nil {
+		e := fmt.Errorf("send message to delete computility org failed, %s", err)
+		err = allerror.New(allerror.ErrorMsgPublishFailed, "delete computility org failed", e)
+	}
+
+	return err
 }
 
 // UpdateBasicInfo updates the basic information of an organization based on the provided command
@@ -673,7 +689,14 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 		}
 	}
 
-	return nil
+	event := domain.NewUserRemoveEvent(cmd)
+	err = org.message.SendComputilityUserRemoveEvent(&event)
+	if err != nil {
+		e := fmt.Errorf("send message to user removed from computility org failed, %s", err)
+		err = allerror.New(allerror.ErrorMsgPublishFailed, "user remove computility failed", e)
+	}
+
+	return err
 }
 
 // EditMember edits the role of a member in an organization.
@@ -953,6 +976,16 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 
 	// Update all requests and invites status pending to approved
 	err = org.invite.UpdateAllApproveStatus(approve.Username, approve.OrgName, approve.Status)
+	if err != nil {
+		return
+	}
+
+	event := domain.NewUserJoinEvent(&approve)
+	err = org.message.SendComputilityUserJoinEvent(&event)
+	if err != nil {
+		e := fmt.Errorf("send message to user join computility org failed, %s", err)
+		err = allerror.New(allerror.ErrorMsgPublishFailed, "user join computility failed", e)
+	}
 
 	return
 }

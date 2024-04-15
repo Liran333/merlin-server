@@ -16,6 +16,7 @@ import (
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	"github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/controller"
+	"github.com/openmerlin/merlin-server/organization/infrastructure/messageadapter"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
@@ -38,6 +39,7 @@ func initOrg(cfg *config.Config, services *allServices) {
 	services.orgApp = app.NewOrgService(
 		services.userApp, org, orgMember,
 		invitation, permission, &cfg.Org, git,
+		messageadapter.MessageAdapter(&cfg.Org.Topics),
 	)
 
 	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu)

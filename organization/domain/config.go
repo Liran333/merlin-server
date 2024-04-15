@@ -5,12 +5,15 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package domain provides domain models and configuration for a specific functionality.
 package domain
 
+import "github.com/openmerlin/merlin-server/organization/infrastructure/messageadapter"
+
 // Config is a structure that holds the configuration settings for the application.
 type Config struct {
-	MaxCountPerOwner int64  `json:"max_count_per_owner"`
-	InviteExpiry     int64  `json:"invite_expiry"`
-	DefaultRole      string `json:"default_role"`
-	Tables           tables `json:"tables"`
+	MaxCountPerOwner int64                 `json:"max_count_per_owner"`
+	InviteExpiry     int64                 `json:"invite_expiry"`
+	DefaultRole      string                `json:"default_role"`
+	Tables           tables                `json:"tables"`
+	Topics           messageadapter.Topics `json:"topics"`
 }
 
 type tables struct {

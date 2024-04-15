@@ -4,6 +4,18 @@ organization:
   tables:
     invite: "invite"
     member: "member"
+  topics:
+    org_user_joined: org_user_joined
+    org_user_removed: org_user_removed
+    org_deleted: org_deleted
+
+computility:
+  tables:
+    computility_org: computility_org
+    computility_detail: computility_detail
+    computility_account: computility_account
+  topics:
+    computility_recalled: computility_recalled
 
 session:
   oidc:

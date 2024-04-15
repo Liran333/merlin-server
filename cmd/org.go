@@ -21,6 +21,7 @@ import (
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	"github.com/openmerlin/merlin-server/organization/infrastructure/messageadapter"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
@@ -60,7 +61,9 @@ func initorg() {
 	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
 		oidcimpl.NewAuthingUser(), session)
 
-	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org, git)
+	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org, git,
+		messageadapter.MessageAdapter(&cfg.Org.Topics),
+	)
 }
 
 var orgCmd = &cobra.Command{
