@@ -118,10 +118,7 @@ const (
 	ErrorBaseCase = "internal_error"
 
 	// dulicate creating
-	ErrorDulicateCreating = "dulicate_creating"
-
-	// failed to get user info when checking privacy agreement"
-	ErrorFailGetUserInfoWhenCheckPrivacyAgreement = "fail_get_user_info_when_checking_privacy_agreement"
+	ErrorDuplicateCreating = "duplicate_creating"
 
 	// failed to get owner info
 	ErrorFailedGetOwnerInfo = "failed_to_get_owner_info"
@@ -138,23 +135,11 @@ const (
 	// failed to save org member
 	ErrorFailSaveOrgMember = "failed_to_save_org_member"
 
-	// cmd is nil
-	ErrorCmdIsNil = "cmd_is_nil"
-
-	// list options is nil
-	ErrorListOptionsIsNil = "list_options_is_nil"
-
-	// account is nil
-	ErrorAccountIsNil = "account is nil"
-
-	// org account is nil
-	ErrorOrgAccountIsNil = "org_account_is_nil"
+	// system error
+	ErrorSystemError = "system_error"
 
 	// the org has only one member
 	ErrorOrgHasOnlyOneMember = "the_org_has_only_one_member"
-
-	// failed to get platform user
-	ErrorFailedToGetPlatformUser = "failed_to_get_platform_user"
 
 	// failed to remove member
 	ErrorFailedToRemoveMember = "failed_to_remove_member"
@@ -180,9 +165,6 @@ const (
 	// invalid actor name
 	ErrorInvalidActorName = "invalid_actor_name"
 
-	// org name is nil
-	ErrorOrgNameIsNil = "org_name_is_nil"
-
 	// org fullname is empty
 	ErrorOrgFullnameIsEmpty = "org_fullname_is_empty"
 
@@ -202,13 +184,13 @@ const (
 	ErrorInvalidRequester = "invalid_requester"
 
 	// when list member requests, org_name/requester can't be all empty
-	ErrorWhenListMemberRequest = "when_list_member_requests,_org_name/requester_can't_be_all_empty"
+	ErrorOrgNameRequesterAllEmpty = "org_name_requester_all_empty"
 
 	// only one of the org_name/invitee/inviter can be used
-	ErrorOverOrgnameInviteeInviter = "only_one_of_the_org_name/invitee/inviter_can_be_used"
+	ErrorOverOrgnameInviteeInviter = "over_orgname_invitee_inviter"
 
 	// when list member invitation, org_name/invitee/inviter can't be all empty
-	ErrorEmptyOrgnameInviteeInviter = "when_list_member_invitation,_org_name/invitee/inviter_can't_be_all_empty"
+	ErrorMemberInvitationParamAllEmpty = "member_invitation_param_all_empty"
 
 	// fullname can't be empty
 	ErrorFullnameCanNotBeEmpty = "fullname_can't_be_empty"
@@ -223,7 +205,7 @@ const (
 	ErrorUsernameInvalid = "username_invalid"
 
 	// failed to delete user in db
-	ErrorFailedToDeleteUserInDb = "failed_to_delete_user_in_db"
+	ErrorFailedToDeleteUser = "failed_to_delete_user"
 
 	// failed to delete user in git server
 	ErrorFailedToDeleteUserInGitServer = "failed_to_delete_user_in_git_server"
@@ -258,9 +240,6 @@ const (
 	// failed to get member info
 	ErrorFailedToGetMemberInfo = "failed_to_get_member_info"
 
-	// failed to get platform user for adding member
-	ErrorFailedToGetPlatformUserForAddingMember = "failed_to_get_platform_user_for_adding_member"
-
 	// failed to save member for adding member
 	ErrorFailedToSaveMemberForAddingMember = "failed_to_save_member_for_adding_member"
 
@@ -280,46 +259,40 @@ const (
 	ErrorFailedToChangeOwnerOfOrg = "failed_to_change_owner_of_org"
 
 	// name %s is already been taken
-	ErrorNameAlreadyBeenTaken = "name_%s_is_already_been_taken"
+	ErrorNameAlreadyBeenTaken = "name_is_already_been_taken"
 
 	// %s can't delete the org
-	ErrorAccountCannotDeleteTheOrg = "%s_can't_delete_the_org"
+	ErrorAccountCannotDeleteTheOrg = "account_can_not_delete_the_org"
 
 	// failed to get org when get org by user, %w
-	ErrorFailedToGetOrgWhenGetOrgByUser = "failed_to_get_org_when_get_org_by_user, %w"
+	ErrorFailedToGetOrg = "failed_to_get_org"
 
 	// failed to get members by org name: %s, %s
-	ErrorFailedToGetMembersByOrgName = "failed_to_get_members_by_org_name: %s, %s"
+	ErrorFailedToGetMembersByOrgName = "failed_to_get_members_by_org_name"
 
 	// user %s is already a member of the org %s
-	ErrorUserAccountIsAlreadyAMemberOfOrgAccount = "user_%s_is_already_a_member_of_the_org_%s"
+	ErrorUserAccountIsAlreadyAMemberOfOrgAccount = "user_account_is_already_a_member_of_the_org_account"
 
 	// failed to add member:%s to org:%s
-	ErrorFailedToAddMemberToOrg = "failed_to_add_member:%s_to_org:%s"
+	ErrorFailedToAddMemberToOrg = "failed_to_add_member"
 
 	// invalid status %s
-	ErrorInvalidStatus = "invalid_status_%s"
+	ErrorInvalidStatus = "invalid_status"
 
 	// missing name when creating token
-	ErrorMissingNameWhenCreatingToken = "missing_name_when_creating_token"
+	ErrorMissingName = "missing_name"
 
 	// missing account when creating token
-	ErrorMissingAccountWhenCreatingToken = "missing_account_when_creating_token"
-
-	// missing account when delete token
-	ErrorMissingAccountWhenDeleteToken = "missing_account_when_delete_token"
-
-	// missing name when delete token
-	ErrorMissingNameWhenDeleteToken = "missing_name_when_delete_token"
+	ErrorMissingAccount = "missing_account"
 
 	// user name %s is already taken
-	ErrorUsernameIsAlreadyTaken = "user_name_%s_is_already_taken"
+	ErrorUsernameIsAlreadyTaken = "user_name_is_already_taken"
 
 	// failed to create platform user: %s
-	ErrorFailedToCreatePlatformUser = "failed_to_create_platform_user:_%s"
+	ErrorFailedToCreatePlatformUser = "failed_to_create_platform_user"
 
 	// failed to save user in db: %s
-	ErrorFailToSaveUserInDb = "failed_to_save_user_in_db:_%s"
+	ErrorFailToSaveUserInDb = "failed_to_save_user"
 )
 
 // errorImpl

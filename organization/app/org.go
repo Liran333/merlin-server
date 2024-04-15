@@ -240,7 +240,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 
 	can, err := pl.CanDelete(cmd.Name)
 	if err != nil {
-		return allerror.New(allerror.ErrorAccountCannotDeleteTheOrg, "",
+		return allerror.New(allerror.ErrorAccountCannotDeleteTheOrg, "can't delete the org",
 			fmt.Errorf("%s can't delete the org, %w", cmd.Name.Account(), err))
 	}
 
@@ -274,7 +274,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 // and returns the updated organization as a UserDTO.
 func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto userapp.UserDTO, err error) {
 	if cmd == nil {
-		err = allerror.New(allerror.ErrorCmdIsNil, "cmd is nil", err)
+		err = allerror.New(allerror.ErrorSystemError, "", err)
 		return
 	}
 
@@ -335,7 +335,7 @@ func (org *orgService) GetByOwner(actor, acc primitive.Account) (orgs []userapp.
 func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.UserDTO, err error) {
 	if acc == nil {
 		e := fmt.Errorf("account is nil")
-		err = allerror.New(allerror.ErrorAccountIsNil, "account is nil", e)
+		err = allerror.New(allerror.ErrorSystemError, "account is nil", e)
 		return
 	}
 
@@ -353,7 +353,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 		o, e := org.repo.GetOrgByName(members[i].OrgName)
 		if e != nil {
 			e := fmt.Errorf("failed to get org when get org by user, %w", e)
-			err = allerror.New(allerror.ErrorFailedToGetOrgWhenGetOrgByUser, "", e)
+			err = allerror.New(allerror.ErrorFailedToGetOrg, "", e)
 			return
 		}
 		orgs[i] = ToDTO(&o)
@@ -366,7 +366,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err error) {
 	if l == nil {
 		e := fmt.Errorf("list options is nil")
-		return nil, allerror.New(allerror.ErrorListOptionsIsNil, "list options is nil", e)
+		return nil, allerror.New(allerror.ErrorSystemError, "", e)
 	}
 	orgs = []userapp.UserDTO{}
 
@@ -420,7 +420,7 @@ func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account,
 func (org *orgService) ListMember(cmd *domain.OrgListMemberCmd) (dtos []MemberDTO, err error) {
 	if cmd == nil || cmd.Org == nil {
 		e := fmt.Errorf("org account is nil")
-		err = allerror.New(allerror.ErrorOrgAccountIsNil, "org account is nil", e)
+		err = allerror.New(allerror.ErrorSystemError, "", e)
 		return
 	}
 
@@ -470,8 +470,8 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetPlatformUserForAddingMember,
-			"", fmt.Errorf("failed to get platform user for adding member, %w", err))
+		return allerror.New(allerror.ErrorFailGetPlatformUser,
+			"failed to get platform user for adding member", fmt.Errorf("failed to get platform user for adding member, %w", err))
 	}
 
 	err = pl.AddMember(&o, &m)
@@ -598,7 +598,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetPlatformUser, "", err)
+		return allerror.New(allerror.ErrorFailGetPlatformUser, "", err)
 	}
 
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
