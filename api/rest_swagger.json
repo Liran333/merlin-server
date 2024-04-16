@@ -1809,6 +1809,37 @@
                 }
             }
         },
+        "/v1/user/privilege": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List User's privilege organization info",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List User's privilege organization info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "privilege type, can be: npu/disable",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/token": {
             "get": {
                 "security": [

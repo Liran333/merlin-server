@@ -6,6 +6,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain/privilege"
+	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,7 +14,7 @@ type action string
 
 const (
 	// AllocNpu org who can alloc npu resource
-	AllocNpu action = "alloc_npu"
+	AllocNpu action = "npu"
 	// Disable org who can disable model or space
 	Disable action = "disable"
 )
@@ -21,56 +22,96 @@ const (
 // NewAction returns an action type
 func NewAction(action string) (action, error) {
 	switch action {
-	case "alloc_npu":
+	case string(AllocNpu):
 		return AllocNpu, nil
-	case "disable":
+	case string(Disable):
 		return Disable, nil
 	default:
 		return "", fmt.Errorf("invalid action: %s", action)
 	}
 }
 
+// OrgListOptions represents the options for listing organizations.
+type PrivilegeOrgListOptions struct {
+	User primitive.Account
+	Type action
+}
+
 // PrivilegeOrg interface
 type PrivilegeOrg interface {
 	Contains(primitive.Account) error
+	List(*PrivilegeOrgListOptions) ([]userapp.UserDTO, error)
 }
 
 func NewPrivilegeOrgService(
 	org OrgService,
 	cfg privilege.PrivilegeConfig,
+	t action,
 ) PrivilegeOrg {
-	a, err := NewAction(cfg.Type)
-	if err != nil {
-		logrus.Warnf("invalid privileged type: %s, privilege org will be ignored", cfg.Type)
+	cfgs := make([]privilegeOrgConfig, 0)
+	for _, c := range cfg.Orgs {
+		a, err := newPrivilegeOrg(c)
+		if err != nil {
+			logrus.Warnf("invalid privilege org cfg: %v, %s", c, err.Error())
+			continue
+		}
+		cfgs = append(cfgs, a)
+	}
+
+	if len(cfgs) == 0 {
+		logrus.Warnf("empty privilege org config, privilege org will be ignored")
 		return nil
 	}
 
-	acc, err := primitive.NewAccount(cfg.OrgName)
-	if err != nil {
-		logrus.Warnf("invalid privileged org name: %s, privilege org will be ignored", cfg.OrgName)
-		return nil
-	}
+	logrus.Infof("init %s privilege org %v successfully", t, cfgs)
 
 	return &privilegeOrg{
-		OrgId:   cfg.OrgId,
-		OrgName: acc,
-		Action:  a,
-		org:     org,
+		cfgs:   cfgs,
+		org:    org,
+		Action: t,
 	}
 }
 
-type privilegeOrg struct {
+type privilegeOrgConfig struct {
 	OrgId   string
 	OrgName primitive.Account
-	Action  action
-	org     OrgService
+}
+
+func newPrivilegeOrg(cfg privilege.OrgIndex) (privilegeOrgConfig, error) {
+	acc, err := primitive.NewAccount(cfg.OrgName)
+	if err != nil {
+		logrus.Warnf("invalid privileged org name: %s, privilege org will be ignored", cfg.OrgName)
+		return privilegeOrgConfig{}, err
+	}
+
+	return privilegeOrgConfig{
+		OrgId:   cfg.OrgId,
+		OrgName: acc,
+	}, nil
+}
+
+type privilegeOrg struct {
+	cfgs   []privilegeOrgConfig
+	org    OrgService
+	Action action
 }
 
 // Contains returns an error if the account is not in the privilege org.
 func (p *privilegeOrg) Contains(account primitive.Account) error {
-	o, err := p.org.GetByAccount(p.OrgName)
+	for _, cfg := range p.cfgs {
+		if err := cfg.contains(account, p.org); err == nil {
+			return nil
+		}
+	}
+
+	e := fmt.Errorf("account: %s not in %s privilege org", account.Account(), p.Action)
+	return allerror.NewInvalidParam(e.Error(), e)
+}
+
+func (p *privilegeOrgConfig) contains(account primitive.Account, org OrgService) error {
+	o, err := org.GetByAccount(p.OrgName)
 	if err != nil {
-		logrus.Errorf("cant do %s action while failed to get org: %s, %s", p.Action, p.OrgName, err)
+		logrus.Errorf("failed to get org: %s, %s", p.OrgName, err)
 		return err
 	}
 
@@ -79,11 +120,43 @@ func (p *privilegeOrg) Contains(account primitive.Account) error {
 		return allerror.New(allerror.ErrorCodePrivilegeOrgIdMismatch, e.Error(), e)
 	}
 
-	has := p.org.HasMember(primitive.CreateAccount(o.Name), account)
+	has := org.HasMember(primitive.CreateAccount(o.Name), account)
 	if !has {
-		e := fmt.Errorf("user: %s not in a %v org", account.Account(), p.Action)
+		e := fmt.Errorf("user: %s not in a privilegeorg", account.Account())
 		return allerror.New(allerror.ErrorCodeNotInPrivilegeOrg, e.Error(), e)
 	}
 
 	return nil
+}
+
+// List returns the list of users in the privilege org.
+func (p *privilegeOrg) List(l *PrivilegeOrgListOptions) ([]userapp.UserDTO, error) {
+	if l == nil {
+		e := fmt.Errorf("list options is nil")
+		return nil, allerror.NewInvalidParam(e.Error(), e)
+	}
+
+	if l.Type != p.Action {
+		return []userapp.UserDTO{}, nil
+	}
+
+	orgs := make([]userapp.UserDTO, 0)
+	for _, cfg := range p.cfgs {
+		o, err := p.org.GetByAccount(cfg.OrgName)
+		if err != nil {
+			logrus.Errorf("failed to get org: %s, %s", cfg.OrgName, err)
+			return nil, err
+		}
+
+		if l.User != nil {
+			has := p.org.HasMember(primitive.CreateAccount(o.Name), l.User)
+			if !has {
+				continue
+			}
+		}
+
+		orgs = append(orgs, o)
+	}
+
+	return orgs, nil
 }

@@ -40,6 +40,7 @@ type allServices struct {
 	tokenMiddleWare       middleware.TokenMiddleWare
 
 	npuGatekeeper orgapp.PrivilegeOrg
+	disable       orgapp.PrivilegeOrg
 	modelApp      modelapp.ModelAppService
 
 	spaceApp spaceapp.SpaceAppService

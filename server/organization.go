@@ -42,7 +42,8 @@ func initOrg(cfg *config.Config, services *allServices) {
 		messageadapter.MessageAdapter(&cfg.Org.Topics),
 	)
 
-	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu)
+	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu, app.AllocNpu)
+	services.disable = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Disable, app.Disable)
 }
 
 func setRouterOfOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServices) {
@@ -55,5 +56,7 @@ func setRouterOfOrg(v1 *gin.RouterGroup, cfg *config.Config, services *allServic
 		services.userMiddleWare,
 		services.rateLimiterMiddleWare,
 		services.privacyCheck,
+		services.npuGatekeeper,
+		services.disable,
 	)
 }

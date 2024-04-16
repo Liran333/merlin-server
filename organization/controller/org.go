@@ -13,8 +13,8 @@ import (
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/organization/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -31,11 +31,15 @@ func AddRouterForOrgController(
 	m middleware.UserMiddleWare,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
+	npuGatekeeper orgapp.PrivilegeOrg,
+	disable orgapp.PrivilegeOrg,
 ) {
 	ctl := OrgController{
-		m:    m,
-		org:  org,
-		user: user,
+		m:             m,
+		org:           org,
+		user:          user,
+		npuGatekeeper: npuGatekeeper,
+		disable:       disable,
 	}
 
 	rg.PUT("/v1/organization/:name", m.Write,
@@ -73,13 +77,16 @@ func AddRouterForOrgController(
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.EditMember)
 
 	rg.GET("/v1/account/:name", p.CheckName, m.Optional, rl.CheckLimit, ctl.GetUser)
+	rg.GET("/v1/user/privilege", m.Read, ctl.GetPrivilege)
 }
 
 // OrgController is a struct that contains the necessary dependencies for organization-related operations.
 type OrgController struct {
-	m    middleware.UserMiddleWare
-	org  orgapp.OrgService
-	user userapp.UserService
+	m             middleware.UserMiddleWare
+	org           orgapp.OrgService
+	user          userapp.UserService
+	npuGatekeeper orgapp.PrivilegeOrg
+	disable       orgapp.PrivilegeOrg
 }
 
 // @Summary  Update
@@ -557,7 +564,7 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 		return
 	}
 
-	var dtos []app.ApproveDTO
+	var dtos []orgapp.ApproveDTO
 	var err error
 	if cmd.Org != nil {
 		dtos, err = ctl.org.ListInvitationByOrg(user, cmd.Org, cmd.Status)
@@ -810,5 +817,62 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, a)
+	}
+}
+
+// @Summary  List User's privilege organization info
+// @Description List User's privilege organization info
+// @Tags     Organization
+// @Param    type   query  string  true  "privilege type, can be: npu/disable"
+// @Param    user   query  string  false  "user name to filter the organizations which contain the user"
+// @Security Bearer
+// @Success  200 {object}  commonctl.ResponseData
+// @Router   /v1/user/privilege [get]
+func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	var req PrivilegeOption
+	if err := ctx.BindQuery(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	// we don't need to check if user is nil
+	user, _ = primitive.NewAccount(req.User)
+
+	t, err := orgapp.NewAction(req.Type)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	opt := &orgapp.PrivilegeOrgListOptions{
+		User: user,
+		Type: t,
+	}
+
+	orgs := []userapp.UserDTO{}
+	switch req.Type {
+	case "npu":
+		if ctl.npuGatekeeper != nil {
+			orgs, err = ctl.npuGatekeeper.List(opt)
+		}
+	case "disable":
+		if ctl.disable != nil {
+			orgs, err = ctl.disable.List(opt)
+		}
+	default:
+		e := fmt.Errorf("invalid privilege type: %s", req.Type)
+		err = allerror.NewInvalidParam(e.Error(), e)
+	}
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, orgs)
 	}
 }

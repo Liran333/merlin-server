@@ -440,6 +440,13 @@ definitions:
     - name
     - perm
     type: object
+  controller.tokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+    type: object
   controller.userBasicInfoUpdateRequest:
     properties:
       avatar_id:
@@ -590,6 +597,22 @@ paths:
       summary: User or organization info
       tags:
       - Organization
+  /v1/analytics/key:
+    get:
+      description: get analyse key
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.tokenResponse'
+              type: object
+      summary: Ayalyse key
+      tags:
+      - Other
   /v1/exists/:owner/:name:
     get:
       consumes:
@@ -1886,6 +1909,25 @@ paths:
       summary: PrivacyRevoke
       tags:
       - User
+  /v1/user/privilege:
+    get:
+      description: List User's privilege organization info
+      parameters:
+      - description: 'privilege type, can be: npu/disable'
+        in: query
+        name: type
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: List User's privilege organization info
+      tags:
+      - Organization
   /v1/user/token:
     get:
       consumes:

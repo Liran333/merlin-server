@@ -288,3 +288,17 @@ other_config:
     client_id: {{(ds "secret").data.CLIENT_ID }}
     client_secret: {{(ds "secret").data.CLIENT_SECRET }}
     get_token_url: "https://connect-drcn.dbankcloud.cn/agc/apigw/oauth2/v1/token"
+
+#privilege_org:
+#  npu:
+#    orgs:
+#    - org_id: 1
+#      org_name: testorg
+#    - org_id: 2
+#      org_name: testorg1
+#  disable:
+#    orgs:
+#    - org_id: 3
+#      org_name: testorg2
+#    - org_id: 4
+#      org_name: testorg3

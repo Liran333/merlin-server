@@ -6,7 +6,10 @@ type Config struct {
 }
 
 type PrivilegeConfig struct {
+	Orgs []OrgIndex `json:"orgs"`
+}
+
+type OrgIndex struct {
 	OrgId   string `json:"org_id"`
 	OrgName string `json:"org_name"`
-	Type    string `json:"type"`
 }

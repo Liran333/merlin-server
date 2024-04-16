@@ -467,3 +467,9 @@ func (req *orgListMemberRequest) toCmd(org primitive.Account) (cmd domain.OrgLis
 
 	return
 }
+
+// PrivilegeOption is a struct for handling privilege option.
+type PrivilegeOption struct {
+	Type string `form:"type"`
+	User string `form:"user"`
+}

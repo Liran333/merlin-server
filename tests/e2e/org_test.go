@@ -667,6 +667,43 @@ func (s *SuiteOrg) TestOrgLeaveSuccess() {
 	assert.Nil(s.T(), err)
 }
 
+// TestPrivilegeOrg used for testing
+// 测试特权组织list
+func (s *SuiteOrg) TestPrivilegeOrg() {
+	// 创建组织
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+	}
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 未配置特权组织，无法查询到用户属于某个特权组织
+	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "npu", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+	orgs := getArrary(s.T(), data.Data)
+	assert.Equal(s.T(), 0, len(orgs))
+
+	// 未配置特权组织，无法查询到用户属于某个特权组织
+	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "disable", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
+	assert.Nil(s.T(), err)
+	orgs = getArrary(s.T(), data.Data)
+	assert.Equal(s.T(), 0, len(orgs))
+
+	// 无效参数
+	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "test", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
+	assert.NotNil(s.T(), err)
+
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestOrg used for testing
 func TestOrg(t *testing.T) {
 	suite.Run(t, new(SuiteOrg))

@@ -53,6 +53,35 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/analytics/key": {
+            "get": {
+                "description": "get analyse key",
+                "tags": [
+                    "Other"
+                ],
+                "summary": "Ayalyse key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.tokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/exists/:owner/:name": {
             "get": {
                 "description": "check whether the repo exists",
@@ -2082,6 +2111,37 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/user/privilege": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List User's privilege organization info",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List User's privilege organization info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "privilege type, can be: npu/disable",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/token": {
             "get": {
                 "security": [
@@ -2846,6 +2906,17 @@ const docTemplateweb = `{
                 },
                 "perm": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.tokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
                 }
             }
         },
