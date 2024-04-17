@@ -1121,6 +1121,52 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/search": {
+            "get": {
+                "description": "get model and space and org and user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SearchWeb"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by name",
+                        "name": "searchKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "type of space/model/org/user",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page data size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.SearchDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/session": {
             "put": {
                 "description": "logout",
@@ -2257,6 +2303,14 @@ const docTemplateweb = `{
                 }
             }
         },
+        "app.SearchDTO": {
+            "type": "object",
+            "properties": {
+                "result_set": {
+                    "$ref": "#/definitions/domain.SearchResult"
+                }
+            }
+        },
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
@@ -2974,6 +3028,135 @@ const docTemplateweb = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "domain.ModelResult": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.OrgResult": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SearchResult": {
+            "type": "object",
+            "properties": {
+                "model_result": {
+                    "$ref": "#/definitions/domain.SearchResultModel"
+                },
+                "org_result": {
+                    "$ref": "#/definitions/domain.SearchResultOrg"
+                },
+                "space_result": {
+                    "$ref": "#/definitions/domain.SearchResultSpace"
+                },
+                "user_result": {
+                    "$ref": "#/definitions/domain.SearchResultUser"
+                }
+            }
+        },
+        "domain.SearchResultModel": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ModelResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultOrg": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.OrgResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultSpace": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.SpaceResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultUser": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.UserResult"
+                    }
+                }
+            }
+        },
+        "domain.SpaceResult": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UserResult": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
                 }
             }
         },

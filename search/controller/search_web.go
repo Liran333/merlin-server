@@ -33,9 +33,17 @@ type SearchWebController struct {
 	m         middleware.UserMiddleWare
 }
 
+// @Summary  List
+// @Description  get model and space and org and user
+// @Tags     SearchWeb
+// @Param    searchKey     query  string  true "filter by name"
+// @Param    type  query  []string  true "type of space/model/org/user"
+// @Param  	 size  query  int    false "page data size"
+// @Accept   json
+// @Success  200  {object}  app.SearchDTO.ResultSet
+// @Router /v1/search [get]
 func (ctl *SearchWebController) Search(ctx *gin.Context) {
 	var req quickSearchRequest
-
 	if err := ctx.BindQuery(&req); err != nil {
 		controller.SendBadRequestParam(ctx, err)
 		return

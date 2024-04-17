@@ -14,6 +14,11 @@ definitions:
       task:
         type: string
     type: object
+  app.SearchDTO:
+    properties:
+      result_set:
+        $ref: '#/definitions/domain.SearchResult'
+    type: object
   app.SpaceAppDTO:
     properties:
       app_url:
@@ -483,6 +488,89 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  domain.ModelResult:
+    properties:
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+    type: object
+  domain.OrgResult:
+    properties:
+      account:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+    type: object
+  domain.SearchResult:
+    properties:
+      model_result:
+        $ref: '#/definitions/domain.SearchResultModel'
+      org_result:
+        $ref: '#/definitions/domain.SearchResultOrg'
+      space_result:
+        $ref: '#/definitions/domain.SearchResultSpace'
+      user_result:
+        $ref: '#/definitions/domain.SearchResultUser'
+    type: object
+  domain.SearchResultModel:
+    properties:
+      count:
+        type: integer
+      result:
+        items:
+          $ref: '#/definitions/domain.ModelResult'
+        type: array
+    type: object
+  domain.SearchResultOrg:
+    properties:
+      count:
+        type: integer
+      result:
+        items:
+          $ref: '#/definitions/domain.OrgResult'
+        type: array
+    type: object
+  domain.SearchResultSpace:
+    properties:
+      count:
+        type: integer
+      result:
+        items:
+          $ref: '#/definitions/domain.SpaceResult'
+        type: array
+    type: object
+  domain.SearchResultUser:
+    properties:
+      count:
+        type: integer
+      result:
+        items:
+          $ref: '#/definitions/domain.UserResult'
+        type: array
+    type: object
+  domain.SpaceResult:
+    properties:
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+    type: object
+  domain.UserResult:
+    properties:
+      account:
+        type: string
+      avatar_id:
+        type: string
+      full_name:
+        type: string
     type: object
   github_com_openmerlin_merlin-server_session_app.UserDTO:
     properties:
@@ -1274,6 +1362,37 @@ paths:
       summary: ApproveRequest
       tags:
       - Organization
+  /v1/search:
+    get:
+      consumes:
+      - application/json
+      description: get model and space and org and user
+      parameters:
+      - description: filter by name
+        in: query
+        name: searchKey
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: type of space/model/org/user
+        in: query
+        items:
+          type: string
+        name: type
+        required: true
+        type: array
+      - description: page data size
+        in: query
+        name: size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SearchDTO'
+      summary: List
+      tags:
+      - SearchWeb
   /v1/session:
     post:
       consumes:

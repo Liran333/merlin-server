@@ -83,11 +83,6 @@ func (s *stubOrg) GetByUserAndRoles(primitive.Account, []primitive.Role) ([]orgd
 	return []orgdomain.OrgMember{*stubMember}, nil
 }
 
-// GetOrgNamesByUserName get orgNames by user name.
-func (s *stubOrg) GetOrgNamesByUserName(string) ([]string, error) {
-	return []string{}, nil
-}
-
 // TestPermCheck is a test function for the permission check functionality.
 func TestPermCheck(t *testing.T) {
 	type testdata struct {

@@ -20,6 +20,5 @@ type OrgMember interface {
 	GetByOrgAndRole(string, primitive.Role) ([]domain.OrgMember, error)
 	GetByOrgAndUser(org, user string) (domain.OrgMember, error)
 	GetByUser(string) ([]domain.OrgMember, error)
-	GetOrgNamesByUserName(string) ([]string, error)
 	GetByUserAndRoles(primitive.Account, []primitive.Role) ([]domain.OrgMember, error)
 }
