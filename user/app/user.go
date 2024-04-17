@@ -255,8 +255,7 @@ func (s userService) Delete(account domain.Account) (err error) {
 	// delete user
 	err = s.repo.DeleteUser(&u)
 	if err != nil {
-		err = allerror.NewInvalidParam("failed to delete user in db",
-			fmt.Errorf("failed to delete user in db, %w", err))
+		err = allerror.New(allerror.ErrorFailedToDeleteUser, "", fmt.Errorf("failed to delete user in db, %w", err))
 		return
 	}
 

@@ -192,12 +192,12 @@ type TokenCreatedCmd struct {
 func (cmd TokenCreatedCmd) Validate() error {
 	if cmd.Name == nil {
 		e := fmt.Errorf("missing name when creating token")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorMissingName, "", e)
 	}
 
 	if cmd.Account == nil {
 		e := fmt.Errorf("missing account when creating token")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorMissingAccount, "", e)
 	}
 
 	return nil
@@ -213,12 +213,12 @@ type TokenDeletedCmd struct {
 func (cmd TokenDeletedCmd) Validate() error {
 	if cmd.Account == nil {
 		e := fmt.Errorf("missing account when delete token")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorMissingAccount, "", e)
 	}
 
 	if cmd.Name == nil {
 		e := fmt.Errorf("missing name when delete token")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorMissingName, "", e)
 	}
 
 	return nil

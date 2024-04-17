@@ -137,6 +137,58 @@ const (
 
 	// ErrorMsgPublishFailed
 	ErrorMsgPublishFailed = "msg_publish_failed"
+	
+	// dulicate creating
+	ErrorDuplicateCreating = "duplicate_creating"
+
+	// failed to get owner info
+	ErrorFailedGetOwnerInfo = "failed_to_get_owner_info"
+
+	// failed to get platform user
+	ErrorFailGetPlatformUser = "failed_to_get_platform_user"
+
+	// failed to create org
+	ErrorFailedCreateOrg = "failed_to_create_org"
+
+	// failed to create to org
+	ErrorFailedCreateToOrg = "failed_to_create_to_org"
+
+	// failed to save org member
+	ErrorFailSaveOrgMember = "failed_to_save_org_member"
+
+	// system error
+	ErrorSystemError = "system_error"
+
+	// when list member requests, org_name/requester can't be all empty
+	ErrorOrgNameRequesterAllEmpty = "org_name_requester_all_empty"
+
+	// only one of the org_name/invitee/inviter can be used
+	ErrorOverOrgnameInviteeInviter = "over_orgname_invitee_inviter"
+
+	// when list member invitation, org_name/invitee/inviter can't be all empty
+	ErrorMemberInvitationParamAllEmpty = "member_invitation_param_all_empty"
+
+	// failed to delete user in db
+	ErrorFailedToDeleteUser = "failed_to_delete_user"
+
+	// failed to get user info
+	ErrorFailedToGetUserInfo = "failed_to_get_user_info"
+
+	// name %s is already been taken
+	ErrorNameAlreadyBeenTaken = "name_is_already_been_taken"
+
+	// %s can't delete the org
+	ErrorAccountCannotDeleteTheOrg = "account_can_not_delete_the_org"
+
+	// failed to get org when get org by user, %w
+	ErrorFailedToGetOrg = "failed_to_get_org"
+
+	// missing name when creating token
+	ErrorMissingName = "missing_name"
+
+	// missing account when creating token
+	ErrorMissingAccount = "missing_account"
+	
 )
 
 // errorImpl

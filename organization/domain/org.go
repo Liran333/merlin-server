@@ -80,7 +80,7 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 
 	if cmd.OrgName == nil {
 		e := fmt.Errorf("org name is nil")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorSystemError, "", e)
 	}
 
 	return nil
@@ -472,7 +472,7 @@ func (cmd OrgMemberReqListCmd) Validate() error {
 
 	if cmd.Org == nil && cmd.Requester == nil {
 		e := fmt.Errorf("when list member requests, org_name/requester can't be all empty")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorOrgNameRequesterAllEmpty, "when list member requests, org_name/requester can't be all empty", e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
@@ -506,12 +506,12 @@ func (cmd OrgInvitationListCmd) Validate() error {
 
 	if count > 1 {
 		e := fmt.Errorf("only one of the org_name/invitee/inviter can be used")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorOverOrgnameInviteeInviter, "only one of the org_name/invitee/inviter can be used", e)
 	}
 
 	if count == 0 {
 		e := fmt.Errorf("when list member invitation, org_name/invitee/inviter can't be all empty")
-		return allerror.NewInvalidParam(e.Error(), e)
+		return allerror.New(allerror.ErrorMemberInvitationParamAllEmpty, "when list member invitation, org_name/invitee/inviter can't be all empty", e)
 	}
 
 	if cmd.Status != "" && cmd.Status != ApproveStatusPending && cmd.Status !=
