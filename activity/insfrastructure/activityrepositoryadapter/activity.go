@@ -21,16 +21,16 @@ type activityAdapter struct {
 	daoImpl
 }
 
-func (adapter *activityAdapter) DeleteAll(cmd *domain.Activity) error {
+func (adapter *activityAdapter) DeleteAll(activity *domain.Activity) error {
 	db := adapter.daoImpl.db() // Get the gorm.DB instance for the specific table.
 	if db == nil {
 		return errors.New("database instance is not initialized")
 	}
 
-	// Use the Delete method with a where clause to match the specific conditions
-	// Note: GORM will only execute a delete if there's a condition, this prevents accidental deletion of all records
-	if err := db.Where("resource_id = ?", cmd.Resource.Index).
-		Delete(&domain.Activity{}).Error; err != nil {
+	resourceIndex := activity.Resource.Index.Integer()
+	resourceType := string(activity.Resource.Type)
+
+	if err := db.Where(fieldResourceIndex+" = ? AND "+fieldResourceType+" = ?", resourceIndex, resourceType).Delete(&activityDO{}).Error; err != nil {
 		return err
 	}
 
@@ -173,7 +173,7 @@ func (adapter *activityAdapter) toQuery(names []primitive.Account, opt *reposito
 
 	// If there are any condition types to filter by, add them to the query
 	if len(conditionTypes) > 0 {
-		query = query.Where(fieldResource+" IN ?", conditionTypes)
+		query = query.Where(fieldResourceType+" IN ?", conditionTypes)
 	}
 
 	if opt.Like == primitive.TrueCondition {

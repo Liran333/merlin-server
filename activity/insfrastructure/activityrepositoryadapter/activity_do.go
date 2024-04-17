@@ -20,13 +20,14 @@ func (do *activityDO) TableName() string {
 }
 
 const (
-	fieldSpace     = "space"
-	fieldModel     = "model"
-	fieldTime      = "time"
-	fieldLike      = "like"
-	fieldTypeOwner = "owner"
-	fieldResource  = "resource_type"
-	fieldType      = "type"
+	fieldSpace         = "space"
+	fieldModel         = "model"
+	fieldTime          = "time"
+	fieldLike          = "like"
+	fieldTypeOwner     = "owner"
+	fieldResourceType  = "resource_type"
+	fieldResourceIndex = "resource_id"
+	fieldType          = "type"
 )
 
 type activityDO struct {
