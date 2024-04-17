@@ -34,5 +34,7 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setRouterOfCodeRepoPermissionInternal(rg, services)
 
+	setRouterOfComputilityAppInternal(rg, services, cfg)
+
 	rg.GET("/heartbeat", func(*gin.Context) {})
 }

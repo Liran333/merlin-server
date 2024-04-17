@@ -123,6 +123,15 @@ const (
 	// not in a privilege org
 	ErrorCodeNotInPrivilegeOrg = "not_in_privilege_org"
 
+	// user has insufficient quota balance
+	ErrorCodeInsufficientQuota = "insufficient_quota"
+
+	// user is not currently using any quota
+	ErrorCodeNoUsedQuota = "no_used_quota"
+
+	// user has no npu permission
+	ErrorCodeNoNpuPermission = "no_npu_permission"
+
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 

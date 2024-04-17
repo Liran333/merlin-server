@@ -21,6 +21,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
+	"github.com/openmerlin/merlin-server/computility"
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
@@ -71,6 +72,7 @@ type Config struct {
 	Postgresql   postgresql.Config    `json:"postgresql"`
 	Permission   permission.Config    `json:"permission"`
 	RateLimiter  ratelimiter.Config   `json:"ratelimit"`
+	Computility  computility.Config   `json:"computility"`
 	OtherConfig  other.Config         `json:"other_config"`
 	PrivilegeOrg privilege.Config     `json:"privilege_org"`
 }

@@ -85,6 +85,10 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
+	if err = initComputilityApp(cfg); err != nil {
+		return
+	}
+
 	// initResource depends on initModel and initSpace
 	initResource(&services)
 
