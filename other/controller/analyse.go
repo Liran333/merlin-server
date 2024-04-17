@@ -62,6 +62,7 @@ type tokenRequest struct {
 
 type tokenResponse struct {
 	AccessToken string `json:"access_token"`
+	ClientID    string `json:"client_id"`
 	ExpiresIn   int    `json:"expires_in"`
 }
 
@@ -84,6 +85,8 @@ func (ctl *OtherController) getToken() (t tokenResponse, err error) {
 	}
 
 	_, err = ctl.cli.ForwardTo(req, &t)
+
+	t.ClientID = ctl.cfg.ClientID
 
 	return
 }
