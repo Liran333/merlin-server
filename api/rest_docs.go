@@ -1839,6 +1839,12 @@ const docTemplaterest = `{
                         "name": "type",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user name to filter the organizations which contain the user",
+                        "name": "user",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2177,6 +2183,9 @@ const docTemplaterest = `{
         "controller.reqToCreateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -2248,6 +2257,9 @@ const docTemplaterest = `{
         "controller.reqToUpdateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },

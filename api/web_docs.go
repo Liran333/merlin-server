@@ -2176,6 +2176,12 @@ const docTemplateweb = `{
                         "name": "type",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user name to filter the organizations which contain the user",
+                        "name": "user",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2707,6 +2713,9 @@ const docTemplateweb = `{
         "controller.reqToCreateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -2789,6 +2798,9 @@ const docTemplateweb = `{
         "controller.reqToUpdateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -2891,6 +2903,9 @@ const docTemplateweb = `{
                 "sdk": {
                     "type": "string"
                 },
+                "space_avatar_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -2924,6 +2939,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
                     "type": "string"
                 },
                 "task": {
@@ -3279,6 +3297,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
                     "type": "string"
                 },
                 "task": {

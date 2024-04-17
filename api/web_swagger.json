@@ -2165,6 +2165,12 @@
                         "name": "type",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user name to filter the organizations which contain the user",
+                        "name": "user",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2696,6 +2702,9 @@
         "controller.reqToCreateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -2778,6 +2787,9 @@
         "controller.reqToUpdateSpace": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -2880,6 +2892,9 @@
                 "sdk": {
                     "type": "string"
                 },
+                "space_avatar_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -2913,6 +2928,9 @@
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
                     "type": "string"
                 },
                 "task": {
@@ -3268,6 +3286,9 @@
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
                     "type": "string"
                 },
                 "task": {
