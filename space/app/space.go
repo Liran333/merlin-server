@@ -134,15 +134,11 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	}
 
 	now := utils.Now()
-	space := domain.Space{
-		SDK:       cmd.SDK,
-		Desc:      cmd.Desc,
-		Hardware:  cmd.Hardware,
-		Fullname:  cmd.Fullname,
-		CodeRepo:  coderepo,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	space := cmd.toSpace()
+	space.UpdatedAt = now
+	space.CodeRepo = coderepo
+	space.CreatedAt = now
+
 	if err = s.repoAdapter.Add(&space); err != nil {
 		return "", err
 	}

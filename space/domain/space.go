@@ -27,6 +27,7 @@ type Space struct {
 	Labels   SpaceLabels
 	Fullname primitive.MSDFullname
 	Hardware spaceprimitive.Hardware
+	AvatarId primitive.AvatarId
 
 	LocalCmd      string
 	LocalEnvInfo  string

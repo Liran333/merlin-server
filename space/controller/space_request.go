@@ -38,6 +38,7 @@ type reqToCreateSpace struct {
 	Hardware   string `json:"hardware"   required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
+	AvatarId   string `json:"avatar_id"`
 }
 
 func (req *reqToCreateSpace) action() string {
@@ -77,6 +78,10 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 		return
 	}
 
+	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+		return
+	}
+
 	// always init readme
 	cmd.InitReadme = true
 
@@ -87,6 +92,7 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 type reqToUpdateSpace struct {
 	SDK        *string `json:"sdk"`
 	Desc       *string `json:"desc"`
+	AvatarId   *string `json:"avatar_id"`
 	Fullname   *string `json:"fullname"`
 	Hardware   *string `json:"hardware"`
 	Visibility *string `json:"visibility"`
@@ -115,6 +121,12 @@ func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
 
 	if p.Visibility != nil {
 		if cmd.Visibility, err = primitive.NewVisibility(*p.Visibility); err != nil {
+			return
+		}
+	}
+
+	if p.AvatarId != nil {
+		if cmd.AvatarId, err = primitive.NewAvatarId(*p.AvatarId); err != nil {
 			return
 		}
 	}
@@ -225,8 +237,8 @@ func (req *restfulReqToListSpaces) toCmd() (app.CmdToListSpaces, error) {
 
 // spaceDetail
 type spaceDetail struct {
-	Liked    bool   `json:"liked"`
-	AvatarId string `json:"avatar_id"`
+	Liked         bool   `json:"liked"`
+	OwnerAvatarId string `json:"avatar_id"`
 
 	*app.SpaceDTO
 }

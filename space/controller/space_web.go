@@ -103,7 +103,7 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		detail.AvatarId = avatar.AvatarId
+		detail.OwnerAvatarId = avatar.AvatarId
 
 		commonctl.SendRespOfGet(ctx, &detail)
 	}

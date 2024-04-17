@@ -7,6 +7,7 @@ package e2e
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -169,6 +170,50 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 	assert.Equal(s.T(), countOne, count)
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestCreateSpace
+// 创建space 成功，并成功能查询到各种参数
+func (s *SuiteUserSpace) TestCreateSpace() {
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		License:    "mit",
+		Name:       "testspace",
+		Owner:      "test1",
+		Sdk:        "gradio",
+		Visibility: "public",
+		AvatarId:   "https://gitee.com/1",
+	})
+
+	id := getString(s.T(), data.Data)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	space := getData(s.T(), data.Data)
+
+	assert.Equal(s.T(), "space desc", space["desc"])
+	assert.Equal(s.T(), "spacefullname", space["fullname"])
+	assert.Equal(s.T(), strings.ToLower("CPU basic 2 vCPU · 16GB · FREE"), space["hardware"])
+	assert.Equal(s.T(),
+		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{}, "license": "mit", "others": []interface{}{}, "task": ""}),
+		space["labels"])
+	assert.Equal(s.T(), "testspace", space["name"])
+	assert.Equal(s.T(), "test1", space["owner"])
+	assert.Equal(s.T(), "gradio", space["sdk"])
+	assert.Equal(s.T(), "public", space["visibility"])
+	assert.Equal(s.T(), "https://gitee.com/1", space["space_avatar_id"])
+	assert.Equal(s.T(), "", space["avatar_id"])
+
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
+
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

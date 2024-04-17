@@ -17,6 +17,7 @@ type SpaceSummary struct {
 	Desc          string `json:"desc"`
 	Task          string `json:"task"`
 	Owner         string `json:"owner"`
+	AvatarId      string `json:"space_avatar_id"`
 	Fullname      string `json:"fullname"`
 	UpdatedAt     int64  `json:"updated_at"`
 	LikeCount     int    `json:"like_count"`

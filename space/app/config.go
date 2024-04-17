@@ -5,18 +5,32 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package app provides functionality for the application.
 package app
 
+import (
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
+)
+
 var config Config
 
 // Init initializes the application with the provided configuration.
 func Init(cfg *Config) {
+	if len(cfg.AvatarIds) > 0 {
+		cfg.avatarIdsSet = sets.New[string]()
+		cfg.avatarIdsSet.Insert(cfg.AvatarIds...)
+	} else {
+		logrus.Fatal("avatar ids is empty")
+	}
+
 	config = *cfg
 }
 
 // Config is a struct that holds the configuration for max count per owner.
 type Config struct {
-	MaxCountPerOwner      int `json:"max_count_per_owner"`
-	MaxCountSpaceVariable int `json:"max_count_space_variable"`
-	MaxCountSpaceSecret   int `json:"max_count_space_secret"`
+	AvatarIds             []string `json:"avatar_ids" required:"true"`
+	MaxCountPerOwner      int      `json:"max_count_per_owner"`
+	MaxCountSpaceSecret   int      `json:"max_count_space_secret"`
+	MaxCountSpaceVariable int      `json:"max_count_space_variable"`
+	avatarIdsSet          sets.Set[string]
 }
 
 // SetDefault sets the default values for the Config struct.

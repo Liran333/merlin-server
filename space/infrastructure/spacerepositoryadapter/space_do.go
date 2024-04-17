@@ -39,22 +39,23 @@ var (
 
 func toSpaceDO(m *domain.Space) spaceDO {
 	return spaceDO{
-		Id:         m.Id.Integer(),
-		SDK:        m.SDK.SDK(),
-		Desc:       m.Desc.MSDDesc(),
-		Name:       m.Name.MSDName(),
-		Owner:      m.Owner.Account(),
-		License:    m.License.License(),
-		Hardware:   m.Hardware.Hardware(),
-		Fullname:   m.Fullname.MSDFullname(),
-		CreatedBy:  m.CreatedBy.Account(),
-		Visibility: m.Visibility.Visibility(),
-		CreatedAt:  m.CreatedAt,
-		UpdatedAt:  m.UpdatedAt,
-		LikeCount:  m.LikeCount,
-		Version:    m.Version,
-		LocalCmd:   m.LocalCmd,
-		LocalEnvInfo:   m.LocalEnvInfo,
+		Id:           m.Id.Integer(),
+		SDK:          m.SDK.SDK(),
+		Desc:         m.Desc.MSDDesc(),
+		Name:         m.Name.MSDName(),
+		Owner:        m.Owner.Account(),
+		License:      m.License.License(),
+		AvatarId:     m.AvatarId.AvatarId(),
+		Hardware:     m.Hardware.Hardware(),
+		Fullname:     m.Fullname.MSDFullname(),
+		CreatedBy:    m.CreatedBy.Account(),
+		Visibility:   m.Visibility.Visibility(),
+		CreatedAt:    m.CreatedAt,
+		UpdatedAt:    m.UpdatedAt,
+		LikeCount:    m.LikeCount,
+		Version:      m.Version,
+		LocalCmd:     m.LocalCmd,
+		LocalEnvInfo: m.LocalEnvInfo,
 	}
 }
 
@@ -75,6 +76,7 @@ type spaceDO struct {
 	License       string `gorm:"column:license"`
 	Hardware      string `gorm:"column:hardware"`
 	Fullname      string `gorm:"column:fullname"`
+	AvatarId      string `gorm:"column:avatar_id"`
 	CreatedBy     string `gorm:"column:created_by"`
 	Visibility    string `gorm:"column:visibility"`
 	CreatedAt     int64  `gorm:"column:created_at"`
@@ -109,16 +111,17 @@ func (do *spaceDO) toSpace() domain.Space {
 			Visibility: primitive.CreateVisibility(do.Visibility),
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 		},
-		SDK:       spaceprimitive.CreateSDK(do.SDK),
-		Desc:      primitive.CreateMSDDesc(do.Desc),
-		Fullname:  primitive.CreateMSDFullname(do.Fullname),
-		Hardware:  spaceprimitive.CreateHardware(do.Hardware),
-		CreatedAt: do.CreatedAt,
-		UpdatedAt: do.UpdatedAt,
-		Version:   do.Version,
-		LocalCmd:  do.LocalCmd,
-		LikeCount: do.LikeCount,
-		LocalEnvInfo:  do.LocalEnvInfo,
+		SDK:          spaceprimitive.CreateSDK(do.SDK),
+		Desc:         primitive.CreateMSDDesc(do.Desc),
+		Fullname:     primitive.CreateMSDFullname(do.Fullname),
+		Hardware:     spaceprimitive.CreateHardware(do.Hardware),
+		AvatarId:     primitive.CreateAvatarId(do.AvatarId),
+		CreatedAt:    do.CreatedAt,
+		UpdatedAt:    do.UpdatedAt,
+		Version:      do.Version,
+		LocalCmd:     do.LocalCmd,
+		LikeCount:    do.LikeCount,
+		LocalEnvInfo: do.LocalEnvInfo,
 		Labels: domain.SpaceLabels{
 			Task:       do.Task,
 			Others:     sets.New[string](do.Others...),
@@ -135,6 +138,7 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		Task:          do.Task,
 		Owner:         do.Owner,
 		Fullname:      do.Fullname,
+		AvatarId:      do.AvatarId,
 		UpdatedAt:     do.UpdatedAt,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,

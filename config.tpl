@@ -33,7 +33,7 @@ session:
   controller:
     csrf_token_cookie_expiry: {{(ds "data").CSRF_TOKEN_COOKIE_EXPIRY }}
     session_domain: ".fatedomain.com"
-    
+
 gitea:
   url: {{(ds "secret").data.GITEA_BASE_URL }}
   token: {{(ds "secret").data.GITEA_ROOT_TOKEN }}
@@ -60,7 +60,11 @@ space:
     space_updated: space_updated
     space_deleted: space_deleted
     space_env_changed: space_env_changed
-
+  app:
+    avatar_ids:
+    {{- range (ds "common").SPACE_AVATAR_IDS}}
+      - "{{ . }}"
+    {{- end }}
 permission:
   permissions:
     - object_type: member

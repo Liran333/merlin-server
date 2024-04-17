@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"math/rand"
+
 	sdk "github.com/openmerlin/merlin-sdk/space"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
@@ -23,6 +25,21 @@ type CmdToCreateSpace struct {
 	Desc     primitive.MSDDesc
 	Fullname primitive.MSDFullname
 	Hardware spaceprimitive.Hardware
+	AvatarId primitive.AvatarId
+}
+
+func (cmd *CmdToCreateSpace) toSpace() domain.Space {
+	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() == "" {
+		cmd.AvatarId = primitive.CreateAvatarId(config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))]) // #nosec G404
+	}
+
+	return domain.Space{
+		SDK:      cmd.SDK,
+		Desc:     cmd.Desc,
+		Hardware: cmd.Hardware,
+		Fullname: cmd.Fullname,
+		AvatarId: cmd.AvatarId,
+	}
 }
 
 // CmdToUpdateSpace is a struct used to update a space.
@@ -33,6 +50,7 @@ type CmdToUpdateSpace struct {
 	Desc     primitive.MSDDesc
 	Fullname primitive.MSDFullname
 	Hardware spaceprimitive.Hardware
+	AvatarId primitive.AvatarId
 }
 
 func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
@@ -56,6 +74,11 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 		b = true
 	}
 
+	if v := cmd.AvatarId; v != nil && v != space.AvatarId {
+		space.AvatarId = v
+		b = true
+	}
+
 	if b {
 		space.UpdatedAt = utils.Now()
 	}
@@ -72,6 +95,7 @@ type SpaceDTO struct {
 	Owner         string         `json:"owner"`
 	Labels        SpaceLabelsDTO `json:"labels"`
 	Fullname      string         `json:"fullname"`
+	AvatarId      string         `json:"space_avatar_id"`
 	Hardware      string         `json:"hardware"`
 	CreatedAt     int64          `json:"created_at"`
 	UpdatedAt     int64          `json:"updated_at"`
@@ -112,6 +136,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		CreatedAt:     space.CreatedAt,
 		UpdatedAt:     space.UpdatedAt,
 		LikeCount:     space.LikeCount,
+		AvatarId:      space.AvatarId.AvatarId(),
 		Visibility:    space.Visibility.Visibility(),
 		DownloadCount: space.DownloadCount,
 		LocalCMD:      space.LocalCmd,

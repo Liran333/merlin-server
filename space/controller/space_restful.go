@@ -86,9 +86,11 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 		SpaceDTO: &dto,
 	}
 
-	if err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
+		detail.OwnerAvatarId = avatar.AvatarId
+
 		commonctl.SendRespOfGet(ctx, &detail)
 	}
 }
