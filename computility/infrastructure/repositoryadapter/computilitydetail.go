@@ -30,7 +30,7 @@ func (adapter *computilityDetailAdapter) Delete(id primitive.Identity) error {
 	)
 }
 
-// FindByIndex find a computility detail record by index and returns an error if any occurs.
+// FindByIndex finds a computility detail record by index and returns an error if any occurs.
 func (adapter *computilityDetailAdapter) FindByIndex(d *domain.ComputilityIndex) (domain.ComputilityDetail, error) {
 	do := computilityDetailDO{UserName: d.UserName.Account(), OrgName: d.OrgName.Account()}
 
@@ -44,6 +44,7 @@ func (adapter *computilityDetailAdapter) FindByIndex(d *domain.ComputilityIndex)
 	return result.toComputilityDetail(), nil
 }
 
+// GetMembers gets all computility detail records related to org by org_name and returns an error if any occurs.
 func (adapter *computilityDetailAdapter) GetMembers(orgName primitive.Account) (
 	[]domain.ComputilityDetail, error,
 ) {

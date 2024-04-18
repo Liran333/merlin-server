@@ -55,6 +55,7 @@ func (adapter *computilityAccountAdapter) FindByAccountIndex(index domain.Comput
 	return result.toComputilityAccount(), nil
 }
 
+// CheckAccountExist returns if accout exists in the database and returns an error if any occurs.
 func (adapter *computilityAccountAdapter) CheckAccountExist(userName primitive.Account) (
 	bool, error,
 ) {
@@ -80,12 +81,12 @@ func (adapter *computilityAccountAdapter) ConsumeQuota(account domain.Computilit
 
 	err := adapter.updateUsedQuota(do, account.Version)
 	if err != nil {
-		logrus.Errorf("increase %v used quota of user: %s failed", quota, account.UserName.Account())
+		logrus.Errorf("computility db | increase %v used quota of user: %s failed", quota, account.UserName.Account())
 
 		return err
 	}
 
-	logrus.Infof("increase %v used quota of user:  %s success", quota, account.UserName.Account())
+	logrus.Infof("computility db | increase %v used quota of user: %s success", quota, account.UserName.Account())
 
 	return nil
 }
@@ -99,12 +100,12 @@ func (adapter *computilityAccountAdapter) ReleaseQuota(account domain.Computilit
 
 	err := adapter.updateUsedQuota(do, account.Version)
 	if err != nil {
-		logrus.Errorf("decrease %v used quota of user: %s failed", quota, account.UserName.Account())
+		logrus.Errorf("computility db | decrease %v used quota of user: %s failed", quota, account.UserName.Account())
 
 		return err
 	}
 
-	logrus.Infof("decrease %v used quota of user: %s success", quota, account.UserName.Account())
+	logrus.Infof("computility db | decrease %v used quota of user: %s success", quota, account.UserName.Account())
 
 	return nil
 }
@@ -120,12 +121,12 @@ func (adapter *computilityAccountAdapter) DecreaseAccountAssignedQuota(
 
 	err := adapter.updateQuotaCount(do, account.Version)
 	if err != nil {
-		logrus.Errorf("recall %v initial quota from user: %s failed", quota, account.UserName.Account())
+		logrus.Errorf("computility db | decrease %v quota of user: %s failed", quota, account.UserName.Account())
 
 		return err
 	}
 
-	logrus.Infof("recall %v initial quota from user: %s success", quota, account.UserName.Account())
+	logrus.Infof("computility db | decrease %v quota of user: %s success", quota, account.UserName.Account())
 
 	return nil
 }
@@ -139,16 +140,14 @@ func (adapter *computilityAccountAdapter) IncreaseAccountAssignedQuota(
 	do.Version += 1
 	do.QuotaCount = do.QuotaCount + quota
 
-	logrus.Infof("assign initial quota to user: %s", account.UserName.Account())
-
 	err := adapter.updateQuotaCount(do, account.Version)
 	if err != nil {
-		logrus.Errorf("assign %v initial quota to user: %s failed", quota, account.UserName.Account())
+		logrus.Errorf("computility db | increase %v quota of user: %s failed", quota, account.UserName.Account())
 
 		return err
 	}
 
-	logrus.Infof("assign %v initial quota to user: %s success", quota, account.UserName.Account())
+	logrus.Infof("computility db | increase %v quota of user: %s success", quota, account.UserName.Account())
 
 	return nil
 }

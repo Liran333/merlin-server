@@ -46,6 +46,7 @@ func (s *computilityAppService) UserQuotaRelease(cmd CmdToUserQuotaUpdate) error
 		UserName:    user,
 		ComputeType: cmd.ComputeType,
 	}
+
 	account, err := s.accountAdapter.FindByAccountIndex(accountIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {

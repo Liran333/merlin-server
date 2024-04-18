@@ -37,10 +37,11 @@ func (adapter *computilityOrgAdapter) Delete(id primitive.Identity) error {
 	)
 }
 
+// OrgAssignQuota increases used_quota field in computility org in the database and returns an error if any occurs.
 func (adapter *computilityOrgAdapter) OrgAssignQuota(
-	detail domain.ComputilityOrg, quota int,
+	org domain.ComputilityOrg, quota int,
 ) error {
-	do := toComputilityOrgDO(&detail)
+	do := toComputilityOrgDO(&org)
 
 	do.Version += 1
 	do.UsedQuota = do.UsedQuota + quota
@@ -48,7 +49,7 @@ func (adapter *computilityOrgAdapter) OrgAssignQuota(
 	result := adapter.db().Model(
 		&computilityOrgDO{OrgName: do.OrgName},
 	).Where(
-		equalQuery(filedVersion), detail.Version,
+		equalQuery(filedVersion), org.Version,
 	).Select(`*`).Omit(fieldQuotaCount).Updates(&do)
 
 	if result.Error != nil {
@@ -62,10 +63,11 @@ func (adapter *computilityOrgAdapter) OrgAssignQuota(
 	return nil
 }
 
+// OrgRecallQuota decreases used_quota field in computility org in the database and returns an error if any occurs.
 func (adapter *computilityOrgAdapter) OrgRecallQuota(
-	detail domain.ComputilityOrg, quota int,
+	org domain.ComputilityOrg, quota int,
 ) error {
-	do := toComputilityOrgDO(&detail)
+	do := toComputilityOrgDO(&org)
 
 	do.Version += 1
 	do.UsedQuota = do.UsedQuota - quota
@@ -73,7 +75,7 @@ func (adapter *computilityOrgAdapter) OrgRecallQuota(
 	result := adapter.db().Model(
 		&computilityOrgDO{OrgName: do.OrgName},
 	).Where(
-		equalQuery(filedVersion), detail.Version,
+		equalQuery(filedVersion), org.Version,
 	).Select(`*`).Omit(fieldQuotaCount).Updates(&do)
 
 	if result.Error != nil {
@@ -87,6 +89,7 @@ func (adapter *computilityOrgAdapter) OrgRecallQuota(
 	return nil
 }
 
+// CheckOrgExist returns if org exists in the database and returns an error if any occurs.
 func (adapter *computilityOrgAdapter) CheckOrgExist(name primitive.Account) (bool, error) {
 	do := computilityOrgDO{OrgName: name.Account()}
 

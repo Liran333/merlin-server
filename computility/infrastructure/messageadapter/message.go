@@ -36,5 +36,6 @@ func send(topic string, v message.EventMessage) error {
 	if err != nil {
 		err = fmt.Errorf("send publish topic:%s err:%w", topic, err)
 	}
+
 	return err
 }

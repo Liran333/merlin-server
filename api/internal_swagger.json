@@ -158,6 +158,114 @@
                 }
             }
         },
+        "/v1/computility/account": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "user joined computility org",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ComputilityInternal"
+                ],
+                "summary": "ComputilityUserJoin",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUserOrgOperate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/computility/account/remove": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "user removed from computility org",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ComputilityInternal"
+                ],
+                "summary": "ComputilityUserRemove",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUserOrgOperate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/computility/org/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "delete computility org",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ComputilityInternal"
+                ],
+                "summary": "ComputilityOrgDelete",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToOrgDelete"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{id}": {
             "get": {
                 "security": [
@@ -825,6 +933,14 @@
                 }
             }
         },
+        "controller.reqToOrgDelete": {
+            "type": "object",
+            "properties": {
+                "org_name": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToResetLabel": {
             "type": "object",
             "properties": {
@@ -906,6 +1022,17 @@
                     "type": "string"
                 },
                 "space_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUserOrgOperate": {
+            "type": "object",
+            "properties": {
+                "org_name": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }

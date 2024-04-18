@@ -9,9 +9,8 @@ import "encoding/json"
 
 // userJoinEvent
 type userJoinEvent struct {
-	OrgName   string `json:"org_name"`
-	UserName  string `json:"user_name"`
-	CreatedAt int64  `json:"created_at"`
+	OrgName  string `json:"org_name"`
+	UserName string `json:"user_name"`
 }
 
 // Message returns the JSON representation of the userJoinEvent.
@@ -22,9 +21,8 @@ func (e *userJoinEvent) Message() ([]byte, error) {
 // NewUserJoinEvent creates a new userJoinEvent instance with the given Organization.
 func NewUserJoinEvent(a *Approve) userJoinEvent {
 	return userJoinEvent{
-		OrgName:   a.OrgName.Account(),
-		UserName:  a.Username.Account(),
-		CreatedAt: a.CreatedAt,
+		OrgName:  a.OrgName.Account(),
+		UserName: a.Username.Account(),
 	}
 }
 

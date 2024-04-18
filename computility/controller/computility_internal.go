@@ -22,9 +22,9 @@ func AddRouterForComputilityInternalController(
 		appService: s,
 	}
 
-	r.POST("/v1/computility/account", ctl.ComputilityUserJoin)
-	r.PUT("/v1/computility/account/remove", ctl.ComputilityUserRemove)
-	r.DELETE("/v1/computility/org/delete", ctl.ComputilityOrgDelete)
+	r.POST("/v1/computility/account", m.Write, ctl.ComputilityUserJoin)
+	r.PUT("/v1/computility/account/remove", m.Write, ctl.ComputilityUserRemove)
+	r.DELETE("/v1/computility/org/delete", m.Write, ctl.ComputilityOrgDelete)
 
 }
 
@@ -35,7 +35,7 @@ type ComputilityInternalController struct {
 
 // @Summary  ComputilityUserJoin
 // @Description  user joined computility org
-// @Tags     Computility
+// @Tags     ComputilityInternal
 // @Param    body  body  reqToUserOrgOperate  true  "body"
 // @Accept   json
 // @Security Internal
@@ -67,7 +67,7 @@ func (ctl *ComputilityInternalController) ComputilityUserJoin(ctx *gin.Context) 
 
 // @Summary  ComputilityUserRemove
 // @Description  user removed from computility org
-// @Tags     Computility
+// @Tags     ComputilityInternal
 // @Param    body  body  reqToUserOrgOperate  true  "body"
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData
@@ -99,7 +99,7 @@ func (ctl *ComputilityInternalController) ComputilityUserRemove(ctx *gin.Context
 
 // @Summary  ComputilityOrgDelete
 // @Description  delete computility org
-// @Tags     Computility
+// @Tags     ComputilityInternal
 // @Param    body  body  reqToOrgDelete  true  "body"
 // @Accept   json
 // @Success  204   {object}  commonctl.ResponseData

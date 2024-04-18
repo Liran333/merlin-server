@@ -186,21 +186,21 @@ func (s *computilityInternalAppService) userRemoveOperate(index *domain.Computil
 	balance := account.QuotaCount - account.UsedQuota
 
 	if assigned > balance {
+		debt := assigned - balance
+
 		infoList := domain.RecallInfoList{}
 		infoList.InfoList = append(infoList.InfoList, domain.RecallInfo{
 			UserName:    index.UserName,
-			QuotaCount:  assigned - balance,
+			QuotaCount:  debt,
 			ComputeType: detail.ComputeType,
 		})
-
-		logrus.Infof("user:%s quota recall, balance:%v, quota need to return:%v", index.UserName.Account(), balance, assigned)
 
 		e := domain.NewcomputeRecallEvent(&infoList)
 		err = s.messageAdapter.SendComputilityRecallEvent(&e)
 		if err != nil {
-			logrus.Errorf("publish topic computility_recalled failed, user:%s, quota:%v", index.UserName.Account(), assigned-balance)
+			logrus.Errorf("publish topic computility_recalled failed, user:%s, quota:%v", index.UserName.Account(), debt)
 		} else {
-			logrus.Infof("publish topic computility_recalled success, user:%s, quota:%v", index.UserName.Account(), assigned-balance)
+			logrus.Infof("publish topic computility_recalled success, user:%s, quota:%v", index.UserName.Account(), debt)
 		}
 	}
 

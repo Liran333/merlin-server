@@ -50,6 +50,11 @@ definitions:
       space_id:
         type: string
     type: object
+  controller.reqToOrgDelete:
+    properties:
+      org_name:
+        type: string
+    type: object
   controller.reqToResetLabel:
     properties:
       frameworks:
@@ -103,6 +108,13 @@ definitions:
       log_url:
         type: string
       space_id:
+        type: string
+    type: object
+  controller.reqToUserOrgOperate:
+    properties:
+      org_name:
+        type: string
+      user_name:
         type: string
     type: object
   controller.tokenVerifyRequest:
@@ -230,6 +242,72 @@ paths:
       summary: Update
       tags:
       - Permission
+  /v1/computility/account:
+    post:
+      consumes:
+      - application/json
+      description: user joined computility org
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUserOrgOperate'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: ComputilityUserJoin
+      tags:
+      - ComputilityInternal
+  /v1/computility/account/remove:
+    put:
+      consumes:
+      - application/json
+      description: user removed from computility org
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUserOrgOperate'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: ComputilityUserRemove
+      tags:
+      - ComputilityInternal
+  /v1/computility/org/delete:
+    delete:
+      consumes:
+      - application/json
+      description: delete computility org
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToOrgDelete'
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: ComputilityOrgDelete
+      tags:
+      - ComputilityInternal
   /v1/model/{id}:
     get:
       consumes:
