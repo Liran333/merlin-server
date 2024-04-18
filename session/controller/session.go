@@ -129,8 +129,14 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 
 func setCookieOfCSRFToken(ctx *gin.Context, value, domain string, expiry *time.Time) {
 	commonctl.SetCookie(ctx, cookieCSRFToken, value, domain, false, expiry, http.SameSiteStrictMode)
+	if config.LocalDomainCookie {
+		commonctl.SetCookie(ctx, cookieCSRFToken, value, "", false, expiry, http.SameSiteLaxMode)
+	}
 }
 
 func setCookieOfSessionId(ctx *gin.Context, value, domain string, expiry *time.Time) {
 	commonctl.SetCookie(ctx, cookieSessionId, value, domain, true, expiry, http.SameSiteLaxMode)
+	if config.LocalDomainCookie {
+		commonctl.SetCookie(ctx, cookieSessionId, value, "", true, expiry, http.SameSiteLaxMode)
+	}
 }
