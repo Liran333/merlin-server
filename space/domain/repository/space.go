@@ -7,6 +7,7 @@ package repository
 
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 )
 
@@ -67,7 +68,7 @@ type SpaceRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Space, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Space) error
-	List(*ListOption) ([]SpaceSummary, int, error)
+	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
 	Count(*ListOption) (int, error)
 	SearchSpace(*ListOption, primitive.Account) ([]SpaceSummary, int, error)
 	AddLike(primitive.Identity) error

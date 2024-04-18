@@ -13,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
@@ -42,6 +43,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		spacerepositoryadapter.SpaceAdapter(),
 		services.npuGatekeeper,
+		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(

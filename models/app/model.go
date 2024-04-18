@@ -18,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/message"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -38,12 +39,14 @@ func NewModelAppService(
 	msgAdapter message.ModelMessage,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
+	member orgrepo.OrgMember,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
 		msgAdapter:  msgAdapter,
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
+		member:      member,
 	}
 }
 
@@ -52,6 +55,7 @@ type modelAppService struct {
 	msgAdapter  message.ModelMessage
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter
+	member      orgrepo.OrgMember
 }
 
 // Create creates a new model.
@@ -233,7 +237,7 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 		}
 	}
 
-	v, total, err := s.repoAdapter.List(cmd)
+	v, total, err := s.repoAdapter.List(cmd, user, s.member)
 
 	return ModelsDTO{
 		Total:  total,

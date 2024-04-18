@@ -15,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
@@ -83,6 +84,7 @@ func NewSpaceAppService(
 	secureStorageAdapter securestorage.SpaceSecureManager,
 	repoAdapter repository.SpaceRepositoryAdapter,
 	npuGatekeeper orgapp.PrivilegeOrg,
+	member orgrepo.OrgMember,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -94,6 +96,7 @@ func NewSpaceAppService(
 		secureStorageAdapter: secureStorageAdapter,
 		repoAdapter:          repoAdapter,
 		npuGatekeeper:        npuGatekeeper,
+		member:               member,
 	}
 }
 
@@ -107,6 +110,7 @@ type spaceAppService struct {
 	secureStorageAdapter securestorage.SpaceSecureManager
 	repoAdapter          repository.SpaceRepositoryAdapter
 	npuGatekeeper        orgapp.PrivilegeOrg
+	member               orgrepo.OrgMember
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -349,7 +353,7 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 		}
 	}
 
-	v, total, err := s.repoAdapter.List(cmd)
+	v, total, err := s.repoAdapter.List(cmd, user, s.member)
 
 	return SpacesDTO{
 		Total:  total,

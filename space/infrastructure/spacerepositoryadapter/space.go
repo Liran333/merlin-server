@@ -13,6 +13,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 )
@@ -91,8 +92,25 @@ func (adapter *spaceAdapter) Save(space *domain.Space) error {
 
 // List is a method of spaceAdapter that takes a ListOption pointer as input
 // and returns a slice of SpaceSummary, total count, and an error if any occurs.
-func (adapter *spaceAdapter) List(opt *repository.ListOption) ([]repository.SpaceSummary, int, error) {
+func (adapter *spaceAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) ([]repository.SpaceSummary, int, error) {
 	query := adapter.toQuery(opt)
+
+	if opt.Visibility != nil {
+		if login != nil {
+			members, err := member.GetByUser(login.Account())
+			if err != nil {
+				return nil, 0, err
+			}
+			orgNames := make([]string, len(members))
+			for _, member := range members {
+				orgNames = append(orgNames, member.OrgName.Account())
+			}
+			sql := fmt.Sprintf(`%s = ? or %s = ? or %s in (?)`, fieldVisibility, fieldOwner, fieldOwner)
+			query = query.Where(sql, opt.Visibility, login, orgNames)
+		} else {
+			query = query.Where(equalQuery(fieldVisibility), opt.Visibility.Visibility())
+		}
+	}
 
 	// total
 	var total int64
@@ -156,10 +174,6 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 
 	if opt.Owner != nil {
 		db = db.Where(equalQuery(fieldOwner), opt.Owner.Account())
-	}
-
-	if opt.Visibility != nil {
-		db = db.Where(equalQuery(fieldVisibility), opt.Visibility.Visibility())
 	}
 
 	if opt.License != nil {

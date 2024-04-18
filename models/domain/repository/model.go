@@ -69,7 +69,7 @@ type ModelRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Model, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
-	List(*ListOption) ([]ModelSummary, int, error)
+	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
 	SearchModel(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	AddLike(primitive.Identity) error

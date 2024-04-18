@@ -14,6 +14,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/controller"
 	"github.com/openmerlin/merlin-server/models/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 )
 
 func initModel(cfg *config.Config, services *allServices) error {
@@ -27,6 +28,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 		messageadapter.MessageAdapter(&cfg.Model.Topics),
 		services.codeRepoApp,
 		modelrepositoryadapter.ModelAdapter(),
+		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
 	)
 
 	return nil
