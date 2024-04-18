@@ -142,7 +142,7 @@ func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error)
 }
 
 func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
-	_, err := s.sessionRepo.Find(sessionId)
+	session, err := s.sessionRepo.Find(sessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -154,11 +154,12 @@ func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
 	err = s.sessionRepo.Delete(sessionId)
 
 	r := commondomain.OperationLogRecord{
-		Time:    utils.Time(),
-		User:    primitive.CreateAccount("service"),
-		IP:      "local",
-		Method:  "Auto",
-		Action:  fmt.Sprintf("clear expired session automatically by id: %s", sessionId.RandomId()),
+		Time:   utils.Time(),
+		User:   primitive.CreateAccount("service"),
+		IP:     "local",
+		Method: "Auto",
+		Action: fmt.Sprintf("clear expired session which created at %s automatically by id: %s",
+			utils.ToDate(session.CreatedAt), sessionId.RandomId()),
 		Success: err == nil,
 	}
 
