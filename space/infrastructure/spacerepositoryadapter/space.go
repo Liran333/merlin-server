@@ -41,7 +41,7 @@ func (adapter *spaceAdapter) Add(space *domain.Space) error {
 func (adapter *spaceAdapter) FindByName(index *domain.SpaceIndex) (domain.Space, error) {
 	do := spaceDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
-	if err := adapter.GetRecord(&do, &do); err != nil {
+	if err := adapter.GetLowerSpaceName(&do, &do); err != nil {
 		return domain.Space{}, err
 	}
 

@@ -42,7 +42,7 @@ func (adapter *modelAdapter) Add(model *domain.Model) error {
 func (adapter *modelAdapter) FindByName(index *domain.ModelIndex) (domain.Model, error) {
 	do := modelDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
-	if err := adapter.GetRecord(&do, &do); err != nil {
+	if err := adapter.GetLowerModelName(&do, &do); err != nil {
 		return domain.Model{}, err
 	}
 

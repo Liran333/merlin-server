@@ -7,6 +7,7 @@ package spacerepositoryadapter
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/lib/pq"
 	"gorm.io/gorm"
@@ -34,6 +35,18 @@ func (dao *daoImpl) db() *gorm.DB {
 // and stores it in the result parameter.
 func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 	err := dao.db().Where(filter).First(result).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return repository.NewErrorResourceNotExists(errors.New("not found"))
+	}
+
+	return err
+}
+
+// GetLowerSpaceName retrieves a single lower space name from the database based on the provided filter
+// and stores it in the result parameter.
+func (dao *daoImpl) GetLowerSpaceName(filter *spaceDO, result interface{}) error {
+	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?", strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(errors.New("not found"))
