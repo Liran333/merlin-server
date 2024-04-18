@@ -98,6 +98,11 @@ type privilegeOrg struct {
 
 // Contains returns an error if the account is not in the privilege org.
 func (p *privilegeOrg) Contains(account primitive.Account) error {
+	if account == nil {
+		e := fmt.Errorf("account is nil, cannot check privilege org")
+		return allerror.NewInvalidParam(e.Error(), e)
+	}
+
 	for _, cfg := range p.cfgs {
 		if err := cfg.contains(account, p.org); err == nil {
 			return nil
