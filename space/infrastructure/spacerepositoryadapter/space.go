@@ -199,7 +199,7 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	return db
 }
 
-func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primitive.Account) (
+func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
 	[]repository.SpaceSummary, int, error) {
 	db := adapter.db()
 
@@ -208,8 +208,16 @@ func (adapter *spaceAdapter) SearchSpace(opt *repository.ListOption, login primi
 	db = db.Where(queryName, argName)
 
 	if login != nil {
-		sql := fmt.Sprintf(`%s = ? or %s = ?`, fieldVisibility, fieldOwner)
-		db = db.Where(sql, primitive.VisibilityPublic, login)
+		members, err := member.GetByUser(login.Account())
+		if err != nil {
+			return nil, 0, err
+		}
+		orgNames := make([]string, len(members))
+		for _, member := range members {
+			orgNames = append(orgNames, member.OrgName.Account())
+		}
+		sql := fmt.Sprintf(`%s = ? or %s = ? or %s in (?)`, fieldVisibility, fieldOwner, fieldOwner)
+		db = db.Where(sql, primitive.VisibilityPublic, login, orgNames)
 	} else {
 		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
 	}

@@ -121,7 +121,7 @@ func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account dom
 	domain.SearchResultSpace, error) {
 	var result domain.SearchResultSpace
 
-	v, count, err := adapter.space.SearchSpace(cmd, account)
+	v, count, err := adapter.space.SearchSpace(cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}
