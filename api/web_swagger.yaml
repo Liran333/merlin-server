@@ -1,4 +1,15 @@
 definitions:
+  app.ActivityDTO:
+    properties:
+      activity:
+        items:
+          $ref: '#/definitions/domain.Activity'
+        type: array
+      avatar_id:
+        type: string
+      total:
+        type: integer
+    type: object
   app.ModelLabelsDTO:
     properties:
       frameworks:
@@ -13,11 +24,6 @@ definitions:
         type: array
       task:
         type: string
-    type: object
-  app.SearchDTO:
-    properties:
-      result_set:
-        $ref: '#/definitions/domain.SearchResult'
     type: object
   app.SpaceAppDTO:
     properties:
@@ -457,6 +463,8 @@ definitions:
     properties:
       access_token:
         type: string
+      client_id:
+        type: string
       expires_in:
         type: integer
     type: object
@@ -497,88 +505,36 @@ definitions:
       total:
         type: integer
     type: object
-  domain.ModelResult:
+  domain.Activity:
     properties:
-      name:
-        type: string
-      owner:
-        type: string
-      path:
-        type: string
-    type: object
-  domain.OrgResult:
-    properties:
-      account:
-        type: string
-      full_name:
-        type: string
-      id:
-        type: string
-    type: object
-  domain.SearchResult:
-    properties:
-      model_result:
-        $ref: '#/definitions/domain.SearchResultModel'
-      org_result:
-        $ref: '#/definitions/domain.SearchResultOrg'
-      space_result:
-        $ref: '#/definitions/domain.SearchResultSpace'
-      user_result:
-        $ref: '#/definitions/domain.SearchResultUser'
-    type: object
-  domain.SearchResultModel:
-    properties:
-      count:
+      name: {}
+      owner: {}
+      resource:
+        $ref: '#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource'
+      time:
         type: integer
-      result:
-        items:
-          $ref: '#/definitions/domain.ModelResult'
-        type: array
+      type:
+        $ref: '#/definitions/domain.ActivityType'
     type: object
-  domain.SearchResultOrg:
+  domain.ActivityType:
+    enum:
+    - create
+    - update
+    - like
+    type: string
+    x-enum-varnames:
+    - Create
+    - Update
+    - Like
+  github_com_openmerlin_merlin-server_activity_domain.Resource:
     properties:
-      count:
-        type: integer
-      result:
-        items:
-          $ref: '#/definitions/domain.OrgResult'
-        type: array
-    type: object
-  domain.SearchResultSpace:
-    properties:
-      count:
-        type: integer
-      result:
-        items:
-          $ref: '#/definitions/domain.SpaceResult'
-        type: array
-    type: object
-  domain.SearchResultUser:
-    properties:
-      count:
-        type: integer
-      result:
-        items:
-          $ref: '#/definitions/domain.UserResult'
-        type: array
-    type: object
-  domain.SpaceResult:
-    properties:
-      name:
-        type: string
-      owner:
-        type: string
-      path:
-        type: string
-    type: object
-  domain.UserResult:
-    properties:
-      account:
-        type: string
-      avatar_id:
-        type: string
-      full_name:
-        type: string
+      index:
+        description: Resource index
+      owner: {}
+      type:
+        allOf:
+        - $ref: '#/definitions/primitive.ObjType'
+        description: Resource type
     type: object
   github_com_openmerlin_merlin-server_session_app.UserDTO:
     properties:
@@ -617,6 +573,26 @@ definitions:
       website:
         type: string
     type: object
+  primitive.ObjType:
+    enum:
+    - user
+    - organization
+    - model
+    - dataset
+    - space
+    - member
+    - invite
+    - codeRepo
+    type: string
+    x-enum-varnames:
+    - ObjTypeUser
+    - ObjTypeOrg
+    - ObjTypeModel
+    - ObjTypeDataset
+    - ObjTypeSpace
+    - ObjTypeMember
+    - ObjTypeInvite
+    - ObjTypeCodeRepo
   repository.ModelSummary:
     properties:
       desc:
@@ -1372,37 +1348,6 @@ paths:
       summary: ApproveRequest
       tags:
       - Organization
-  /v1/search:
-    get:
-      consumes:
-      - application/json
-      description: get model and space and org and user
-      parameters:
-      - description: filter by name
-        in: query
-        name: searchKey
-        required: true
-        type: string
-      - collectionFormat: csv
-        description: type of space/model/org/user
-        in: query
-        items:
-          type: string
-        name: type
-        required: true
-        type: array
-      - description: page data size
-        in: query
-        name: size
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.SearchDTO'
-      summary: List
-      tags:
-      - SearchWeb
   /v1/session:
     post:
       consumes:
@@ -1957,25 +1902,45 @@ paths:
       parameters:
       - description: filter by space
         in: query
+        maxLength: 100
         name: space
         type: string
       - description: filter by model
         in: query
+        maxLength: 100
         name: model
         type: string
       - description: filter by like
         in: query
+        maxLength: 100
         name: like
         type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.ActivityDTO'
+                msg:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       summary: List
       tags:
       - ActivityWeb
@@ -2116,6 +2081,64 @@ paths:
       summary: DeletePlatformToken
       tags:
       - User
+  /web/v1/like:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a like record in the activity table
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
+      summary: Delete
+      tags:
+      - ActivityWeb
+    post:
+      consumes:
+      - application/json
+      description: add a like record in the activity table
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
+      summary: Add
+      tags:
+      - ActivityWeb
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and api Bearer.

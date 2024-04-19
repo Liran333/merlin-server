@@ -1121,52 +1121,6 @@ const docTemplateweb = `{
                 }
             }
         },
-        "/v1/search": {
-            "get": {
-                "description": "get model and space and org and user",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "SearchWeb"
-                ],
-                "summary": "List",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "filter by name",
-                        "name": "searchKey",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "type of space/model/org/user",
-                        "name": "type",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page data size",
-                        "name": "size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.SearchDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/session": {
             "put": {
                 "description": "logout",
@@ -2026,18 +1980,21 @@ const docTemplateweb = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by space",
                         "name": "space",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by model",
                         "name": "model",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by like",
                         "name": "like",
@@ -2048,13 +2005,47 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ActivityDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2283,9 +2274,126 @@ const docTemplateweb = `{
                     }
                 }
             }
+        },
+        "/web/v1/like": {
+            "post": {
+                "description": "add a like record in the activity table",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityWeb"
+                ],
+                "summary": "Add",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a like record in the activity table",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ActivityWeb"
+                ],
+                "summary": "Delete",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "app.ActivityDTO": {
+            "type": "object",
+            "properties": {
+                "activity": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Activity"
+                    }
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "app.ModelLabelsDTO": {
             "type": "object",
             "properties": {
@@ -2306,14 +2414,6 @@ const docTemplateweb = `{
                 },
                 "task": {
                     "type": "string"
-                }
-            }
-        },
-        "app.SearchDTO": {
-            "type": "object",
-            "properties": {
-                "result_set": {
-                    "$ref": "#/definitions/domain.SearchResult"
                 }
             }
         },
@@ -2987,6 +3087,9 @@ const docTemplateweb = `{
                 "access_token": {
                     "type": "string"
                 },
+                "client_id": {
+                    "type": "string"
+                },
                 "expires_in": {
                     "type": "integer"
                 }
@@ -3049,132 +3152,49 @@ const docTemplateweb = `{
                 }
             }
         },
-        "domain.ModelResult": {
+        "domain.Activity": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string"
+                "name": {},
+                "owner": {},
+                "resource": {
+                    "$ref": "#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource"
                 },
-                "owner": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.OrgResult": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.SearchResult": {
-            "type": "object",
-            "properties": {
-                "model_result": {
-                    "$ref": "#/definitions/domain.SearchResultModel"
-                },
-                "org_result": {
-                    "$ref": "#/definitions/domain.SearchResultOrg"
-                },
-                "space_result": {
-                    "$ref": "#/definitions/domain.SearchResultSpace"
-                },
-                "user_result": {
-                    "$ref": "#/definitions/domain.SearchResultUser"
-                }
-            }
-        },
-        "domain.SearchResultModel": {
-            "type": "object",
-            "properties": {
-                "count": {
+                "time": {
                     "type": "integer"
                 },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.ModelResult"
-                    }
+                "type": {
+                    "$ref": "#/definitions/domain.ActivityType"
                 }
             }
         },
-        "domain.SearchResultOrg": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.OrgResult"
-                    }
-                }
-            }
+        "domain.ActivityType": {
+            "type": "string",
+            "enum": [
+                "create",
+                "update",
+                "like"
+            ],
+            "x-enum-varnames": [
+                "Create",
+                "Update",
+                "Like"
+            ]
         },
-        "domain.SearchResultSpace": {
+        "github_com_openmerlin_merlin-server_activity_domain.Resource": {
             "type": "object",
             "properties": {
-                "count": {
-                    "type": "integer"
+                "index": {
+                    "description": "Resource index"
                 },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.SpaceResult"
-                    }
-                }
-            }
-        },
-        "domain.SearchResultUser": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.UserResult"
-                    }
-                }
-            }
-        },
-        "domain.SpaceResult": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.UserResult": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
+                "owner": {},
+                "type": {
+                    "description": "Resource type",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/primitive.ObjType"
+                        }
+                    ]
                 }
             }
         },
@@ -3233,6 +3253,29 @@ const docTemplateweb = `{
                     "type": "string"
                 }
             }
+        },
+        "primitive.ObjType": {
+            "type": "string",
+            "enum": [
+                "user",
+                "organization",
+                "model",
+                "dataset",
+                "space",
+                "member",
+                "invite",
+                "codeRepo"
+            ],
+            "x-enum-varnames": [
+                "ObjTypeUser",
+                "ObjTypeOrg",
+                "ObjTypeModel",
+                "ObjTypeDataset",
+                "ObjTypeSpace",
+                "ObjTypeMember",
+                "ObjTypeInvite",
+                "ObjTypeCodeRepo"
+            ]
         },
         "repository.ModelSummary": {
             "type": "object",

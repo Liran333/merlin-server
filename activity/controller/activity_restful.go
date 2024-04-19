@@ -50,13 +50,13 @@ type ActivityRestfulController struct {
 // @Summary  List
 // @Description  get activities
 // @Tags     ActivityRestful
-// @Param    space query  string  false "filter by space"
-// @Param    model query  string  false "filter by model"
-// @Param    like  query  string  false "filter by like"
+// @Param    space query  string  false "filter by space" MaxLength(100)
+// @Param    model query  string  false "filter by model" MaxLength(100)
+// @Param    like  query  string  false "filter by like" MaxLength(100)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=activitiesInfo,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /v1/user/activity [get]
 func (ctl *ActivityRestfulController) List(ctx *gin.Context) {
 	// Bind query parameters to request struct

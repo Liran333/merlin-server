@@ -59,6 +59,10 @@
                 "summary": "CreateBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "type of space/model",
                         "name": "type",
@@ -66,6 +70,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space/model",
                         "name": "owner",
@@ -73,6 +78,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space/model",
                         "name": "repo",
@@ -93,7 +99,19 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.BranchCreateDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/app.BranchCreateDTO"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -116,6 +134,10 @@
                 "summary": "DeleteBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "repo type",
                         "name": "type",
@@ -123,6 +145,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "repo owner",
                         "name": "owner",
@@ -130,6 +153,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "repo name",
                         "name": "repo",
@@ -137,6 +161,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "branch name",
                         "name": "branch",
@@ -1678,18 +1703,21 @@
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by space",
                         "name": "space",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by model",
                         "name": "model",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by like",
                         "name": "like",
@@ -1700,13 +1728,47 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.activitiesInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2074,6 +2136,39 @@
                 }
             }
         },
+        "controller.activitiesInfo": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.activityInfo"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controller.activityInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "name": {},
+                "owner": {},
+                "resource": {
+                    "$ref": "#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource"
+                },
+                "time": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.ActivityType"
+                }
+            }
+        },
         "controller.bindEmailRequest": {
             "type": "object",
             "required": [
@@ -2345,6 +2440,59 @@
                     "type": "boolean"
                 }
             }
+        },
+        "domain.ActivityType": {
+            "type": "string",
+            "enum": [
+                "create",
+                "update",
+                "like"
+            ],
+            "x-enum-varnames": [
+                "Create",
+                "Update",
+                "Like"
+            ]
+        },
+        "github_com_openmerlin_merlin-server_activity_domain.Resource": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "description": "Resource index"
+                },
+                "owner": {},
+                "type": {
+                    "description": "Resource type",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/primitive.ObjType"
+                        }
+                    ]
+                }
+            }
+        },
+        "primitive.ObjType": {
+            "type": "string",
+            "enum": [
+                "user",
+                "organization",
+                "model",
+                "dataset",
+                "space",
+                "member",
+                "invite",
+                "codeRepo"
+            ],
+            "x-enum-varnames": [
+                "ObjTypeUser",
+                "ObjTypeOrg",
+                "ObjTypeModel",
+                "ObjTypeDataset",
+                "ObjTypeSpace",
+                "ObjTypeMember",
+                "ObjTypeInvite",
+                "ObjTypeCodeRepo"
+            ]
         }
     },
     "securityDefinitions": {

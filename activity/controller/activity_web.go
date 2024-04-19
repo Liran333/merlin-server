@@ -91,12 +91,12 @@ type reqToListUserActivities struct {
 // @Summary  List
 // @Description  get activities
 // @Tags     ActivityWeb
-// @Param    space     query  string  false "filter by space"
-// @Param    model  query  string  false "filter by model"
-// @Param    like  query  string  false "filter by like"
+// @Param    space     query  string  false "filter by space" MaxLength(100)
+// @Param    model  query  string  false "filter by model" MaxLength(100)
+// @Param    like  query  string  false "filter by like" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=app.ActivityDTO,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /v1/user/activity [get]
 func (ctl *ActivityWebController) List(ctx *gin.Context) {
 	// Bind query parameters to request struct
@@ -136,10 +136,10 @@ func (ctl *ActivityWebController) List(ctx *gin.Context) {
 
 // @Summary  Add
 // @Description  add a like record in the activity table
-// @Tags     Activity
+// @Tags     ActivityWeb
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /web/v1/like [post]
 func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 	var req activityapp.ReqToCreateActivity
@@ -190,10 +190,10 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 
 // @Summary  Delete
 // @Description  Delete a like record in the activity table
-// @Tags     Activity
+// @Tags     ActivityWeb
 // @Accept   json
 // @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /web/v1/like [delete]
 func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 	var req activityapp.ReqToDeleteActivity

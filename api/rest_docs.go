@@ -70,6 +70,10 @@ const docTemplaterest = `{
                 "summary": "CreateBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "type of space/model",
                         "name": "type",
@@ -77,6 +81,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space/model",
                         "name": "owner",
@@ -84,6 +89,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space/model",
                         "name": "repo",
@@ -104,7 +110,19 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.BranchCreateDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/app.BranchCreateDTO"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -127,6 +145,10 @@ const docTemplaterest = `{
                 "summary": "DeleteBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "repo type",
                         "name": "type",
@@ -134,6 +156,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "repo owner",
                         "name": "owner",
@@ -141,6 +164,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "repo name",
                         "name": "repo",
@@ -148,6 +172,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "branch name",
                         "name": "branch",
@@ -1689,18 +1714,21 @@ const docTemplaterest = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by space",
                         "name": "space",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by model",
                         "name": "model",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "filter by like",
                         "name": "like",
@@ -1711,13 +1739,47 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.activitiesInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2085,6 +2147,39 @@ const docTemplaterest = `{
                 }
             }
         },
+        "controller.activitiesInfo": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.activityInfo"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controller.activityInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "name": {},
+                "owner": {},
+                "resource": {
+                    "$ref": "#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource"
+                },
+                "time": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.ActivityType"
+                }
+            }
+        },
         "controller.bindEmailRequest": {
             "type": "object",
             "required": [
@@ -2356,6 +2451,59 @@ const docTemplaterest = `{
                     "type": "boolean"
                 }
             }
+        },
+        "domain.ActivityType": {
+            "type": "string",
+            "enum": [
+                "create",
+                "update",
+                "like"
+            ],
+            "x-enum-varnames": [
+                "Create",
+                "Update",
+                "Like"
+            ]
+        },
+        "github_com_openmerlin_merlin-server_activity_domain.Resource": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "description": "Resource index"
+                },
+                "owner": {},
+                "type": {
+                    "description": "Resource type",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/primitive.ObjType"
+                        }
+                    ]
+                }
+            }
+        },
+        "primitive.ObjType": {
+            "type": "string",
+            "enum": [
+                "user",
+                "organization",
+                "model",
+                "dataset",
+                "space",
+                "member",
+                "invite",
+                "codeRepo"
+            ],
+            "x-enum-varnames": [
+                "ObjTypeUser",
+                "ObjTypeOrg",
+                "ObjTypeModel",
+                "ObjTypeDataset",
+                "ObjTypeSpace",
+                "ObjTypeMember",
+                "ObjTypeInvite",
+                "ObjTypeCodeRepo"
+            ]
         }
     },
     "securityDefinitions": {

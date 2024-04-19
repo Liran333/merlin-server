@@ -95,7 +95,7 @@ func (s *SuiteActivityQuery) TestQueryActivityByUser() {
 	})
 	activities := getData(s.T(), records.Data)
 
-	assert.Equal(s.T(), float64(2), activities["total"])
+	assert.Equal(s.T(), int32(2), activities["total"])
 
 	//query activity by test2
 	records, r, err = ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest2, &swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
@@ -106,10 +106,10 @@ func (s *SuiteActivityQuery) TestQueryActivityByUser() {
 	activities = getData(s.T(), records.Data)
 
 	//test2 has no access to private model even he liked it before
-	assert.Equal(s.T(), float64(1), activities["total"])
+	assert.Equal(s.T(), int32(1), activities["total"])
 
 	//turn this model into public
-	data, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest, s.privateModelId, swaggerRest.ControllerReqToUpdateModel{
+	_, r, err = ApiRest.ModelApi.V1ModelIdPut(AuthRest, s.privateModelId, swaggerRest.ControllerReqToUpdateModel{
 		Visibility: "public",
 	})
 
@@ -122,7 +122,7 @@ func (s *SuiteActivityQuery) TestQueryActivityByUser() {
 	activities = getData(s.T(), records.Data)
 
 	//test2 has no access to this private model if the owner turn it into public
-	assert.Equal(s.T(), float64(2), activities["total"])
+	assert.Equal(s.T(), int32(2), activities["total"])
 }
 
 func (s *SuiteActivityQuery) TearDownSuite() {

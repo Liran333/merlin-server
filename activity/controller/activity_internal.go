@@ -39,8 +39,8 @@ type ActivityInternalController struct {
 // @Param    body  body  activityapp.ReqToCreateActivity true  "body of create activity app"
 // @Accept   json
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /v1/activity [post]
 func (ctl *ActivityInternalController) AddActivity(ctx *gin.Context) {
 	req := activityapp.ReqToCreateActivity{}
@@ -72,8 +72,8 @@ func (ctl *ActivityInternalController) AddActivity(ctx *gin.Context) {
 // @Param    body  body  activityapp.ReqToDeleteActivity  true  "body of delete activity app"
 // @Accept   json
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /v1/activity [delete]
 func (ctl *ActivityInternalController) DeleteActivity(ctx *gin.Context) {
 	req := activityapp.ReqToDeleteActivity{}

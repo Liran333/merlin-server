@@ -162,11 +162,28 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: DeleteActivity
@@ -187,11 +204,28 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: AddActivity

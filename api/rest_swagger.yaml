@@ -88,6 +88,28 @@ definitions:
       msg:
         type: string
     type: object
+  controller.activitiesInfo:
+    properties:
+      activities:
+        items:
+          $ref: '#/definitions/controller.activityInfo'
+        type: array
+      total:
+        type: integer
+    type: object
+  controller.activityInfo:
+    properties:
+      avatar_id:
+        type: string
+      name: {}
+      owner: {}
+      resource:
+        $ref: '#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource'
+      time:
+        type: integer
+      type:
+        $ref: '#/definitions/domain.ActivityType'
+    type: object
   controller.bindEmailRequest:
     properties:
       code:
@@ -265,6 +287,46 @@ definitions:
       revoke_delete:
         type: boolean
     type: object
+  domain.ActivityType:
+    enum:
+    - create
+    - update
+    - like
+    type: string
+    x-enum-varnames:
+    - Create
+    - Update
+    - Like
+  github_com_openmerlin_merlin-server_activity_domain.Resource:
+    properties:
+      index:
+        description: Resource index
+      owner: {}
+      type:
+        allOf:
+        - $ref: '#/definitions/primitive.ObjType'
+        description: Resource type
+    type: object
+  primitive.ObjType:
+    enum:
+    - user
+    - organization
+    - model
+    - dataset
+    - space
+    - member
+    - invite
+    - codeRepo
+    type: string
+    x-enum-varnames:
+    - ObjTypeUser
+    - ObjTypeOrg
+    - ObjTypeModel
+    - ObjTypeDataset
+    - ObjTypeSpace
+    - ObjTypeMember
+    - ObjTypeInvite
+    - ObjTypeCodeRepo
 info:
   contact: {}
 paths:
@@ -300,17 +362,22 @@ paths:
       description: create repo branch
       parameters:
       - description: type of space/model
+        enum:
+        - space
+        - model
         in: path
         name: type
         required: true
         type: string
       - description: owner of space/model
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space/model
         in: path
+        maxLength: 100
         name: repo
         required: true
         type: string
@@ -324,7 +391,12 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/app.BranchCreateDTO'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                data:
+                  $ref: '#/definitions/app.BranchCreateDTO'
+              type: object
       security:
       - Bearer: []
       summary: CreateBranch
@@ -337,22 +409,28 @@ paths:
       description: delete repo branch
       parameters:
       - description: repo type
+        enum:
+        - space
+        - model
         in: path
         name: type
         required: true
         type: string
       - description: repo owner
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: repo name
         in: path
+        maxLength: 100
         name: repo
         required: true
         type: string
       - description: branch name
         in: path
+        maxLength: 100
         name: branch
         required: true
         type: string
@@ -1328,25 +1406,45 @@ paths:
       parameters:
       - description: filter by space
         in: query
+        maxLength: 100
         name: space
         type: string
       - description: filter by model
         in: query
+        maxLength: 100
         name: model
         type: string
       - description: filter by like
         in: query
+        maxLength: 100
         name: like
         type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.activitiesInfo'
+                msg:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: List
