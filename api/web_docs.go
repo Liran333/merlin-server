@@ -53,13 +53,25 @@ const docTemplateweb = `{
                 }
             }
         },
-        "/v1/analytics/key": {
+        "/v1/computility/account/{type}": {
             "get": {
-                "description": "get analyse key",
-                "tags": [
-                    "Other"
+                "description": "get user computility account detail",
+                "consumes": [
+                    "application/json"
                 ],
-                "summary": "Ayalyse key",
+                "tags": [
+                    "ComputilityWeb"
+                ],
+                "summary": "GetComputilityAccountDetail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "computility type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -75,8 +87,30 @@ const docTemplateweb = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/controller.tokenResponse"
+                                            "$ref": "#/definitions/app.AccountQuotaDetailDTO"
                                         },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
                                         "msg": {
                                             "type": "string"
                                         }
@@ -2491,6 +2525,26 @@ const docTemplateweb = `{
         }
     },
     "definitions": {
+        "app.AccountQuotaDetailDTO": {
+            "type": "object",
+            "properties": {
+                "compute_type": {
+                    "type": "string"
+                },
+                "quota_balance": {
+                    "type": "integer"
+                },
+                "total_quota": {
+                    "type": "integer"
+                },
+                "used_quota": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
         "app.ActivityDTO": {
             "type": "object",
             "properties": {
@@ -3200,20 +3254,6 @@ const docTemplateweb = `{
                 },
                 "perm": {
                     "type": "string"
-                }
-            }
-        },
-        "controller.tokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "client_id": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
                 }
             }
         },

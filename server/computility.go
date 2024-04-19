@@ -29,3 +29,17 @@ func setRouterOfComputilityAppInternal(rg *gin.RouterGroup, services *allService
 		services.userMiddleWare,
 	)
 }
+
+func setRouterOfComputilityAppWeb(rg *gin.RouterGroup, services *allServices) {
+	s := app.NewComputilityAppService(
+		repositoryadapter.ComputilityOrgAdapter(),
+		repositoryadapter.ComputilityDetailAdapter(),
+		repositoryadapter.ComputilityAccountAdapter(),
+	)
+
+	controller.AddRouterForComputilityWebController(
+		rg,
+		s,
+		services.userMiddleWare,
+	)
+}

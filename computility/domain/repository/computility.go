@@ -14,7 +14,6 @@ import (
 type ComputilityOrgRepositoryAdapter interface {
 	Delete(primitive.Identity) error
 	FindByOrgName(primitive.Account) (domain.ComputilityOrg, error)
-	CheckOrgExist(primitive.Account) (bool, error)
 
 	OrgAssignQuota(domain.ComputilityOrg, int) error
 	OrgRecallQuota(domain.ComputilityOrg, int) error

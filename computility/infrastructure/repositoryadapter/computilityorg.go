@@ -88,19 +88,3 @@ func (adapter *computilityOrgAdapter) OrgRecallQuota(
 
 	return nil
 }
-
-// CheckOrgExist returns if org exists in the database and returns an error if any occurs.
-func (adapter *computilityOrgAdapter) CheckOrgExist(name primitive.Account) (bool, error) {
-	do := computilityOrgDO{OrgName: name.Account()}
-
-	result := computilityOrgDO{}
-	if err := adapter.daoImpl.GetRecord(&do, &result); err != nil {
-		if repository.IsErrorResourceNotExists(err) {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	return true, nil
-}

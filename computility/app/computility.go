@@ -18,6 +18,8 @@ import (
 type ComputilityAppService interface {
 	UserQuotaRelease(CmdToUserQuotaUpdate) error
 	UserQuotaConsume(CmdToUserQuotaUpdate) error
+
+	GetAccountDetail(domain.ComputilityAccountIndex) (AccountQuotaDetailDTO, error)
 }
 
 // NewComputilityAppService creates a new instance of ComputilityAppService
@@ -114,4 +116,32 @@ func (s *computilityAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdate) error
 	}
 
 	return nil
+}
+
+func (s *computilityAppService) GetAccountDetail(index domain.ComputilityAccountIndex) (
+	AccountQuotaDetailDTO, error,
+) {
+	account, err := s.accountAdapter.FindByAccountIndex(index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			empty := AccountQuotaDetailDTO{
+				UserName:    index.UserName.Account(),
+				ComputeType: index.ComputeType.ComputilityType(),
+			}
+
+			return empty, nil
+		}
+
+		e := fmt.Errorf("find computility account error | user:%s, compute type:%s | %s",
+			index.UserName.Account(), index.ComputeType.ComputilityType(), err,
+		)
+
+		return AccountQuotaDetailDTO{}, allerror.New(
+			allerror.ErrorCodeComputilityAccountFindError,
+			"find computility account failed", e)
+	}
+
+	r := toAccountDTO(&account)
+
+	return r, nil
 }

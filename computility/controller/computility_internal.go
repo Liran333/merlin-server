@@ -25,7 +25,6 @@ func AddRouterForComputilityInternalController(
 	r.POST("/v1/computility/account", m.Write, ctl.ComputilityUserJoin)
 	r.PUT("/v1/computility/account/remove", m.Write, ctl.ComputilityUserRemove)
 	r.DELETE("/v1/computility/org/delete", m.Write, ctl.ComputilityOrgDelete)
-
 }
 
 // ComputilityInternalController is a struct that holds the necessary dependencies for handling computility-related operations.
@@ -39,7 +38,8 @@ type ComputilityInternalController struct {
 // @Param    body  body  reqToUserOrgOperate  true  "body"
 // @Accept   json
 // @Security Internal
-// @Success  201  {object} commonctl.ResponseData
+// @Success  201   {object} commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400   {object} commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router   /v1/computility/account [post]
 func (ctl *ComputilityInternalController) ComputilityUserJoin(ctx *gin.Context) {
 	req := reqToUserOrgOperate{}
@@ -61,7 +61,7 @@ func (ctl *ComputilityInternalController) ComputilityUserJoin(ctx *gin.Context) 
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPost(ctx, "success")
+		commonctl.SendRespOfPost(ctx, nil)
 	}
 }
 
@@ -70,7 +70,8 @@ func (ctl *ComputilityInternalController) ComputilityUserJoin(ctx *gin.Context) 
 // @Tags     ComputilityInternal
 // @Param    body  body  reqToUserOrgOperate  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400   {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/computility/account/remove [put]
 func (ctl *ComputilityInternalController) ComputilityUserRemove(ctx *gin.Context) {
@@ -102,7 +103,8 @@ func (ctl *ComputilityInternalController) ComputilityUserRemove(ctx *gin.Context
 // @Tags     ComputilityInternal
 // @Param    body  body  reqToOrgDelete  true  "body"
 // @Accept   json
-// @Success  204   {object}  commonctl.ResponseData
+// @Success  204   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Failure  400   {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/computility/org/delete [delete]
 func (ctl *ComputilityInternalController) ComputilityOrgDelete(ctx *gin.Context) {

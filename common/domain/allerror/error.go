@@ -129,12 +129,15 @@ const (
 	// user has no npu permission
 	ErrorCodeNoNpuPermission = "no_npu_permission"
 
+	// find computility account error
+	ErrorCodeComputilityAccountFindError = "computility_account_find_error"
+
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 
 	// ErrorMsgPublishFailed
 	ErrorMsgPublishFailed = "msg_publish_failed"
-	
+
 	// dulicate creating
 	ErrorDuplicateCreating = "duplicate_creating"
 
@@ -295,7 +298,7 @@ const (
 	ErrorFailedToCreatePlatformUser = "failed_to_create_platform_user"
 
 	// failed to save user in db: %s
-	ErrorFailToSaveUserInDb = "failed_to_save_user"	
+	ErrorFailToSaveUserInDb = "failed_to_save_user"
 )
 
 // errorImpl

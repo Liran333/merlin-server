@@ -299,7 +299,28 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: ComputilityUserJoin
@@ -321,7 +342,28 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: ComputilityUserRemove
@@ -343,7 +385,28 @@ paths:
         "204":
           description: No Content
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data: {}
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: ComputilityOrgDelete

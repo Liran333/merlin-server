@@ -5,8 +5,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/computility/domain"
 	"github.com/openmerlin/merlin-server/computility/domain/message"
@@ -44,20 +47,30 @@ type computilityInternalAppService struct {
 }
 
 func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error {
-	exist, err := s.orgAdapter.CheckOrgExist(cmd.OrgName)
+	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			return nil
+		}
+
 		return err
 	}
-	if !exist {
-		return nil
+
+	if org.UsedQuota >= org.QuotaCount {
+		logrus.Errorf("quota assign failed | organization:%s has no balance to assign to user:%s",
+			org.OrgName.Account(), cmd.UserName.Account(),
+		)
+
+		e := fmt.Errorf("organization:%s has no balance to assign to user:%s",
+			org.OrgName.Account(), cmd.UserName.Account(),
+		)
+
+		return allerror.New(
+			allerror.ErrorCodeInsufficientQuota,
+			"organization insufficient computing quota balance", e)
 	}
 
 	userExist, err := s.accountAdapter.CheckAccountExist(cmd.UserName)
-	if err != nil {
-		return err
-	}
-
-	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		return err
 	}
@@ -133,12 +146,13 @@ func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) erro
 }
 
 func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) error {
-	exist, err := s.orgAdapter.CheckOrgExist(cmd.OrgName)
+	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			return nil
+		}
+
 		return err
-	}
-	if !exist {
-		return nil
 	}
 
 	r, err := s.detailAdapter.GetMembers(cmd.OrgName)
@@ -154,11 +168,6 @@ func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
-	if err != nil {
-		return err
 	}
 
 	err = s.orgAdapter.Delete(org.Id)
@@ -198,9 +207,13 @@ func (s *computilityInternalAppService) userRemoveOperate(index *domain.Computil
 		e := domain.NewcomputeRecallEvent(&infoList)
 		err = s.messageAdapter.SendComputilityRecallEvent(&e)
 		if err != nil {
-			logrus.Errorf("publish topic computility_recalled failed, user:%s, quota:%v", index.UserName.Account(), debt)
+			logrus.Errorf("publish topic computility_recalled failed, user:%s, quota:%v",
+				index.UserName.Account(), debt,
+			)
 		} else {
-			logrus.Infof("publish topic computility_recalled success, user:%s, quota:%v", index.UserName.Account(), debt)
+			logrus.Infof("publish topic computility_recalled success, user:%s, quota:%v",
+				index.UserName.Account(), debt,
+			)
 		}
 	}
 

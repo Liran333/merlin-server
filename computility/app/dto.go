@@ -22,3 +22,21 @@ type CmdToUserQuotaUpdate struct {
 	domain.ComputilityAccountIndex
 	QuotaCount int
 }
+
+type AccountQuotaDetailDTO struct {
+	UserName     string `json:"user_name"`
+	UsedQuota    int    `json:"used_quota"`
+	TotalQuota   int    `json:"total_quota"`
+	ComputeType  string `json:"compute_type"`
+	QuotaBalance int    `json:"quota_balance"`
+}
+
+func toAccountDTO(a *domain.ComputilityAccount) AccountQuotaDetailDTO {
+	return AccountQuotaDetailDTO{
+		UserName:     a.UserName.Account(),
+		UsedQuota:    a.UsedQuota,
+		TotalQuota:   a.QuotaCount,
+		QuotaBalance: a.QuotaCount - a.UsedQuota,
+		ComputeType:  a.ComputeType.ComputilityType(),
+	}
+}
