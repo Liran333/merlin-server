@@ -60,8 +60,14 @@
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "$ref": "#/definitions/controller.tokenResponse"
+                                        },
+                                        "msg": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -1110,6 +1116,78 @@
                 }
             }
         },
+        "/v1/search": {
+            "get": {
+                "description": "get model and space and org and user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SearchWeb"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "filter by name",
+                        "name": "searchKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "space",
+                                "model",
+                                "org",
+                                "user"
+                            ],
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "type of space/model/org/user",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "type": "integer",
+                        "description": "page data size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SearchDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/session": {
             "put": {
                 "description": "logout",
@@ -1124,7 +1202,25 @@
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.logoutInfo"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.logoutInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1153,7 +1249,25 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_session_app.UserDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_session_app.UserDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2406,6 +2520,14 @@
                 }
             }
         },
+        "app.SearchDTO": {
+            "type": "object",
+            "properties": {
+                "result_set": {
+                    "$ref": "#/definitions/domain.SearchResult"
+                }
+            }
+        },
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
@@ -3169,6 +3291,135 @@
                 "Update",
                 "Like"
             ]
+        },
+        "domain.ModelResult": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.OrgResult": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SearchResult": {
+            "type": "object",
+            "properties": {
+                "model_result": {
+                    "$ref": "#/definitions/domain.SearchResultModel"
+                },
+                "org_result": {
+                    "$ref": "#/definitions/domain.SearchResultOrg"
+                },
+                "space_result": {
+                    "$ref": "#/definitions/domain.SearchResultSpace"
+                },
+                "user_result": {
+                    "$ref": "#/definitions/domain.SearchResultUser"
+                }
+            }
+        },
+        "domain.SearchResultModel": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ModelResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultOrg": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.OrgResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultSpace": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.SpaceResult"
+                    }
+                }
+            }
+        },
+        "domain.SearchResultUser": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.UserResult"
+                    }
+                }
+            }
+        },
+        "domain.SpaceResult": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UserResult": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                }
+            }
         },
         "github_com_openmerlin_merlin-server_activity_domain.Resource": {
             "type": "object",

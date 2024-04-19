@@ -52,7 +52,7 @@ type SessionController struct {
 // @Tags     Session
 // @Param    body  body  reqToLogin  true  "body of login"
 // @Accept   json
-// @Success  201   {object}  app.UserDTO
+// @Success  201   {object}  commonctl.ResponseData{data=app.UserDTO,msg=string,code=string}
 // @Router   /v1/session [post]
 func (ctl *SessionController) Login(ctx *gin.Context) {
 	var req reqToLogin
@@ -94,7 +94,7 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 // @Description  logout
 // @Tags     Session
 // @Accept   json
-// @Success  202  {object}  logoutInfo
+// @Success  202  {object}  commonctl.ResponseData{data=logoutInfo,msg=string,code=string}
 // @Router   /v1/session [put]
 func (ctl *SessionController) Logout(ctx *gin.Context) {
 	v, err := commonctl.GetCookie(ctx, cookieSessionId)

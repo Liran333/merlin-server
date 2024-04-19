@@ -19,7 +19,7 @@ then
 fi
 
 cd $ROOTDIR && swag init --parseDependency --parseInternal --instanceName rest -o api -t Organization,User,Model,ModelRestful,Space,SpaceRestful,SpaceAppRestful,BranchRestful,ActivityRestful &&
-swag init --parseDependency --parseInternal --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo,ActivityWeb,SearchWeb &&
+swag init --parseDependency --parseInternal --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo,ActivityWeb,SearchWeb,Other &&
 swag init --parseDependency --parseInternal --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp,ActivityInternal,ComputilityInternal && cd -
 rm -rf $ROOTDIR/tests/e2e/client_web && rm -rf $ROOTDIR/tests/e2e/client_rest && rm -rf $ROOTDIR/tests/e2e/client_internal
 

@@ -452,7 +452,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/session.ResponseToCheckAndRefresh"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1152,6 +1170,17 @@ const docTemplateinternal = `{
             "type": "object",
             "properties": {
                 "session_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "session.ResponseToCheckAndRefresh": {
+            "type": "object",
+            "properties": {
+                "csrf_token": {
+                    "type": "string"
+                },
+                "user": {
                     "type": "string"
                 }
             }

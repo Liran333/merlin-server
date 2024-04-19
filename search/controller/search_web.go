@@ -7,8 +7,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-
-	"github.com/openmerlin/merlin-server/common/controller"
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/search/app"
 )
@@ -36,22 +35,22 @@ type SearchWebController struct {
 // @Summary  List
 // @Description  get model and space and org and user
 // @Tags     SearchWeb
-// @Param    searchKey     query  string  true "filter by name"
-// @Param    type  query  []string  true "type of space/model/org/user"
-// @Param  	 size  query  int    false "page data size"
+// @Param    searchKey     query  string  true "filter by name" MaxLength(100)
+// @Param    type  query  []string  true "type of space/model/org/user" Enums(space,model,org,user)
+// @Param  	 size  query  int    false "page data size" Maximum(100)
 // @Accept   json
-// @Success  200  {object}  app.SearchDTO.ResultSet
+// @Success  200  {object}  commonctl.ResponseData{data=app.SearchDTO,msg=string,code=string}
 // @Router /v1/search [get]
 func (ctl *SearchWebController) Search(ctx *gin.Context) {
 	var req quickSearchRequest
 	if err := ctx.BindQuery(&req); err != nil {
-		controller.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		controller.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 		return
 	}
 
@@ -59,9 +58,9 @@ func (ctl *SearchWebController) Search(ctx *gin.Context) {
 
 	dto, err := ctl.searchApp.Search(&cmd, user)
 	if err != nil {
-		controller.SendError(ctx, err)
+		commonctl.SendError(ctx, err)
 		return
 	}
 
-	controller.SendRespOfGet(ctx, &dto.ResultSet)
+	commonctl.SendRespOfGet(ctx, &dto.ResultSet)
 }

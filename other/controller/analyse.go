@@ -36,7 +36,7 @@ type OtherController struct {
 // @Summary  Ayalyse key
 // @Description  get analyse key
 // @Tags     Other
-// @Success  200   {object}  commonctl.ResponseData{data=tokenResponse}
+// @Success  200   {object}  commonctl.ResponseData{data=tokenResponse,msg=string,code=string}
 // @Router   /v1/analytics/key [get]
 func (ctl *OtherController) Get(ctx *gin.Context) {
 	u, err := url.Parse(ctx.GetHeader(refererHeader))

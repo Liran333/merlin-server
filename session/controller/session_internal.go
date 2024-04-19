@@ -40,7 +40,7 @@ type SessionInternalController struct {
 // @Param    body  body  sdk.RequestToCheckAndRefresh  true  "body of new member"
 // @Accept   json
 // @Security Internal
-// @Success  202 {object} commonctl.ResponseData
+// @Success  202 {object} commonctl.ResponseData{data=sdk.ResponseToCheckAndRefresh,msg=string,code=string}
 // @Router   /v1/session/check [put]
 func (ctl *SessionInternalController) CheckAndRefresh(ctx *gin.Context) {
 	var req sdk.RequestToCheckAndRefresh

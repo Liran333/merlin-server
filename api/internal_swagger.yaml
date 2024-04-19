@@ -143,6 +143,13 @@ definitions:
       session_id:
         type: string
     type: object
+  session.ResponseToCheckAndRefresh:
+    properties:
+      csrf_token:
+        type: string
+      user:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -406,7 +413,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/session.ResponseToCheckAndRefresh'
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: CheckAndRefresh

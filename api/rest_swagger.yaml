@@ -362,22 +362,17 @@ paths:
       description: create repo branch
       parameters:
       - description: type of space/model
-        enum:
-        - space
-        - model
         in: path
         name: type
         required: true
         type: string
       - description: owner of space/model
         in: path
-        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space/model
         in: path
-        maxLength: 100
         name: repo
         required: true
         type: string
@@ -391,12 +386,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/controller.ResponseData'
-            - properties:
-                data:
-                  $ref: '#/definitions/app.BranchCreateDTO'
-              type: object
+            $ref: '#/definitions/app.BranchCreateDTO'
       security:
       - Bearer: []
       summary: CreateBranch
@@ -409,28 +399,22 @@ paths:
       description: delete repo branch
       parameters:
       - description: repo type
-        enum:
-        - space
-        - model
         in: path
         name: type
         required: true
         type: string
       - description: repo owner
         in: path
-        maxLength: 40
         name: owner
         required: true
         type: string
       - description: repo name
         in: path
-        maxLength: 100
         name: repo
         required: true
         type: string
       - description: branch name
         in: path
-        maxLength: 100
         name: branch
         required: true
         type: string
