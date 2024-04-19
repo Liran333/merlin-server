@@ -10,22 +10,27 @@ import (
 )
 
 const (
-	fieldID       = "id"
-	fieldName     = "name"
-	fieldOwner    = "owner"
-	fieldCount    = "count"
-	fieldAccount  = "account"
-	fieldBio      = "bio"
-	fieldAvatarId = "avatar_id"
-	fieldVersion  = "version"
-	fieldType     = "type"
-	fieldUser     = "user_name"
-	fieldOrg      = "org_name"
-	fieldRole     = "role"
-	fieldInvitee  = "user_name"
-	fieldInviter  = "inviter"
-	fieldStatus   = "status"
+	fieldID          = "id"
+	fieldName        = "name"
+	fieldOwner       = "owner"
+	fieldCount       = "count"
+	fieldAccount     = "account"
+	fieldBio         = "bio"
+	fieldAvatarId    = "avatar_id"
+	fieldVersion     = "version"
+	fieldType        = "type"
+	fieldUser        = "user_name"
+	fieldOrg         = "org_name"
+	fieldRole        = "role"
+	fieldInvitee     = "user_name"
+	fieldInviter     = "inviter"
+	fieldStatus      = "status"
+	fieldCertOrgName = "certificate_org_name"
+	fieldUSCC        = "uscc"
+	fieldPhone       = "phone"
 )
+
+var certificateTableName string
 
 // Member represents a member in the database.
 type Member struct {
@@ -56,4 +61,21 @@ type Approve struct {
 	By       string `gorm:"column:by"`
 	Msg      string `gorm:"column:msg"`
 	Version  int    `gorm:"column:version"`
+}
+
+type CertificateDO struct {
+	postgresql.CommonModel
+
+	OrgName            string `gorm:"column:org_name;uniqueIndex"`
+	Phone              string `gorm:"column:phone;index"`
+	USCC               string `gorm:"column:uscc;index"`
+	CertificateOrgName string `gorm:"column:certificate_org_name;index"`
+	CertificateOrgType string `gorm:"column:certificate_org_type"`
+	Status             string `gorm:"column:status"`
+	Reason             string `gorm:"column:reason"`
+	Identity           string `gorm:"identity"`
+}
+
+func (do CertificateDO) TableName() string {
+	return certificateTableName
 }

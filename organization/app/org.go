@@ -71,6 +71,7 @@ func NewOrgService(
 	cfg *domain.Config,
 	git git.User,
 	message message.OrgnizationMessage,
+	cert repository.Certificate,
 ) OrgService {
 	return &orgService{
 		user:             user,
@@ -83,6 +84,7 @@ func NewOrgService(
 		MaxCountPerOwner: cfg.MaxCountPerOwner,
 		git:              git,
 		message:          message,
+		certificate:      cert,
 	}
 }
 
@@ -97,6 +99,7 @@ type orgService struct {
 	perm             *permService
 	git              git.User
 	message          message.OrgnizationMessage
+	certificate      repository.Certificate
 }
 
 // Create creates a new organization with the given command and returns the created organization as a UserDTO.
@@ -275,6 +278,11 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	err = org.repo.DeleteOrg(&o)
 	if err != nil {
 		return err
+	}
+
+	err = org.certificate.DeleteByOrgName(cmd.Name)
+	if err != nil {
+		logrus.Errorf("delete certificate of %s failed", cmd.Name.Account())
 	}
 
 	event := domain.NewOrgDeleteEvent(cmd)

@@ -58,11 +58,16 @@ func initorg() {
 		sessionrepositoryadapter.NewSessionAdapter(redisdb.DAO()),
 	)
 
+	certRepo, _ := orgrepoimpl.NewCertificateImpl(
+		postgresql.DAO(cfg.Org.Tables.Certificate),
+		crypto.NewEncryption(cfg.User.Key),
+	)
+
 	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
 		oidcimpl.NewAuthingUser(), session)
 
 	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org, git,
-		messageadapter.MessageAdapter(&cfg.Org.Topics),
+		messageadapter.MessageAdapter(&cfg.Org.Topics), certRepo,
 	)
 }
 

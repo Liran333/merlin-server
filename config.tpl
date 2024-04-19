@@ -4,6 +4,11 @@ organization:
   tables:
     invite: "invite"
     member: "member"
+    certificate: "certificate"
+  certificate_email:
+      - xxxx@xxxx.com
+  primitive:
+      uscc_regexp: (^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$)|(^[A-Za-z0-9]{8}-[A-Za-z0-9]$)|(^[A-Za-z0-9]{9}$)
   topics:
     org_user_joined: org_user_joined
     org_user_removed: org_user_removed
@@ -306,3 +311,9 @@ other_config:
 #      org_name: testorg2
 #    - org_id: 4
 #      org_name: testorg3
+
+email:
+  auth_code: "xxx"
+  from: "348134071@qq.com"
+  host: "smtp.qq.com"
+  port: 465

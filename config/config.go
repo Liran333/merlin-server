@@ -16,6 +16,7 @@ import (
 	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitaccess"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
@@ -62,6 +63,7 @@ type Config struct {
 	Kafka        kafka.Config         `json:"kafka"`
 	Model        models.Config        `json:"model"`
 	Space        space.Config         `json:"space"`
+	Email        email.Config         `json:"email"`
 	Activity     activity.Config      `json:"activity"`
 	Session      session.Config       `json:"session"`
 	SpaceApp     spaceapp.Config      `json:"space_app"`
@@ -80,6 +82,10 @@ type Config struct {
 // Init initializes the application using the configuration settings provided in the Config struct.
 func (cfg *Config) Init() error {
 	if err := primitive.Init(&cfg.Primitive); err != nil {
+		return err
+	}
+
+	if err := cfg.Org.Init(); err != nil {
 		return err
 	}
 
@@ -113,6 +119,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Kafka,
 		&cfg.Model,
 		&cfg.Space,
+		&cfg.Email,
 		&cfg.Session,
 		&cfg.SpaceApp,
 		&cfg.CodeRepo,

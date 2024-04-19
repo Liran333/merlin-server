@@ -10,6 +10,8 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
+	"github.com/openmerlin/merlin-server/organization/domain/repository"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
@@ -165,5 +167,40 @@ func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 		OrgId:     member.OrgId.Identity(),
 		CreatedAt: member.CreatedAt,
 		UpdatedAt: member.UpdatedAt,
+	}
+}
+
+// OrgCertificateCmd represent a command to create certificate
+type OrgCertificateCmd struct {
+	domain.OrgCertificate
+	Actor              primitive.Account
+	ImageOfCertificate orgprimitive.Image
+}
+
+type OrgCertificateDuplicateCheckCmd = repository.FindOption
+
+// OrgCertificateDTO represent certificate information
+type OrgCertificateDTO struct {
+	Status                  string `json:"status"`
+	Reason                  string `json:"reason"`
+	CertificateOrgType      string `json:"certificate_org_type"`
+	CertificateOrgName      string `json:"certificate_org_name"`
+	UnifiedSocialCreditCode string `json:"unified_social_credit_code"`
+	Phone                   string `json:"phone"`
+}
+
+func (d *OrgCertificateDTO) Masked() {
+	d.UnifiedSocialCreditCode = ""
+	d.Phone = ""
+}
+
+func toCertificationDTO(cert domain.OrgCertificate) OrgCertificateDTO {
+	return OrgCertificateDTO{
+		Status:                  cert.Status.CertificateStatus(),
+		Reason:                  cert.Reason,
+		CertificateOrgType:      cert.CertificateOrgType.CertificateOrgType(),
+		CertificateOrgName:      cert.CertificateOrgName.AccountFullname(),
+		UnifiedSocialCreditCode: cert.UnifiedSocialCreditCode.USCC(),
+		Phone:                   cert.Phone.PhoneNumber(),
 	}
 }

@@ -6,8 +6,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
 )
 
 func toMemberDoc(o *domain.OrgMember) Member {
@@ -114,4 +116,38 @@ func toMemberRequest(doc *Approve) domain.MemberRequest {
 		UpdatedAt: doc.UpdatedAt.Unix(),
 		Msg:       doc.Msg,
 	}
+}
+
+func toCertificateDo(cert domain.OrgCertificate, e crypto.Encrypter) (CertificateDO, error) {
+	encryptPhone, err := e.Encrypt(cert.Phone.PhoneNumber())
+	if err != nil {
+		return CertificateDO{}, err
+	}
+
+	return CertificateDO{
+		OrgName:            cert.OrgName.Account(),
+		CertificateOrgName: cert.CertificateOrgName.AccountFullname(),
+		CertificateOrgType: cert.CertificateOrgType.CertificateOrgType(),
+		USCC:               cert.UnifiedSocialCreditCode.USCC(),
+		Status:             cert.Status.CertificateStatus(),
+		Phone:              encryptPhone,
+		Identity:           cert.Identity.Identity(),
+	}, nil
+}
+
+func (do CertificateDO) toCertificate(e crypto.Encrypter) (domain.OrgCertificate, error) {
+	phone, err := e.Decrypt(do.Phone)
+	if err != nil {
+		return domain.OrgCertificate{}, err
+	}
+
+	return domain.OrgCertificate{
+		Status:                  orgprimitive.CreateCertificateStatus(do.Status),
+		Reason:                  do.Reason,
+		CertificateOrgType:      orgprimitive.CreateCertificateOrgType(do.CertificateOrgType),
+		CertificateOrgName:      primitive.CreateAccountFullname(do.CertificateOrgName),
+		UnifiedSocialCreditCode: orgprimitive.CreateUSCC(do.USCC),
+		Phone:                   primitive.CreatePhoneNumber(phone),
+		Identity:                orgprimitive.CreateIdentity(do.Identity),
+	}, nil
 }

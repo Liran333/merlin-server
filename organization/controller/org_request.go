@@ -6,13 +6,16 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
+	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
 )
 
 type orgBasicInfoUpdateRequest struct {
@@ -472,4 +475,111 @@ func (req *orgListMemberRequest) toCmd(org primitive.Account) (cmd domain.OrgLis
 type PrivilegeOption struct {
 	Type string `form:"type"`
 	User string `form:"user"`
+}
+
+type orgCertificateRequest struct {
+	CertificateOrgType      string `json:"certificate_org_type" binding:"required"`
+	CertificateOrgName      string `json:"certificate_org_name" binding:"required"`
+	ImageOfCertificate      string `json:"image_of_certificate" binding:"required"`
+	UnifiedSocialCreditCode string `json:"unified_social_credit_code" binding:"required"`
+	Phone                   string `json:"phone" binding:"required"`
+	Identity                string `json:"identity" binding:"required"`
+}
+
+func (req *orgCertificateRequest) toCmd(name string, actor primitive.Account) (cmd *app.OrgCertificateCmd, err error) {
+	orgName, err := primitive.NewAccount(name)
+	if err != nil {
+		return
+	}
+
+	phone, err := primitive.NewPhone(req.Phone)
+	if err != nil {
+		return
+	}
+
+	identity, err := orgprimitive.NewIdentity(req.Identity)
+	if err != nil {
+		return
+	}
+
+	orgType, err := orgprimitive.NewCertificateOrgType(req.CertificateOrgType)
+	if err != nil {
+		return
+	}
+
+	certificateOrgName, err := primitive.NewAccountFullname(req.CertificateOrgName)
+	if err != nil {
+		return
+	}
+
+	USCC, err := orgprimitive.NewUSCC(req.UnifiedSocialCreditCode)
+	if err != nil {
+		return
+	}
+
+	imgDecode, err := base64.StdEncoding.DecodeString(req.ImageOfCertificate)
+	if err != nil {
+		return
+	}
+
+	image, err := orgprimitive.NewImage(imgDecode)
+	if err != nil {
+		return
+	}
+
+	return &app.OrgCertificateCmd{
+		OrgCertificate: domain.OrgCertificate{
+			Phone:                   phone,
+			Identity:                identity,
+			OrgName:                 orgName,
+			CertificateOrgType:      orgType,
+			CertificateOrgName:      certificateOrgName,
+			UnifiedSocialCreditCode: USCC,
+		},
+		Actor:              actor,
+		ImageOfCertificate: image,
+	}, nil
+}
+
+type orgCertificateCheckRequest struct {
+	CertificateOrgName      string `form:"certificate_org_name"`
+	UnifiedSocialCreditCode string `form:"unified_social_credit_code"`
+	Phone                   string `form:"phone"`
+}
+
+func (req orgCertificateCheckRequest) toCmd(name string) (cmd app.OrgCertificateDuplicateCheckCmd, err error) {
+	orgName, err := primitive.NewAccount(name)
+	if err != nil {
+		return
+	}
+	cmd.OrgName = orgName
+
+	if req.CertificateOrgName != "" {
+		certificateOrgName, err1 := primitive.NewAccountFullname(req.CertificateOrgName)
+		if err1 != nil {
+			return
+		}
+
+		cmd.CertificateOrgName = certificateOrgName
+	}
+
+	if req.Phone != "" {
+		phone, err1 := primitive.NewPhone(req.Phone)
+		if err1 != nil {
+			return
+		}
+
+		cmd.Phone = phone
+	}
+
+	if req.UnifiedSocialCreditCode != "" {
+		uscc, err1 := orgprimitive.NewUSCC(req.UnifiedSocialCreditCode)
+		if err1 != nil {
+			return
+		}
+
+		cmd.UnifiedSocialCreditCode = uscc
+	}
+
+	return
 }

@@ -25,6 +25,7 @@ import (
 func AddRouterForOrgController(
 	rg *gin.RouterGroup,
 	org orgapp.OrgService,
+	cert orgapp.OrgCertificateService,
 	user userapp.UserService,
 	l middleware.OperationLog,
 	sl middleware.SecurityLog,
@@ -35,11 +36,12 @@ func AddRouterForOrgController(
 	disable orgapp.PrivilegeOrg,
 ) {
 	ctl := OrgController{
-		m:             m,
-		org:           org,
-		user:          user,
-		npuGatekeeper: npuGatekeeper,
-		disable:       disable,
+		m:              m,
+		org:            org,
+		user:           user,
+		npuGatekeeper:  npuGatekeeper,
+		disable:        disable,
+		orgCertificate: cert,
 	}
 
 	rg.PUT("/v1/organization/:name", m.Write,
@@ -76,17 +78,22 @@ func AddRouterForOrgController(
 	rg.PUT("/v1/organization/:name/member", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.EditMember)
 
+	rg.POST("/v1/organization/:name/certificate", m.Write, l.Write, rl.CheckLimit, ctl.Certificate)
+	rg.GET("/v1/organization/:name/certificate", m.Optional, rl.CheckLimit, ctl.GetCertification)
+	rg.GET("/v1/organization/:name/certificate/check", m.Write, rl.CheckLimit, ctl.CertificateCheck)
+
 	rg.GET("/v1/account/:name", p.CheckName, m.Optional, rl.CheckLimit, ctl.GetUser)
 	rg.GET("/v1/user/privilege", m.Read, ctl.GetPrivilege)
 }
 
 // OrgController is a struct that contains the necessary dependencies for organization-related operations.
 type OrgController struct {
-	m             middleware.UserMiddleWare
-	org           orgapp.OrgService
-	user          userapp.UserService
-	npuGatekeeper orgapp.PrivilegeOrg
-	disable       orgapp.PrivilegeOrg
+	m              middleware.UserMiddleWare
+	org            orgapp.OrgService
+	user           userapp.UserService
+	npuGatekeeper  orgapp.PrivilegeOrg
+	disable        orgapp.PrivilegeOrg
+	orgCertificate orgapp.OrgCertificateService
 }
 
 // @Summary  Update
@@ -874,5 +881,104 @@ func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, orgs)
+	}
+}
+
+// @Summary  Certification
+// @Description organization certification
+// @Tags     Organization
+// @Param    name  path  string  true  "organization name"
+// @Param    body  body orgCertificateRequest  true  "body of certificate"
+// @Accept   json
+// @Security Bearer
+// @Success  201 {object}  commonctl.ResponseData
+// @Router   /v1/organization/{name}/certificate [post]
+func (ctl *OrgController) Certificate(ctx *gin.Context) {
+	middleware.SetAction(ctx, "organization certification")
+
+	var req orgCertificateRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	cmd, err := req.toCmd(ctx.Param("name"), user)
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if err = ctl.orgCertificate.Certificate(cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, nil)
+	}
+}
+
+// @Summary  Certification
+// @Description get organization certification
+// @Tags     Organization
+// @Param    name  path  string  true  "name"
+// @Accept   json
+// @Security Bearer
+// @Success  200  {object}  commonctl.ResponseData{data=app.OrgCertificateDTO,msg=string,code=string}
+// @Router   /v1/organization/{name}/certificate [get]
+func (ctl *OrgController) GetCertification(ctx *gin.Context) {
+	middleware.SetAction(ctx, "get certification")
+
+	orgName, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	user := ctl.m.GetUser(ctx)
+	if v, err := ctl.orgCertificate.GetCertification(orgName, user); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, v)
+	}
+}
+
+// @Summary  Certification
+// @Description check organization certification
+// @Tags     Organization
+// @Param    name  path  string  true  "name"
+// @Param    certificate_org_name   query  string  false  "certificate organization name"
+// @Param    unified_social_credit_code   query  string  false  "the unified social credit code"
+// @Param    phone   query  string  false  "phone number"
+// @Accept   json
+// @Security Bearer
+// @Success  200  {object}  commonctl.ResponseData
+// @Router   /v1/organization/{name}/certificate/check [get]
+func (ctl *OrgController) CertificateCheck(ctx *gin.Context) {
+	middleware.SetAction(ctx, "check certification")
+
+	var req orgCertificateCheckRequest
+	if err := ctx.BindQuery(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	if b, err := ctl.orgCertificate.DuplicateCheck(cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, b)
 	}
 }

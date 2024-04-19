@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitaccess"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
@@ -190,6 +191,8 @@ func main() {
 	}
 
 	gitaccess.Init(&cfg.GitAccess)
+
+	email.Init(cfg.Email)
 
 	// run
 	server.StartWebServer(o.service.Key, o.service.Cert, o.service.RemoveCfg, o.service.Port, o.service.GracePeriod, cfg)

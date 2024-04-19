@@ -10,6 +10,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -240,7 +241,8 @@ func (a Approve) ToMember() OrgMember {
 func (cmd OrgInviteMemberCmd) Validate() error {
 	if cmd.Account == nil {
 		e := fmt.Errorf("invalid account")
-		return allerror.New(allerror.ErrorInvalidAccount, e.Error(), e)	}
+		return allerror.New(allerror.ErrorInvalidAccount, e.Error(), e)
+	}
 
 	if cmd.Org == nil {
 		e := fmt.Errorf("invalid org")
@@ -536,4 +538,20 @@ type OrgListMemberCmd struct {
 	User primitive.Account
 	Org  primitive.Account
 	Role primitive.Role
+}
+
+// OrgCertificate represents detail to create certificate
+type OrgCertificate struct {
+	Phone                   primitive.Phone
+	Status                  orgprimitive.CertificateStatus
+	Reason                  string
+	Identity                orgprimitive.Identity
+	OrgName                 primitive.Account
+	CertificateOrgType      orgprimitive.CertificateOrgType
+	CertificateOrgName      primitive.AccountFullname
+	UnifiedSocialCreditCode orgprimitive.USCC
+}
+
+func (org *OrgCertificate) SetProcessingStatus() {
+	org.Status = orgprimitive.NewProcessingStatus()
 }

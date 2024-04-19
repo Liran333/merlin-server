@@ -23,7 +23,8 @@ type allServices struct {
 	userApp  userapp.UserService
 	userRepo userrepo.User
 
-	orgApp orgapp.OrgService
+	orgApp            orgapp.OrgService
+	orgCertificateApp orgapp.OrgCertificateService
 
 	permissionApp commonapp.ResourcePermissionAppService
 
@@ -58,7 +59,9 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 	initUser(cfg, &services)
 
 	// initOrg depends on initUser
-	initOrg(cfg, &services)
+	if err = initOrg(cfg, &services); err != nil {
+		return
+	}
 
 	// initSession depends on initUser
 	initSession(cfg, &services)
