@@ -7,6 +7,7 @@ package repositoryimpl
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -93,7 +94,7 @@ func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
 // return false mean the name is not available
 func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
 	var count int64
-	err := impl.DB().Where(impl.EqualQuery(fieldName), name.Account()).Count(&count).Error
+	err := impl.DB().Where(fmt.Sprintf(`LOWER(%s) = ?`, fieldName), strings.ToLower(name.Account())).Count(&count).Error
 
 	if err == nil && count == 0 {
 		return true

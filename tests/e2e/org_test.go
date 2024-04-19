@@ -219,20 +219,39 @@ func (s *SuiteOrg) TestOrgCreateFailedInvalidNameLen() {
 // 组织名已存在
 func (s *SuiteOrg) TestOrgCreateFailedInvalidNameConflict() {
 	d := swaggerRest.ControllerOrgCreateRequest{
-		Name:     s.owner,
+		Name:     s.name,
 		Fullname: s.fullname,
 	}
 
 	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
-	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 与已有组织名重复
+	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
+	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, "TestOrg")
+	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 与已有用户名重复
 	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, s.owner)
 	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
+	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, "Test1")
+	assert.Equal(s.T(), http.StatusConflict, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 不与已有组织名或用户名重复
 	r, err = ApiRest.OrganizationApi.V1NameHead(AuthRest, "testnonexist")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
