@@ -5,8 +5,14 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	computilityapp "github.com/openmerlin/merlin-server/computility/app"
+	computilitydomain "github.com/openmerlin/merlin-server/computility/domain"
+	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/domain/message"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
@@ -24,6 +30,7 @@ type SpaceappInternalAppService interface {
 	NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error
 	NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error
 	NotifyUpdateStatus(cmd *CmdToNotifyUpdateStatus) error
+	PauseSpaceApp(*spacedomain.SpaceIndex, bool) error
 }
 
 // NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
@@ -32,11 +39,15 @@ func NewSpaceappInternalAppService(
 	msg message.SpaceAppMessage,
 	repo repository.Repository,
 	buildLogAdapter repository.SpaceAppBuildLogAdapter,
+	spaceRepo spaceRepository,
+	compUtility computilityapp.ComputilityAppService,
 ) *spaceappInternalAppService {
 	return &spaceappInternalAppService{
 		msg:             msg,
 		repo:            repo,
 		buildLogAdapter: buildLogAdapter,
+		spaceRepo:       spaceRepo,
+		compUtility:     compUtility,
 	}
 }
 
@@ -45,6 +56,8 @@ type spaceappInternalAppService struct {
 	msg             message.SpaceAppMessage
 	repo            repository.Repository
 	buildLogAdapter repository.SpaceAppBuildLogAdapter
+	spaceRepo       spaceRepository
+	compUtility     computilityapp.ComputilityAppService
 }
 
 // Create creates a new SpaceApp in the spaceappInternalAppService.
@@ -143,4 +156,74 @@ func (s *spaceappInternalAppService) NotifyUpdateStatus(cmd *CmdToNotifyUpdateSt
 	}
 
 	return s.repo.Save(&v)
+}
+
+// PauseSpaceApp pause a SpaceApp in the spaceappAppService.
+func (s *spaceappInternalAppService) PauseSpaceApp(
+	index *spacedomain.SpaceIndex, isForce bool,
+) error {
+	space, err := s.spaceRepo.FindByName(index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", err)
+		}
+
+		return err
+	}
+
+	app, err := s.repo.FindBySpaceId(space.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(err)
+		}
+
+		return err
+	}
+
+	if app.Status.IsPaused() {
+		return nil
+	}
+
+	releaseSpaceCompQuota := func(compPowerAllocated bool,compUtility computilityapp.ComputilityAppService) error {
+		if !compPowerAllocated {
+			return nil
+		}
+		npu, err := primitive.NewComputilityType(compUtilityTypeNpu)
+		if err != nil {
+			return err
+		}
+		cmd := computilityapp.CmdToUserQuotaUpdate{
+			ComputilityAccountIndex: computilitydomain.ComputilityAccountIndex{
+				UserName:    space.CreatedBy,
+				ComputeType: npu,
+			},
+			QuotaCount: 1,
+		}
+		return compUtility.UserQuotaRelease(cmd)
+	}
+
+	if err := app.PauseService(isForce, space.CompPowerAllocated,
+		s.compUtility, releaseSpaceCompQuota); err != nil {
+		return err
+	}
+
+	if space.Hardware.IsNpu() {
+		space.CompPowerAllocated = false
+		if err := s.spaceRepo.Save(&space); err != nil {
+			return err
+		}
+	}
+
+	if err := s.repo.Save(&app); err != nil {
+		e := fmt.Errorf("failed to update pause spaceId:%s, err:%s", space.Id.Identity(), err)
+		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		return err
+	}
+
+	v := domain.SpaceAppIndex{
+		SpaceId:  app.SpaceId,
+		CommitId: app.CommitId,
+	}
+	e := domain.NewSpaceAppPauseEvent(&v)
+	return s.msg.SendSpaceAppPauseEvent(&e)
 }

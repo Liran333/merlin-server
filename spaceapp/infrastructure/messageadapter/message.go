@@ -31,6 +31,16 @@ func (p *messageAdapter) SendSpaceAppRestartedEvent(e message.EventMessage) erro
 	return send(p.topics.SpaceAppRestarted, e)
 }
 
+// SendSpaceAppPauseEvent sends a SpaceAppPause event message to the corresponding topic.
+func (p *messageAdapter) SendSpaceAppPauseEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceAppPaused, e)
+}
+
+// SendSpaceAppResumeEvent sends a SpaceAppResume event message to the corresponding topic.
+func (p *messageAdapter) SendSpaceAppResumeEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceAppResumed, e)
+}
+
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {

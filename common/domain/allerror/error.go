@@ -49,6 +49,15 @@ const (
 	// ErrorCodeSpaceAppRestartOverTime is const
 	ErrorCodeSpaceAppRestartOverTime = "space_app_restart_over_time"
 
+	// ErrorCodeSpaceAppPauseFailed pause space app
+	ErrorCodeSpaceAppPauseFailed = "space_app_pause_failed"
+
+	// ErrorCodeSpaceAppResumeFailed pause space app
+	ErrorCodeSpaceAppResumeFailed = "space_app_resume_failed"
+
+	// ErrorCodeSpaceAppResumeOverTime is const
+	ErrorCodeSpaceAppResumeOverTime = "space_app_resume_over_time"
+
 	// ErrorCodeAccessTokenInvalid This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 
@@ -218,7 +227,7 @@ const (
 
 	// invalid requester
 	ErrorInvalidRequester = "invalid_requester"
-	
+
 	// fullname can't be empty
 	ErrorFullnameCanNotBeEmpty = "fullname_can_not_be_empty"
 
@@ -230,7 +239,7 @@ const (
 
 	// username invalid
 	ErrorUsernameInvalid = "username_invalid"
-	
+
 	// failed to delete user in git server
 	ErrorFailedToDeleteUserInGitServer = "failed_to_delete_user_in_git_server"
 
@@ -245,7 +254,7 @@ const (
 
 	// input param is empty
 	ErrorInputParamIsEmpty = "input_param_is_empty"
-	
+
 	// delete token param is empty
 	ErrorDeleteTokenParamIsEmpty = "delete_token_param_is_empty"
 
@@ -278,7 +287,7 @@ const (
 
 	// failed to change owner of org
 	ErrorFailedToChangeOwnerOfOrg = "failed_to_change_owner_of_org"
-	
+
 	// failed to get members by org name: %s, %s
 	ErrorFailedToGetMembersByOrgName = "failed_to_get_members_by_org_name"
 
@@ -290,8 +299,8 @@ const (
 
 	// invalid status %s
 	ErrorInvalidStatus = "invalid_status"
-	
-    // user name %s is already taken
+
+	// user name %s is already taken
 	ErrorUsernameIsAlreadyTaken = "user_name_is_already_taken"
 
 	// failed to create platform user: %s

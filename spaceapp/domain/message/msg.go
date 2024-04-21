@@ -14,4 +14,6 @@ type EventMessage interface {
 type SpaceAppMessage interface {
 	SendSpaceAppCreatedEvent(EventMessage) error
 	SendSpaceAppRestartedEvent(EventMessage) error
+	SendSpaceAppPauseEvent(EventMessage) error
+	SendSpaceAppResumeEvent(EventMessage) error
 }

@@ -10,11 +10,13 @@ import (
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	"github.com/openmerlin/merlin-server/config"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
+	spaceappApp "github.com/openmerlin/merlin-server/spaceapp/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 )
@@ -46,6 +48,8 @@ type allServices struct {
 
 	spaceApp spaceapp.SpaceAppService
 
+	spaceappApp spaceappApp.SpaceappAppService
+
 	activityApp activityapp.ActivityAppService
 
 	modelSpace spaceapp.ModelSpaceAppService
@@ -53,6 +57,8 @@ type allServices struct {
 	spaceVariable spaceapp.SpaceVariableService
 
 	spaceSecret spaceapp.SpaceSecretService
+
+	compUtilityApp computilityapp.ComputilityAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -75,12 +81,12 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	if err = initSpaceApp(cfg, &services); err != nil {
+	// initSpace depends on initCodeRepo and initOrg and initSpaceApp
+	if err = initSpace(cfg, &services); err != nil {
 		return
 	}
 
-	// initSpace depends on initCodeRepo and initOrg and initSpaceApp
-	if err = initSpace(cfg, &services); err != nil {
+	if err = initSpaceApp(cfg, &services); err != nil {
 		return
 	}
 

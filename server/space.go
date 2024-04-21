@@ -33,6 +33,11 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		return err
 	}
 
+	err = repositoryadapter.Init(postgresql.DB(), &cfg.SpaceApp.Tables)
+	if err != nil {
+		return err
+	}
+
 	services.spaceApp = app.NewSpaceAppService(
 		services.permissionApp,
 		messageadapter.MessageAdapter(&cfg.Space.Topics),

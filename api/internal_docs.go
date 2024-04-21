@@ -887,6 +887,47 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/pause": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "stop space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/{id}": {
             "get": {
                 "security": [

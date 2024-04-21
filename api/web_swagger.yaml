@@ -38,6 +38,21 @@ definitions:
       task:
         type: string
     type: object
+  app.OrgCertificateDTO:
+    properties:
+      certificate_org_name:
+        type: string
+      certificate_org_type:
+        type: string
+      phone:
+        type: string
+      reason:
+        type: string
+      status:
+        type: string
+      unified_social_credit_code:
+        type: string
+    type: object
   app.SearchDTO:
     properties:
       result_set:
@@ -263,6 +278,28 @@ definitions:
       website:
         type: string
     type: object
+  controller.orgCertificateRequest:
+    properties:
+      certificate_org_name:
+        type: string
+      certificate_org_type:
+        type: string
+      identity:
+        type: string
+      image_of_certificate:
+        type: string
+      phone:
+        type: string
+      unified_social_credit_code:
+        type: string
+    required:
+    - certificate_org_name
+    - certificate_org_type
+    - identity
+    - image_of_certificate
+    - phone
+    - unified_social_credit_code
+    type: object
   controller.orgCreateRequest:
     properties:
       avatar_id:
@@ -476,6 +513,15 @@ definitions:
     required:
     - name
     - perm
+    type: object
+  controller.tokenResponse:
+    properties:
+      access_token:
+        type: string
+      client_id:
+        type: string
+      expires_in:
+        type: integer
     type: object
   controller.userBasicInfoUpdateRequest:
     properties:
@@ -763,6 +809,26 @@ paths:
       summary: User or organization info
       tags:
       - Organization
+  /v1/analytics/key:
+    get:
+      description: get analyse key
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.tokenResponse'
+                msg:
+                  type: string
+              type: object
+      summary: Ayalyse key
+      tags:
+      - Other
   /v1/computility/account/{type}:
     get:
       consumes:
@@ -1288,6 +1354,95 @@ paths:
       summary: Update
       tags:
       - Organization
+  /v1/organization/{name}/certificate:
+    get:
+      consumes:
+      - application/json
+      description: get organization certification
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.OrgCertificateDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: organization certification
+      parameters:
+      - description: organization name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: body of certificate
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCertificateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
+  /v1/organization/{name}/certificate/check:
+    get:
+      consumes:
+      - application/json
+      description: check organization certification
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: certificate organization name
+        in: query
+        name: certificate_org_name
+        type: string
+      - description: the unified social credit code
+        in: query
+        name: unified_social_credit_code
+        type: string
+      - description: phone number
+        in: query
+        name: phone
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
   /v1/organization/{name}/member:
     delete:
       consumes:
@@ -1703,6 +1858,32 @@ paths:
       summary: Get
       tags:
       - SpaceAppWeb
+  /v1/space-app/{owner}/{name}/Resume:
+    post:
+      consumes:
+      - application/json
+      description: resume space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
   /v1/space-app/{owner}/{name}/buildlog/realtime:
     get:
       consumes:
@@ -1738,6 +1919,32 @@ paths:
       summary: GetBuildLog
       tags:
       - SpaceAppWeb
+  /v1/space-app/{owner}/{name}/pause:
+    post:
+      consumes:
+      - application/json
+      description: stop space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
   /v1/space-app/{owner}/{name}/read:
     get:
       consumes:
@@ -1764,6 +1971,36 @@ paths:
       summary: CanRead
       tags:
       - SpaceAppWeb
+      x-example:
+        data: successfully
+  /v1/space-app/{owner}/{name}/restart:
+    post:
+      consumes:
+      - application/json
+      description: restart space app
+      parameters:
+      - description: owner of space
+        in: path
+        maxLength: 40
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        maxLength: 100
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
       x-example:
         data: successfully
   /v1/space/:owner/:name/variable-secret:

@@ -44,7 +44,7 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 
 	setRouterOfSpaceWeb(rg, services)
 
-	setRouterOfSpaceAppWeb(rg, services, cfg)
+	setRouterOfSpaceAppWeb(rg, services)
 
 	setRouterOfCodeRepo(rg, services)
 

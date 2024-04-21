@@ -71,3 +71,8 @@ type CmdToNotifyUpdateStatus struct {
 
 	Status appprimitive.AppStatus
 }
+
+// CmdToPauseSpaceApp is a command to pause space app
+type CmdToPauseSpaceApp struct {
+	IsForce bool
+}

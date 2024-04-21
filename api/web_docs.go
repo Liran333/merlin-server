@@ -53,6 +53,41 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/analytics/key": {
+            "get": {
+                "description": "get analyse key",
+                "tags": [
+                    "Other"
+                ],
+                "summary": "Ayalyse key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.tokenResponse"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/computility/account/{type}": {
             "get": {
                 "description": "get user computility account detail",
@@ -880,6 +915,151 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/organization/{name}/certificate": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get organization certification",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Certification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.OrgCertificateDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "organization certification",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Certification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "organization name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of certificate",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.orgCertificateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/organization/{name}/certificate/check": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check organization certification",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Certification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "certificate organization name",
+                        "name": "certificate_org_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "the unified social credit code",
+                        "name": "unified_social_credit_code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "phone number",
+                        "name": "phone",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/organization/{name}/member": {
             "get": {
                 "security": [
@@ -1540,6 +1720,47 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/Resume": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "resume space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space-app/{owner}/{name}/buildlog/realtime": {
             "get": {
                 "description": "get space app real-time build log",
@@ -1596,6 +1817,47 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/pause": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "stop space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space-app/{owner}/{name}/read": {
             "get": {
                 "description": "check permission for read space app",
@@ -1627,6 +1889,52 @@ const docTemplateweb = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                },
+                "x-example": {
+                    "data": "successfully"
+                }
+            }
+        },
+        "/v1/space-app/{owner}/{name}/restart": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "restart space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }
@@ -2650,6 +2958,29 @@ const docTemplateweb = `{
                 }
             }
         },
+        "app.OrgCertificateDTO": {
+            "type": "object",
+            "properties": {
+                "certificate_org_name": {
+                    "type": "string"
+                },
+                "certificate_org_type": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "unified_social_credit_code": {
+                    "type": "string"
+                }
+            }
+        },
         "app.SearchDTO": {
             "type": "object",
             "properties": {
@@ -2994,6 +3325,37 @@ const docTemplateweb = `{
                 }
             }
         },
+        "controller.orgCertificateRequest": {
+            "type": "object",
+            "required": [
+                "certificate_org_name",
+                "certificate_org_type",
+                "identity",
+                "image_of_certificate",
+                "phone",
+                "unified_social_credit_code"
+            ],
+            "properties": {
+                "certificate_org_name": {
+                    "type": "string"
+                },
+                "certificate_org_type": {
+                    "type": "string"
+                },
+                "identity": {
+                    "type": "string"
+                },
+                "image_of_certificate": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "unified_social_credit_code": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.orgCreateRequest": {
             "type": "object",
             "required": [
@@ -3319,6 +3681,20 @@ const docTemplateweb = `{
                 },
                 "perm": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.tokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "client_id": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
                 }
             }
         },

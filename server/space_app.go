@@ -8,7 +8,6 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 	"github.com/openmerlin/merlin-server/spaceapp/app"
@@ -19,39 +18,33 @@ import (
 )
 
 func initSpaceApp(cfg *config.Config, services *allServices) error {
-	return repositoryadapter.Init(postgresql.DB(), &cfg.SpaceApp.Tables)
-}
 
-func setRouterOfSpaceAppWeb(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
-	s := app.NewSpaceappAppService(
+	services.spaceappApp = app.NewSpaceappAppService(
 		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
 		repositoryadapter.AppRepositoryAdapter(),
 		spacerepositoryadapter.SpaceAdapter(),
 		services.permissionApp,
 		sseadapter.StreamSentAdapter(),
+		services.compUtilityApp,
 	)
 
+	return nil
+}
+
+func setRouterOfSpaceAppWeb(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForSpaceappWebController(
 		rg,
-		s,
+		services.spaceappApp,
 		services.userMiddleWare,
 		services.tokenMiddleWare,
 		services.rateLimiterMiddleWare,
 	)
 }
 
-func setRouterOfSpaceAppRestful(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
-	s := app.NewSpaceappAppService(
-		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
-		repositoryadapter.AppRepositoryAdapter(),
-		spacerepositoryadapter.SpaceAdapter(),
-		services.permissionApp,
-		sseadapter.StreamSentAdapter(),
-	)
-
+func setRouterOfSpaceAppRestful(rg *gin.RouterGroup, services *allServices) {
 	controller.AddRouterForSpaceappRestfulController(
 		rg,
-		s,
+		services.spaceappApp,
 		services.userMiddleWare,
 		services.tokenMiddleWare,
 		services.rateLimiterMiddleWare,
@@ -63,6 +56,8 @@ func setRouterOfSpaceAppInternal(rg *gin.RouterGroup, services *allServices, cfg
 		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
 		repositoryadapter.AppRepositoryAdapter(),
 		repositoryadapter.BuildLogAdapter(),
+		spacerepositoryadapter.SpaceAdapter(),
+		services.compUtilityApp,
 	)
 
 	controller.AddRouteForSpaceappInternalController(

@@ -36,6 +36,9 @@ type Space struct {
 	UpdatedAt     int64
 	LikeCount     int
 	DownloadCount int
+
+	CompPowerAllocated bool
+	CodeValid bool
 }
 
 // ResourceType returns the type of the model resource.

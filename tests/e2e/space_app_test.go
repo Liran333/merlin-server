@@ -47,7 +47,7 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	id := getString(s.T(), data.Data)
 
 	// 未创建space-app，重启失败
-	_, r, err = ApiRest.SpaceAppRestfulApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
+	_, r, err = ApiRest.SpaceApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
@@ -60,7 +60,7 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	assert.Nil(s.T(), err)
 
 	// space-app状态不为ready，重启失败
-	_, r, err = ApiRest.SpaceAppRestfulApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
+	_, r, err = ApiRest.SpaceApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
@@ -92,7 +92,7 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	assert.Nil(s.T(), err)
 
 	// 重启成功
-	_, r, err = ApiRest.SpaceAppRestfulApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
+	_, r, err = ApiRest.SpaceApi.V1SpaceAppOwnerNameRestartPost(AuthRest2, "test2", "testspace")
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 

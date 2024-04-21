@@ -22,7 +22,9 @@ func addRouterForSpaceappController(
 	l middleware.RateLimiter,
 ) {
 
-	r.POST("/v1/space-app/:owner/:name/restart", m.Optional, l.CheckLimit, ctl.Restart)
+	r.POST("/v1/space-app/:owner/:name/restart", m.Write, l.CheckLimit, ctl.Restart)
+	r.POST("/v1/space-app/:owner/:name/pause", m.Write, l.CheckLimit, ctl.Pause)
+	r.POST("/v1/space-app/:owner/:name/resume", m.Write, l.CheckLimit, ctl.Resume)
 
 }
 
@@ -52,7 +54,7 @@ func (ctl *SpaceAppController) parseIndex(ctx *gin.Context) (index spacedomain.S
 
 // @Summary  Post
 // @Description  restart space app
-// @Tags     SpaceAppRestful
+// @Tags     Space
 // @Param    owner  path  string  true  "owner of space" MaxLength(40)
 // @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
@@ -69,6 +71,60 @@ func (ctl *SpaceAppController) Restart(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if err := ctl.appService.RestartSpaceApp(user, &index); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "successfully")
+	}
+}
+
+// @Summary  Post
+// @Description  stop space app
+// @Tags     Space
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/space-app/{owner}/{name}/pause [post]
+func (ctl *SpaceAppController) Pause(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	if err := ctl.appService.PauseSpaceApp(user, &index); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "successfully")
+	}
+}
+
+// @Summary  Post
+// @Description  resume space app
+// @Tags     Space
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/space-app/{owner}/{name}/Resume [post]
+func (ctl *SpaceAppController) Resume(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	if err := ctl.appService.ResumeSpaceApp(user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")

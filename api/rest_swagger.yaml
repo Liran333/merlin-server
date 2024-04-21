@@ -4,6 +4,21 @@ definitions:
       branch_name:
         type: string
     type: object
+  app.OrgCertificateDTO:
+    properties:
+      certificate_org_name:
+        type: string
+      certificate_org_type:
+        type: string
+      phone:
+        type: string
+      reason:
+        type: string
+      status:
+        type: string
+      unified_social_credit_code:
+        type: string
+    type: object
   controller.OrgAcceptMemberRequest:
     properties:
       msg:
@@ -134,6 +149,28 @@ definitions:
         type: string
       website:
         type: string
+    type: object
+  controller.orgCertificateRequest:
+    properties:
+      certificate_org_name:
+        type: string
+      certificate_org_type:
+        type: string
+      identity:
+        type: string
+      image_of_certificate:
+        type: string
+      phone:
+        type: string
+      unified_social_credit_code:
+        type: string
+    required:
+    - certificate_org_name
+    - certificate_org_type
+    - identity
+    - image_of_certificate
+    - phone
+    - unified_social_credit_code
     type: object
   controller.orgCreateRequest:
     properties:
@@ -831,6 +868,95 @@ paths:
       summary: Update
       tags:
       - Organization
+  /v1/organization/{name}/certificate:
+    get:
+      consumes:
+      - application/json
+      description: get organization certification
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.OrgCertificateDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: organization certification
+      parameters:
+      - description: organization name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: body of certificate
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.orgCertificateRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
+  /v1/organization/{name}/certificate/check:
+    get:
+      consumes:
+      - application/json
+      description: check organization certification
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: certificate organization name
+        in: query
+        name: certificate_org_name
+        type: string
+      - description: the unified social credit code
+        in: query
+        name: unified_social_credit_code
+        type: string
+      - description: phone number
+        in: query
+        name: phone
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Certification
+      tags:
+      - Organization
   /v1/organization/{name}/member:
     delete:
       consumes:
@@ -1084,6 +1210,58 @@ paths:
       summary: Create
       tags:
       - Space
+  /v1/space-app/{owner}/{name}/Resume:
+    post:
+      consumes:
+      - application/json
+      description: resume space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
+  /v1/space-app/{owner}/{name}/pause:
+    post:
+      consumes:
+      - application/json
+      description: stop space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
   /v1/space-app/{owner}/{name}/restart:
     post:
       consumes:
@@ -1111,7 +1289,7 @@ paths:
       - Bearer: []
       summary: Post
       tags:
-      - SpaceAppRestful
+      - Space
       x-example:
         data: successfully
   /v1/space/{id}:

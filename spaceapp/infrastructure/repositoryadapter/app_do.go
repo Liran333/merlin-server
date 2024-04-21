@@ -31,6 +31,7 @@ func toSpaceAppDO(m *domain.SpaceApp) spaceappDO {
 		CommitId:    m.CommitId,
 		AllBuildLog: m.AllBuildLog,
 		RestartedAt: m.RestartedAt,
+		ResumedAt:  m.ResumedAt,
 	}
 
 	do.Id = m.Id
@@ -58,6 +59,7 @@ type spaceappDO struct {
 
 	Status      string `gorm:"column:status"`
 	RestartedAt int64  `gorm:"column:restarted_at"`
+	ResumedAt  int64  `gorm:"column:resumed_at"`
 
 	AppURL    string `gorm:"column:app_url"`
 	AppLogURL string `gorm:"column:app_log_url"`
@@ -82,6 +84,7 @@ func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 		},
 		Status:      appprimitive.CreateAppStatus(do.Status),
 		RestartedAt: do.RestartedAt,
+		ResumedAt:  do.ResumedAt,
 		Version:     do.Version,
 		AllBuildLog: do.AllBuildLog,
 	}

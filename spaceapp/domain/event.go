@@ -32,7 +32,7 @@ type spaceappRestartEvent struct {
 	CommitId string `json:"commit_id"`
 }
 
-// Message returns the JSON representation of the spaceappCreatedEvent.
+// Message returns the JSON representation of the spaceappRestartEvent.
 func (e *spaceappRestartEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
@@ -40,6 +40,44 @@ func (e *spaceappRestartEvent) Message() ([]byte, error) {
 // NewSpaceAppRestartEvent creates a spaceappRestartEvent instance with the given SpaceApp.
 func NewSpaceAppRestartEvent(app *SpaceAppIndex) spaceappRestartEvent {
 	return spaceappRestartEvent{
+		SpaceId:  app.SpaceId.Identity(),
+		CommitId: app.CommitId,
+	}
+}
+
+// spaceappPausedEvent
+type spaceappPausedEvent struct {
+	SpaceId  string `json:"space_id"`
+	CommitId string `json:"commit_id"`
+}
+
+// Message returns the JSON representation of the spaceappPausedEvent.
+func (e *spaceappPausedEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppPauseEvent creates a spaceappPausedEvent instance with the given SpaceApp.
+func NewSpaceAppPauseEvent(app *SpaceAppIndex) spaceappPausedEvent {
+	return spaceappPausedEvent{
+		SpaceId:  app.SpaceId.Identity(),
+		CommitId: app.CommitId,
+	}
+}
+
+// spaceappResumedEvent
+type spaceappResumedEvent struct {
+	SpaceId  string `json:"space_id"`
+	CommitId string `json:"commit_id"`
+}
+
+// Message returns the JSON representation of the spaceappResumedEvent.
+func (e *spaceappResumedEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppResumeEvent creates a spaceappResumedEvent instance with the given SpaceApp.
+func NewSpaceAppResumeEvent(app *SpaceAppIndex) spaceappResumedEvent {
+	return spaceappResumedEvent{
 		SpaceId:  app.SpaceId.Identity(),
 		CommitId: app.CommitId,
 	}

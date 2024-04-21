@@ -25,6 +25,10 @@ const (
 	startFailed = "start_failed"
 
 	restarting = "restarting"
+
+	paused       = "paused"
+	resuming     = "resuming"
+	resumeFailed = "resume_failed"
 )
 
 var (
@@ -48,9 +52,15 @@ var (
 
 	// AppStatusRestarted represents the application status when the app is restarted.
 	AppStatusRestarted = appStatus(restarting)
+
+	// AppStatusPaused represents the application status when the app is pause.
+	AppStatusPaused = appStatus(paused)
+
+	// AppStatusResuming represents the application status when the app is resume.
+	AppStatusResuming = appStatus(resuming)
 )
 
-var acceptAppStatusSets = sets.NewString(appInvalid)
+var acceptAppStatusSets = sets.NewString(appInvalid, resumeFailed)
 
 // AppStatus is an interface that defines methods for working with application statuses.
 type AppStatus interface {
@@ -59,8 +69,12 @@ type AppStatus interface {
 	IsBuilding() bool
 	IsBuildSuccessful() bool
 	IsRestarting() bool
-	IsReadyToRestart() bool
+	IsPaused() bool
+	IsResuming() bool
+	IsResumeFailed() bool
 	IsUpdateStatusAccept() bool
+	IsStartFailed() bool
+	IsServing() bool
 }
 
 // NewAppStatus creates a new instance of AppStatus based on the provided value.
@@ -75,6 +89,7 @@ func NewAppStatus(v string) (AppStatus, error) {
 	case buildFailed:
 	case startFailed:
 	case starting:
+	case resumeFailed:
 
 	default:
 		return nil, errors.New("unknown appStatus")
@@ -116,9 +131,29 @@ func (r appStatus) IsRestarting() bool {
 	return string(r) == restarting
 }
 
-// IsReadyToRestart checks if the appStatus can be restart
-func (r appStatus) IsReadyToRestart() bool {
-	return string(r) == serving || string(r) == startFailed
+// IsPaused checks if the appStatus is equal to paused.
+func (r appStatus) IsPaused() bool {
+	return string(r) == paused
+}
+
+// IsResuming checks if the appStatus is equal to resuming.
+func (r appStatus) IsResuming() bool {
+	return string(r) == resuming
+}
+
+// IsResuming checks if the appStatus is equal to resuming.
+func (r appStatus) IsResumeFailed() bool {
+	return string(r) == resumeFailed
+}
+
+// IsStartFailed checks if the appStatus startFailed
+func (r appStatus) IsStartFailed() bool {
+	return string(r) == startFailed
+}
+
+// IsServing checks if the appStatus serving
+func (r appStatus) IsServing() bool {
+	return string(r) == serving
 }
 
 // checks if the appStatus can be update

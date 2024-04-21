@@ -56,6 +56,8 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		Version:      m.Version,
 		LocalCmd:     m.LocalCmd,
 		LocalEnvInfo: m.LocalEnvInfo,
+		CodeValid: 	  m.CodeValid,
+		CompPowerAllocated: m.CompPowerAllocated,
 	}
 }
 
@@ -94,6 +96,11 @@ type spaceDO struct {
 	Task       string         `gorm:"column:task;index:task"`
 	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
 	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
+
+	// comp power allocated
+	CompPowerAllocated    		bool   `gorm:"column:comp_power_allocated"`
+	// code valid
+	CodeValid    				bool   `gorm:"column:code_valid"`
 }
 
 // TableName returns the table name of spaceDO.
@@ -127,6 +134,8 @@ func (do *spaceDO) toSpace() domain.Space {
 			Others:     sets.New[string](do.Others...),
 			Frameworks: sets.New[string](do.Frameworks...),
 		},
+		CodeValid:    do.CodeValid,
+		CompPowerAllocated:   do.CompPowerAllocated,
 	}
 }
 

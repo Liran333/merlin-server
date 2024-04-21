@@ -10,6 +10,8 @@ import (
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
@@ -29,12 +31,13 @@ func AddRouteForSpaceappInternalController(
 	r.PUT(`/v1/space-app/build/done`, m.Write, ctl.NotifyBuildIsDone)
 	r.PUT(`/v1/space-app/service/started`, m.Write, ctl.NotifyServiceIsStarted)
 	r.PUT(`/v1/space-app/status`, m.Write, ctl.NotifyUpdateStatus)
+	r.POST("/v1/space-app/:owner/:name/pause", m.Write, ctl.Pause)
 }
 
 // SpaceAppInternalController is a struct that holds the app service
 // and provides methods for handling requests related to space apps.
 type SpaceAppInternalController struct {
-	appService app.SpaceappInternalAppService
+	appService 			app.SpaceappInternalAppService 
 }
 
 // @Summary  Create
@@ -190,4 +193,55 @@ func (ctl *SpaceAppInternalController) NotifyUpdateStatus(ctx *gin.Context) {
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
 	}
+}
+
+// @Summary  Post
+// @Description  stop space app
+// @Tags     SpaceApp
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Security Internal
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/space-app/{owner}/{name}/pause [post]
+func (ctl *SpaceAppInternalController) Pause(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	req := reqToPauseSpaceApp{}
+
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+
+	if err := ctl.appService.PauseSpaceApp(&index, cmd.IsForce); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "successfully")
+	}
+}
+
+func (ctl *SpaceAppInternalController) parseIndex(ctx *gin.Context) (index spacedomain.SpaceIndex, err error) {
+	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	index.Name, err = primitive.NewMSDName(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+	}
+
+	return
 }

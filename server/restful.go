@@ -43,7 +43,7 @@ func setRouterOfRestful(prefix string, engine *gin.Engine, cfg *config.Config, s
 
 	setRouterOfSpaceRestful(rg, services)
 
-	setRouterOfSpaceAppRestful(rg, services, cfg)
+	setRouterOfSpaceAppRestful(rg, services)
 
 	setRouterOfBranchRestful(rg, services)
 

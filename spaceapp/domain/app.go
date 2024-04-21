@@ -10,6 +10,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -27,6 +28,7 @@ type SpaceApp struct {
 	SpaceAppIndex
 
 	Status      appprimitive.AppStatus
+	ResumedAt   int64
 	RestartedAt int64
 
 	AppURL    appprimitive.AppURL
@@ -37,6 +39,8 @@ type SpaceApp struct {
 
 	Version int
 }
+
+type PauseSpaceAppHandle func(bool, computilityapp.ComputilityAppService) error
 
 // StartBuilding starts the building process for the space app and sets the build log URL.
 func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
@@ -69,8 +73,12 @@ func (app *SpaceApp) SetBuildIsDone(success bool) error {
 
 // StartService starts the service for the space app with the specified app URL and log URL.
 func (app *SpaceApp) StartService(appURL appprimitive.AppURL, logURL primitive.URL) error {
-	if !app.Status.IsBuildSuccessful() && !app.Status.IsRestarting() {
-		e := fmt.Errorf("not build successful or restarting")
+	if !app.Status.IsBuildSuccessful() &&
+		!app.Status.IsRestarting() &&
+		!app.Status.IsResuming() {
+		e := fmt.Errorf("spaceId:%s, not build successful "+
+			"or restarting "+
+			"or resuming", app.SpaceId.Identity())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -91,18 +99,18 @@ type SpaceAppBuildLog struct {
 }
 
 // RestartService restart the service for space app with oldRestartTime
-func (app *SpaceApp) RestartService(oldRestartTime int64) error {
+func (app *SpaceApp) RestartService() error {
 	now := utils.Now()
 	if app.Status.IsRestarting() {
-		if now-oldRestartTime < config.RestartOverTime {
+		if now-app.RestartedAt < config.RestartOverTime {
 			return allerror.New(allerror.ErrorCodeSpaceAppRestartOverTime, "not over time to restart",
-				fmt.Errorf("restart cost(%d) not over time(%d) to restart", now-oldRestartTime, config.RestartOverTime),
+				fmt.Errorf("restart cost(%d) not over time(%d) to restart", now-app.RestartedAt, config.RestartOverTime),
 			)
 		}
 		app.RestartedAt = now
 		return nil
 	}
-	if !app.Status.IsReadyToRestart() {
+	if !app.Status.IsServing() && !app.Status.IsStartFailed() {
 		e := fmt.Errorf("not ready to restart")
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
@@ -121,4 +129,47 @@ func (app *SpaceApp) IsAppStatusAllow(status appprimitive.AppStatus) error {
 	app.Status = status
 
 	return nil
+}
+
+// PauseService pause the service for space app
+func (app *SpaceApp) PauseService(
+	isForce bool,
+	compPowerAllocated bool,
+	compUtility computilityapp.ComputilityAppService,
+	pauseHook PauseSpaceAppHandle,
+	) error {
+	if !app.Status.IsServing() && !isForce {
+		e := fmt.Errorf("spaceId:%s, not serving", app.SpaceId.Identity())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = appprimitive.AppStatusPaused
+
+	return pauseHook(compPowerAllocated, compUtility)
+}
+
+// ResumeService resume the service for space app with oldResumeTime
+func (app *SpaceApp) ResumeService(
+	isNpu bool,
+	compUtility computilityapp.ComputilityAppService,
+	pauseHook PauseSpaceAppHandle,
+	) error {
+	now := utils.Now()
+	if app.Status.IsResuming() {
+		if now-app.ResumedAt < config.ResumeOverTime {
+			return allerror.New(allerror.ErrorCodeSpaceAppResumeOverTime, "not over time to resume",
+				fmt.Errorf("resume cost(%d) not over time(%d) to resume", now-app.ResumedAt, config.ResumeOverTime),
+			)
+		}
+		app.ResumedAt = now
+		return nil
+	}
+	if !app.Status.IsPaused() && !app.Status.IsResumeFailed() {
+		e := fmt.Errorf("spaceId:%s, not ready to resume", app.SpaceId.Identity())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+	app.Status = appprimitive.AppStatusResuming
+	app.ResumedAt = now
+
+	return pauseHook(isNpu, compUtility)
 }

@@ -537,6 +537,32 @@ paths:
       - SpaceApp
       x-example:
         data: successfully
+  /v1/space-app/{owner}/{name}/pause:
+    post:
+      consumes:
+      - application/json
+      description: stop space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Post
+      tags:
+      - SpaceApp
   /v1/space-app/build/done:
     put:
       consumes:

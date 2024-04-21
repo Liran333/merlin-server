@@ -96,3 +96,13 @@ func (req *reqToSetStatus) toCmd() (cmd app.CmdToNotifyUpdateStatus, err error) 
 	cmd.Status, err = appprimitive.NewAppStatus(req.Status)
 	return
 }
+
+// reqToPauseSpaceApp
+type reqToPauseSpaceApp struct {
+	IsForce bool   `json:"is_force"`
+}
+
+func (req *reqToPauseSpaceApp) toCmd() (cmd app.CmdToPauseSpaceApp, err error) {
+	cmd.IsForce = req.IsForce
+	return
+}
