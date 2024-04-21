@@ -1215,6 +1215,7 @@ const docTemplaterest = `{
                 "summary": "Post",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1222,6 +1223,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1236,6 +1238,9 @@ const docTemplaterest = `{
                             "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
+                },
+                "x-example": {
+                    "data": "successfully"
                 }
             }
         },

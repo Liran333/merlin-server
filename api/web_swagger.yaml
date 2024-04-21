@@ -1641,11 +1641,13 @@ paths:
       parameters:
       - description: owner of space
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1653,7 +1655,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.SpaceAppDTO'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.SpaceAppDTO'
+                msg:
+                  type: string
+              type: object
       summary: GetSpaceLog
       tags:
       - SpaceAppWeb
@@ -1665,11 +1676,13 @@ paths:
       parameters:
       - description: owner of space
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1677,7 +1690,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.SpaceAppDTO'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.SpaceAppDTO'
+                msg:
+                  type: string
+              type: object
       summary: Get
       tags:
       - SpaceAppWeb
@@ -1689,11 +1711,13 @@ paths:
       parameters:
       - description: owner of space
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1701,7 +1725,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.SpaceAppDTO'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.SpaceAppDTO'
+                msg:
+                  type: string
+              type: object
       summary: GetBuildLog
       tags:
       - SpaceAppWeb
@@ -1713,11 +1746,13 @@ paths:
       parameters:
       - description: owner of space
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1729,6 +1764,8 @@ paths:
       summary: CanRead
       tags:
       - SpaceAppWeb
+      x-example:
+        data: successfully
   /v1/space/:owner/:name/variable-secret:
     get:
       consumes:

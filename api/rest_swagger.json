@@ -1204,6 +1204,7 @@
                 "summary": "Post",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1211,6 +1212,7 @@
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1225,6 +1227,9 @@
                             "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
+                },
+                "x-example": {
+                    "data": "successfully"
                 }
             }
         },

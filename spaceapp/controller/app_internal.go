@@ -43,6 +43,7 @@ type SpaceAppInternalController struct {
 // @Param    body  body  reqToCreateSpaceApp  true  "body of creating space app"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
+// @x-example {"data": "successfully"}
 // @Security Internal
 // @Router   /v1/space-app/ [post]
 func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
@@ -72,7 +73,7 @@ func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
 // @Tags     SpaceApp
 // @Param    body  body  reqToUpdateBuildInfo  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/space-app/build/started [put]
 func (ctl *SpaceAppInternalController) NotifyBuildIsStarted(ctx *gin.Context) {
@@ -103,7 +104,7 @@ func (ctl *SpaceAppInternalController) NotifyBuildIsStarted(ctx *gin.Context) {
 // @Tags     SpaceApp
 // @Param    body  body  reqToSetBuildIsDone  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/space-app/build/done [put]
 func (ctl *SpaceAppInternalController) NotifyBuildIsDone(ctx *gin.Context) {
@@ -134,7 +135,7 @@ func (ctl *SpaceAppInternalController) NotifyBuildIsDone(ctx *gin.Context) {
 // @Tags     SpaceApp
 // @Param    body  body  reqToUpdateServiceInfo  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/space-app/service/started [put]
 func (ctl *SpaceAppInternalController) NotifyServiceIsStarted(ctx *gin.Context) {
@@ -165,7 +166,7 @@ func (ctl *SpaceAppInternalController) NotifyServiceIsStarted(ctx *gin.Context) 
 // @Tags     SpaceApp
 // @Param    body  body  reqToSetStatus  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/space-app/status [put]
 func (ctl *SpaceAppInternalController) NotifyUpdateStatus(ctx *gin.Context) {

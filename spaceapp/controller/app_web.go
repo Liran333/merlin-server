@@ -10,7 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/openmerlin/merlin-server/common/controller"
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	spacedomain "github.com/openmerlin/merlin-server/space/domain"
@@ -51,10 +51,10 @@ type SpaceAppWebController struct {
 // @Summary  Get
 // @Description  get space app
 // @Tags     SpaceAppWeb
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  app.SpaceAppDTO
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpaceAppDTO,msg=string,code=string}
 // @Router   /v1/space-app/{owner}/{name} [get]
 func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -65,23 +65,23 @@ func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if dto, err := ctl.appService.GetByName(user, &index); err != nil {
-		controller.SendError(ctx, err)
+		commonctl.SendError(ctx, err)
 	} else {
-		controller.SendRespOfGet(ctx, &dto)
+		commonctl.SendRespOfGet(ctx, &dto)
 	}
 }
 
 func (ctl *SpaceAppWebController) parseIndex(ctx *gin.Context) (index spacedomain.SpaceIndex, err error) {
 	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {
-		controller.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 
 		return
 	}
 
 	index.Name, err = primitive.NewMSDName(ctx.Param("name"))
 	if err != nil {
-		controller.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, err)
 	}
 
 	return
@@ -90,10 +90,10 @@ func (ctl *SpaceAppWebController) parseIndex(ctx *gin.Context) (index spacedomai
 // @Summary  GetBuildLog
 // @Description  get space app real-time build log
 // @Tags     SpaceAppWeb
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  app.SpaceAppDTO
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpaceAppDTO,msg=string,code=string}
 // @Router   /v1/space-app/{owner}/{name}/buildlog/realtime [get]
 func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -143,10 +143,10 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 // @Summary  GetSpaceLog
 // @Description  get space app real-time space log
 // @Tags     SpaceAppWeb
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  app.SpaceAppDTO
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpaceAppDTO,msg=string,code=string}
 // @Router   /v1/space-app/:owner/:name/spacelog/realtime [get]
 func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -196,10 +196,11 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 // @Summary  CanRead
 // @Description  check permission for read space app
 // @Tags     SpaceAppWeb
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  controller.ResponseData
+// @Success  200  {object}  commonctl.ResponseData
+// @x-example {"data": "successfully"}
 // @Router   /v1/space-app/{owner}/{name}/read [get]
 func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -210,8 +211,8 @@ func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if err := ctl.appService.CheckPermissionRead(user, &index); err != nil {
-		controller.SendError(ctx, err)
+		commonctl.SendError(ctx, err)
 	} else {
-		controller.SendRespOfGet(ctx, "successfully")
+		commonctl.SendRespOfGet(ctx, "successfully")
 	}
 }

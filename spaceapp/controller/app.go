@@ -53,11 +53,12 @@ func (ctl *SpaceAppController) parseIndex(ctx *gin.Context) (index spacedomain.S
 // @Summary  Post
 // @Description  restart space app
 // @Tags     SpaceAppRestful
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
 // @Security Bearer
 // @Success  201   {object}  commonctl.ResponseData
+// @x-example {"data": "successfully"}
 // @Router   /v1/space-app/{owner}/{name}/restart [post]
 func (ctl *SpaceAppController) Restart(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)

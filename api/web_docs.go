@@ -1440,6 +1440,7 @@ const docTemplateweb = `{
                 "summary": "GetSpaceLog",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1447,6 +1448,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1458,7 +1460,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.SpaceAppDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceAppDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1476,6 +1496,7 @@ const docTemplateweb = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1483,6 +1504,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1494,7 +1516,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.SpaceAppDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceAppDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1512,6 +1552,7 @@ const docTemplateweb = `{
                 "summary": "GetBuildLog",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1519,6 +1560,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1530,7 +1572,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.SpaceAppDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceAppDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1548,6 +1608,7 @@ const docTemplateweb = `{
                 "summary": "CanRead",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1555,6 +1616,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1569,6 +1631,9 @@ const docTemplateweb = `{
                             "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
+                },
+                "x-example": {
+                    "data": "successfully"
                 }
             }
         },

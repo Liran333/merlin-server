@@ -1092,11 +1092,13 @@ paths:
       parameters:
       - description: owner of space
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of space
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1110,6 +1112,8 @@ paths:
       summary: Post
       tags:
       - SpaceAppRestful
+      x-example:
+        data: successfully
   /v1/space/{id}:
     delete:
       consumes:
