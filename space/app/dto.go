@@ -243,3 +243,8 @@ func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret
 
 	return
 }
+
+// CmdToUpdateStatistics is a type alias for domain.ModelLabels, representing a command to update model statistics.
+type CmdToUpdateStatistics struct {
+	DownloadCount int `json:"download_count"`
+}

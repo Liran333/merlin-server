@@ -39,24 +39,25 @@ var (
 
 func toSpaceDO(m *domain.Space) spaceDO {
 	return spaceDO{
-		Id:           m.Id.Integer(),
-		SDK:          m.SDK.SDK(),
-		Desc:         m.Desc.MSDDesc(),
-		Name:         m.Name.MSDName(),
-		Owner:        m.Owner.Account(),
-		License:      m.License.License(),
-		AvatarId:     m.AvatarId.AvatarId(),
-		Hardware:     m.Hardware.Hardware(),
-		Fullname:     m.Fullname.MSDFullname(),
-		CreatedBy:    m.CreatedBy.Account(),
-		Visibility:   m.Visibility.Visibility(),
-		CreatedAt:    m.CreatedAt,
-		UpdatedAt:    m.UpdatedAt,
-		LikeCount:    m.LikeCount,
-		Version:      m.Version,
-		LocalCmd:     m.LocalCmd,
-		LocalEnvInfo: m.LocalEnvInfo,
-		CodeValid: 	  m.CodeValid,
+		Id:                 m.Id.Integer(),
+		SDK:                m.SDK.SDK(),
+		Desc:               m.Desc.MSDDesc(),
+		Name:               m.Name.MSDName(),
+		Owner:              m.Owner.Account(),
+		License:            m.License.License(),
+		AvatarId:           m.AvatarId.AvatarId(),
+		Hardware:           m.Hardware.Hardware(),
+		Fullname:           m.Fullname.MSDFullname(),
+		CreatedBy:          m.CreatedBy.Account(),
+		Visibility:         m.Visibility.Visibility(),
+		CreatedAt:          m.CreatedAt,
+		UpdatedAt:          m.UpdatedAt,
+		LikeCount:          m.LikeCount,
+		Version:            m.Version,
+		LocalCmd:           m.LocalCmd,
+		LocalEnvInfo:       m.LocalEnvInfo,
+		CodeValid:          m.CodeValid,
+		DownloadCount:      m.DownloadCount,
 		CompPowerAllocated: m.CompPowerAllocated,
 	}
 }
@@ -98,9 +99,9 @@ type spaceDO struct {
 	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
 
 	// comp power allocated
-	CompPowerAllocated    		bool   `gorm:"column:comp_power_allocated"`
+	CompPowerAllocated bool `gorm:"column:comp_power_allocated"`
 	// code valid
-	CodeValid    				bool   `gorm:"column:code_valid"`
+	CodeValid bool `gorm:"column:code_valid"`
 }
 
 // TableName returns the table name of spaceDO.
@@ -118,24 +119,25 @@ func (do *spaceDO) toSpace() domain.Space {
 			Visibility: primitive.CreateVisibility(do.Visibility),
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 		},
-		SDK:          spaceprimitive.CreateSDK(do.SDK),
-		Desc:         primitive.CreateMSDDesc(do.Desc),
-		Fullname:     primitive.CreateMSDFullname(do.Fullname),
-		Hardware:     spaceprimitive.CreateHardware(do.Hardware),
-		AvatarId:     primitive.CreateAvatarId(do.AvatarId),
-		CreatedAt:    do.CreatedAt,
-		UpdatedAt:    do.UpdatedAt,
-		Version:      do.Version,
-		LocalCmd:     do.LocalCmd,
-		LikeCount:    do.LikeCount,
-		LocalEnvInfo: do.LocalEnvInfo,
+		SDK:           spaceprimitive.CreateSDK(do.SDK),
+		Desc:          primitive.CreateMSDDesc(do.Desc),
+		Fullname:      primitive.CreateMSDFullname(do.Fullname),
+		Hardware:      spaceprimitive.CreateHardware(do.Hardware),
+		AvatarId:      primitive.CreateAvatarId(do.AvatarId),
+		CreatedAt:     do.CreatedAt,
+		UpdatedAt:     do.UpdatedAt,
+		Version:       do.Version,
+		LocalCmd:      do.LocalCmd,
+		LikeCount:     do.LikeCount,
+		LocalEnvInfo:  do.LocalEnvInfo,
+		DownloadCount: do.DownloadCount,
 		Labels: domain.SpaceLabels{
 			Task:       do.Task,
 			Others:     sets.New[string](do.Others...),
 			Frameworks: sets.New[string](do.Frameworks...),
 		},
-		CodeValid:    do.CodeValid,
-		CompPowerAllocated:   do.CompPowerAllocated,
+		CodeValid:          do.CodeValid,
+		CompPowerAllocated: do.CompPowerAllocated,
 	}
 }
 

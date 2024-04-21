@@ -116,3 +116,8 @@ type CmdToListModels = repository.ListOption
 
 // CmdToResetLabels is a type alias for domain.ModelLabels, representing a command to reset model labels.
 type CmdToResetLabels = domain.ModelLabels
+
+// CmdToUpdateStatistics is a type alias for domain.ModelLabels, representing a command to update model statistics.
+type CmdToUpdateStatistics struct {
+	DownloadCount int `json:"download_count"`
+}

@@ -6,11 +6,14 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 // ModelInternalAppService is an interface for the internal model application service.
@@ -18,6 +21,7 @@ type ModelInternalAppService interface {
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	GetById(modelId primitive.Identity) (ModelDTO, error)
 	GetByNames([]*domain.ModelIndex) []primitive.Identity
+	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
 }
 
 // NewModelInternalAppService creates a new instance of the internal model application service.
@@ -74,4 +78,20 @@ func (s *modelInternalAppService) GetByNames(modelsIndex []*domain.ModelIndex) [
 	}
 
 	return dtos
+}
+
+// UpdateStatistics updates the statistics of a model.
+func (s *modelInternalAppService) UpdateStatistics(modelId primitive.Identity, cmd *CmdToUpdateStatistics) error {
+	model, err := s.modelAdapter.FindById(modelId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, err: %w", modelId.Identity(), err))
+		}
+		return err
+	}
+
+	model.DownloadCount = cmd.DownloadCount
+	model.UpdatedAt = utils.Now()
+
+	return s.modelAdapter.Save(&model)
 }

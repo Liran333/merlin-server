@@ -26,6 +26,7 @@ func AddRouterForModelInternalController(
 
 	r.GET("/v1/model/:id", m.Read, ctl.GetById)
 	r.PUT("/v1/model/:id/label", m.Write, ctl.ResetLabel)
+	r.PUT("/v1/model/:id", m.Write, ctl.Update)
 }
 
 // ModelInternalController is a struct that holds the app service for model internal operations.
@@ -88,5 +89,39 @@ func (ctl *ModelInternalController) GetById(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, data)
+	}
+}
+
+// @Summary  Update model info
+// @Description  update model info by id
+// @Tags     ModelInternal
+// @Param    id    path  string   true  "id of model"
+// @Param    body  body  modelStatistics  true  "body of updating model info"
+// @Accept   json
+// @Security Internal
+// @Success  202  {object}  commonctl.ResponseData
+// @Router   /v1/model/{id} [put]
+func (ctl *ModelInternalController) Update(ctx *gin.Context) {
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	var modelStatistics modelStatistics
+	if err := ctx.BindJSON(&modelStatistics); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd := modelStatistics.toCmd()
+
+	err = ctl.appService.UpdateStatistics(modelId, &cmd)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
 	}
 }

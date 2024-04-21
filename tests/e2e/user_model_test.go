@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
+	swaggerInternal "e2e/client_internal"
 	swaggerRest "e2e/client_rest"
 )
 
@@ -165,6 +166,41 @@ func (s *SuiteUserModel) TestUserCanVisitSelfPublicModel() {
 	assert.Nil(s.T(), err)
 
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id2)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestUserSetModelDownloadCount used for testing
+// 可以通过内部接口设置下载统计
+func (s *SuiteUserModel) TestUserSetModelDownloadCount() {
+	modelParam := swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	// 重复创建模型返回400
+	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdPut(Interal, id, swaggerInternal.ControllerModelStatistics{
+		DownloadCount: 10,
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data, r, err = ApiRest.ModelRestfulApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	model := getData(s.T(), data.Data)
+	assert.Equal(s.T(), float64(10), model["download_count"])
+
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

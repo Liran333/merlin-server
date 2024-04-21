@@ -38,18 +38,19 @@ var (
 
 func toModelDO(m *domain.Model) modelDO {
 	return modelDO{
-		Id:         m.Id.Integer(),
-		Desc:       m.Desc.MSDDesc(),
-		Name:       m.Name.MSDName(),
-		Owner:      m.Owner.Account(),
-		License:    m.License.License(),
-		Fullname:   m.Fullname.MSDFullname(),
-		CreatedBy:  m.CreatedBy.Account(),
-		Visibility: m.Visibility.Visibility(),
-		CreatedAt:  m.CreatedAt,
-		LikeCount:  m.LikeCount,
-		UpdatedAt:  m.UpdatedAt,
-		Version:    m.Version,
+		Id:            m.Id.Integer(),
+		Desc:          m.Desc.MSDDesc(),
+		Name:          m.Name.MSDName(),
+		Owner:         m.Owner.Account(),
+		License:       m.License.License(),
+		Fullname:      m.Fullname.MSDFullname(),
+		CreatedBy:     m.CreatedBy.Account(),
+		Visibility:    m.Visibility.Visibility(),
+		CreatedAt:     m.CreatedAt,
+		LikeCount:     m.LikeCount,
+		UpdatedAt:     m.UpdatedAt,
+		Version:       m.Version,
+		DownloadCount: m.DownloadCount,
 	}
 }
 
@@ -106,12 +107,13 @@ func (do *modelDO) toModel() domain.Model {
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
-		Desc:      primitive.CreateMSDDesc(do.Desc),
-		Fullname:  primitive.CreateMSDFullname(do.Fullname),
-		CreatedAt: do.CreatedAt,
-		UpdatedAt: do.UpdatedAt,
-		Version:   do.Version,
-		LikeCount: do.LikeCount,
+		Desc:          primitive.CreateMSDDesc(do.Desc),
+		Fullname:      primitive.CreateMSDFullname(do.Fullname),
+		CreatedAt:     do.CreatedAt,
+		UpdatedAt:     do.UpdatedAt,
+		Version:       do.Version,
+		LikeCount:     do.LikeCount,
+		DownloadCount: do.DownloadCount,
 
 		Labels: domain.ModelLabels{
 			Task:       do.Task,
