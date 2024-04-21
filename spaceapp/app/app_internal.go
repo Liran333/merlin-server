@@ -12,7 +12,6 @@ import (
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	computilitydomain "github.com/openmerlin/merlin-server/computility/domain"
-	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/domain/message"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
@@ -30,7 +29,7 @@ type SpaceappInternalAppService interface {
 	NotifyBuildIsDone(cmd *CmdToNotifyBuildIsDone) error
 	NotifyServiceIsStarted(cmd *CmdToNotifyServiceIsStarted) error
 	NotifyUpdateStatus(cmd *CmdToNotifyUpdateStatus) error
-	PauseSpaceApp(*spacedomain.SpaceIndex, bool) error
+	PauseSpaceApp(cmd *CmdToPauseSpaceApp) error
 }
 
 // NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
@@ -159,10 +158,8 @@ func (s *spaceappInternalAppService) NotifyUpdateStatus(cmd *CmdToNotifyUpdateSt
 }
 
 // PauseSpaceApp pause a SpaceApp in the spaceappAppService.
-func (s *spaceappInternalAppService) PauseSpaceApp(
-	index *spacedomain.SpaceIndex, isForce bool,
-) error {
-	space, err := s.spaceRepo.FindByName(index)
+func (s *spaceappInternalAppService) PauseSpaceApp(cmd *CmdToPauseSpaceApp) error {
+	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", err)
@@ -202,7 +199,7 @@ func (s *spaceappInternalAppService) PauseSpaceApp(
 		return compUtility.UserQuotaRelease(cmd)
 	}
 
-	if err := app.PauseService(isForce, space.CompPowerAllocated,
+	if err := app.PauseService(cmd.IsForce, space.CompPowerAllocated,
 		s.compUtility, releaseSpaceCompQuota); err != nil {
 		return err
 	}

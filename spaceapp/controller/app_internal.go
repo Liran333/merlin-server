@@ -10,8 +10,6 @@ import (
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
-	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
@@ -31,7 +29,7 @@ func AddRouteForSpaceappInternalController(
 	r.PUT(`/v1/space-app/build/done`, m.Write, ctl.NotifyBuildIsDone)
 	r.PUT(`/v1/space-app/service/started`, m.Write, ctl.NotifyServiceIsStarted)
 	r.PUT(`/v1/space-app/status`, m.Write, ctl.NotifyUpdateStatus)
-	r.POST("/v1/space-app/:owner/:name/pause", m.Write, ctl.Pause)
+	r.POST("/v1/space-app/pause", m.Write, ctl.Pause)
 }
 
 // SpaceAppInternalController is a struct that holds the app service
@@ -196,19 +194,15 @@ func (ctl *SpaceAppInternalController) NotifyUpdateStatus(ctx *gin.Context) {
 }
 
 // @Summary  Post
-// @Description  stop space app
+// @Description  pause space app
 // @Tags     SpaceApp
 // @Param    owner  path  string  true  "owner of space"
 // @Param    name   path  string  true  "name of space"
 // @Accept   json
 // @Security Internal
 // @Success  201   {object}  commonctl.ResponseData
-// @Router   /v1/space-app/{owner}/{name}/pause [post]
+// @Router   /v1/space-app/pause [post]
 func (ctl *SpaceAppInternalController) Pause(ctx *gin.Context) {
-	index, err := ctl.parseIndex(ctx)
-	if err != nil {
-		return
-	}
 
 	req := reqToPauseSpaceApp{}
 
@@ -223,25 +217,9 @@ func (ctl *SpaceAppInternalController) Pause(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.PauseSpaceApp(&index, cmd.IsForce); err != nil {
+	if err := ctl.appService.PauseSpaceApp(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
 	}
-}
-
-func (ctl *SpaceAppInternalController) parseIndex(ctx *gin.Context) (index spacedomain.SpaceIndex, err error) {
-	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	index.Name, err = primitive.NewMSDName(ctx.Param("name"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-	}
-
-	return
 }

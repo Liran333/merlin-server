@@ -99,10 +99,16 @@ func (req *reqToSetStatus) toCmd() (cmd app.CmdToNotifyUpdateStatus, err error) 
 
 // reqToPauseSpaceApp
 type reqToPauseSpaceApp struct {
-	IsForce bool   `json:"is_force"`
+	SpaceId  string `json:"space_id"`
+	IsForce  bool   `json:"is_force"`
 }
 
 func (req *reqToPauseSpaceApp) toCmd() (cmd app.CmdToPauseSpaceApp, err error) {
+	cmd.SpaceId, err = primitive.NewIdentity(req.SpaceId)
+	if err != nil {
+		return
+	}
+
 	cmd.IsForce = req.IsForce
 	return
 }

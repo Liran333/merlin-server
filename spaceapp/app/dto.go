@@ -74,5 +74,6 @@ type CmdToNotifyUpdateStatus struct {
 
 // CmdToPauseSpaceApp is a command to pause space app
 type CmdToPauseSpaceApp struct {
+	SpaceId  primitive.Identity
 	IsForce bool
 }

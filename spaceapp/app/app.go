@@ -35,6 +35,7 @@ type SpaceappAppService interface {
 // spaceRepository
 type spaceRepository interface {
 	FindByName(*spacedomain.SpaceIndex) (spacedomain.Space, error)
+	FindById(primitive.Identity) (spacedomain.Space, error)
 	Save(*spacedomain.Space) error
 }
 
