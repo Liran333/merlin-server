@@ -17,7 +17,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
-	"github.com/openmerlin/merlin-server/common/infrastructure/gitaccess"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -70,7 +69,6 @@ type Config struct {
 	CodeRepo     coderepo.Config      `json:"coderepo"`
 	Internal     internal.Config      `json:"internal"`
 	Primitive    primitive.Config     `json:"primitive"`
-	GitAccess    gitaccess.Config     `json:"git_access"`
 	Postgresql   postgresql.Config    `json:"postgresql"`
 	Permission   permission.Config    `json:"permission"`
 	RateLimiter  ratelimiter.Config   `json:"ratelimit"`
@@ -124,7 +122,6 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.SpaceApp,
 		&cfg.CodeRepo,
 		&cfg.Internal,
-		&cfg.GitAccess,
 		&cfg.Primitive,
 		&cfg.Postgresql,
 		&cfg.Vault,

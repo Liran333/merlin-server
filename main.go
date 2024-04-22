@@ -16,7 +16,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
-	"github.com/openmerlin/merlin-server/common/infrastructure/gitaccess"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -189,8 +188,6 @@ func main() {
 
 		return
 	}
-
-	gitaccess.Init(&cfg.GitAccess)
 
 	email.Init(cfg.Email)
 
