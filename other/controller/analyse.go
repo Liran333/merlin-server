@@ -11,26 +11,28 @@ import (
 	"github.com/opensourceways/server-common-lib/utils"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/other"
 )
 
 const (
-	refererHeader     = "Referer"
-	secondLevelDomain = "osinfra.cn"
+	refererHeader = "Referer"
 )
 
-func AddRouterForOtherController(rg *gin.RouterGroup, c *other.Analyse) {
+func AddRouterForOtherController(rg *gin.RouterGroup, c *config.Config) {
 	ctl := OtherController{
-		cfg: c,
-		cli: utils.NewHttpClient(3),
+		domain: strings.Trim(c.Session.Controller.SessionDomain, "."),
+		cfg:    &c.OtherConfig.Analyse,
+		cli:    utils.NewHttpClient(3),
 	}
 
 	rg.GET("/v1/analytics/key", ctl.Get)
 }
 
 type OtherController struct {
-	cfg *other.Analyse
-	cli utils.HttpClient
+	domain string
+	cfg    *other.Analyse
+	cli    utils.HttpClient
 }
 
 // @Summary  Ayalyse key
@@ -40,7 +42,7 @@ type OtherController struct {
 // @Router   /v1/analytics/key [get]
 func (ctl *OtherController) Get(ctx *gin.Context) {
 	u, err := url.Parse(ctx.GetHeader(refererHeader))
-	if !strings.HasSuffix(u.Host, secondLevelDomain) || err != nil {
+	if !strings.HasSuffix(u.Host, ctl.domain) || err != nil {
 		commonctl.SendError(ctx, errors.New("illegal request"))
 
 		return
