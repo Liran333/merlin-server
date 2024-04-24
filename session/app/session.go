@@ -153,13 +153,15 @@ func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
 
 	err = s.sessionRepo.Delete(sessionId)
 
+	_, createdAt := utils.DateAndTime(session.CreatedAt)
+
 	r := commondomain.OperationLogRecord{
 		Time:   utils.Time(),
 		User:   primitive.CreateAccount("service"),
 		IP:     "local",
 		Method: "Auto",
 		Action: fmt.Sprintf("clear expired session which created at %s automatically by id: %s",
-			utils.ToDate(session.CreatedAt), sessionId.RandomId()),
+			createdAt, sessionId.RandomId()),
 		Success: err == nil,
 	}
 
