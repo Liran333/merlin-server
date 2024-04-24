@@ -273,25 +273,38 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 
 func (s *modelAppService) AddLike(modelId primitive.Identity) error {
 	// Retrieve the code repository information.
-	codeRepo, err := s.codeRepoApp.GetById(modelId)
+	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		return err
 	}
 
 	// Only proceed if the repository is public.
-	isPublic := codeRepo.IsPublic()
+	isPublic := model.IsPublic()
+
 	if !isPublic {
 		return nil
 	}
 
-	if err := s.repoAdapter.AddLike(modelId); err != nil {
+	if err := s.repoAdapter.AddLike(model); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *modelAppService) DeleteLike(modelId primitive.Identity) error {
-	if err := s.repoAdapter.DeleteLike(modelId); err != nil {
+	// Retrieve the code repository information.
+	model, err := s.repoAdapter.FindById(modelId)
+	if err != nil {
+		return err
+	}
+
+	// Only proceed if the repository is public.
+	isPublic := model.IsPublic()
+	if !isPublic {
+		return nil
+	}
+
+	if err := s.repoAdapter.DeleteLike(model); err != nil {
 		return err
 	}
 	return nil

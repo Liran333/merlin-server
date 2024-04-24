@@ -40,6 +40,7 @@ func setRouterOfActivityWeb(rg *gin.RouterGroup, services *allServices) {
 		services.modelApp,
 		services.spaceApp,
 		services.rateLimiterMiddleWare,
+		services.operationLog,
 	)
 }
 
@@ -52,6 +53,7 @@ func setRouterOfActivityRestful(rg *gin.RouterGroup, services *allServices) {
 		services.userApp,
 		services.modelApp,
 		services.spaceApp,
+		services.operationLog,
 	)
 }
 

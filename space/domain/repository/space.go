@@ -71,8 +71,8 @@ type SpaceRepositoryAdapter interface {
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
 	Count(*ListOption) (int, error)
 	SearchSpace(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
-	AddLike(primitive.Identity) error
-	DeleteLike(primitive.Identity) error
+	AddLike(domain.Space) error
+	DeleteLike(domain.Space) error
 }
 
 // SpaceLabelsRepoAdapter is an interface for interacting with space label repositories.

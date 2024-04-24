@@ -53,6 +53,21 @@ func (adapter *activityAdapter) Save(activity *domain.Activity) error {
 		ResourceType:  string(activity.Resource.Type),
 	}
 
+	// Check current count of records for the owner.
+	var count int64
+	db.Model(&activityDO{}).
+		Where(fieldTypeOwner+" = ? AND "+fieldType+" != ?", actDO.Owner, fieldLike).
+		Count(&count)
+
+	// If the count is 100 or more, delete the oldest record.
+	if count >= config.MaxRecordPerPerson {
+		var oldestRecord activityDO
+		db.Where(fieldTypeOwner+" = ? AND "+fieldType+" != ?", actDO.Owner, fieldLike).
+			Order("time ASC").
+			First(&oldestRecord)
+		db.Delete(&oldestRecord)
+	}
+
 	// Perform the save operation with the converted object.
 	result := db.Create(&actDO)
 	if result.Error != nil {

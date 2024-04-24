@@ -186,6 +186,8 @@ redis:
 activity:
   tables:
     activity: activity
+  usages:
+    max_record_per_person: 100
 
 user:
   tables:

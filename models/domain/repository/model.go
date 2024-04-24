@@ -72,8 +72,8 @@ type ModelRepositoryAdapter interface {
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
 	SearchModel(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
-	AddLike(primitive.Identity) error
-	DeleteLike(primitive.Identity) error
+	AddLike(domain.Model) error
+	DeleteLike(domain.Model) error
 }
 
 // ModelLabelsRepoAdapter represents an interface for managing model labels.

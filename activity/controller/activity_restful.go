@@ -25,6 +25,7 @@ func AddRouteForActivityRestfulController(
 	u userapp.UserService,
 	d modelapp.ModelAppService,
 	p spaceapp.SpaceAppService,
+	l middleware.OperationLog,
 ) {
 	ctl := ActivityWebController{
 		ActivityController: ActivityController{
@@ -38,8 +39,8 @@ func AddRouteForActivityRestfulController(
 	}
 
 	r.GET("/v1/user/activity", m.Optional, ctl.List)
-	r.POST("/v1/like", m.Optional, ctl.Add)
-	r.DELETE("/v1/like", m.Optional, ctl.Delete)
+	r.POST("/v1/like", m.Write, l.Write, ctl.Add)
+	r.DELETE("/v1/like", m.Write, l.Write, ctl.Delete)
 }
 
 // ActivityRestfulController is a struct that holds the app service for model web operations.

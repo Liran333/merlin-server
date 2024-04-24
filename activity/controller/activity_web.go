@@ -7,6 +7,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,7 @@ func AddRouteForActivityWebController(
 	d modelapp.ModelAppService,
 	p spaceapp.SpaceAppService,
 	rl middleware.RateLimiter,
+	l middleware.OperationLog,
 ) {
 	ctl := ActivityWebController{
 		ActivityController: ActivityController{
@@ -46,8 +48,8 @@ func AddRouteForActivityWebController(
 	}
 
 	r.GET("/v1/user/activity", m.Read, rl.CheckLimit, ctl.List)
-	r.POST("/v1/like", m.Write, ctl.Add)
-	r.DELETE("/v1/like", m.Write, ctl.Delete)
+	r.POST("/v1/like", m.Write, l.Write, ctl.Add)
+	r.DELETE("/v1/like", m.Write, l.Write, ctl.Delete)
 }
 
 func (req *reqToListUserActivities) toCmd() (cmd app.CmdToListActivities, err error) {
@@ -142,12 +144,17 @@ func (ctl *ActivityWebController) List(ctx *gin.Context) {
 // @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /web/v1/like [post]
 func (ctl *ActivityWebController) Add(ctx *gin.Context) {
+	middleware.SetAction(ctx, "start to add a like")
+
 	var req activityapp.ReqToCreateActivity
 
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
 		return
 	}
+
+	actionDescription := fmt.Sprintf("add a like to a %s, id: %v", req.ResourceType, req.ResourceId)
+	middleware.SetAction(ctx, actionDescription)
 
 	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -160,7 +167,6 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
@@ -196,12 +202,17 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 // @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /web/v1/like [delete]
 func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
+	middleware.SetAction(ctx, "start to delete a like")
+
 	var req activityapp.ReqToDeleteActivity
 
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
 		return
 	}
+
+	actionDescription := fmt.Sprintf("cancel a like to a %s, id: %v", req.ResourceType, req.ResourceId)
+	middleware.SetAction(ctx, actionDescription)
 
 	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
 	if user == nil {
@@ -215,16 +226,22 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if req.ResourceType == typeModel {
-		err = ctl.model.DeleteLike(cmd.Resource.Index)
-	} else {
-		err = ctl.space.DeleteLike(cmd.Resource.Index)
-	}
-
-	// Check for errors from DeleteLike operation
+	liked, err := ctl.appService.HasLike(user, cmd.Resource.Index)
 	if err != nil {
-		commonctl.SendError(ctx, err)
 		return
+	}
+	if liked {
+		if req.ResourceType == typeModel {
+			err = ctl.model.DeleteLike(cmd.Resource.Index)
+		} else {
+			err = ctl.space.DeleteLike(cmd.Resource.Index)
+		}
+
+		// Check for errors from DeleteLike operation
+		if err != nil {
+			commonctl.SendError(ctx, err)
+			return
+		}
 	}
 
 	if err := ctl.appService.Delete(&cmd); err != nil {

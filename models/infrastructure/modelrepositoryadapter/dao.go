@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
+	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -107,17 +108,33 @@ func orderByDesc(field string) string {
 }
 
 // IncrementLikeCount increments the LikeCount field by 1 for a record with the specified primary key.
-func (dao *daoImpl) IncrementLikeCount(id int64) error {
-	result := dao.db().Model(&modelDO{}).Where(fieldId+" = ?", id).Update(fieldLikeCount, gorm.Expr("COALESCE("+fieldLikeCount+",0) + ?", 1))
+func (dao *daoImpl) IncrementLikeCount(id int64, version int) error {
+	// Update version to handle high concurrency scenario
+	result := dao.db().Model(&modelDO{Id: id}).Where(fieldVersion+" = ?", version).
+		Updates(map[string]interface{}{
+			fieldLikeCount: gorm.Expr("COALESCE("+fieldLikeCount+", 0) + ?", 1),
+			fieldVersion:   gorm.Expr(fieldVersion+" + ?", 1),
+		})
+
+	// Check if any rows were updated
 	if result.RowsAffected == 0 {
-		return repository.NewErrorResourceNotExists(errors.New("resource not found"))
+		return commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
 	}
 	return nil
 }
 
 // DescendLikeCount Descend the LikeCount field by 1 for a record with the specified primary key.
-func (dao *daoImpl) DescendLikeCount(id int64) error {
-	result := dao.db().Model(&modelDO{}).Where(fieldId+" = ?", id).Update(fieldLikeCount, gorm.Expr("COALESCE("+fieldLikeCount+",1) - ?", 1))
+func (dao *daoImpl) DescendLikeCount(id int64, version int) error {
+	// Update version to handle high concurrency scenario
+	result := dao.db().Model(&modelDO{Id: id}).Where(fieldVersion+" = ?", version).
+		Updates(map[string]interface{}{
+			fieldLikeCount: gorm.Expr("COALESCE("+fieldLikeCount+", 1) - ?", 1),
+			fieldVersion:   gorm.Expr(fieldVersion+" + ?", 1),
+		})
+
+	// Check if any rows were updated
 	if result.RowsAffected == 0 {
 		return repository.NewErrorResourceNotExists(errors.New("resource not found"))
 	}

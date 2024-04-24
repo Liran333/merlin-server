@@ -15,6 +15,7 @@ import (
 type Config struct {
 	App        app.Config                       `json:"app"`
 	Tables     activityrepositoryadapter.Tables `json:"tables"`
+	Usages     activityrepositoryadapter.Config `json:"usages"`
 	Controller controller.Config                `json:"controller"`
 }
 
@@ -31,4 +32,5 @@ func (cfg *Config) ConfigItems() []interface{} {
 func (cfg *Config) Init() {
 	app.Init(&cfg.App)
 	controller.Init(&cfg.Controller)
+	activityrepositoryadapter.InitUsage(&cfg.Usages)
 }

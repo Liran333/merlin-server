@@ -388,25 +388,37 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 
 func (s *spaceAppService) AddLike(spaceId primitive.Identity) error {
 	// Retrieve the code repository information.
-	codeRepo, err := s.codeRepoApp.GetById(spaceId)
+	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		return err
 	}
 
 	// Only proceed if the repository is public.
-	isPublic := codeRepo.IsPublic()
+	isPublic := space.IsPublic()
 	if !isPublic {
 		return nil
 	}
 
-	if err := s.repoAdapter.AddLike(spaceId); err != nil {
+	if err := s.repoAdapter.AddLike(space); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
-	if err := s.repoAdapter.DeleteLike(spaceId); err != nil {
+	// Retrieve the code repository information.
+	space, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		return err
+	}
+
+	// Only proceed if the repository is public.
+	isPublic := space.IsPublic()
+	if !isPublic {
+		return nil
+	}
+
+	if err := s.repoAdapter.DeleteLike(space); err != nil {
 		return err
 	}
 	return nil
