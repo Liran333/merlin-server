@@ -232,14 +232,3 @@ type modelsInfo struct {
 	Total  int         `json:"total"`
 	Models []modelInfo `json:"models"`
 }
-
-// models statistics
-type modelStatistics struct {
-	DownloadCount int `json:"download_count"`
-}
-
-func (s *modelStatistics) toCmd() app.CmdToUpdateStatistics {
-	return app.CmdToUpdateStatistics{
-		DownloadCount: s.DownloadCount,
-	}
-}

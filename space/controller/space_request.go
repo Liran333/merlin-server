@@ -418,14 +418,3 @@ type localEnvInfo space.LocalEnvInfo
 func (req *localEnvInfo) toCmd() string {
 	return req.EnvInfo
 }
-
-// models statistics
-type spaceStatistics struct {
-	DownloadCount int `json:"download_count"`
-}
-
-func (s *spaceStatistics) toCmd() app.CmdToUpdateStatistics {
-	return app.CmdToUpdateStatistics{
-		DownloadCount: s.DownloadCount,
-	}
-}

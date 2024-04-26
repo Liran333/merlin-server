@@ -29,8 +29,6 @@ func AddRouterForSpaceInternalController(
 	r.PUT("/v1/space/:id/model", m.Write, ctl.UpdateSpaceModels)
 	r.PUT("/v1/space/:id/local_cmd", m.Write, ctl.UpdateSpaceLocalCMD)
 	r.PUT("/v1/space/:id/local_env_info", m.Write, ctl.UpdateSpaceLocalEnvInfo)
-	r.PUT("/v1/space/:id", m.Write, ctl.Update)
-
 }
 
 // SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
@@ -162,39 +160,6 @@ func (ctl *SpaceInternalController) UpdateSpaceLocalEnvInfo(ctx *gin.Context) {
 	envInfo := req.toCmd()
 
 	err = ctl.appService.UpdateEnvInfo(spaceId, envInfo)
-	if err != nil {
-		commonctl.SendError(ctx, err)
-	} else {
-		commonctl.SendRespOfPut(ctx, nil)
-	}
-}
-
-// @Summary  Update space info
-// @Description  update space info by id
-// @Tags     SpaceInternal
-// @Param    id    path  string   true  "id of space"
-// @Param    body  body  spaceStatistics  true  "body of updating space info"
-// @Accept   json
-// @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
-// @Router   /v1/space/{id} [put]
-func (ctl *SpaceInternalController) Update(ctx *gin.Context) {
-	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
-		return
-	}
-
-	req := spaceStatistics{}
-	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
-		return
-	}
-
-	cmd := req.toCmd()
-
-	err = ctl.appService.UpdateStatistics(spaceId, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

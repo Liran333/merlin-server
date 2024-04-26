@@ -17,7 +17,9 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
@@ -78,5 +80,23 @@ func setRouterOfCodeRepoPermissionInternal(rg *gin.RouterGroup, services *allSer
 			spacerepositoryadapter.SpaceAdapter(),
 		),
 		services.userMiddleWare,
+	)
+}
+
+func setRouterOfCodeRepoStatisticInternal(rg *gin.RouterGroup, services *allServices) {
+	controller.AddRouteForCodeRepoStatisticInternalController(
+		rg,
+		resourceadapterimpl.NewResourceAdapterImpl(
+			modelrepositoryadapter.ModelAdapter(),
+			spacerepositoryadapter.SpaceAdapter(),
+		),
+		services.userMiddleWare,
+		modelapp.NewModelInternalAppService(
+			modelrepositoryadapter.ModelLabelsAdapter(),
+			modelrepositoryadapter.ModelAdapter(),
+		),
+		spaceapp.NewSpaceInternalAppService(
+			spacerepositoryadapter.SpaceAdapter(),
+		),
 	)
 }
