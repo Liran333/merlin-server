@@ -59,6 +59,7 @@ type ModelDTO struct {
 	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
 	Visibility    string         `json:"visibility"`
+	UseInOpenmind string         `json:"use_in_openmind"`
 	DownloadCount int            `json:"download_count"`
 }
 
@@ -92,6 +93,7 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		LikeCount:     model.LikeCount,
 		Visibility:    model.Visibility.Visibility(),
 		DownloadCount: model.DownloadCount,
+		UseInOpenmind: model.UseInOpenmind,
 	}
 
 	if model.Desc != nil {

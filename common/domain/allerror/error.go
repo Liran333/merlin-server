@@ -308,6 +308,9 @@ const (
 
 	// failed to save user in db: %s
 	ErrorFailToSaveUserInDb = "failed_to_save_user"
+
+	// failed to save org in db: %s
+	ErrorCodeConcurrentUpdating = "concurrent_updating"
 )
 
 // errorImpl

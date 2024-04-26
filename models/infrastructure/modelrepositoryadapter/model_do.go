@@ -30,6 +30,7 @@ const (
 	fieldFrameworks    = "frameworks"
 	fieldLikeCount     = "like_count"
 	fieldDownloadCount = "download_count"
+	fieldUseInOpenmind = "use_in_openmind"
 )
 
 var (
@@ -51,6 +52,7 @@ func toModelDO(m *domain.Model) modelDO {
 		UpdatedAt:     m.UpdatedAt,
 		Version:       m.Version,
 		DownloadCount: m.DownloadCount,
+		UseInOpenmind: m.UseInOpenmind,
 	}
 }
 
@@ -90,6 +92,9 @@ type modelDO struct {
 	Task       string         `gorm:"column:task;index:task"`
 	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
 	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
+
+	// for openmind
+	UseInOpenmind string `gorm:"column:use_in_openmind"`
 }
 
 // TableName returns the table name of the model.
@@ -114,6 +119,7 @@ func (do *modelDO) toModel() domain.Model {
 		Version:       do.Version,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,
+		UseInOpenmind: do.UseInOpenmind,
 
 		Labels: domain.ModelLabels{
 			Task:       do.Task,

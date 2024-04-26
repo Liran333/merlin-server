@@ -11,6 +11,7 @@ import (
 	"math"
 	"strings"
 
+	"github.com/openmerlin/merlin-sdk/models"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-server/common/controller"
@@ -231,4 +232,21 @@ type modelInfo struct {
 type modelsInfo struct {
 	Total  int         `json:"total"`
 	Models []modelInfo `json:"models"`
+}
+
+// models statistics
+type modelStatistics struct {
+	DownloadCount int `json:"download_count"`
+}
+
+func (s *modelStatistics) toCmd() app.CmdToUpdateStatistics {
+	return app.CmdToUpdateStatistics{
+		DownloadCount: s.DownloadCount,
+	}
+}
+
+type useInOpenmind models.UseInOpenmind
+
+func (req *useInOpenmind) toCmd() string {
+	return req.UseInOpenmind
 }
