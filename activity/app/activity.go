@@ -6,13 +6,19 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"fmt"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
+	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	modelApp "github.com/openmerlin/merlin-server/models/app"
+	spaceApp "github.com/openmerlin/merlin-server/space/app"
 )
 
 // NewActivityAppService is an interface for the model application service.
@@ -27,6 +33,8 @@ type activityAppService struct {
 	permission  commonapp.ResourcePermissionAppService
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ActivitiesRepositoryAdapter
+	modelApp    modelApp.ModelAppService
+	spaceApp    spaceApp.SpaceAppService
 }
 
 // NewActivityAppService creates a new instance of the Activity application service.
@@ -34,39 +42,94 @@ func NewActivityAppService(
 	permission commonapp.ResourcePermissionAppService,
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ActivitiesRepositoryAdapter,
+	modelApp modelApp.ModelAppService,
+	spaceApp spaceApp.SpaceAppService,
 ) ActivityAppService {
 	return &activityAppService{
 		permission:  permission,
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
+		modelApp:    modelApp,
+		spaceApp:    spaceApp,
 	}
 }
 
-// List retrieves a list of activity.
-func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (
-	ActivityDTO, error,
-) {
+// List retrieves a list of activities with statistics for models and spaces.
+func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (ActivityDTO, error) {
 	activities, _, err := s.repoAdapter.List(names, cmd)
-	var filteredActivities []domain.Activity
-	for _, activity := range activities {
-		codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
+	if err != nil {
+		e := fmt.Errorf("failed to list activities: %s", err)
+		err = allerror.New(allerror.ErrorFailToRetrieveActivityData, e.Error(), e)
+		return ActivityDTO{}, err
+	}
+
+	var filteredActivities []domain.ActivitySummary
+	for i := range activities {
+		activity := activities[i]
+		stat, err := s.getActivityStats(user, &activity)
 		if err != nil {
-			logrus.Errorf("failed to get by repo id: %s", err)
+			// User does not have access to this repo
+			e := fmt.Errorf("failed to get repo info by index: %s", err)
+			logrus.Infof("User %v does not have access to this repo id: %s. %t", user, activity.Resource.Index, e)
 			continue
 		}
-		activity.Name = codeRepo.Name
-		activity.Resource.Owner = codeRepo.Owner
-		if err := s.permission.CanRead(user, &codeRepo); err != nil {
-			logrus.Errorf("failed to read permission: %s", err)
-			continue
-		}
-		filteredActivities = append(filteredActivities, activity)
+		filteredActivities = append(filteredActivities, domain.ActivitySummary{
+			Activity: activity,
+			Stat:     stat,
+		})
 	}
 
 	return ActivityDTO{
 		Total:      len(filteredActivities),
 		Activities: filteredActivities,
-	}, err
+	}, nil
+}
+
+// getActivityStats retrieves statistics based on the activity type.
+func (s *activityAppService) getActivityStats(user primitive.Account, activity *domain.Activity) (domain.Stat, error) {
+	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
+	if err != nil {
+		return domain.Stat{}, fmt.Errorf("failed to get code repository by ID: %v", err)
+	}
+	activity.Name = codeRepo.Name
+	activity.Resource.Owner = codeRepo.Owner
+
+	switch activity.Resource.Type {
+	case primitive.ObjTypeModel:
+		return s.getModelStats(user, codeRepo)
+	case primitive.ObjTypeSpace:
+		return s.getSpaceStats(user, codeRepo)
+	default:
+		return domain.Stat{}, fmt.Errorf("unknown activity type: %s", activity.Type)
+	}
+}
+
+// getModelStats retrieves statistics for a model activity.
+func (s *activityAppService) getModelStats(user primitive.Account, codeRepo coderepo.CodeRepo) (domain.Stat, error) {
+	model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	if err != nil {
+		return domain.Stat{}, fmt.Errorf("failed to find model by name: %v", err)
+	}
+	statsMap := domain.Stat{
+		LikeCount:     model.LikeCount,
+		DownloadCount: model.DownloadCount,
+	}
+
+	return statsMap, nil
+}
+
+// getSpaceStats retrieves statistics for a space activity.
+func (s *activityAppService) getSpaceStats(user primitive.Account, codeRepo coderepo.CodeRepo) (domain.Stat, error) {
+	space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	if err != nil {
+		return domain.Stat{}, fmt.Errorf("failed to find space by name: %v", err)
+	}
+	statsMap := domain.Stat{
+		LikeCount:     space.LikeCount,
+		DownloadCount: space.DownloadCount,
+	}
+
+	return statsMap, nil
 }
 
 // Create function to check if a "like" already exists before saving.

@@ -101,7 +101,7 @@ func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivityDTO) (activiti
 
 	v := map[string]bool{}
 	for i := range ac {
-		v[ac[i].Resource.Owner.Account()] = true
+		v[ac[i].Activity.Resource.Owner.Account()] = true
 	}
 
 	accounts := make([]primitive.Account, len(v))
@@ -131,8 +131,8 @@ func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivityDTO) (activiti
 		item := &ac[i]
 
 		infos[i] = activityInfo{
-			AvatarId: am[item.Resource.Owner.Account()],
-			Activity: item,
+			AvatarId:        am[item.Activity.Resource.Owner.Account()],
+			ActivitySummary: item,
 		}
 	}
 

@@ -18,7 +18,7 @@ const (
 // activityInfo
 type activityInfo struct {
 	AvatarId string `json:"avatar_id"`
-	*domain.Activity
+	*domain.ActivitySummary
 }
 
 // activitiesInfo

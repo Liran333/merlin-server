@@ -311,6 +311,9 @@ const (
 
 	// failed to save org in db: %s
 	ErrorCodeConcurrentUpdating = "concurrent_updating"
+
+	// failed to retrive activities: %s
+	ErrorFailToRetrieveActivityData = "failed_to_retrieve_activity"
 )
 
 // errorImpl

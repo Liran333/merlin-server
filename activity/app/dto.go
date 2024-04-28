@@ -12,9 +12,9 @@ import (
 
 // ActivityDTO is a struct that represents a data transfer object for an activity.
 type ActivityDTO struct {
-	Total      int               `json:"total"`
-	AvatarId   string            `json:"avatar_id"`
-	Activities []domain.Activity `json:"activity"`
+	Total      int                      `json:"total"`
+	AvatarId   string                   `json:"avatar_id"`
+	Activities []domain.ActivitySummary `json:"activity"`
 }
 
 type CmdToAddActivity = domain.Activity

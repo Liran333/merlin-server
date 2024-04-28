@@ -26,6 +26,18 @@ type Activity struct {
 	Resource Resource
 }
 
+// ActivitySummary struct represents the user activity entity with statistic.
+type ActivitySummary struct {
+	Activity
+	Stat
+}
+
+// Stat struct represents the statistic of an activity.
+type Stat struct {
+	LikeCount     int `json:"like_count"`
+	DownloadCount int `json:"download_count"`
+}
+
 // Resource struct represents the resource object targeted by user activities.
 type Resource struct {
 	Type  primitive.ObjType  // Resource type

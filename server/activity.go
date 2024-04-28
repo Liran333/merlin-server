@@ -25,6 +25,8 @@ func initActivity(cfg *config.Config, services *allServices) error {
 		services.permissionApp,
 		services.codeRepoApp,
 		activityrepositoryadapter.ActivityAdapter(),
+		services.modelApp,
+		services.spaceApp,
 	)
 
 	return nil

@@ -7,7 +7,6 @@ package coderepoadapter
 
 import (
 	"fmt"
-
 	"github.com/openmerlin/go-sdk/gitea"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
