@@ -515,6 +515,11 @@ const docTemplaterest = `{
         },
         "/v1/model/{owner}/{name}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "get model",
                 "consumes": [
                     "application/json"
@@ -1343,47 +1348,6 @@ const docTemplaterest = `{
                 }
             }
         },
-        "/v1/space-app/{owner}/{name}/Resume": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "resume space app",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Space"
-                ],
-                "summary": "Post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "owner of space",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "name of space",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/space-app/{owner}/{name}/pause": {
             "post": {
                 "security": [
@@ -1471,6 +1435,47 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/resume": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "resume space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/{id}": {
             "put": {
                 "security": [
@@ -1539,6 +1544,49 @@ const docTemplaterest = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/disable": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "disable space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Disable space",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of disable space",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToDisableSpace"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
@@ -1755,6 +1803,11 @@ const docTemplaterest = `{
         },
         "/v1/space/{owner}/{name}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "get space",
                 "consumes": [
                     "application/json"
@@ -2596,6 +2649,14 @@ const docTemplaterest = `{
                 }
             }
         },
+        "controller.reqToDisableSpace": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToUpdateModel": {
             "type": "object",
             "properties": {
@@ -2729,6 +2790,9 @@ const docTemplaterest = `{
         "github_com_openmerlin_merlin-server_activity_domain.Resource": {
             "type": "object",
             "properties": {
+                "disable": {
+                    "type": "boolean"
+                },
                 "index": {
                     "description": "Resource index"
                 },

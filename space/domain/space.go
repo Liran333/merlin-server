@@ -16,6 +16,9 @@ import (
 const (
 	variablePath = "variable/"
 	secretePath  = "secret/"
+
+	computilityTypeNpu = "npu"
+	computilityTypeCpu = "cpu"
 )
 
 // Space represents a space with its associated properties and methods.
@@ -37,13 +40,22 @@ type Space struct {
 	LikeCount     int
 	DownloadCount int
 
+	Disable       bool
+	DisableReason primitive.DisableReason
+	Exception     primitive.Exception
+
 	CompPowerAllocated bool
-	CodeValid bool
+	CommitId           string
 }
 
 // ResourceType returns the type of the model resource.
 func (m *Space) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeSpace
+}
+
+// IsDisable checks if the space is disable.
+func (m *Space) IsDisable() bool {
+	return m.Disable
 }
 
 // SpaceLabels represents labels associated with a space.
@@ -104,4 +116,24 @@ func NewSpaceSecretVault(secret *SpaceSecret) securestorage.SpaceEnvSecret {
 // GetSecretPath return vault space secret path
 func (secret *SpaceSecret) GetSecretPath() string {
 	return secretePath + secret.SpaceId.Identity()
+}
+
+func (s *Space) GetComputeType() primitive.ComputilityType {
+	if s.Hardware.IsNpu() {
+		return primitive.CreateComputilityType(computilityTypeNpu)
+	} else if s.Hardware.IsCpu() {
+		return primitive.CreateComputilityType(computilityTypeCpu)
+	}
+
+	return nil
+}
+
+func (s *Space) GetQuotaCount() int {
+	if s.Hardware.IsNpu() {
+		return 1
+	} else if s.Hardware.IsCpu() {
+		return 0
+	}
+
+	return 0
 }

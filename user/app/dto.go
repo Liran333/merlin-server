@@ -20,6 +20,7 @@ type CmdToListModels = repository.ListOption
 // UserInfoDTO represents the data transfer object for user information.
 type UserInfoDTO struct {
 	UserDTO
+	IsDisableAdmin bool `json:"is_disable_admin"`
 }
 
 // UserDTO represents the data transfer object for a user.

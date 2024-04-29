@@ -67,7 +67,8 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 
 	user, err = s.userApp.GetByAccount(login.Name, login.Name)
 	if err != nil {
-		if !allerror.IsNotFound(err) {
+		_, ok := allerror.IsNotFound(err)
+		if !ok {
 			return
 		}
 

@@ -12,27 +12,32 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
+	spaceapp "github.com/openmerlin/merlin-server/space/app"
 )
 
 // AddRouterForModelInternalController adds a router for the ModelInternalController with the given middleware.
 func AddRouterForModelInternalController(
 	r *gin.RouterGroup,
 	s app.ModelInternalAppService,
+	ms spaceapp.ModelSpaceAppService,
 	m middleware.UserMiddleWare,
 ) {
 	ctl := ModelInternalController{
-		appService: s,
+		appService:        s,
+		modelSpaceService: ms,
 	}
 
 	r.GET("/v1/model/:id", m.Read, ctl.GetById)
 	r.PUT("/v1/model/:id/label", m.Write, ctl.ResetLabel)
 	r.PUT("/v1/model/:id", m.Write, ctl.Update)
+
 	r.PUT("/v1/model/:id/use_in_openmind", m.Write, ctl.UpdateUseInOpenmind)
-}
+	r.GET("/v1/model/relation/:id/space", m.Read, ctl.GetSpacesByModelId)}
 
 // ModelInternalController is a struct that holds the app service for model internal operations.
 type ModelInternalController struct {
-	appService app.ModelInternalAppService
+	appService        app.ModelInternalAppService
+	modelSpaceService spaceapp.ModelSpaceAppService
 }
 
 // @Summary  ResetLabel
@@ -159,4 +164,30 @@ func (ctl *ModelInternalController) UpdateUseInOpenmind(ctx *gin.Context) {
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
 	}
+}
+
+// @Summary  GetSpacesByModelId
+// @Description  get all spaces related to a model, including those that have been disabled.
+// @Tags     ModelInternal
+// @Param    id    path  string   true  "id of model"
+// @Accept   json
+// @Security Internal
+// @Success  200  {object}  commonctl.ResponseData
+// @Router   /v1/model/relation/{id}/space [get]
+func (ctl *ModelInternalController) GetSpacesByModelId(ctx *gin.Context) {
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	spaces, err := ctl.modelSpaceService.GetSpaceIdsByModelId(modelId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+
+		return
+	}
+
+	commonctl.SendRespOfGet(ctx, &spaces)
 }

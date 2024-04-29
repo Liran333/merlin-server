@@ -22,6 +22,12 @@ const (
 	// ErrorCodeSpaceNotFound is const
 	ErrorCodeSpaceNotFound = "space_not_found"
 
+	// ErrorCodeResourceDisabled is const
+	ErrorCodeResourceDisabled = "resource_disabled"
+
+	// ErrorCodeResourceAlreadyDisabled is const
+	ErrorCodeResourceAlreadyDisabled = "resource_already_disabled"
+
 	// ErrorCodeSpaceVariableNotFound space variable
 	ErrorCodeSpaceVariableNotFound = "space_variable_not_found"
 
@@ -42,6 +48,9 @@ const (
 
 	// ErrorCodeSpaceAppNotFound space app
 	ErrorCodeSpaceAppNotFound = "space_app_not_found"
+
+	// ErrorCodeSpaceAppCreateFailed is const
+	ErrorCodeSpaceAppCreateFailed = "space_app_create_failed"
 
 	// ErrorCodeSpaceAppUnmatchedStatus is const
 	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
@@ -385,14 +394,14 @@ func NewNotFound(code string, msg string, err error) notfoudError {
 }
 
 // IsNotFound checks if the given error is a not found error.
-func IsNotFound(err error) bool {
+func IsNotFound(err error) (notfoudError, bool) {
 	if err == nil {
-		return false
+		return notfoudError{}, false
 	}
 
-	_, ok := err.(notfoudError)
+	code, ok := err.(notfoudError)
 
-	return ok
+	return code, ok
 }
 
 // IsUserDuplicateBind checks if the given error is a user duplicate bind error.
@@ -464,4 +473,14 @@ func NewExpired(msg string, err error) errorImpl {
 // NewCommonRespError creates a new error with the common resp error.
 func NewCommonRespError(msg string, err error) errorImpl {
 	return New(ErrorBaseCase, msg, err)
+}
+
+// resourceDisabledError
+type resourceDisabledError struct {
+	errorImpl
+}
+
+// NewResourceDisabled creates a new resource disable error with the specified code and message.
+func NewResourceDisabled(code string, msg string, err error) resourceDisabledError {
+	return resourceDisabledError{errorImpl: New(code, msg, err)}
 }

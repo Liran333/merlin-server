@@ -65,6 +65,43 @@ func (s *SuiteSpaceInternal) TestSpaceInternalGetById() {
 	assert.Nil(s.T(), err)
 }
 
+// space下架测试
+func (s *SuiteSpaceInternal) TestSpaceInternalDisable() {
+	// 创建space
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		License:    "mit",
+		Name:       "testspacedisable",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdDisablePut(Interal, id)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	detail, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest2, "test2", "testspacedisable")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	space := getData(s.T(), detail.Data)
+	assert.Equal(s.T(), "testspacedisable", space["name"])
+	assert.Equal(s.T(), "related_model_disabled", space["exception"])
+
+	// 删除space
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUserSpace used for testing
 func TestSpaceInternal(t *testing.T) {
 	suite.Run(t, new(SuiteSpaceInternal))

@@ -47,6 +47,18 @@ func (cmd *CmdToUpdateModel) toModel(model *domain.Model) (b bool) {
 	return
 }
 
+// CmdToDisableModel is a struct that represents a command to disable a model.
+type CmdToDisableModel struct {
+	Disable       bool
+	DisableReason primitive.DisableReason
+}
+
+func (cmd *CmdToDisableModel) toModel(model *domain.Model) {
+	model.Disable = cmd.Disable
+	model.DisableReason = cmd.DisableReason
+	model.UpdatedAt = utils.Now()
+}
+
 // ModelDTO is a struct that represents a data transfer object for a model.
 type ModelDTO struct {
 	Id            string         `json:"id"`
@@ -61,6 +73,8 @@ type ModelDTO struct {
 	Visibility    string         `json:"visibility"`
 	UseInOpenmind string         `json:"use_in_openmind"`
 	DownloadCount int            `json:"download_count"`
+	Disable       bool           `json:"disable"`
+	DisableReason string         `json:"disable_reason"`
 }
 
 // ModelLabelsDTO is a struct that represents a data transfer object for model labels.
@@ -93,8 +107,10 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		LikeCount:     model.LikeCount,
 		Visibility:    model.Visibility.Visibility(),
 		DownloadCount: model.DownloadCount,
+
 		UseInOpenmind: model.UseInOpenmind,
-	}
+		Disable:       model.Disable,
+		DisableReason: model.DisableReason.DisableReason(),	}
 
 	if model.Desc != nil {
 		dto.Desc = model.Desc.MSDDesc()

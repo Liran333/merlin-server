@@ -29,6 +29,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 		services.codeRepoApp,
 		modelrepositoryadapter.ModelAdapter(),
 		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+		services.disable,
 	)
 
 	return nil
@@ -70,6 +71,7 @@ func setRouterOfModelInternal(rg *gin.RouterGroup, services *allServices) {
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),
 		),
+		services.modelSpace,
 		services.userMiddleWare,
 	)
 }

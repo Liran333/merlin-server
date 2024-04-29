@@ -258,6 +258,36 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	assert.Nil(s.T(), err)
 }
 
+// TestSpaceOwnerNameGetPrivateSpace used for testing
+// 可以访问自己名下的私有Space
+func (s *SuiteUserSpace) TestSpaceOwnerNameGetPrivateSpace() {
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       "space desc",
+		Fullname:   "spacefullname",
+		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
+		License:    "mit",
+		Name:       "testspaceprivate",
+		Owner:      "test2",
+		Sdk:        "gradio",
+		Visibility: "private",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	id := getString(s.T(), data.Data)
+
+	detail, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest2, "test2", "testspaceprivate")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	space := getData(s.T(), detail.Data)
+	assert.Equal(s.T(), "testspaceprivate", space["name"])
+
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUserSpace used for testing
 func TestUserSpace(t *testing.T) {
 	suite.Run(t, new(SuiteUserSpace))

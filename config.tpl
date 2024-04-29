@@ -19,6 +19,7 @@ computility:
     computility_org: computility_org
     computility_detail: computility_detail
     computility_account: computility_account
+    computility_account_record: computility_account_record
   topics:
     computility_recalled: computility_recalled
 
@@ -65,6 +66,9 @@ space:
     space_updated: space_updated
     space_deleted: space_deleted
     space_env_changed: space_env_changed
+    space_disable: space_disable
+    space_force_event: space_force_event
+
   app:
     avatar_ids:
     {{- range (ds "common").SPACE_AVATAR_IDS}}
@@ -166,6 +170,8 @@ model:
     model_created: model_created
     model_updated: model_updated
     model_deleted: model_deleted
+    model_disable: model_disable
+
   controller:
     max_count_per_page: 100
     tasks:
@@ -273,6 +279,7 @@ space_app:
     space_app_restarted: space_app_restarted
     space_app_paused: space_app_paused
     space_app_resumed: space_resume
+    space_force_event: space_force_event
   controller:
     sse_token: {{(ds "secret").data.SSE_TOKEN }}
     token_header: TOKEN

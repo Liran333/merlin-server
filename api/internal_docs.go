@@ -354,7 +354,7 @@ const docTemplateinternal = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "type": "object"
+                                            "$ref": "#/definitions/app.AccountRecordlDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -390,7 +390,7 @@ const docTemplateinternal = `{
             }
         },
         "/v1/computility/org/delete": {
-            "delete": {
+            "post": {
                 "security": [
                     {
                         "Internal": []
@@ -430,7 +430,10 @@ const docTemplateinternal = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "type": "object"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.AccountRecordlDTO"
+                                            }
                                         },
                                         "msg": {
                                             "type": "string"
@@ -465,6 +468,40 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/model/relation/{id}/space": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "get all spaces related to a model, including those that have been disabled.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelInternal"
+                ],
+                "summary": "GetSpacesByModelId",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{id}": {
             "get": {
                 "security": [
@@ -492,6 +529,47 @@ const docTemplateinternal = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update model info by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelInternal"
+                ],
+                "summary": "Update model info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating model info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.modelStatistics"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }
@@ -671,61 +749,7 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "/v1/space-app/build/done": {
-            "put": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "notify space app build is done",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "SpaceApp"
-                ],
-                "summary": "NotifyBuildIsDone",
-                "parameters": [
-                    {
-                        "description": "body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.reqToSetBuildIsDone"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/controller.ResponseData"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "msg": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/space-app/build/started": {
+        "/v1/space-app/building": {
             "put": {
                 "security": [
                     {
@@ -739,7 +763,7 @@ const docTemplateinternal = `{
                 "tags": [
                     "SpaceApp"
                 ],
-                "summary": "NotifyBuildIsStarted",
+                "summary": "NotifySpaceAppBuilding",
                 "parameters": [
                     {
                         "description": "body",
@@ -779,7 +803,102 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "/v1/space-app/service/started": {
+        "/v1/space-app/failed_status": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "notify space app failed status",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "NotifySpaceAppFailedStatus",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToFailedStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/pause": {
+            "post": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "pause space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceApp"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space-app/serving": {
             "put": {
                 "security": [
                     {
@@ -793,7 +912,7 @@ const docTemplateinternal = `{
                 "tags": [
                     "SpaceApp"
                 ],
-                "summary": "NotifyServiceIsStarted",
+                "summary": "NotifySpaceAppServing",
                 "parameters": [
                     {
                         "description": "body",
@@ -833,21 +952,21 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "/v1/space-app/status": {
+        "/v1/space-app/starting": {
             "put": {
                 "security": [
                     {
                         "Internal": []
                     }
                 ],
-                "description": "notify space app status",
+                "description": "notify space app build is starting",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "SpaceApp"
                 ],
-                "summary": "NotifyUpdateStatus",
+                "summary": "NotifySpaceAppStarting",
                 "parameters": [
                     {
                         "description": "body",
@@ -855,7 +974,7 @@ const docTemplateinternal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.reqToSetStatus"
+                            "$ref": "#/definitions/controller.reqToCreateSpaceApp"
                         }
                     }
                 ],
@@ -882,47 +1001,6 @@ const docTemplateinternal = `{
                                     }
                                 }
                             ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/space-app/{owner}/{name}/pause": {
-            "post": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "stop space app",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "SpaceApp"
-                ],
-                "summary": "Post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "owner of space",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "name of space",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
                 }
@@ -955,6 +1033,81 @@ const docTemplateinternal = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update space info by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "Update space info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating space info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.spaceStatistics"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/disable": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "disable space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "Disable space",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/controller.ResponseData"
                         }
@@ -1218,6 +1371,23 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "app.AccountRecordlDTO": {
+            "type": "object",
+            "properties": {
+                "compute_type": {
+                    "type": "string"
+                },
+                "quota_count": {
+                    "type": "integer"
+                },
+                "space_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.ModeIds": {
             "type": "object",
             "properties": {
@@ -1238,6 +1408,14 @@ const docTemplateinternal = `{
                 "data": {},
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.modelStatistics": {
+            "type": "object",
+            "properties": {
+                "download_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -1262,6 +1440,23 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "space_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToFailedStatus": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "space_id": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -1293,37 +1488,6 @@ const docTemplateinternal = `{
                     }
                 },
                 "task": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.reqToSetBuildIsDone": {
-            "type": "object",
-            "properties": {
-                "commit_id": {
-                    "type": "string"
-                },
-                "logs": {
-                    "type": "string"
-                },
-                "space_id": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "controller.reqToSetStatus": {
-            "type": "object",
-            "properties": {
-                "commit_id": {
-                    "type": "string"
-                },
-                "space_id": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -1367,6 +1531,14 @@ const docTemplateinternal = `{
                 },
                 "user_name": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.spaceStatistics": {
+            "type": "object",
+            "properties": {
+                "download_count": {
+                    "type": "integer"
                 }
             }
         },

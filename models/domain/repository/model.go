@@ -24,6 +24,8 @@ type ModelSummary struct {
 	LikeCount     int      `json:"like_count"`
 	Frameworks    []string `json:"frameworks"`
 	DownloadCount int      `json:"download_count"`
+	Disable       bool     `json:"disable"`
+	DisableReason string   `json:"disable_reason"`
 }
 
 // ListOption represents options for listing models.

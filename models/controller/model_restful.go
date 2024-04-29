@@ -54,6 +54,7 @@ type ModelRestfulController struct {
 // @Param    owner  path  string  true  "owner of model"
 // @Param    name   path  string  true  "name of model"
 // @Accept   json
+// @Security Bearer
 // @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/model/{owner}/{name} [get]
 func (ctl *ModelRestfulController) Get(ctx *gin.Context) {

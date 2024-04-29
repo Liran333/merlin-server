@@ -569,6 +569,49 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/model/{id}/disable": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "disable the model",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelWeb"
+                ],
+                "summary": "disable model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of disable model",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToDisableModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{owner}": {
             "get": {
                 "description": "list model",
@@ -1720,47 +1763,6 @@ const docTemplateweb = `{
                 }
             }
         },
-        "/v1/space-app/{owner}/{name}/Resume": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "resume space app",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Space"
-                ],
-                "summary": "Post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "owner of space",
-                        "name": "owner",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "name of space",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/space-app/{owner}/{name}/buildlog/realtime": {
             "get": {
                 "description": "get space app real-time build log",
@@ -1945,6 +1947,47 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/resume": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "resume space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/:owner/:name/variable-secret": {
             "get": {
                 "description": "list space variable secret",
@@ -2065,6 +2108,49 @@ const docTemplateweb = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/disable": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "disable space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Disable space",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of disable space",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToDisableSpace"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
                     }
                 }
             }
@@ -2998,6 +3084,9 @@ const docTemplateweb = `{
                 "id": {
                     "type": "integer"
                 },
+                "reason": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -3212,6 +3301,9 @@ const docTemplateweb = `{
                 "desc": {
                     "type": "string"
                 },
+                "disable": {
+                    "type": "boolean"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -3236,6 +3328,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "reason": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -3252,6 +3347,9 @@ const docTemplateweb = `{
                 },
                 "desc": {
                     "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
                 },
                 "download_count": {
                     "type": "integer"
@@ -3278,6 +3376,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 },
                 "task": {
@@ -3473,6 +3574,22 @@ const docTemplateweb = `{
                 }
             }
         },
+        "controller.reqToDisableModel": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToDisableSpace": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToLogin": {
             "type": "object",
             "properties": {
@@ -3564,14 +3681,23 @@ const docTemplateweb = `{
                 "avatar_id": {
                     "type": "string"
                 },
+                "comp_power_allocated": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "integer"
                 },
                 "desc": {
                     "type": "string"
                 },
+                "disable": {
+                    "type": "boolean"
+                },
                 "download_count": {
                     "type": "integer"
+                },
+                "exception": {
+                    "type": "string"
                 },
                 "fullname": {
                     "type": "string"
@@ -3581,6 +3707,9 @@ const docTemplateweb = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_npu": {
+                    "type": "boolean"
                 },
                 "labels": {
                     "$ref": "#/definitions/app.SpaceLabelsDTO"
@@ -3601,6 +3730,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 },
                 "sdk": {
@@ -3626,6 +3758,9 @@ const docTemplateweb = `{
                 "desc": {
                     "type": "string"
                 },
+                "disable": {
+                    "type": "boolean"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -3642,6 +3777,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 },
                 "space_avatar_id": {
@@ -3916,6 +4054,9 @@ const docTemplateweb = `{
         "github_com_openmerlin_merlin-server_activity_domain.Resource": {
             "type": "object",
             "properties": {
+                "disable": {
+                    "type": "boolean"
+                },
                 "index": {
                     "description": "Resource index"
                 },
@@ -4015,6 +4156,9 @@ const docTemplateweb = `{
                 "desc": {
                     "type": "string"
                 },
+                "disable": {
+                    "type": "boolean"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -4042,6 +4186,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "reason": {
+                    "type": "string"
+                },
                 "task": {
                     "type": "string"
                 },
@@ -4055,6 +4202,9 @@ const docTemplateweb = `{
             "properties": {
                 "desc": {
                     "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
                 },
                 "download_count": {
                     "type": "integer"
@@ -4072,6 +4222,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 },
                 "space_avatar_id": {

@@ -99,3 +99,52 @@ func NewSpaceEnvChangedEvent(user primitive.Account, space *Space) spaceEnvChang
 		ChangedBy: user.Account(),
 	}
 }
+
+// spaceDisableEvent
+type spaceDisableEvent struct {
+	Time      int64  `json:"time"`
+	Repo      string `json:"repo"`
+	Owner     string `json:"owner"`
+	SpaceId   string `json:"space_id"`
+	UpdatedBy string `json:"updated_by"`
+}
+
+// Message serializes the spaceDisableEvent into a JSON byte array.
+func (e *spaceDisableEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceDisableEvent creates a new spaceDisableEvent instance with the given Space.
+func NewSpaceDisableEvent(user primitive.Account, space *Space) spaceDisableEvent {
+	return spaceDisableEvent{
+		Time:      utils.Now(),
+		Repo:      space.Name.MSDName(),
+		Owner:     space.Owner.Account(),
+		SpaceId:   space.Id.Identity(),
+		UpdatedBy: user.Account(),
+	}
+}
+
+const (
+	ForceTypeStop  = "stop"
+	ForceTypePause = "pause"
+)
+
+// spaceForceEvent
+type spaceForceEvent struct {
+	SpaceId string `json:"space_id"`
+	Type    string `json:"type"`
+}
+
+// Message serializes the spaceForceEvent into a JSON byte array.
+func (e *spaceForceEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceForceEvent creates a new spaceForceEvent instance with the given Space.
+func NewSpaceForceEvent(space string, forceType string) spaceForceEvent {
+	return spaceForceEvent{
+		SpaceId: space,
+		Type:    forceType,
+	}
+}

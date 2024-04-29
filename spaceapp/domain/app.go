@@ -10,7 +10,6 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -27,7 +26,9 @@ type SpaceApp struct {
 
 	SpaceAppIndex
 
-	Status      appprimitive.AppStatus
+	Status appprimitive.AppStatus
+	Reason string
+
 	ResumedAt   int64
 	RestartedAt int64
 
@@ -40,12 +41,23 @@ type SpaceApp struct {
 	Version int
 }
 
-type PauseSpaceAppHandle func(bool, computilityapp.ComputilityAppService) error
+// SetInvalid set app status is init failed.
+func (app *SpaceApp) SetInvalid(status appprimitive.AppStatus, reason string) error {
+	if !app.Status.IsInit() {
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = status
+	app.Reason = reason
+
+	return nil
+}
 
 // StartBuilding starts the building process for the space app and sets the build log URL.
 func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 	if !app.Status.IsInit() {
-		e := fmt.Errorf("not init")
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -55,40 +67,81 @@ func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 	return nil
 }
 
-// SetBuildIsDone sets the build status of the space app based on the success parameter.
-func (app *SpaceApp) SetBuildIsDone(success bool) error {
+// SetBuildFailed set app status is build failed.
+func (app *SpaceApp) SetBuildFailed(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsBuilding() {
-		e := fmt.Errorf("not building")
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
-	if success {
-		app.Status = appprimitive.AppStatusServeStarting
-	} else {
-		app.Status = appprimitive.AppStatusBuildFailed
-	}
+	app.Status = status
+	app.Reason = reason
 
 	return nil
 }
 
-// StartService starts the service for the space app with the specified app URL and log URL.
-func (app *SpaceApp) StartService(appURL appprimitive.AppURL, logURL primitive.URL) error {
-	if !app.Status.IsBuildSuccessful() &&
-		!app.Status.IsRestarting() &&
-		!app.Status.IsResuming() {
-		e := fmt.Errorf("spaceId:%s, not build successful "+
-			"or restarting "+
-			"or resuming", app.SpaceId.Identity())
+// SetStarting sets the starting status of the space app based on the success parameter.
+func (app *SpaceApp) SetStarting() error {
+	if !app.Status.IsBuilding() {
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
-	if appURL != nil {
+	app.Status = appprimitive.AppStatusServeStarting
+
+	return nil
+}
+
+// SetStartFailed set app status is start failed.
+func (app *SpaceApp) SetStartFailed(status appprimitive.AppStatus, reason string) error {
+	if !app.Status.IsStarting() {
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = status
+	app.Reason = reason
+
+	return nil
+}
+
+// StartServing starts the service for the space app with the specified app URL and log URL.
+func (app *SpaceApp) StartServing(appURL appprimitive.AppURL, logURL primitive.URL) error {
+	if app.Status.IsStarting() || app.Status.IsRestarting() || app.Status.IsResuming() {
+
 		app.Status = appprimitive.AppStatusServing
 		app.AppURL = appURL
 		app.AppLogURL = logURL
-	} else {
-		app.Status = appprimitive.AppStatusStartFailed
+
+		return nil
 	}
+
+	e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+}
+
+// SetRestartFailed set app status is restart failed.
+func (app *SpaceApp) SetRestartFailed(status appprimitive.AppStatus, reason string) error {
+	if !app.Status.IsRestarting() {
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = status
+	app.Reason = reason
+
+	return nil
+}
+
+// SetResumeFailed set app status is restart failed.
+func (app *SpaceApp) SetResumeFailed(status appprimitive.AppStatus, reason string) error {
+	if !app.Status.IsResuming() {
+		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = status
+	app.Reason = reason
 
 	return nil
 }
@@ -110,13 +163,13 @@ func (app *SpaceApp) RestartService() error {
 		app.RestartedAt = now
 		return nil
 	}
-	if !app.Status.IsServing() && !app.Status.IsStartFailed() {
-		e := fmt.Errorf("not ready to restart")
-		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	if app.Status.IsServing() || app.Status.IsStartFailed() || app.Status.IsRestartFailed() {
+		app.Status = appprimitive.AppStatusRestarted
+		app.RestartedAt = now
+		return nil
 	}
-	app.Status = appprimitive.AppStatusRestarted
-	app.RestartedAt = now
-	return nil
+	e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 }
 
 // IsAppStatusAllow get status can be update.
@@ -132,28 +185,24 @@ func (app *SpaceApp) IsAppStatusAllow(status appprimitive.AppStatus) error {
 }
 
 // PauseService pause the service for space app
-func (app *SpaceApp) PauseService(
-	isForce bool,
-	compPowerAllocated bool,
-	compUtility computilityapp.ComputilityAppService,
-	pauseHook PauseSpaceAppHandle,
-	) error {
-	if !app.Status.IsServing() && !isForce {
+func (app *SpaceApp) PauseService() error {
+	if app.Status.IsPaused() {
+		e := fmt.Errorf("spaceId:%s, is paused", app.SpaceId.Identity())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	if !app.Status.IsServing() {
 		e := fmt.Errorf("spaceId:%s, not serving", app.SpaceId.Identity())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
 	app.Status = appprimitive.AppStatusPaused
 
-	return pauseHook(compPowerAllocated, compUtility)
+	return nil
 }
 
 // ResumeService resume the service for space app with oldResumeTime
-func (app *SpaceApp) ResumeService(
-	isNpu bool,
-	compUtility computilityapp.ComputilityAppService,
-	pauseHook PauseSpaceAppHandle,
-	) error {
+func (app *SpaceApp) ResumeService() error {
 	now := utils.Now()
 	if app.Status.IsResuming() {
 		if now-app.ResumedAt < config.ResumeOverTime {
@@ -164,12 +213,30 @@ func (app *SpaceApp) ResumeService(
 		app.ResumedAt = now
 		return nil
 	}
-	if !app.Status.IsPaused() && !app.Status.IsResumeFailed() {
-		e := fmt.Errorf("spaceId:%s, not ready to resume", app.SpaceId.Identity())
-		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
-	}
-	app.Status = appprimitive.AppStatusResuming
-	app.ResumedAt = now
 
-	return pauseHook(isNpu, compUtility)
+	if app.Status.IsPaused() || app.Status.IsResumeFailed() {
+		app.Status = appprimitive.AppStatusResuming
+		app.ResumedAt = now
+		return nil
+	}
+
+	e := fmt.Errorf("spaceId:%s, not ready to resume", app.SpaceId.Identity())
+	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+}
+
+// IsAppInitAllow app can be init
+func (app *SpaceApp) IsAppInitAllow() bool {
+	if app.Status.IsPaused() || app.Status.IsResuming() || app.Status.IsResumeFailed() {
+		return true
+	}
+
+	return false
+}
+
+// GetFailedReason app only return failed reason
+func (app *SpaceApp) GetFailedReason() string {
+	if !app.Status.IsUpdateStatusAccept() {
+		return ""
+	}
+	return app.Reason
 }

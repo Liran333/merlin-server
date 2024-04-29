@@ -134,6 +134,27 @@ func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
 	return
 }
 
+// reqToDisableSpace
+type reqToDisableSpace struct {
+	Reason string `json:"reason"`
+}
+
+func (p *reqToDisableSpace) action() (str string) {
+	str += fmt.Sprintf("reason = %s", p.Reason)
+
+	return
+}
+
+func (p *reqToDisableSpace) toCmd() (cmd app.CmdToDisableSpace, err error) {
+	cmd.Disable = true
+
+	if cmd.DisableReason, err = primitive.NewDisableReason(p.Reason); err != nil {
+		return
+	}
+
+	return
+}
+
 // reqToListUserSpaces
 type reqToListUserSpaces struct {
 	Name string `form:"name"`

@@ -23,6 +23,8 @@ type SpaceSummary struct {
 	UpdatedAt     int64  `json:"updated_at"`
 	LikeCount     int    `json:"like_count"`
 	DownloadCount int    `json:"download_count"`
+	Disable       bool   `json:"disable"`
+	DisableReason string `json:"disable_reason"`
 }
 
 // ListOption contains options for listing spaces.

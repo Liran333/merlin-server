@@ -1,5 +1,5 @@
 /*
-Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 */
 
 package repositoryadapter
@@ -21,6 +21,7 @@ type computilityDetailDO struct {
 	Id          int64  `gorm:"primarykey"`
 	OrgName     string `gorm:"column:org_name;index:orgname_index"`
 	UserName    string `gorm:"column:user_name;index:username_index"`
+	CreatedAt   int64  `gorm:"column:created_at"`
 	QuotaCount  int    `gorm:"column:quota_count"`
 	ComputeType string `gorm:"column:compute_type"`
 
@@ -32,6 +33,7 @@ func toComputilityDetailDO(d *domain.ComputilityDetail) computilityDetailDO {
 		Id:          d.Id.Integer(),
 		UserName:    d.UserName.Account(),
 		OrgName:     d.OrgName.Account(),
+		CreatedAt:   d.CreatedAt,
 		QuotaCount:  d.QuotaCount,
 		ComputeType: d.ComputeType.ComputilityType(),
 		Version:     d.Version,
@@ -45,6 +47,7 @@ func (do *computilityDetailDO) toComputilityDetail() domain.ComputilityDetail {
 			UserName: primitive.CreateAccount(do.UserName),
 			OrgName:  primitive.CreateAccount(do.OrgName),
 		},
+		CreatedAt:   do.CreatedAt,
 		ComputeType: primitive.CreateComputilityType(do.ComputeType),
 		QuotaCount:  do.QuotaCount,
 		Version:     do.Version,

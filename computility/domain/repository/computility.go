@@ -42,3 +42,11 @@ type ComputilityAccountRepositoryAdapter interface {
 
 	CancelAccount(domain.ComputilityAccountIndex) error
 }
+
+type ComputilityAccountRecordRepositoryAdapter interface {
+	Add(*domain.ComputilityAccountRecord) error
+	Save(*domain.ComputilityAccountRecord) error
+	Delete(primitive.Identity) error
+	ListByAccountIndex(domain.ComputilityAccountIndex) ([]domain.ComputilityAccountRecord, int, error)
+	FindByRecordIndex(domain.ComputilityAccountRecordIndex) (domain.ComputilityAccountRecord, error)
+}

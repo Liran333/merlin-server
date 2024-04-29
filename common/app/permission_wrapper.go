@@ -77,5 +77,5 @@ func CanReadOrNotFound(
 		return false, nil
 	}
 
-	return true, allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "not found" , err)
+	return true, allerror.NewNotFound(allerror.ErrorCodeRepoNotFound, "not found", err)
 }

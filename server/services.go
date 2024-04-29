@@ -58,7 +58,7 @@ type allServices struct {
 
 	spaceSecret spaceapp.SpaceSecretService
 
-	compUtilityApp computilityapp.ComputilityAppService
+	computilityApp computilityapp.ComputilityInternalAppService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -81,8 +81,7 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	// initSpace depends on initCodeRepo and initOrg and initSpaceApp
-	if err = initSpace(cfg, &services); err != nil {
+	if err = initComputilityApp(cfg, &services); err != nil {
 		return
 	}
 
@@ -90,11 +89,12 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 		return
 	}
 
-	if err = initActivity(cfg, &services); err != nil {
+	// initSpace depends on initCodeRepo and initOrg and initSpaceApp
+	if err = initSpace(cfg, &services); err != nil {
 		return
 	}
 
-	if err = initComputilityApp(cfg); err != nil {
+	if err = initActivity(cfg, &services); err != nil {
 		return
 	}
 

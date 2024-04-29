@@ -15,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
@@ -30,11 +31,13 @@ func AddRouterForUserController(
 	m middleware.UserMiddleWare,
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
+	d orgapp.PrivilegeOrg,
 ) {
 	ctl := UserController{
-		repo: repo,
-		s:    us,
-		m:    m,
+		repo:    repo,
+		s:       us,
+		m:       m,
+		disable: d,
 	}
 
 	rg.PUT("/v1/user", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.Update)
@@ -55,9 +58,10 @@ func AddRouterForUserController(
 
 // UserController is a struct that holds references to user repository, user service, and user middleware.
 type UserController struct {
-	repo userrepo.User
-	s    app.UserService
-	m    middleware.UserMiddleWare
+	repo    userrepo.User
+	s       app.UserService
+	m       middleware.UserMiddleWare
+	disable orgapp.PrivilegeOrg
 }
 
 // @Summary  Update
@@ -222,13 +226,22 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	}
 
 	// get user own info
-	if u, err := ctl.s.UserInfo(user, user); err != nil {
+	u, err := ctl.s.UserInfo(user, user)
+	if err != nil {
 		logrus.Error(err)
 
 		commonctl.SendError(ctx, err)
-	} else {
-		commonctl.SendRespOfGet(ctx, u)
 	}
+
+	if ctl.disable != nil {
+		err = ctl.disable.Contains(user)
+		if err != nil {
+			u.IsDisableAdmin = false
+		} else {
+			u.IsDisableAdmin = true
+		}
+	}
+	commonctl.SendRespOfGet(ctx, u)
 }
 
 // @Summary  DeletePlatformToken

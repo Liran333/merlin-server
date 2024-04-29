@@ -11,11 +11,14 @@ import (
 
 const (
 	computilityTypeNpu = "npu"
+	computilityTypeCpu = "cpu"
 )
 
 // ComputilityType is an interface that defines computility hardware.
 type ComputilityType interface {
 	ComputilityType() string
+	IsCpu() bool
+	IsNpu() bool
 }
 
 // NewComputilityType creates a new ComputilityType instance decided by sdk based on the given string.
@@ -24,6 +27,7 @@ func NewComputilityType(v string) (ComputilityType, error) {
 
 	switch v {
 	case computilityTypeNpu:
+	case computilityTypeCpu:
 	default:
 		return nil, errors.New("unknown computility type")
 	}
@@ -41,4 +45,12 @@ type computilityType string
 // computilityType returns the string representation of the ComputilityType.
 func (r computilityType) ComputilityType() string {
 	return string(r)
+}
+
+func (r computilityType) IsCpu() bool {
+	return string(r) == computilityTypeCpu
+}
+
+func (r computilityType) IsNpu() bool {
+	return string(r) == computilityTypeNpu
 }

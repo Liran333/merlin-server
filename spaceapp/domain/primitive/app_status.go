@@ -24,7 +24,8 @@ const (
 	serving     = "serving"
 	startFailed = "start_failed"
 
-	restarting = "restarting"
+	restarting    = "restarting"
+	restartFailed = "restart_failed"
 
 	paused       = "paused"
 	resuming     = "resuming"
@@ -34,6 +35,9 @@ const (
 var (
 	// AppStatusInit represents the application status when it is in the initialization phase.
 	AppStatusInit = appStatus(appInit)
+
+	// AppStatusInvalid represents the application status when it is invalid requests.
+	AppStatusInvalid = appStatus(appInvalid)
 
 	// AppStatusServing represents the application status when it is serving requests.
 	AppStatusServing = appStatus(serving)
@@ -53,22 +57,35 @@ var (
 	// AppStatusRestarted represents the application status when the app is restarted.
 	AppStatusRestarted = appStatus(restarting)
 
+	// AppStatusRestartFailed represents the application status when the app is restart failed.
+	AppStatusRestartFailed = appStatus(restartFailed)
+
 	// AppStatusPaused represents the application status when the app is pause.
 	AppStatusPaused = appStatus(paused)
 
 	// AppStatusResuming represents the application status when the app is resume.
 	AppStatusResuming = appStatus(resuming)
+
+	// AppStatusResumeFailed represents the application status when the app is resume failed.
+	AppStatusResumeFailed = appStatus(resumeFailed)
 )
 
-var acceptAppStatusSets = sets.NewString(appInvalid, resumeFailed)
+var acceptAppStatusSets = sets.NewString(
+	appInvalid,
+	buildFailed,
+	startFailed,
+	restartFailed,
+	resumeFailed)
 
 // AppStatus is an interface that defines methods for working with application statuses.
 type AppStatus interface {
 	IsInit() bool
+	IsInvalid() bool
 	AppStatus() string
 	IsBuilding() bool
-	IsBuildSuccessful() bool
+	IsStarting() bool
 	IsRestarting() bool
+	IsRestartFailed() bool
 	IsPaused() bool
 	IsResuming() bool
 	IsResumeFailed() bool
@@ -89,6 +106,7 @@ func NewAppStatus(v string) (AppStatus, error) {
 	case buildFailed:
 	case startFailed:
 	case starting:
+	case restartFailed:
 	case resumeFailed:
 
 	default:
@@ -116,19 +134,29 @@ func (r appStatus) IsInit() bool {
 	return string(r) == appInit
 }
 
+// IsInit checks if the appStatus is equal to appInit.
+func (r appStatus) IsInvalid() bool {
+	return string(r) == appInvalid
+}
+
 // IsBuilding checks if the appStatus is equal to building.
 func (r appStatus) IsBuilding() bool {
 	return string(r) == building
 }
 
-// IsBuildSuccessful checks if the appStatus is equal to buildSuccessfully.
-func (r appStatus) IsBuildSuccessful() bool {
+// IsStarting checks if the appStatus is equal to buildSuccessfully.
+func (r appStatus) IsStarting() bool {
 	return string(r) == starting
 }
 
 // IsRestarting checks if the appStatus is equal to restarting.
 func (r appStatus) IsRestarting() bool {
 	return string(r) == restarting
+}
+
+// IsRestartFailed checks if the appStatus is equal to restartFailed.
+func (r appStatus) IsRestartFailed() bool {
+	return string(r) == restartFailed
 }
 
 // IsPaused checks if the appStatus is equal to paused.

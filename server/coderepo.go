@@ -20,7 +20,9 @@ import (
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
+	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
 )
 
 func initCodeRepo(cfg *config.Config, services *allServices) error {
@@ -83,7 +85,7 @@ func setRouterOfCodeRepoPermissionInternal(rg *gin.RouterGroup, services *allSer
 	)
 }
 
-func setRouterOfCodeRepoStatisticInternal(rg *gin.RouterGroup, services *allServices) {
+func setRouterOfCodeRepoStatisticInternal(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
 	controller.AddRouteForCodeRepoStatisticInternalController(
 		rg,
 		resourceadapterimpl.NewResourceAdapterImpl(
@@ -97,6 +99,10 @@ func setRouterOfCodeRepoStatisticInternal(rg *gin.RouterGroup, services *allServ
 		),
 		spaceapp.NewSpaceInternalAppService(
 			spacerepositoryadapter.SpaceAdapter(),
+			messageadapter.MessageAdapter(&cfg.Space.Topics),
+			repositoryadapter.AppRepositoryAdapter(),
+			spacerepositoryadapter.ModelSpaceRelationAdapter(),
+			modelrepositoryadapter.ModelAdapter(),
 		),
 	)
 }

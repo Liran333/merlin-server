@@ -29,6 +29,7 @@ func AddRouterForSpaceInternalController(
 	r.PUT("/v1/space/:id/model", m.Write, ctl.UpdateSpaceModels)
 	r.PUT("/v1/space/:id/local_cmd", m.Write, ctl.UpdateSpaceLocalCMD)
 	r.PUT("/v1/space/:id/local_env_info", m.Write, ctl.UpdateSpaceLocalEnvInfo)
+	r.PUT("/v1/space/:id/disable", m.Write, ctl.Disable)
 }
 
 // SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
@@ -77,7 +78,7 @@ func (ctl *SpaceInternalController) UpdateSpaceModels(ctx *gin.Context) {
 		return
 	}
 
-	_, err = ctl.appService.GetById(spaceId)
+	err = ctl.appService.RemoveException(spaceId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	}
@@ -160,6 +161,31 @@ func (ctl *SpaceInternalController) UpdateSpaceLocalEnvInfo(ctx *gin.Context) {
 	envInfo := req.toCmd()
 
 	err = ctl.appService.UpdateEnvInfo(spaceId, envInfo)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  Disable space
+// @Description  disable space
+// @Tags     SpaceInternal
+// @Param    id    path  string            true  "id of space"
+// @Accept   json
+// @Security Internal
+// @Success  202   {object}  commonctl.ResponseData
+// @Router   /v1/space/{id}/disable [put]
+func (ctl *SpaceInternalController) Disable(ctx *gin.Context) {
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	err = ctl.appService.Disable(spaceId)
+
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

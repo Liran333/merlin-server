@@ -15,6 +15,8 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -29,6 +31,7 @@ type SpaceSecretService interface {
 func NewSpaceSecretService(
 	permission app.ResourcePermissionAppService,
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
+	repo repository.Repository,
 	secretAdapter spacerepo.SpaceSecretRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
 	msgAdapter message.SpaceMessage,
@@ -36,6 +39,7 @@ func NewSpaceSecretService(
 	return &spaceSecretService{
 		permission:           permission,
 		repoAdapter:          repoAdapter,
+		repo:				  repo,
 		secretAdapter:        secretAdapter,
 		secureStorageAdapter: secureStorageAdapter,
 		msgAdapter:           msgAdapter,
@@ -45,9 +49,22 @@ func NewSpaceSecretService(
 type spaceSecretService struct {
 	permission           app.ResourcePermissionAppService
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
+	repo 				 repository.Repository
 	secretAdapter        spacerepo.SpaceSecretRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
 	msgAdapter           message.SpaceMessage
+}
+
+func (s *spaceSecretService) setAppRestarting(spaceId primitive.Identity) error {
+	app, err := s.repo.FindBySpaceId(spaceId)
+	if err != nil {
+		return nil
+	}
+	if app.Status.IsPaused() || app.Status.IsResuming() || app.Status.IsResumeFailed() {
+		return nil
+	}
+	app.Status = appprimitive.AppStatusRestarted
+	return s.repo.Save(&app)
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -74,7 +91,7 @@ func (s *spaceSecretService) CreateSecret(
 		return "", action, err
 	}
 
-	if err := s.spaceSecretCountCheck(space.Id); err != nil {
+	if err = s.spaceSecretCountCheck(space.Id); err != nil {
 		err = newSpaceSecretCountExceeded(err)
 		return "", action, err
 	}
@@ -96,7 +113,7 @@ func (s *spaceSecretService) CreateSecret(
 		return "", action, err
 	}
 
-	if err := s.secretAdapter.AddSecret(secret); err != nil {
+	if err = s.secretAdapter.AddSecret(secret); err != nil {
 		err = allerror.NewCommonRespError("failed to create space secret db",
 			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
 		return "", action, err
@@ -106,6 +123,12 @@ func (s *spaceSecretService) CreateSecret(
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send create space secret event",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return "", action, err
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return "", action, err
 	}
 	return "successful", action, err
 }
@@ -177,6 +200,11 @@ func (s *spaceSecretService) DeleteSecret(
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send delete space secret event",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return
 }
@@ -239,6 +267,11 @@ func (s *spaceSecretService) UpdateSecret(
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send update space secret event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return

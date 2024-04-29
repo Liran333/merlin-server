@@ -11,21 +11,23 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 )
 
-func initComputilityApp(cfg *config.Config) error {
-	return repositoryadapter.Init(postgresql.DB(), &cfg.Computility.Tables)
-}
-
-func setRouterOfComputilityAppInternal(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
-	s := app.NewComputilityInternalAppService(
+func initComputilityApp(cfg *config.Config, services *allServices) error {
+	err := repositoryadapter.Init(postgresql.DB(), &cfg.Computility.Tables)
+	services.computilityApp = app.NewComputilityInternalAppService(
 		repositoryadapter.ComputilityOrgAdapter(),
 		repositoryadapter.ComputilityDetailAdapter(),
 		repositoryadapter.ComputilityAccountAdapter(),
+		repositoryadapter.ComputilityAccountRecordAdapter(),
 		messageadapter.MessageAdapter(&cfg.Computility.Topics),
 	)
 
+	return err
+}
+
+func setRouterOfComputilityAppInternal(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
 	controller.AddRouterForComputilityInternalController(
 		rg,
-		s,
+		services.computilityApp,
 		services.userMiddleWare,
 	)
 }
@@ -41,5 +43,6 @@ func setRouterOfComputilityAppWeb(rg *gin.RouterGroup, services *allServices) {
 		rg,
 		s,
 		services.userMiddleWare,
+		services.operationLog,
 	)
 }

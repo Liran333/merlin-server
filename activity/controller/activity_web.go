@@ -97,7 +97,7 @@ type reqToListUserActivities struct {
 // @Param    model  query  string  false "filter by model" MaxLength(100)
 // @Param    like  query  string  false "filter by like" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData{data=app.ActivityDTO,msg=string,code=string}
+// @Success  200  {object}  commonctl.ResponseData{data=app.ActivitysDTO,msg=string,code=string}
 // @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router /v1/user/activity [get]
 func (ctl *ActivityWebController) List(ctx *gin.Context) {
@@ -251,14 +251,14 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 	}
 }
 
-func (ctl *ActivityWebController) setAvatars(dto *app.ActivityDTO) (activitiesInfo, error) {
+func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
 	ac := dto.Activities
 
 	// get avatars
 
 	v := map[string]bool{}
 	for i := range ac {
-		v[ac[i].Activity.Resource.Owner.Account()] = true
+		v[ac[i].Resource.Owner] = true
 	}
 
 	accounts := make([]primitive.Account, len(v))
@@ -288,8 +288,8 @@ func (ctl *ActivityWebController) setAvatars(dto *app.ActivityDTO) (activitiesIn
 		item := &ac[i]
 
 		infos[i] = activityInfo{
-			AvatarId:        am[item.Activity.Resource.Owner.Account()],
-			ActivitySummary: item,
+			AvatarId:           am[item.Resource.Owner],
+			ActivitySummaryDTO: item,
 		}
 	}
 

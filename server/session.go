@@ -33,7 +33,7 @@ func initSession(cfg *config.Config, services *allServices) {
 
 func setRouterOfSession(rg *gin.RouterGroup, services *allServices, cfg *sessionctl.Config) {
 	controller.AddRouterForSessionController(
-		rg, services.sessionApp, services.operationLog, services.userMiddleWare, cfg,
+		rg, services.sessionApp, services.operationLog, services.userMiddleWare, cfg, services.disable,
 	)
 }
 

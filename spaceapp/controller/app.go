@@ -112,7 +112,7 @@ func (ctl *SpaceAppController) Pause(ctx *gin.Context) {
 // @Accept   json
 // @Security Bearer
 // @Success  201   {object}  commonctl.ResponseData
-// @Router   /v1/space-app/{owner}/{name}/Resume [post]
+// @Router   /v1/space-app/{owner}/{name}/resume [post]
 func (ctl *SpaceAppController) Resume(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
 	if err != nil {

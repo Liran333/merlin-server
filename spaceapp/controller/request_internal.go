@@ -45,25 +45,6 @@ func (req *reqToUpdateBuildInfo) toCmd() (cmd app.CmdToNotifyBuildIsStarted, err
 	return
 }
 
-// reqToSetBuildIsDone
-type reqToSetBuildIsDone struct {
-	reqToCreateSpaceApp
-
-	Logs    string `json:"logs"`
-	Success bool   `json:"success"`
-}
-
-func (req *reqToSetBuildIsDone) toCmd() (cmd app.CmdToNotifyBuildIsDone, err error) {
-	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
-		return
-	}
-
-	cmd.Logs = req.Logs
-	cmd.Success = req.Success
-
-	return
-}
-
 // reqToUpdateServiceInfo
 type reqToUpdateServiceInfo struct {
 	reqToUpdateBuildInfo
@@ -81,26 +62,10 @@ func (req *reqToUpdateServiceInfo) toCmd() (cmd app.CmdToNotifyServiceIsStarted,
 	return
 }
 
-// reqToSetStatus
-type reqToSetStatus struct {
-	reqToCreateSpaceApp
-
-	Status string `json:"status"`
-}
-
-func (req *reqToSetStatus) toCmd() (cmd app.CmdToNotifyUpdateStatus, err error) {
-	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
-		return
-	}
-
-	cmd.Status, err = appprimitive.NewAppStatus(req.Status)
-	return
-}
-
 // reqToPauseSpaceApp
 type reqToPauseSpaceApp struct {
-	SpaceId  string `json:"space_id"`
-	IsForce  bool   `json:"is_force"`
+	SpaceId string `json:"space_id"`
+	IsForce bool   `json:"is_force"`
 }
 
 func (req *reqToPauseSpaceApp) toCmd() (cmd app.CmdToPauseSpaceApp, err error) {
@@ -110,5 +75,25 @@ func (req *reqToPauseSpaceApp) toCmd() (cmd app.CmdToPauseSpaceApp, err error) {
 	}
 
 	cmd.IsForce = req.IsForce
+	return
+}
+
+// reqToFailedStatus
+type reqToFailedStatus struct {
+	reqToCreateSpaceApp
+
+	Status string `json:"status"`
+	Reason string `json:"reason"`
+}
+
+func (req *reqToFailedStatus) toCmd() (cmd app.CmdToNotifyFailedStatus, err error) {
+	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
+		return
+	}
+
+	cmd.Reason = req.Reason
+
+	cmd.Status, err = appprimitive.NewAppStatus(req.Status)
+
 	return
 }

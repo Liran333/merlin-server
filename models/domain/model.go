@@ -26,11 +26,19 @@ type Model struct {
 	UpdatedAt     int64
 	LikeCount     int
 	DownloadCount int
+
+	Disable       bool
+	DisableReason primitive.DisableReason
 }
 
 // ResourceType returns the type of the model resource.
 func (m *Model) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeModel
+}
+
+// IsDisable checks if the space is disable.
+func (m *Model) IsDisable() bool {
+	return m.Disable
 }
 
 // ModelLabels represents the labels associated with a model, including task labels, other labels, and framework labels.

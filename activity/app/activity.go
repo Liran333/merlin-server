@@ -7,6 +7,7 @@ package app
 
 import (
 	"fmt"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 
 	"github.com/sirupsen/logrus"
@@ -23,7 +24,7 @@ import (
 
 // NewActivityAppService is an interface for the model application service.
 type ActivityAppService interface {
-	List(primitive.Account, []primitive.Account, *CmdToListActivities) (ActivityDTO, error)
+	List(primitive.Account, []primitive.Account, *CmdToListActivities) (ActivitysDTO, error)
 	Create(*CmdToAddActivity) error
 	Delete(*CmdToAddActivity) error
 	HasLike(primitive.Account, primitive.Identity) (bool, error)
@@ -55,81 +56,70 @@ func NewActivityAppService(
 }
 
 // List retrieves a list of activities with statistics for models and spaces.
-func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (ActivityDTO, error) {
+func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (ActivitysDTO, error) {
 	activities, _, err := s.repoAdapter.List(names, cmd)
 	if err != nil {
 		e := fmt.Errorf("failed to list activities: %s", err)
 		err = allerror.New(allerror.ErrorFailToRetrieveActivityData, e.Error(), e)
-		return ActivityDTO{}, err
+		return ActivitysDTO{}, err
 	}
 
-	var filteredActivities []domain.ActivitySummary
-	for i := range activities {
-		activity := activities[i]
-		stat, err := s.getActivityStats(user, &activity)
+	var filteredActivities []ActivitySummaryDTO
+	for _, activity := range activities {
+		activitySummary, err := s.getActivity(user, activity)
 		if err != nil {
-			// User does not have access to this repo
-			e := fmt.Errorf("failed to get repo info by index: %s", err)
-			logrus.Infof("User %v does not have access to this repo id: %s. %t", user, activity.Resource.Index, e)
+			logrus.Infof("User %v %v repo id:%v", user, err, activity.Resource.Index)
 			continue
 		}
-		filteredActivities = append(filteredActivities, domain.ActivitySummary{
-			Activity: activity,
-			Stat:     stat,
-		})
+		filteredActivities = append(filteredActivities, activitySummary)
 	}
 
-	return ActivityDTO{
+	return ActivitysDTO{
 		Total:      len(filteredActivities),
 		Activities: filteredActivities,
 	}, nil
 }
 
-// getActivityStats retrieves statistics based on the activity type.
-func (s *activityAppService) getActivityStats(user primitive.Account, activity *domain.Activity) (domain.Stat, error) {
+// getActivity retrieves statistics based on the activity type.
+func (s *activityAppService) getActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
-		return domain.Stat{}, fmt.Errorf("failed to get code repository by ID: %v", err)
+		return ActivitySummaryDTO{}, fmt.Errorf("failed to get code repository by ID: %v", err)
 	}
 	activity.Name = codeRepo.Name
 	activity.Resource.Owner = codeRepo.Owner
 
-	switch activity.Resource.Type {
-	case primitive.ObjTypeModel:
-		return s.getModelStats(user, codeRepo)
-	case primitive.ObjTypeSpace:
-		return s.getSpaceStats(user, codeRepo)
-	default:
-		return domain.Stat{}, fmt.Errorf("unknown activity type: %s", activity.Type)
+	stat := domain.Stat{}
+	err = s.getActivityInfo(user, codeRepo, &activity, &stat)
+	if err != nil {
+		return ActivitySummaryDTO{}, fmt.Errorf("failed to get activity info by ID: %v", err)
 	}
+
+	return toActivitySummaryDTO(&activity, &stat), nil
 }
 
-// getModelStats retrieves statistics for a model activity.
-func (s *activityAppService) getModelStats(user primitive.Account, codeRepo coderepo.CodeRepo) (domain.Stat, error) {
-	model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
-	if err != nil {
-		return domain.Stat{}, fmt.Errorf("failed to find model by name: %v", err)
-	}
-	statsMap := domain.Stat{
-		LikeCount:     model.LikeCount,
-		DownloadCount: model.DownloadCount,
-	}
+func (s *activityAppService) getActivityInfo(user primitive.Account, codeRepo coderepo.CodeRepo, activity *domain.Activity, statsMap *domain.Stat) error {
+	if activity.Resource.Type == primitive.ObjTypeModel {
+		model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+		if err != nil {
+			logrus.Errorf("failed to get model, id:%v, err: %v", activity.Resource.Index, err)
+			return err
+		}
+		activity.Resource.Disable = model.Disable
+		statsMap.LikeCount = model.LikeCount
+		statsMap.DownloadCount = model.DownloadCount
 
-	return statsMap, nil
-}
-
-// getSpaceStats retrieves statistics for a space activity.
-func (s *activityAppService) getSpaceStats(user primitive.Account, codeRepo coderepo.CodeRepo) (domain.Stat, error) {
-	space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
-	if err != nil {
-		return domain.Stat{}, fmt.Errorf("failed to find space by name: %v", err)
+	} else {
+		space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+		if err != nil {
+			logrus.Errorf("failed to get space, id:%v, err: %v", activity.Resource.Index, err)
+			return err
+		}
+		activity.Resource.Disable = space.Disable
+		statsMap.LikeCount = space.LikeCount
+		statsMap.DownloadCount = space.DownloadCount
 	}
-	statsMap := domain.Stat{
-		LikeCount:     space.LikeCount,
-		DownloadCount: space.DownloadCount,
-	}
-
-	return statsMap, nil
+	return nil
 }
 
 // Create function to check if a "like" already exists before saving.

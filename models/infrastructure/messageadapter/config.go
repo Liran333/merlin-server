@@ -10,4 +10,5 @@ type Topics struct {
 	ModelCreated string `json:"model_created" required:"true"`
 	ModelUpdated string `json:"model_updated" required:"true"`
 	ModelDeleted string `json:"model_deleted" required:"true"`
+	ModelDisable string `json:"model_disable" required:"true"`
 }

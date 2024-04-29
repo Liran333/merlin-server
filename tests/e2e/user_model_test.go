@@ -206,6 +206,34 @@ func (s *SuiteUserModel) TestUserSetModelDownloadCount() {
 	assert.Nil(s.T(), err)
 }
 
+// TestModelOwnerNameGetPrivateModel used for testing
+// 可以访问自己名下的私有模型
+func (s *SuiteUserModel) TestModelOwnerNameGetPrivateModel() {
+	// 创建testmodel
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel3",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "private",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	// 获取test2名下的指定model成功
+	detail, r, err := ApiRest.ModelRestfulApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel3")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	model := getData(s.T(), detail.Data)
+	assert.Equal(s.T(), "testmodel3", model["name"])
+
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUserModel used for testing
 func TestUserModel(t *testing.T) {
 	suite.Run(t, new(SuiteUserModel))

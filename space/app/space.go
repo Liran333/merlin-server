@@ -14,12 +14,15 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	computilityapp "github.com/openmerlin/merlin-server/computility/app"
+	computilitydomain "github.com/openmerlin/merlin-server/computility/domain"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
+	spaceappApp "github.com/openmerlin/merlin-server/spaceapp/app"
 	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -67,6 +70,7 @@ type SpaceAppService interface {
 	Create(primitive.Account, *CmdToCreateSpace) (string, error)
 	Delete(primitive.Account, primitive.Identity) (string, error)
 	Update(primitive.Account, primitive.Identity, *CmdToUpdateSpace) (string, error)
+	Disable(primitive.Account, primitive.Identity, *CmdToDisableSpace) (string, error)
 	GetByName(primitive.Account, *domain.SpaceIndex) (SpaceDTO, error)
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 	AddLike(primitive.Identity) error
@@ -85,6 +89,9 @@ func NewSpaceAppService(
 	repoAdapter repository.SpaceRepositoryAdapter,
 	npuGatekeeper orgapp.PrivilegeOrg,
 	member orgrepo.OrgMember,
+	disableOrg orgapp.PrivilegeOrg,
+	computilityApp computilityapp.ComputilityInternalAppService,
+	spaceappApp spaceappApp.SpaceappAppService,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -97,6 +104,9 @@ func NewSpaceAppService(
 		repoAdapter:          repoAdapter,
 		npuGatekeeper:        npuGatekeeper,
 		member:               member,
+		disableOrg:           disableOrg,
+		computilityApp:       computilityApp,
+		spaceappApp:          spaceappApp,
 	}
 }
 
@@ -111,6 +121,9 @@ type spaceAppService struct {
 	repoAdapter          repository.SpaceRepositoryAdapter
 	npuGatekeeper        orgapp.PrivilegeOrg
 	member               orgrepo.OrgMember
+	disableOrg           orgapp.PrivilegeOrg
+	computilityApp       computilityapp.ComputilityInternalAppService
+	spaceappApp          spaceappApp.SpaceappAppService
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -120,12 +133,26 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		return "", err
 	}
 
-	if cmd.Hardware.IsNpu() && s.npuGatekeeper != nil {
-		err = s.npuGatekeeper.Contains(user)
-		if err != nil {
-			logrus.Errorf("user:%s cant alloc npu err:%s", user.Account(), err)
-			return "", err
-		}
+	now := utils.Now()
+	space := cmd.toSpace()
+
+	id := primitive.CreateIdentity(primitive.GetId())
+	hdType := space.GetComputeType()
+	count := space.GetQuotaCount()
+	compCmd := computilityapp.CmdToUserQuotaUpdate{
+		Index: computilitydomain.ComputilityAccountRecordIndex{
+			UserName:    user,
+			ComputeType: hdType,
+			SpaceId:     id,
+		},
+		QuotaCount: count,
+	}
+
+	err = s.computilityApp.UserQuotaConsume(compCmd)
+	if err != nil {
+		logrus.Errorf("space create | call api for quota consume failed: %s", err)
+
+		return "", err
 	}
 
 	if err := s.spaceCountCheck(cmd.Owner); err != nil {
@@ -137,13 +164,52 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		return "", err
 	}
 
-	now := utils.Now()
-	space := cmd.toSpace()
 	space.UpdatedAt = now
 	space.CodeRepo = coderepo
 	space.CreatedAt = now
 
+	if cmd.Hardware.IsNpu() {
+		space.CompPowerAllocated = true
+	}
+
 	if err = s.repoAdapter.Add(&space); err != nil {
+		logrus.Infof("space create failed | realese user:%s quota ", user)
+
+		ierr := s.computilityApp.UserQuotaRelease(compCmd)
+		if ierr != nil {
+			logrus.Errorf("realese user:%s quota failed after add space failed: %v", user, ierr)
+
+			return "", err
+		}
+
+		return "", err
+	}
+
+	if err = s.computilityApp.SpaceCreateSupply(computilityapp.CmdToSupplyRecord{
+		Index: computilitydomain.ComputilityAccountRecordIndex{
+			UserName:    user,
+			ComputeType: hdType,
+			SpaceId:     id,
+		},
+		QuotaCount: count,
+		NewSpaceId: space.Id,
+	}); err != nil {
+		logrus.Errorf("add space id supplyment failed, %s", err)
+
+		_, err = s.Delete(user, space.Id)
+		if err != nil {
+			logrus.Errorf("delete space after add space id supplyment failed, %s", err)
+
+			return "", err
+		}
+
+		err = s.computilityApp.UserQuotaRelease(compCmd)
+		if err != nil {
+			logrus.Errorf("release quota after add space id supplyment failed, %s", err)
+
+			return "", err
+		}
+
 		return "", err
 	}
 
@@ -202,6 +268,27 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 	e := domain.NewSpaceDeletedEvent(user, &space)
 	if err1 := s.msgAdapter.SendSpaceDeletedEvent(&e); err1 != nil {
 		logrus.Errorf("failed to send space deleted event, space id:%s", spaceId.Identity())
+	}
+
+	if space.Hardware.IsNpu() && space.CompPowerAllocated {
+		logrus.Infof("release quota after npu space:%s delete", spaceId.Identity())
+
+		c := computilityapp.CmdToUserQuotaUpdate{
+			Index: computilitydomain.ComputilityAccountRecordIndex{
+				UserName:    space.CreatedBy,
+				ComputeType: space.GetComputeType(),
+				SpaceId:     space.Id,
+			},
+			QuotaCount: space.GetQuotaCount(),
+		}
+
+		err = s.computilityApp.UserQuotaRelease(c)
+		if err != nil {
+			logrus.Errorf("failed to release user:%s quota after space:%s delete: %s",
+				user.Account(), spaceId.Identity(), err)
+
+			return "", nil
+		}
 	}
 
 	return
@@ -282,6 +369,12 @@ func (s *spaceAppService) Update(
 		return
 	}
 
+	if space.IsDisable() {
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, "resource was disabled, cant be modified.",
+			fmt.Errorf("cant change resource to public"))
+		return
+	}
+
 	isPrivateToPublic := space.IsPrivate() && cmd.Visibility.IsPublic()
 
 	b, err := s.codeRepoApp.Update(&space.CodeRepo, &cmd.CmdToUpdateRepo)
@@ -304,6 +397,108 @@ func (s *spaceAppService) Update(
 	}
 
 	return
+}
+
+// Disable disable the space with the given space ID using the provided command and returns the action performed.
+func (s *spaceAppService) Disable(
+	user primitive.Account, spaceId primitive.Identity, cmd *CmdToDisableSpace,
+) (action string, err error) {
+	space, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(err)
+		}
+
+		return
+	}
+
+	action = fmt.Sprintf(
+		"disable space of %s:%s/%s",
+		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
+	)
+
+	err = s.canDisable(user)
+	if err != nil {
+		return
+	}
+
+	if space.IsDisable() {
+		logrus.Errorf("space %s already been disabled", space.Name.MSDName())
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled", fmt.Errorf("already been disabled"))
+		return
+	}
+
+	// del space app
+	_, err = s.spaceappRepository.FindBySpaceId(space.Id)
+	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
+		logrus.Errorf("get space app by id %v failed, err:%v", space.Id, err)
+		return
+	} else if err == nil {
+		if err = s.spaceappRepository.DeleteBySpaceId(space.Id); err != nil {
+			logrus.Errorf("delete space app by id %v failed, err:%v", space.Id, err)
+			return
+		}
+	}
+
+	if space.Hardware.IsNpu() && space.CompPowerAllocated {
+		logrus.Infof("release quota after npu space:%s delete", spaceId.Identity())
+
+		c := computilityapp.CmdToUserQuotaUpdate{
+			Index: computilitydomain.ComputilityAccountRecordIndex{
+				UserName:    space.CreatedBy,
+				ComputeType: space.GetComputeType(),
+				SpaceId:     space.Id,
+			},
+			QuotaCount: space.GetQuotaCount(),
+		}
+
+		err = s.computilityApp.UserQuotaRelease(c)
+		if err != nil {
+			logrus.Errorf("failed to release user:%s quota after space:%s delete: %s",
+				user.Account(), spaceId.Identity(), err)
+
+			return
+		}
+
+		space.CompPowerAllocated = false
+	}
+
+	cmdRepo := coderepoapp.CmdToUpdateRepo{
+		Visibility: primitive.VisibilityPrivate,
+	}
+	_, err = s.codeRepoApp.Update(&space.CodeRepo, &cmdRepo)
+	if err != nil {
+		return
+	}
+
+	cmd.toSpace(&space)
+
+	if err = s.repoAdapter.Save(&space); err != nil {
+		return
+	}
+
+	e := domain.NewSpaceDisableEvent(user, &space)
+	if err1 := s.msgAdapter.SendSpaceDisableEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send space diabale event, space id:%s", spaceId.Identity())
+	}
+
+	logrus.Infof("send space diabale event success, space id:%s", spaceId.Identity())
+
+	return
+}
+
+func (s *spaceAppService) canDisable(user primitive.Account) error {
+	if s.disableOrg != nil {
+		if err := s.disableOrg.Contains(user); err != nil {
+			logrus.Errorf("user:%s cant disable space err:%s", user.Account(), err)
+			return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
+		}
+	} else {
+		logrus.Errorf("do not config disable org, no permit to disable")
+		return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
+	}
+
+	return nil
 }
 
 // GetByName retrieves a space by its name and returns the corresponding SpaceDTO.

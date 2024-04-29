@@ -61,3 +61,19 @@ type RecallInfo struct {
 	QuotaCount  int
 	ComputeType primitive.ComputilityType
 }
+
+type ComputilityAccountRecordIndex struct {
+	UserName    primitive.Account
+	SpaceId     primitive.Identity
+	ComputeType primitive.ComputilityType
+}
+
+type ComputilityAccountRecord struct {
+	ComputilityAccountRecordIndex
+
+	Id         primitive.Identity
+	CreatedAt  int64
+	QuotaCount int
+
+	Version int
+}

@@ -9,6 +9,7 @@ package messageadapter
 type Topics struct {
 	SpaceAppCreated   string `json:"space_app_created" required:"true"`
 	SpaceAppRestarted string `json:"space_app_restarted" required:"true"`
-	SpaceAppPaused string `json:"space_app_paused" required:"true"`
-	SpaceAppResumed string `json:"space_app_resumed" required:"true"`
+	SpaceAppPaused    string `json:"space_app_paused" required:"true"`
+	SpaceAppResumed   string `json:"space_app_resumed" required:"true"`
+	SpaceForceEvent   string `json:"space_force_event" required:"true"`
 }

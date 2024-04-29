@@ -54,6 +54,7 @@ type SpaceRestfulController struct {
 // @Param    owner  path  string  true  "owner of space"
 // @Param    name   path  string  true  "name of space"
 // @Accept   json
+// @Security Bearer
 // @Success  200  {object}  commonctl.ResponseData
 // @Router   /v1/space/{owner}/{name} [get]
 func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {

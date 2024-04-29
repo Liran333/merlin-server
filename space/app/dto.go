@@ -86,6 +86,18 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 	return
 }
 
+// CmdToDisableSpace is a struct used to disable a space.
+type CmdToDisableSpace struct {
+	Disable       bool
+	DisableReason primitive.DisableReason
+}
+
+func (cmd *CmdToDisableSpace) toSpace(space *domain.Space) {
+	space.Disable = cmd.Disable
+	space.DisableReason = cmd.DisableReason
+	space.UpdatedAt = utils.Now()
+}
+
 // SpaceDTO is a struct used to represent a space data transfer object.
 type SpaceDTO struct {
 	Id            string         `json:"id"`
@@ -104,6 +116,12 @@ type SpaceDTO struct {
 	LocalEnvInfo  string         `json:"local_env_info"`
 	Visibility    string         `json:"visibility"`
 	DownloadCount int            `json:"download_count"`
+	Disable       bool           `json:"disable"`
+	DisableReason string         `json:"disable_reason"`
+	Exception     string         `json:"exception"`
+
+	IsNpu              bool `json:"is_npu"`
+	CompPowerAllocated bool `json:"comp_power_allocated"`
 }
 
 // SpaceLabelsDTO is a struct used to represent labels of a space.
@@ -141,6 +159,12 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		DownloadCount: space.DownloadCount,
 		LocalCMD:      space.LocalCmd,
 		LocalEnvInfo:  space.LocalEnvInfo,
+		Disable:       space.Disable,
+		DisableReason: space.DisableReason.DisableReason(),
+		Exception:     space.Exception.Exception(),
+
+		IsNpu:              space.Hardware.IsNpu(),
+		CompPowerAllocated: space.CompPowerAllocated,
 	}
 
 	if space.Desc != nil {
@@ -171,6 +195,7 @@ func toSpaceMetaDTO(space *domain.Space) sdk.SpaceMetaDTO {
 		Owner:      space.Owner.Account(),
 		Hardware:   space.Hardware.Hardware(),
 		Visibility: space.CodeRepo.Visibility.Visibility(),
+		Disable:    space.Disable,
 	}
 	return dto
 }
@@ -183,6 +208,11 @@ type SpaceModelDTO struct {
 	UpdatedAt     int64  `json:"updated_at"`
 	LikeCount     int    `json:"like_count"`
 	DownloadCount int    `json:"download_count"`
+}
+
+// SpaceIdModelDTO
+type SpaceIdModelDTO struct {
+	SpaceId []string `json:"space_id"`
 }
 
 // CmdToCreateSpaceVariable is a struct used to create a space variable.

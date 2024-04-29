@@ -8,7 +8,9 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 	"github.com/openmerlin/merlin-server/spaceapp/app"
 	"github.com/openmerlin/merlin-server/spaceapp/controller"
@@ -18,6 +20,15 @@ import (
 )
 
 func initSpaceApp(cfg *config.Config, services *allServices) error {
+	err := spacerepositoryadapter.Init(postgresql.DB(), &cfg.Space.Tables)
+	if err != nil {
+		return err
+	}
+
+	err = repositoryadapter.Init(postgresql.DB(), &cfg.SpaceApp.Tables)
+	if err != nil {
+		return err
+	}
 
 	services.spaceappApp = app.NewSpaceappAppService(
 		messageadapter.MessageAdapter(&cfg.SpaceApp.Topics),
@@ -25,7 +36,9 @@ func initSpaceApp(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.SpaceAdapter(),
 		services.permissionApp,
 		sseadapter.StreamSentAdapter(),
-		services.compUtilityApp,
+		services.computilityApp,
+		spacerepositoryadapter.ModelSpaceRelationAdapter(),
+		modelrepositoryadapter.ModelAdapter(),
 	)
 
 	return nil
@@ -57,7 +70,7 @@ func setRouterOfSpaceAppInternal(rg *gin.RouterGroup, services *allServices, cfg
 		repositoryadapter.AppRepositoryAdapter(),
 		repositoryadapter.BuildLogAdapter(),
 		spacerepositoryadapter.SpaceAdapter(),
-		services.compUtilityApp,
+		services.computilityApp,
 	)
 
 	controller.AddRouteForSpaceappInternalController(

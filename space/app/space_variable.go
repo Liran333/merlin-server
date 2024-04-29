@@ -15,6 +15,8 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
+	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
+	"github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -30,6 +32,7 @@ type SpaceVariableService interface {
 func NewSpaceVariableService(
 	permission app.ResourcePermissionAppService,
 	repoAdapter spacerepo.SpaceRepositoryAdapter,
+	repo repository.Repository,
 	variableAdapter spacerepo.SpaceVariableRepositoryAdapter,
 	secureStorageAdapter securestorage.SpaceSecureManager,
 	msgAdapter message.SpaceMessage,
@@ -37,6 +40,7 @@ func NewSpaceVariableService(
 	return &spaceVariableService{
 		permission:           permission,
 		repoAdapter:          repoAdapter,
+		repo:                 repo,
 		variableAdapter:      variableAdapter,
 		secureStorageAdapter: secureStorageAdapter,
 		msgAdapter:           msgAdapter,
@@ -46,9 +50,22 @@ func NewSpaceVariableService(
 type spaceVariableService struct {
 	permission           app.ResourcePermissionAppService
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
+	repo                 repository.Repository
 	variableAdapter      spacerepo.SpaceVariableRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
 	msgAdapter           message.SpaceMessage
+}
+
+func (s *spaceVariableService) setAppRestarting(spaceId primitive.Identity) error {
+	app, err := s.repo.FindBySpaceId(spaceId)
+	if err != nil {
+		return nil
+	}
+	if app.Status.IsPaused() || app.Status.IsResuming() || app.Status.IsResumeFailed() {
+		return nil
+	}
+	app.Status = appprimitive.AppStatusRestarted
+	return s.repo.Save(&app)
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -107,6 +124,12 @@ func (s *spaceVariableService) CreateVariable(
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send add space variable event",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return "", action, err
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return "", action, err
 	}
 	return "successful", action, err
 }
@@ -178,6 +201,11 @@ func (s *spaceVariableService) DeleteVariable(
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send delete space variable event",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return
 }
@@ -240,6 +268,11 @@ func (s *spaceVariableService) UpdateVariable(
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send update space variable event",
+			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+		return
+	}
+	if err = s.setAppRestarting(space.Id); err != nil {
+		err = allerror.NewCommonRespError("failed to restart space app",
 			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return

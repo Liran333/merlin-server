@@ -38,7 +38,7 @@ var (
 )
 
 func toModelDO(m *domain.Model) modelDO {
-	return modelDO{
+	do := modelDO{
 		Id:            m.Id.Integer(),
 		Desc:          m.Desc.MSDDesc(),
 		Name:          m.Name.MSDName(),
@@ -47,6 +47,7 @@ func toModelDO(m *domain.Model) modelDO {
 		Fullname:      m.Fullname.MSDFullname(),
 		CreatedBy:     m.CreatedBy.Account(),
 		Visibility:    m.Visibility.Visibility(),
+		Disable:       m.Disable,
 		CreatedAt:     m.CreatedAt,
 		LikeCount:     m.LikeCount,
 		UpdatedAt:     m.UpdatedAt,
@@ -54,6 +55,12 @@ func toModelDO(m *domain.Model) modelDO {
 		DownloadCount: m.DownloadCount,
 		UseInOpenmind: m.UseInOpenmind,
 	}
+
+	if m.DisableReason != nil {
+		do.DisableReason = m.DisableReason.DisableReason()
+	}
+
+	return do
 }
 
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
@@ -82,6 +89,8 @@ type modelDO struct {
 	Fullname      string `gorm:"column:fullname"`
 	CreatedBy     string `gorm:"column:created_by"`
 	Visibility    string `gorm:"column:visibility"`
+	Disable       bool   `gorm:"column:disable"`
+	DisableReason string `gorm:"column:disable_reason"`
 	CreatedAt     int64  `gorm:"column:created_at"`
 	UpdatedAt     int64  `gorm:"column:updated_at"`
 	Version       int    `gorm:"column:version"`
@@ -112,6 +121,8 @@ func (do *modelDO) toModel() domain.Model {
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
+		Disable:       do.Disable,
+		DisableReason: primitive.CreateDisableReason(do.DisableReason),
 		Desc:          primitive.CreateMSDDesc(do.Desc),
 		Fullname:      primitive.CreateMSDFullname(do.Fullname),
 		CreatedAt:     do.CreatedAt,
@@ -142,5 +153,7 @@ func (do *modelDO) toModelSummary() repository.ModelSummary {
 		Frameworks:    do.Frameworks,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,
+		Disable:       do.Disable,
+		DisableReason: do.DisableReason,
 	}
 }

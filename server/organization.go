@@ -34,8 +34,6 @@ func initOrg(cfg *config.Config, services *allServices) error {
 
 	permission := app.NewPermService(&cfg.Permission, orgMember)
 
-	services.permissionApp = commonapp.NewResourcePermissionAppService(permission)
-
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 	certRepo, err := orgrepoimpl.NewCertificateImpl(
@@ -58,6 +56,7 @@ func initOrg(cfg *config.Config, services *allServices) error {
 
 	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu, app.AllocNpu)
 	services.disable = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Disable, app.Disable)
+	services.permissionApp = commonapp.NewResourcePermissionAppService(permission, services.disable)
 
 	return nil
 }

@@ -39,6 +39,7 @@ type CmdToNotifyServiceIsStarted struct {
 type SpaceAppDTO struct {
 	Id          int64  `json:"id"`
 	Status      string `json:"status"`
+	Reason      string `json:"reason"`
 	AppURL      string `json:"app_url"`
 	AppLogURL   string `json:"-"`
 	BuildLogURL string `json:"-"`
@@ -48,6 +49,7 @@ func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {
 	dto := SpaceAppDTO{
 		Id:     app.Id,
 		Status: app.Status.AppStatus(),
+		Reason: app.GetFailedReason(),
 	}
 
 	if app.AppURL != nil {
@@ -74,6 +76,14 @@ type CmdToNotifyUpdateStatus struct {
 
 // CmdToPauseSpaceApp is a command to pause space app
 type CmdToPauseSpaceApp struct {
-	SpaceId  primitive.Identity
+	SpaceId primitive.Identity
 	IsForce bool
+}
+
+// CmdToNotifyUpdateStatus is a command to notify that status has update.
+type CmdToNotifyFailedStatus struct {
+	domain.SpaceAppIndex
+
+	Reason string
+	Status appprimitive.AppStatus
 }

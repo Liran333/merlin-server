@@ -20,8 +20,12 @@ import (
 // ComputilityInternalAppService is an interface for computility internal application service
 type ComputilityInternalAppService interface {
 	UserJoin(CmdToUserOrgOperate) error
-	UserRemove(CmdToUserOrgOperate) error
-	OrgDelete(CmdToOrgDelete) error
+	UserRemove(CmdToUserOrgOperate) (QuotaRecallDTO, error)
+	OrgDelete(CmdToOrgDelete) ([]QuotaRecallDTO, error)
+
+	UserQuotaRelease(CmdToUserQuotaUpdate) error
+	UserQuotaConsume(CmdToUserQuotaUpdate) error
+	SpaceCreateSupply(CmdToSupplyRecord) error
 }
 
 // NewComputilityInternalAppService creates a new instance of ComputilityInternalAppService
@@ -29,21 +33,24 @@ func NewComputilityInternalAppService(
 	orgAdapter repository.ComputilityOrgRepositoryAdapter,
 	detailAdapter repository.ComputilityDetailRepositoryAdapter,
 	accountAdapter repository.ComputilityAccountRepositoryAdapter,
+	accountRecordAtapter repository.ComputilityAccountRecordRepositoryAdapter,
 	messageAdapter message.ComputilityMessage,
 ) ComputilityInternalAppService {
 	return &computilityInternalAppService{
-		orgAdapter:     orgAdapter,
-		detailAdapter:  detailAdapter,
-		accountAdapter: accountAdapter,
-		messageAdapter: messageAdapter,
+		orgAdapter:           orgAdapter,
+		detailAdapter:        detailAdapter,
+		accountAdapter:       accountAdapter,
+		accountRecordAtapter: accountRecordAtapter,
+		messageAdapter:       messageAdapter,
 	}
 }
 
 type computilityInternalAppService struct {
-	orgAdapter     repository.ComputilityOrgRepositoryAdapter
-	accountAdapter repository.ComputilityAccountRepositoryAdapter
-	detailAdapter  repository.ComputilityDetailRepositoryAdapter
-	messageAdapter message.ComputilityMessage
+	orgAdapter           repository.ComputilityOrgRepositoryAdapter
+	accountAdapter       repository.ComputilityAccountRepositoryAdapter
+	detailAdapter        repository.ComputilityDetailRepositoryAdapter
+	accountRecordAtapter repository.ComputilityAccountRecordRepositoryAdapter
+	messageAdapter       message.ComputilityMessage
 }
 
 func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error {
@@ -105,6 +112,7 @@ func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error 
 	err = s.detailAdapter.Add(&domain.ComputilityDetail{
 		ComputilityIndex: cmd.ComputilityIndex,
 		QuotaCount:       org.DefaultAssignQuota,
+		CreatedAt:        utils.Now(),
 		ComputeType:      org.ComputeType,
 		Version:          0,
 	})
@@ -120,14 +128,16 @@ func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error 
 	return err
 }
 
-func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) error {
+func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) (
+	QuotaRecallDTO, error,
+) {
 	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			return nil
+			return QuotaRecallDTO{}, nil
 		}
 
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	_, err = s.accountAdapter.FindByAccountIndex(
@@ -136,49 +146,64 @@ func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) erro
 			ComputeType: org.ComputeType,
 		})
 	if err != nil {
-		logrus.Errorf("user: %s have no computility account", cmd.UserName.Account())
-		return err
+		if commonrepo.IsErrorResourceNotExists(err) {
+			logrus.Errorf("user: %s have no computility account", cmd.UserName.Account())
+
+			return QuotaRecallDTO{}, nil
+		}
+
+		return QuotaRecallDTO{}, err
 	}
 
-	err = s.userRemoveOperate(&cmd.ComputilityIndex)
+	recall, err := s.userRemoveOperate(&cmd.ComputilityIndex)
 
-	return err
+	return recall, err
 }
 
-func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) error {
+func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) (
+	[]QuotaRecallDTO, error,
+) {
 	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			return nil
+			return nil, nil
 		}
 
-		return err
+		return nil, err
 	}
 
 	r, err := s.detailAdapter.GetMembers(cmd.OrgName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	rList := []QuotaRecallDTO{}
 	for _, v := range r {
-		err = s.userRemoveOperate(&domain.ComputilityIndex{
+		s, err := s.userRemoveOperate(&domain.ComputilityIndex{
 			OrgName:  v.OrgName,
 			UserName: v.UserName,
 		})
+
 		if err != nil {
-			return err
+			logrus.Errorf("org deleted | computility remove user:%s error: %s", v.UserName.Account(), err)
+
+			continue
 		}
+
+		rList = append(rList, s)
 	}
 
 	err = s.orgAdapter.Delete(org.Id)
 
-	return err
+	return rList, err
 }
 
-func (s *computilityInternalAppService) userRemoveOperate(index *domain.ComputilityIndex) error {
+func (s *computilityInternalAppService) userRemoveOperate(index *domain.ComputilityIndex) (
+	QuotaRecallDTO, error,
+) {
 	detail, err := s.detailAdapter.FindByIndex(index)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	assigned := detail.QuotaCount
@@ -190,54 +215,208 @@ func (s *computilityInternalAppService) userRemoveOperate(index *domain.Computil
 
 	account, err := s.accountAdapter.FindByAccountIndex(accountIndex)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
+
 	balance := account.QuotaCount - account.UsedQuota
 
+	var recall QuotaRecallDTO
 	if assigned > balance {
 		debt := assigned - balance
 
-		infoList := domain.RecallInfoList{}
-		infoList.InfoList = append(infoList.InfoList, domain.RecallInfo{
-			UserName:    index.UserName,
-			QuotaCount:  debt,
-			ComputeType: detail.ComputeType,
-		})
-
-		e := domain.NewcomputeRecallEvent(&infoList)
-		err = s.messageAdapter.SendComputilityRecallEvent(&e)
+		spaces, n, err := s.accountRecordAtapter.ListByAccountIndex(accountIndex)
 		if err != nil {
-			logrus.Errorf("publish topic computility_recalled failed, user:%s, quota:%v",
-				index.UserName.Account(), debt,
-			)
+			logrus.Errorf("find user bind space failed, %s", err)
+
+			return QuotaRecallDTO{}, err
+		}
+
+		if n == 0 {
+			logrus.Errorf("cannot find user:%s bind space, user debt: %v", account.UserName.Account(), debt)
 		} else {
-			logrus.Infof("publish topic computility_recalled success, user:%s, quota:%v",
-				index.UserName.Account(), debt,
-			)
+			recall = toQuotaRecallDTO(index.UserName, spaces, debt)
 		}
 	}
 
 	err = s.accountAdapter.DecreaseAccountAssignedQuota(account, assigned)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	org, err := s.orgAdapter.FindByOrgName(index.OrgName)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	err = s.orgAdapter.OrgRecallQuota(org, assigned)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	err = s.detailAdapter.Delete(detail.Id)
 	if err != nil {
-		return err
+		return QuotaRecallDTO{}, err
 	}
 
 	err = s.accountAdapter.CancelAccount(accountIndex)
 
-	return err
+	return recall, err
+}
+
+func (s *computilityInternalAppService) UserQuotaRelease(cmd CmdToUserQuotaUpdate) error {
+	if cmd.Index.ComputeType.IsCpu() {
+		return nil
+	}
+
+	record, err := s.accountRecordAtapter.FindByRecordIndex(cmd.Index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			logrus.Errorf("user:%s has not cosume record to release", cmd.Index.UserName.Account())
+
+			return nil
+		}
+
+		return err
+	}
+
+	accountIndex := domain.ComputilityAccountIndex{
+		UserName:    cmd.Index.UserName,
+		ComputeType: cmd.Index.ComputeType,
+	}
+
+	account, err := s.accountAdapter.FindByAccountIndex(accountIndex)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			logrus.Errorf("user:%s is not a computility account, can not release quota", cmd.Index.UserName.Account())
+			return nil
+		}
+		return err
+	}
+
+	if account.UsedQuota == 0 {
+		logrus.Errorf("user:%s has no quota to release", cmd.Index.UserName.Account())
+		return nil
+	}
+
+	err = s.accountAdapter.ReleaseQuota(account, cmd.QuotaCount)
+	if err != nil {
+		return err
+	}
+
+	err = s.accountRecordAtapter.Delete(record.Id)
+	if err != nil {
+		logrus.Errorf("delete user:%s account record failed, %s", cmd.Index.UserName.Account(), err)
+
+		return err
+	}
+
+	err = s.accountAdapter.CancelAccount(accountIndex)
+	if err != nil {
+		logrus.Errorf("cancel user:%s account failed, %s", cmd.Index.UserName.Account(), err)
+
+		return err
+	}
+
+	return nil
+}
+
+func (s *computilityInternalAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdate) error {
+	if cmd.Index.ComputeType.IsCpu() {
+		return nil
+	}
+
+	user := cmd.Index.UserName
+	_, err := s.accountRecordAtapter.FindByRecordIndex(cmd.Index)
+	if err == nil {
+		logrus.Errorf("user:%s already bind space:%s", user, cmd.Index.SpaceId.Identity())
+
+		return nil
+	}
+
+	b, err := s.accountAdapter.CheckAccountExist(user)
+	if err != nil {
+		return err
+	}
+	if !b {
+		e := fmt.Errorf("user %s no quota banlance for %s",
+			user.Account(), cmd.Index.ComputeType.ComputilityType())
+
+		return allerror.New(
+			allerror.ErrorCodeNoNpuPermission,
+			"no quota balance", e)
+	}
+
+	index := domain.ComputilityAccountIndex{
+		UserName:    user,
+		ComputeType: cmd.Index.ComputeType,
+	}
+
+	account, err := s.accountAdapter.FindByAccountIndex(index)
+	if err != nil {
+		logrus.Errorf("find user:%s account failed, %s", cmd.Index.UserName.Account(), err)
+
+		return err
+	}
+
+	balance := account.QuotaCount - account.UsedQuota
+	if balance < 1 {
+		e := fmt.Errorf("user %s insufficient computing quota balance", user.Account())
+
+		return allerror.New(
+			allerror.ErrorCodeInsufficientQuota,
+			"insufficient computing quota balance", e)
+	}
+
+	err = s.accountAdapter.ConsumeQuota(account, cmd.QuotaCount)
+	if err != nil {
+		return err
+	}
+
+	err = s.accountRecordAtapter.Add(&domain.ComputilityAccountRecord{
+		ComputilityAccountRecordIndex: cmd.Index,
+		CreatedAt:                     utils.Now(),
+		QuotaCount:                    cmd.QuotaCount,
+		Version:                       0,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *computilityInternalAppService) SpaceCreateSupply(cmd CmdToSupplyRecord) error {
+	if cmd.Index.ComputeType.IsCpu() {
+		return nil
+	}
+
+	b, err := s.accountAdapter.CheckAccountExist(cmd.Index.UserName)
+	if err != nil {
+		return err
+	}
+	if !b {
+		e := fmt.Errorf("user %s no permission for npu space", cmd.Index.UserName)
+
+		return allerror.New(
+			allerror.ErrorCodeNoNpuPermission,
+			"no permission for npu space", e)
+	}
+
+	record, err := s.accountRecordAtapter.FindByRecordIndex(cmd.Index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			logrus.Errorf("user %s has not cosume record to release", cmd.Index.UserName.Account())
+			return nil
+		}
+		return err
+	}
+
+	record.SpaceId = cmd.NewSpaceId
+
+	err = s.accountRecordAtapter.Save(&record)
+	if err != nil {
+		logrus.Errorf("user %s no permission for %s space", cmd.Index.UserName, cmd.Index.ComputeType.ComputilityType())
+	}
+
+	return nil
 }

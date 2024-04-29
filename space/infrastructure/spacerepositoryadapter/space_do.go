@@ -38,7 +38,7 @@ var (
 )
 
 func toSpaceDO(m *domain.Space) spaceDO {
-	return spaceDO{
+	do := spaceDO{
 		Id:                 m.Id.Integer(),
 		SDK:                m.SDK.SDK(),
 		Desc:               m.Desc.MSDDesc(),
@@ -50,16 +50,27 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		Fullname:           m.Fullname.MSDFullname(),
 		CreatedBy:          m.CreatedBy.Account(),
 		Visibility:         m.Visibility.Visibility(),
+		Disable:            m.Disable,
 		CreatedAt:          m.CreatedAt,
 		UpdatedAt:          m.UpdatedAt,
 		LikeCount:          m.LikeCount,
 		Version:            m.Version,
 		LocalCmd:           m.LocalCmd,
 		LocalEnvInfo:       m.LocalEnvInfo,
-		CodeValid:          m.CodeValid,
 		DownloadCount:      m.DownloadCount,
 		CompPowerAllocated: m.CompPowerAllocated,
+		CommitId:           m.CommitId,
 	}
+
+	if m.DisableReason != nil {
+		do.DisableReason = m.DisableReason.DisableReason()
+	}
+
+	if m.Exception != nil {
+		do.Exception = m.Exception.Exception()
+	}
+
+	return do
 }
 
 func toLabelsDO(labels *domain.SpaceLabels) spaceDO {
@@ -82,6 +93,9 @@ type spaceDO struct {
 	AvatarId      string `gorm:"column:avatar_id"`
 	CreatedBy     string `gorm:"column:created_by"`
 	Visibility    string `gorm:"column:visibility"`
+	Disable       bool   `gorm:"column:disable"`
+	DisableReason string `gorm:"column:disable_reason"`
+	Exception     string `gorm:"column:exception"`
 	CreatedAt     int64  `gorm:"column:created_at"`
 	UpdatedAt     int64  `gorm:"column:updated_at"`
 	Version       int    `gorm:"column:version"`
@@ -100,8 +114,8 @@ type spaceDO struct {
 
 	// comp power allocated
 	CompPowerAllocated bool `gorm:"column:comp_power_allocated"`
-	// code valid
-	CodeValid bool `gorm:"column:code_valid"`
+	// latest commit id
+	CommitId string `gorm:"column:commit_id"`
 }
 
 // TableName returns the table name of spaceDO.
@@ -119,6 +133,9 @@ func (do *spaceDO) toSpace() domain.Space {
 			Visibility: primitive.CreateVisibility(do.Visibility),
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 		},
+		Disable:       do.Disable,
+		DisableReason: primitive.CreateDisableReason(do.DisableReason),
+		Exception:     primitive.CreateException(do.Exception),
 		SDK:           spaceprimitive.CreateSDK(do.SDK),
 		Desc:          primitive.CreateMSDDesc(do.Desc),
 		Fullname:      primitive.CreateMSDFullname(do.Fullname),
@@ -136,8 +153,8 @@ func (do *spaceDO) toSpace() domain.Space {
 			Others:     sets.New[string](do.Others...),
 			Frameworks: sets.New[string](do.Frameworks...),
 		},
-		CodeValid:          do.CodeValid,
 		CompPowerAllocated: do.CompPowerAllocated,
+		CommitId:           do.CommitId,
 	}
 }
 
@@ -153,5 +170,7 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		UpdatedAt:     do.UpdatedAt,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,
+		Disable:       do.Disable,
+		DisableReason: do.DisableReason,
 	}
 }

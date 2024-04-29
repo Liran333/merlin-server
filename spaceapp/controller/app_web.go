@@ -172,7 +172,9 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 			if err != nil {
 				return false
 			}
-			ctx.SSEvent("message", string(done))
+			if done != nil {
+				ctx.SSEvent("message", string(done))
+			}
 			return true
 		})
 	}

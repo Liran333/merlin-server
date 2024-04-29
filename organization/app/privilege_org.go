@@ -19,6 +19,8 @@ const (
 	Disable action = "disable"
 )
 
+var disableObjType = []primitive.ObjType{primitive.ObjTypeSpace, primitive.ObjTypeModel, primitive.ObjTypeCodeRepo}
+
 // NewAction returns an action type
 func NewAction(action string) (action, error) {
 	switch action {
@@ -41,6 +43,7 @@ type PrivilegeOrgListOptions struct {
 type PrivilegeOrg interface {
 	Contains(primitive.Account) error
 	List(*PrivilegeOrgListOptions) ([]userapp.UserDTO, error)
+	IsCanReadObj(action, primitive.ObjType) bool
 }
 
 func NewPrivilegeOrgService(
@@ -164,4 +167,19 @@ func (p *privilegeOrg) List(l *PrivilegeOrgListOptions) ([]userapp.UserDTO, erro
 	}
 
 	return orgs, nil
+}
+
+func (p *privilegeOrg) IsCanReadObj(action action, obj primitive.ObjType) bool {
+	var objs []primitive.ObjType
+	if action == Disable {
+		objs = disableObjType
+	}
+
+	for _, o := range objs {
+		if o == obj {
+			return true
+		}
+	}
+
+	return false
 }

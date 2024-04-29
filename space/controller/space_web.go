@@ -53,6 +53,8 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.ListGlobal)
 	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
+
+	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
 }
 
 // SpaceWebController is a struct that holds the necessary dependencies for handling space-related operations in web controller.

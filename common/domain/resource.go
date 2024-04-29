@@ -10,10 +10,12 @@ import "github.com/openmerlin/merlin-server/common/domain/primitive"
 // Resource represents an interface for a resource with various methods.
 type Resource interface {
 	IsPublic() bool
+	IsPrivate() bool
 	IsCreatedBy(user primitive.Account) bool
 	ResourceType() primitive.ObjType
 	ResourceOwner() primitive.Account
 	OwnedByPerson() bool
+	IsDisable() bool
 }
 
 // CodeRepoIndex represents a code repository index with a name and owner.

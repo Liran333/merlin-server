@@ -18,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/message"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -27,6 +28,7 @@ type ModelAppService interface {
 	Create(primitive.Account, *CmdToCreateModel) (string, error)
 	Delete(primitive.Account, primitive.Identity) (string, error)
 	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) (string, error)
+	Disable(primitive.Account, primitive.Identity, *CmdToDisableModel) (string, error)
 	GetByName(primitive.Account, *domain.ModelIndex) (ModelDTO, error)
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 	AddLike(primitive.Identity) error
@@ -40,6 +42,7 @@ func NewModelAppService(
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ModelRepositoryAdapter,
 	member orgrepo.OrgMember,
+	disableOrg orgapp.PrivilegeOrg,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
@@ -47,6 +50,7 @@ func NewModelAppService(
 		codeRepoApp: codeRepoApp,
 		repoAdapter: repoAdapter,
 		member:      member,
+		disableOrg:  disableOrg,
 	}
 }
 
@@ -56,6 +60,7 @@ type modelAppService struct {
 	codeRepoApp coderepoapp.CodeRepoAppService
 	repoAdapter repository.ModelRepositoryAdapter
 	member      orgrepo.OrgMember
+	disableOrg  orgapp.PrivilegeOrg
 }
 
 // Create creates a new model.
@@ -166,6 +171,12 @@ func (s *modelAppService) Update(
 		return
 	}
 
+	if model.IsDisable() {
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, "resource was disabled, cant be modified.",
+			fmt.Errorf("cant change resource to public"))
+		return
+	}
+
 	isPrivateToPublic := model.IsPrivate() && cmd.Visibility.IsPublic()
 
 	b, err := s.codeRepoApp.Update(&model.CodeRepo, &cmd.CmdToUpdateRepo)
@@ -188,6 +199,73 @@ func (s *modelAppService) Update(
 	}
 
 	return
+}
+
+// Disable disable a model.
+func (s *modelAppService) Disable(
+	user primitive.Account, modelId primitive.Identity, cmd *CmdToDisableModel,
+) (action string, err error) {
+	model, err := s.repoAdapter.FindById(modelId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
+		}
+
+		return
+	}
+
+	action = fmt.Sprintf(
+		"disable model of %s:%s/%s",
+		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
+	)
+
+	err = s.canDisable(user)
+	if err != nil {
+		return
+	}
+
+	if model.IsDisable() {
+		logrus.Errorf("model %s already been disabled", model.Name.MSDName())
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled", fmt.Errorf("already been disabled"))
+		return
+	}
+
+	cmdRepo := coderepoapp.CmdToUpdateRepo{
+		Visibility: primitive.VisibilityPrivate,
+	}
+	_, err = s.codeRepoApp.Update(&model.CodeRepo, &cmdRepo)
+	if err != nil {
+		return
+	}
+
+	cmd.toModel(&model)
+
+	if err = s.repoAdapter.Save(&model); err != nil {
+		return
+	}
+
+	e := domain.NewModelDisableEvent(&model, user)
+	if err1 := s.msgAdapter.SendModelDisableEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send model disable event, model id:%s", modelId.Identity())
+	}
+
+	logrus.Infof("send model disable event success, model id:%s", modelId.Identity())
+
+	return
+}
+
+func (s *modelAppService) canDisable(user primitive.Account) error {
+	if s.disableOrg != nil {
+		if err := s.disableOrg.Contains(user); err != nil {
+			logrus.Errorf("user:%s cant disable model err:%s", user.Account(), err)
+			return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
+		}
+	} else {
+		logrus.Errorf("do not config disable org, no permit to disable")
+		return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
+	}
+
+	return nil
 }
 
 // GetByName retrieves a model by its name.

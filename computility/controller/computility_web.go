@@ -19,13 +19,14 @@ func AddRouterForComputilityWebController(
 	r *gin.RouterGroup,
 	s app.ComputilityAppService,
 	m middleware.UserMiddleWare,
+	l middleware.OperationLog,
 ) {
 	ctl := ComputilityWebController{
 		appService:     s,
 		userMiddleWare: m,
 	}
 
-	r.GET("/v1/computility/account/:type", m.Read, ctl.GetComputilityAccountDetail)
+	r.GET("/v1/computility/account/:type", l.Write, m.Read, ctl.GetComputilityAccountDetail)
 }
 
 // ComputilityWebAppService is a struct that holds the necessary dependencies for handling computility-related operations.

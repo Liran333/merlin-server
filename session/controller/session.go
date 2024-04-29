@@ -14,6 +14,7 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/session/app"
 )
 
@@ -31,10 +32,12 @@ func AddRouterForSessionController(
 	l middleware.OperationLog,
 	m middleware.UserMiddleWare,
 	cfg *Config,
+	d orgapp.PrivilegeOrg,
 ) {
 	pc := SessionController{
-		s:   s,
-		cfg: cfg,
+		s:       s,
+		cfg:     cfg,
+		disable: d,
 	}
 
 	rg.POST("/v1/session", l.Write, pc.Login)
@@ -43,8 +46,9 @@ func AddRouterForSessionController(
 
 // SessionController is a struct that holds the session app service.
 type SessionController struct {
-	s   app.SessionAppService
-	cfg *Config
+	s       app.SessionAppService
+	cfg     *Config
+	disable orgapp.PrivilegeOrg
 }
 
 // @Summary  Login
@@ -87,7 +91,20 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 	expiry := config.csrfTokenCookieExpiry()
 	setCookieOfCSRFToken(ctx, session.CSRFToken.RandomId(), ctl.cfg.SessionDomain, &expiry)
 
-	commonctl.SendRespOfGet(ctx, user)
+	u := app.UserInfoDTO{
+		UserDTO: user,
+	}
+	if ctl.disable != nil {
+		userAccount, _ := primitive.NewAccount(user.Name)
+		err = ctl.disable.Contains(userAccount)
+		if err != nil {
+			u.IsDisableAdmin = false
+		} else {
+			u.IsDisableAdmin = true
+		}
+	}
+
+	commonctl.SendRespOfGet(ctx, u)
 }
 
 // @Summary  Logout

@@ -47,7 +47,7 @@ func (adapter *computilityOrgAdapter) OrgAssignQuota(
 	do.UsedQuota = do.UsedQuota + quota
 
 	result := adapter.db().Model(
-		&computilityOrgDO{OrgName: do.OrgName},
+		&computilityOrgDO{Id: do.Id},
 	).Where(
 		equalQuery(filedVersion), org.Version,
 	).Select(`*`).Omit(fieldQuotaCount).Updates(&do)

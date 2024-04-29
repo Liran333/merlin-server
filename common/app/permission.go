@@ -11,13 +11,18 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 )
 
 // NewResourcePermissionAppService creates a new instance of the resourcePermissionAppService.
 func NewResourcePermissionAppService(
 	org orgResourcePermissionValidator,
+	disableOrg orgapp.PrivilegeOrg,
 ) *resourcePermissionAppService {
-	return &resourcePermissionAppService{org: org}
+	return &resourcePermissionAppService{
+		org:        org,
+		disableOrg: disableOrg,
+	}
 }
 
 // ResourcePermissionAppService defines methods for checking resource permissions.
@@ -36,7 +41,8 @@ type orgResourcePermissionValidator interface {
 
 // resourcePermissionAppService
 type resourcePermissionAppService struct {
-	org orgResourcePermissionValidator
+	org        orgResourcePermissionValidator
+	disableOrg orgapp.PrivilegeOrg
 }
 
 // CanListOrgResource checks if the user has permission to list organization resources of a specific type.
@@ -48,6 +54,30 @@ func (impl *resourcePermissionAppService) CanListOrgResource(
 
 // CanRead checks if the user has permission to read the specified resource.
 func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r domain.Resource) error {
+	err := impl.canRead(user, r)
+	if err != nil {
+		if err1 := impl.disableAdminCanRead(user, r); err1 == nil {
+			return nil
+		}
+	}
+
+	return err
+}
+
+// disable administrator can read model, space and repocode obj.
+func (impl *resourcePermissionAppService) disableAdminCanRead(user primitive.Account, r domain.Resource) (err error) {
+	if impl.disableOrg != nil {
+		action, _ := orgapp.NewAction(string(orgapp.Disable))
+		err = impl.disableOrg.Contains(user)
+		if err == nil && impl.disableOrg.IsCanReadObj(action, r.ResourceType()) {
+			return nil
+		}
+	}
+	return allerror.NewNoPermission("no permission", fmt.Errorf("not config disable admin"))
+}
+
+// canRead checks if the user has permission to read the specified resource.
+func (impl *resourcePermissionAppService) canRead(user primitive.Account, r domain.Resource) error {
 	if r.IsPublic() {
 		return nil
 	}

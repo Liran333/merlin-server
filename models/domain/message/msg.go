@@ -15,4 +15,5 @@ type ModelMessage interface {
 	SendModelCreatedEvent(EventMessage) error
 	SendModelDeletedEvent(EventMessage) error
 	SendModelUpdatedEvent(EventMessage) error
+	SendModelDisableEvent(EventMessage) error
 }

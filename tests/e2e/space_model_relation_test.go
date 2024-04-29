@@ -136,6 +136,17 @@ func (s *SuiteSpaceModelRelation) TestUpdateNotExistSpaceModelsFail() {
 	assert.NotNil(s.T(), err)
 }
 
+// TestInternalGetSpacesByModelId used for testing
+// internal接口测试，使用model id查询关联的space id
+func (s *SuiteSpaceModelRelation) TestInternalGetSpacesByModelId() {
+	detail, r, err := ApiInteral.ModelInternalApi.V1ModelRelationIdSpaceGet(Interal, s.modelIdTest1Public)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	space := getData(s.T(), detail.Data)
+	assert.NotEqual(s.T(), space["space_id"], "")
+}
+
 func TestSpaceModelRelation(t *testing.T) {
 	suite.Run(t, new(SuiteSpaceModelRelation))
 }

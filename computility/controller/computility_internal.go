@@ -24,7 +24,7 @@ func AddRouterForComputilityInternalController(
 
 	r.POST("/v1/computility/account", m.Write, ctl.ComputilityUserJoin)
 	r.PUT("/v1/computility/account/remove", m.Write, ctl.ComputilityUserRemove)
-	r.DELETE("/v1/computility/org/delete", m.Write, ctl.ComputilityOrgDelete)
+	r.POST("/v1/computility/org/delete", m.Write, ctl.ComputilityOrgDelete)
 }
 
 // ComputilityInternalController is a struct that holds the necessary dependencies for handling computility-related operations.
@@ -70,7 +70,7 @@ func (ctl *ComputilityInternalController) ComputilityUserJoin(ctx *gin.Context) 
 // @Tags     ComputilityInternal
 // @Param    body  body  reqToUserOrgOperate  true  "body"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Success  202   {object}  commonctl.ResponseData{data=app.AccountRecordlDTO,msg=string,code=string}
 // @Failure  400   {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/computility/account/remove [put]
@@ -90,11 +90,11 @@ func (ctl *ComputilityInternalController) ComputilityUserRemove(ctx *gin.Context
 		return
 	}
 
-	err = ctl.appService.UserRemove(cmd)
+	r, err := ctl.appService.UserRemove(cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfPut(ctx, nil)
+		commonctl.SendRespOfPut(ctx, r)
 	}
 }
 
@@ -103,10 +103,10 @@ func (ctl *ComputilityInternalController) ComputilityUserRemove(ctx *gin.Context
 // @Tags     ComputilityInternal
 // @Param    body  body  reqToOrgDelete  true  "body"
 // @Accept   json
-// @Success  204   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Success  204   {object}  commonctl.ResponseData{data=[]app.AccountRecordlDTO,msg=string,code=string}
 // @Failure  400   {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Security Internal
-// @Router   /v1/computility/org/delete [delete]
+// @Router   /v1/computility/org/delete [post]
 func (ctl *ComputilityInternalController) ComputilityOrgDelete(ctx *gin.Context) {
 	req := reqToOrgDelete{}
 
@@ -123,10 +123,10 @@ func (ctl *ComputilityInternalController) ComputilityOrgDelete(ctx *gin.Context)
 		return
 	}
 
-	err = ctl.appService.OrgDelete(cmd)
+	r, err := ctl.appService.OrgDelete(cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfDelete(ctx)
+		commonctl.SendRespOfPost(ctx, r)
 	}
 }

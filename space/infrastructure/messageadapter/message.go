@@ -44,6 +44,18 @@ func (p *messageAdapter) SendSpaceEnvChangedEvent(e message.EventMessage) error 
 	return send(p.topics.SpaceEnvChanged, e)
 }
 
+// SendSpaceDisableEvent is a method on the messageAdapter struct that takes an EventMessage
+// and sends it to the SpaceDisable topic.
+func (p *messageAdapter) SendSpaceDisableEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceDisable, e)
+}
+
+// SendSpaceForceEvent is a method on the messageAdapter struct that takes an EventMessage
+// and sends it to the SpaceForceEvent topic.
+func (p *messageAdapter) SendSpaceForceEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceForceEvent, e)
+}
+
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {

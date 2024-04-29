@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	filedId         = "id"
-	filedVersion    = "version"
-	filedOrgName    = "org_name"
-	filedUserName   = "user_name"
-	fieldUsedQuota  = "used_quota"
-	fieldCreatedAt  = "created_at"
-	fieldQuotaCount = "quota_count"
+	filedId          = "id"
+	filedVersion     = "version"
+	filedOrgName     = "org_name"
+	filedUserName    = "user_name"
+	fieldUsedQuota   = "used_quota"
+	fieldCreatedAt   = "created_at"
+	fieldQuotaCount  = "quota_count"
+	filedComputeType = "compute_type"
 )
 
 var (

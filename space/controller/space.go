@@ -176,3 +176,50 @@ func (ctl *SpaceController) parseIndex(ctx *gin.Context) (index domain.SpaceInde
 
 	return
 }
+
+// @Summary  Disable space
+// @Description  disable space
+// @Tags     Space
+// @Param    id    path  string            true  "id of space"
+// @Param    body  body  reqToDisableSpace  true  "body of disable space"
+// @Accept   json
+// @Security Bearer
+// @Success  202   {object}  commonctl.ResponseData
+// @Router   /v1/space/{id}/disable [put]
+func (ctl *SpaceController) Disable(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("disable space of %s", ctx.Param("id")))
+
+	req := reqToDisableSpace{}
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	action, err := ctl.appService.Disable(
+		ctl.userMiddleWare.GetUser(ctx),
+		spaceId, &cmd,
+	)
+
+	middleware.SetAction(ctx, fmt.Sprintf("%s, set %s", action, req.action()))
+
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}

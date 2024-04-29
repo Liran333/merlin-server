@@ -47,8 +47,7 @@ func NewSpaceAppRestartEvent(app *SpaceAppIndex) spaceappRestartEvent {
 
 // spaceappPausedEvent
 type spaceappPausedEvent struct {
-	SpaceId  string `json:"space_id"`
-	CommitId string `json:"commit_id"`
+	SpaceId string `json:"space_id"`
 }
 
 // Message returns the JSON representation of the spaceappPausedEvent.
@@ -59,8 +58,7 @@ func (e *spaceappPausedEvent) Message() ([]byte, error) {
 // NewSpaceAppPauseEvent creates a spaceappPausedEvent instance with the given SpaceApp.
 func NewSpaceAppPauseEvent(app *SpaceAppIndex) spaceappPausedEvent {
 	return spaceappPausedEvent{
-		SpaceId:  app.SpaceId.Identity(),
-		CommitId: app.CommitId,
+		SpaceId: app.SpaceId.Identity(),
 	}
 }
 

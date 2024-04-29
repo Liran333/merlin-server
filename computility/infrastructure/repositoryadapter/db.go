@@ -7,9 +7,10 @@ package repositoryadapter
 import "gorm.io/gorm"
 
 var (
-	computilityAdapterInstance        *computilityOrgAdapter
-	computilityDetailAdapterInstance  *computilityDetailAdapter
-	computilityAccountAdapterInstance *computilityAccountAdapter
+	computilityAdapterInstance              *computilityOrgAdapter
+	computilityDetailAdapterInstance        *computilityDetailAdapter
+	computilityAccountAdapterInstance       *computilityAccountAdapter
+	computilityAccountRecordAdapterInstance *computilityAccountRecordAdapter
 )
 
 // Init initializes the database and sets up the necessary adapters.
@@ -18,6 +19,7 @@ func Init(db *gorm.DB, tables *Tables) error {
 	computilityOrgTableName = tables.ComputilityOrg
 	computilityDetailTableName = tables.ComputilityDetail
 	computilityAccountTableName = tables.ComputilityAccount
+	computilityAccountRecordTableName = tables.ComputilityAccountRecord
 
 	if err := db.AutoMigrate(&computilityOrgDO{}); err != nil {
 		return err
@@ -31,11 +33,16 @@ func Init(db *gorm.DB, tables *Tables) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&computilityAccountRecordDO{}); err != nil {
+		return err
+	}
+
 	dbInstance = db
 
 	computilityDao := daoImpl{table: computilityOrgTableName}
 	computilityDetailDao := daoImpl{table: computilityDetailTableName}
 	computilityAccountDao := daoImpl{table: computilityAccountTableName}
+	computilityAccountRecordDao := daoImpl{table: computilityAccountRecordTableName}
 
 	computilityAdapterInstance = &computilityOrgAdapter{
 		daoImpl: computilityDao,
@@ -45,6 +52,9 @@ func Init(db *gorm.DB, tables *Tables) error {
 	}
 	computilityAccountAdapterInstance = &computilityAccountAdapter{
 		daoImpl: computilityAccountDao,
+	}
+	computilityAccountRecordAdapterInstance = &computilityAccountRecordAdapter{
+		daoImpl: computilityAccountRecordDao,
 	}
 
 	return nil
@@ -60,4 +70,8 @@ func ComputilityDetailAdapter() *computilityDetailAdapter {
 
 func ComputilityAccountAdapter() *computilityAccountAdapter {
 	return computilityAccountAdapterInstance
+}
+
+func ComputilityAccountRecordAdapter() *computilityAccountRecordAdapter {
+	return computilityAccountRecordAdapterInstance
 }

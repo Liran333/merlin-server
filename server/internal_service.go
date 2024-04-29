@@ -24,7 +24,7 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setInternalRouterOfUser(rg, cfg, services)
 
-	setRouterOfSpaceInternal(rg, services)
+	setRouterOfSpaceInternal(rg, services, cfg)
 
 	setRouterOfModelInternal(rg, services)
 
@@ -36,7 +36,7 @@ func setRouterOfInternal(prefix string, engine *gin.Engine, cfg *config.Config, 
 
 	setRouterOfComputilityAppInternal(rg, services, cfg)
 
-	setRouterOfCodeRepoStatisticInternal(rg, services)
+	setRouterOfCodeRepoStatisticInternal(rg, services, cfg)
 
 	rg.GET("/heartbeat", func(*gin.Context) {})
 }

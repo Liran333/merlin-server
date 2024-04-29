@@ -19,8 +19,14 @@ type CmdToOrgDelete struct {
 }
 
 type CmdToUserQuotaUpdate struct {
-	domain.ComputilityAccountIndex
+	Index      domain.ComputilityAccountRecordIndex
 	QuotaCount int
+}
+
+type CmdToSupplyRecord struct {
+	Index      domain.ComputilityAccountRecordIndex
+	QuotaCount int
+	NewSpaceId primitive.Identity
 }
 
 type AccountQuotaDetailDTO struct {
@@ -31,12 +37,50 @@ type AccountQuotaDetailDTO struct {
 	QuotaBalance int    `json:"quota_balance"`
 }
 
-func toAccountDTO(a *domain.ComputilityAccount) AccountQuotaDetailDTO {
+func toAccountQuotaDetailDTO(a *domain.ComputilityAccount) AccountQuotaDetailDTO {
 	return AccountQuotaDetailDTO{
 		UserName:     a.UserName.Account(),
 		UsedQuota:    a.UsedQuota,
 		TotalQuota:   a.QuotaCount,
 		QuotaBalance: a.QuotaCount - a.UsedQuota,
 		ComputeType:  a.ComputeType.ComputilityType(),
+	}
+}
+
+type AccountRecordlDTO struct {
+	UserName    string `json:"user_name"`
+	SpaceId     string `json:"space_id"`
+	QuotaCount  int    `json:"quota_count"`
+	ComputeType string `json:"compute_type"`
+}
+
+func toAccountRecordlDTO(a *domain.ComputilityAccountRecord) AccountRecordlDTO {
+	return AccountRecordlDTO{
+		UserName:    a.UserName.Account(),
+		SpaceId:     a.SpaceId.Identity(),
+		QuotaCount:  a.QuotaCount,
+		ComputeType: a.ComputeType.ComputilityType(),
+	}
+}
+
+type QuotaRecallDTO struct {
+	UserName  string              `json:"user_name"`
+	Records   []AccountRecordlDTO `json:"records"`
+	QuotaDebt int                 `json:"quota_debt"`
+}
+
+func toQuotaRecallDTO(user primitive.Account, a []domain.ComputilityAccountRecord, debt int) QuotaRecallDTO {
+	var records []AccountRecordlDTO
+
+	for i := range a {
+		info := toAccountRecordlDTO(&a[i])
+
+		records = append(records, info)
+	}
+
+	return QuotaRecallDTO{
+		UserName:  user.Account(),
+		Records:   records,
+		QuotaDebt: debt,
 	}
 }

@@ -39,6 +39,12 @@ func (p *messageAdapter) SendModelUpdatedEvent(e message.EventMessage) error {
 	return send(p.topics.ModelUpdated, e)
 }
 
+// SendModelDisableEvent is a method on the messageAdapter struct that takes an EventMessage
+// and sends it to the ModelUpdated topic.
+func (p *messageAdapter) SendModelDisableEvent(e message.EventMessage) error {
+	return send(p.topics.ModelDisable, e)
+}
+
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {

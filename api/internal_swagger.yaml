@@ -19,6 +19,17 @@ definitions:
       resource_type:
         type: string
     type: object
+  app.AccountRecordlDTO:
+    properties:
+      compute_type:
+        type: string
+      quota_count:
+        type: integer
+      space_id:
+        type: string
+      user_name:
+        type: string
+    type: object
   controller.ModeIds:
     properties:
       ids:
@@ -34,6 +45,11 @@ definitions:
       msg:
         type: string
     type: object
+  controller.modelStatistics:
+    properties:
+      download_count:
+        type: integer
+    type: object
   controller.reqToCheckPermission:
     properties:
       name:
@@ -48,6 +64,17 @@ definitions:
       commit_id:
         type: string
       space_id:
+        type: string
+    type: object
+  controller.reqToFailedStatus:
+    properties:
+      commit_id:
+        type: string
+      reason:
+        type: string
+      space_id:
+        type: string
+      status:
         type: string
     type: object
   controller.reqToOrgDelete:
@@ -68,26 +95,6 @@ definitions:
           type: string
         type: array
       task:
-        type: string
-    type: object
-  controller.reqToSetBuildIsDone:
-    properties:
-      commit_id:
-        type: string
-      logs:
-        type: string
-      space_id:
-        type: string
-      success:
-        type: boolean
-    type: object
-  controller.reqToSetStatus:
-    properties:
-      commit_id:
-        type: string
-      space_id:
-        type: string
-      status:
         type: string
     type: object
   controller.reqToUpdateBuildInfo:
@@ -116,6 +123,11 @@ definitions:
         type: string
       user_name:
         type: string
+    type: object
+  controller.spaceStatistics:
+    properties:
+      download_count:
+        type: integer
     type: object
   controller.tokenVerifyRequest:
     properties:
@@ -348,7 +360,7 @@ paths:
                 code:
                   type: string
                 data:
-                  type: object
+                  $ref: '#/definitions/app.AccountRecordlDTO'
                 msg:
                   type: string
               type: object
@@ -370,7 +382,7 @@ paths:
       tags:
       - ComputilityInternal
   /v1/computility/org/delete:
-    delete:
+    post:
       consumes:
       - application/json
       description: delete computility org
@@ -391,7 +403,9 @@ paths:
                 code:
                   type: string
                 data:
-                  type: object
+                  items:
+                    $ref: '#/definitions/app.AccountRecordlDTO'
+                  type: array
                 msg:
                   type: string
               type: object
@@ -433,6 +447,32 @@ paths:
       summary: GetById
       tags:
       - ModelInternal
+    put:
+      consumes:
+      - application/json
+      description: update model info by id
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating model info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.modelStatistics'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Update model info
+      tags:
+      - ModelInternal
   /v1/model/{id}/label:
     put:
       consumes:
@@ -458,6 +498,28 @@ paths:
       security:
       - Internal: []
       summary: ResetLabel
+      tags:
+      - ModelInternal
+  /v1/model/relation/{id}/space:
+    get:
+      consumes:
+      - application/json
+      description: get all spaces related to a model, including those that have been
+        disabled.
+      parameters:
+      - description: id of model
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: GetSpacesByModelId
       tags:
       - ModelInternal
   /v1/session/check:
@@ -537,64 +599,7 @@ paths:
       - SpaceApp
       x-example:
         data: successfully
-  /v1/space-app/{owner}/{name}/pause:
-    post:
-      consumes:
-      - application/json
-      description: stop space app
-      parameters:
-      - description: owner of space
-        in: path
-        name: owner
-        required: true
-        type: string
-      - description: name of space
-        in: path
-        name: name
-        required: true
-        type: string
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Post
-      tags:
-      - SpaceApp
-  /v1/space-app/build/done:
-    put:
-      consumes:
-      - application/json
-      description: notify space app build is done
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.reqToSetBuildIsDone'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            allOf:
-            - $ref: '#/definitions/controller.ResponseData'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: object
-                msg:
-                  type: string
-              type: object
-      security:
-      - Internal: []
-      summary: NotifyBuildIsDone
-      tags:
-      - SpaceApp
-  /v1/space-app/build/started:
+  /v1/space-app/building:
     put:
       consumes:
       - application/json
@@ -622,10 +627,67 @@ paths:
               type: object
       security:
       - Internal: []
-      summary: NotifyBuildIsStarted
+      summary: NotifySpaceAppBuilding
       tags:
       - SpaceApp
-  /v1/space-app/service/started:
+  /v1/space-app/failed_status:
+    put:
+      consumes:
+      - application/json
+      description: notify space app failed status
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToFailedStatus'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: NotifySpaceAppFailedStatus
+      tags:
+      - SpaceApp
+  /v1/space-app/pause:
+    post:
+      consumes:
+      - application/json
+      description: pause space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Post
+      tags:
+      - SpaceApp
+  /v1/space-app/serving:
     put:
       consumes:
       - application/json
@@ -653,21 +715,21 @@ paths:
               type: object
       security:
       - Internal: []
-      summary: NotifyServiceIsStarted
+      summary: NotifySpaceAppServing
       tags:
       - SpaceApp
-  /v1/space-app/status:
+  /v1/space-app/starting:
     put:
       consumes:
       - application/json
-      description: notify space app status
+      description: notify space app build is starting
       parameters:
       - description: body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.reqToSetStatus'
+          $ref: '#/definitions/controller.reqToCreateSpaceApp'
       responses:
         "202":
           description: Accepted
@@ -684,7 +746,7 @@ paths:
               type: object
       security:
       - Internal: []
-      summary: NotifyUpdateStatus
+      summary: NotifySpaceAppStarting
       tags:
       - SpaceApp
   /v1/space/{id}:
@@ -706,6 +768,53 @@ paths:
       security:
       - Internal: []
       summary: Get
+      tags:
+      - SpaceInternal
+    put:
+      consumes:
+      - application/json
+      description: update space info by id
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating space info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.spaceStatistics'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Update space info
+      tags:
+      - SpaceInternal
+  /v1/space/{id}/disable:
+    put:
+      consumes:
+      - application/json
+      description: disable space
+      parameters:
+      - description: id of space
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Disable space
       tags:
       - SpaceInternal
   /v1/space/{id}/local_cmd:

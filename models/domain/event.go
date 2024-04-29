@@ -77,3 +77,28 @@ func NewModelUpdatedEvent(m *Model, user primitive.Account, b bool) modelUpdated
 		IsPriToPub: b,
 	}
 }
+
+// modelDisableEvent
+type modelDisableEvent struct {
+	Time      int64  `json:"time"`
+	Repo      string `json:"repo"`
+	Owner     string `json:"owner"`
+	ModelId   string `json:"model_id"`
+	UpdatedBy string `json:"updated_by"`
+}
+
+// Message serializes the modelDisableEvent into a JSON byte array.
+func (e *modelDisableEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewModelDisableEvent creates a new modelDisableEvent instance with the given Space.
+func NewModelDisableEvent(m *Model, user primitive.Account) modelDisableEvent {
+	return modelDisableEvent{
+		Time:      utils.Now(),
+		Repo:      m.Name.MSDName(),
+		Owner:     m.Owner.Account(),
+		ModelId:   m.Id.Identity(),
+		UpdatedBy: user.Account(),
+	}
+}

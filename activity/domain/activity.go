@@ -40,7 +40,8 @@ type Stat struct {
 
 // Resource struct represents the resource object targeted by user activities.
 type Resource struct {
-	Type  primitive.ObjType  // Resource type
-	Index primitive.Identity // Resource index
-	Owner primitive.Account
+	Type    primitive.ObjType  // Resource type
+	Index   primitive.Identity // Resource index
+	Owner   primitive.Account
+	Disable bool
 }

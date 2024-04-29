@@ -106,6 +106,27 @@ func (p *reqToUpdateModel) toCmd() (cmd app.CmdToUpdateModel, err error) {
 	return
 }
 
+// reqToDisableModel
+type reqToDisableModel struct {
+	Reason string `json:"reason"`
+}
+
+func (p *reqToDisableModel) action() (str string) {
+	str += fmt.Sprintf("reason = %s", p.Reason)
+
+	return
+}
+
+func (p *reqToDisableModel) toCmd() (cmd app.CmdToDisableModel, err error) {
+	cmd.Disable = true
+
+	if cmd.DisableReason, err = primitive.NewDisableReason(p.Reason); err != nil {
+		return
+	}
+
+	return
+}
+
 // reqToListUserModels
 type reqToListUserModels struct {
 	Name string `form:"name"`

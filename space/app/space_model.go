@@ -19,6 +19,7 @@ import (
 type ModelSpaceAppService interface {
 	GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) ([]SpaceModelDTO, error)
 	GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) ([]SpaceModelDTO, error)
+	GetSpaceIdsByModelId(modelId primitive.Identity) (SpaceIdModelDTO, error)
 	UpdateRelation(spaceId primitive.Identity, modelsIndex []*domain.ModelIndex) error
 	DeleteBySpaceId(modelId primitive.Identity) error
 	DeleteByModelId(spaceId primitive.Identity) error
@@ -31,7 +32,6 @@ func NewModelSpaceAppService(
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter,
 	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter,
 	modelInternalApp modelapp.ModelInternalAppService,
-	spaceInternalApp SpaceInternalAppService,
 ) ModelSpaceAppService {
 	return &modelSpaceAppService{
 		permission:       permission,
@@ -39,7 +39,6 @@ func NewModelSpaceAppService(
 		modelRepoAdapter: modelRepoAdapter,
 		spaceRepoAdapter: spaceRepoAdapter,
 		modelInternalApp: modelInternalApp,
-		spaceInternlApp:  spaceInternalApp,
 	}
 }
 
@@ -49,10 +48,9 @@ type modelSpaceAppService struct {
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
 	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter
 	modelInternalApp modelapp.ModelInternalAppService
-	spaceInternlApp  SpaceInternalAppService
 }
 
-// GetModelsBySpaceId return models that exits and user can read
+// GetModelsBySpaceId return models that exits, user can read and not disable
 func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) (
 	[]SpaceModelDTO, error) {
 	space, err := s.spaceRepoAdapter.FindById(spaceId)
@@ -81,6 +79,11 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 			if errDel := s.DeleteByModelId(id); errDel != nil {
 				continue
 			}
+			continue
+		}
+
+		// if model is disbale, do not return
+		if model.Disable {
 			continue
 		}
 
@@ -133,6 +136,11 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 			continue
 		}
 
+		// if space is disbale, do not return
+		if space.Disable {
+			continue
+		}
+
 		// check if user can read the space
 		if err := s.permission.CanRead(user, &space); err != nil {
 			continue
@@ -146,6 +154,36 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 			DownloadCount: space.DownloadCount,
 		}
 		spaces = append(spaces, spaceModel)
+	}
+
+	return spaces, nil
+}
+
+// GetSpaceIdsByModelId get spaces id related to a model, with no check permission
+func (s *modelSpaceAppService) GetSpaceIdsByModelId(modelId primitive.Identity) (
+	SpaceIdModelDTO, error) {
+
+	spaceIds, err := s.repoAdapter.GetSpacesByModelId(modelId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			return SpaceIdModelDTO{}, newModelNotFound(err)
+		}
+
+		return SpaceIdModelDTO{}, err
+	}
+
+	var spaces SpaceIdModelDTO
+	for _, id := range spaceIds {
+		// check if space exists
+		space, err := s.spaceRepoAdapter.FindById(id)
+		if err != nil && commonrepo.IsErrorResourceNotExists(err) {
+			if errDel := s.DeleteBySpaceId(id); errDel != nil {
+				continue
+			}
+			continue
+		}
+
+		spaces.SpaceId = append(spaces.SpaceId, space.CodeRepo.Id.Identity())
 	}
 
 	return spaces, nil

@@ -19,6 +19,7 @@ import (
 type dao interface {
 	DB() *gorm.DB
 	EqualQuery(field string) string
+	NotEqualQuery(field string) string
 	IsRecordExists(err error) bool
 	GetRecord(filter, result interface{}) error
 	DeleteByPrimaryKey(row interface{}) error
@@ -43,7 +44,6 @@ func (adapter *appRepositoryAdapter) Add(m *domain.SpaceApp) error {
 			errors.New("space app exists"),
 		)
 	}
-
 	return err
 }
 

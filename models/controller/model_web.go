@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
@@ -46,6 +48,8 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/:owner", p.CheckOwner, m.Optional, ctl.List)
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
 	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
+
+	r.PUT("/v1/model/:id/disable", ctl.ModelController.userMiddleWare.Write, l.Write, ctl.disable)
 }
 
 // ModelWebController is a struct that holds the app service for model web operations.
@@ -286,4 +290,52 @@ func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
 	}
 
 	commonctl.SendRespOfGet(ctx, &spaces)
+}
+
+// @Summary  disable model
+// @Description  disable the model
+// @Tags     ModelWeb
+// @Param    id      path  string  true  "id of model"
+// @Param    body  body      reqToDisableModel  true  "body of disable model"
+// @Accept   json
+// @Security Bearer
+// @Success  202   {object}  commonctl.ResponseData
+// @Router   /v1/model/{id}/disable [put]
+func (ctl *ModelWebController) disable(ctx *gin.Context) {
+	middleware.SetAction(ctx, fmt.Sprintf("disable model of %s", ctx.Param("id")))
+
+	req := reqToDisableModel{}
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	modelId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	action, err := ctl.appService.Disable(
+		ctl.userMiddleWare.GetUser(ctx),
+		modelId,
+		&cmd,
+	)
+
+	middleware.SetAction(ctx, fmt.Sprintf("%s, set %s", action, req.action()))
+
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
 }

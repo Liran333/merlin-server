@@ -12,6 +12,9 @@ import (
 // UserDTO represents the user data transfer object for the userapp package.
 type UserDTO = userapp.UserDTO
 
+// UserInfoDTO represents the user information transfer object for the userapp package.
+type UserInfoDTO = userapp.UserInfoDTO
+
 // CmdToCheck represents a command to check the session and user agent information.
 type CmdToCheck struct {
 	SessionDTO

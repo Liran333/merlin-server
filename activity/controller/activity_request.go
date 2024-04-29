@@ -6,7 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package controller
 
 import (
-	"github.com/openmerlin/merlin-server/activity/domain"
+	"github.com/openmerlin/merlin-server/activity/app"
 )
 
 // nolint:golint,unused
@@ -18,7 +18,7 @@ const (
 // activityInfo
 type activityInfo struct {
 	AvatarId string `json:"avatar_id"`
-	*domain.ActivitySummary
+	*app.ActivitySummaryDTO
 }
 
 // activitiesInfo

@@ -23,17 +23,7 @@ import (
 )
 
 func initSpace(cfg *config.Config, services *allServices) error {
-	err := spacerepositoryadapter.Init(postgresql.DB(), &cfg.Space.Tables)
-	if err != nil {
-		return err
-	}
-
-	err = modelrepositoryadapter.Init(postgresql.DB(), &cfg.Model.Tables)
-	if err != nil {
-		return err
-	}
-
-	err = repositoryadapter.Init(postgresql.DB(), &cfg.SpaceApp.Tables)
+	err := modelrepositoryadapter.Init(postgresql.DB(), &cfg.Model.Tables)
 	if err != nil {
 		return err
 	}
@@ -49,6 +39,9 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.SpaceAdapter(),
 		services.npuGatekeeper,
 		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+		services.disable,
+		services.computilityApp,
+		services.spaceappApp,
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(
@@ -60,12 +53,12 @@ func initSpace(cfg *config.Config, services *allServices) error {
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),
 		),
-		app.NewSpaceInternalAppService(spacerepositoryadapter.SpaceAdapter()),
 	)
 
 	services.spaceVariable = app.NewSpaceVariableService(
 		services.permissionApp,
 		spacerepositoryadapter.SpaceAdapter(),
+		repositoryadapter.AppRepositoryAdapter(),
 		spacerepositoryadapter.SpaceVariableAdapter(),
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		messageadapter.MessageAdapter(&cfg.Space.Topics),
@@ -74,6 +67,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 	services.spaceSecret = app.NewSpaceSecretService(
 		services.permissionApp,
 		spacerepositoryadapter.SpaceAdapter(),
+		repositoryadapter.AppRepositoryAdapter(),
 		spacerepositoryadapter.SpaceSecretAdapter(),
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		messageadapter.MessageAdapter(&cfg.Space.Topics),
@@ -113,11 +107,15 @@ func setRouterOfSpaceRestful(rg *gin.RouterGroup, services *allServices) {
 	)
 }
 
-func setRouterOfSpaceInternal(rg *gin.RouterGroup, services *allServices) {
+func setRouterOfSpaceInternal(rg *gin.RouterGroup, services *allServices, cfg *config.Config) {
 	controller.AddRouterForSpaceInternalController(
 		rg,
 		app.NewSpaceInternalAppService(
 			spacerepositoryadapter.SpaceAdapter(),
+			messageadapter.MessageAdapter(&cfg.Space.Topics),
+			repositoryadapter.AppRepositoryAdapter(),
+			spacerepositoryadapter.ModelSpaceRelationAdapter(),
+			modelrepositoryadapter.ModelAdapter(),
 		),
 		services.modelSpace,
 		services.userMiddleWare,
