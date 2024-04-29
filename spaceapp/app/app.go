@@ -33,6 +33,7 @@ type SpaceappAppService interface {
 	PauseSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
 	ResumeSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
 	CheckPermissionRead(primitive.Account, *spacedomain.SpaceIndex) error
+	CheckOrgPermission(primitive.Account, *spacedomain.SpaceIndex) error
 	GetSpaceIdByName(index *spacedomain.SpaceIndex) (spacedomain.Space, error)
 }
 
@@ -217,11 +218,21 @@ func (s *spaceappAppService) RestartSpaceApp(
 func (s *spaceappAppService) CheckPermissionRead(user primitive.Account, index *spacedomain.SpaceIndex) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
-		err = newSpaceAppNotFound(err)
+		err = newSpaceNotFound(err)
 		return err
 	}
 
 	return s.permission.CanRead(user, &space)
+}
+
+// CheckPermissionUpdate  check user permission for update space app.
+func (s *spaceappAppService) CheckOrgPermission(user primitive.Account, index *spacedomain.SpaceIndex) error {
+	if _, err := s.spaceRepo.FindByName(index); err != nil {
+		err = newSpaceNotFound(err)
+		return err
+	}
+
+	return s.permission.CanListOrgResource(user, index.Owner, primitive.ObjTypeSpace)
 }
 
 // PauseSpaceApp pause a SpaceApp in the spaceappAppService.

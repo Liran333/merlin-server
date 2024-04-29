@@ -103,6 +103,11 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
+	if err := ctl.appService.CheckOrgPermission(user, &index); err != nil {
+		ctx.SSEvent("error", err.Error())
+		return
+	}
+
 	spaceApp, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
 		ctx.SSEvent("error", err.Error())
@@ -119,7 +124,9 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 			if err != nil {
 				return false
 			}
-			ctx.SSEvent("message", string(done))
+			if done != nil {
+				ctx.SSEvent("message", string(done))
+			}
 			return true
 		})
 	}
@@ -155,6 +162,11 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 		return
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
+
+	if err := ctl.appService.CheckOrgPermission(user, &index); err != nil {
+		ctx.SSEvent("error", err.Error())
+		return
+	}
 
 	spaceApp, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
