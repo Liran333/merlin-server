@@ -31,6 +31,7 @@ type ResourcePermissionAppService interface {
 	CanUpdate(user primitive.Account, r domain.Resource) error
 	CanDelete(user primitive.Account, r domain.Resource) error
 	CanCreate(user, owner primitive.Account, t primitive.ObjType) error
+	CanReadPrivate(user primitive.Account, r domain.Resource) error
 	CanListOrgResource(primitive.Account, primitive.Account, primitive.ObjType) error
 }
 
@@ -54,14 +55,10 @@ func (impl *resourcePermissionAppService) CanListOrgResource(
 
 // CanRead checks if the user has permission to read the specified resource.
 func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r domain.Resource) error {
-	err := impl.canRead(user, r)
-	if err != nil {
-		if err1 := impl.disableAdminCanRead(user, r); err1 == nil {
-			return nil
-		}
+	if r.IsPublic() {
+		return nil
 	}
-
-	return err
+	return impl.CanReadPrivate(user, r)
 }
 
 // disable administrator can read model, space and repocode obj.
@@ -76,12 +73,19 @@ func (impl *resourcePermissionAppService) disableAdminCanRead(user primitive.Acc
 	return allerror.NewNoPermission("no permission", fmt.Errorf("not config disable admin"))
 }
 
-// canRead checks if the user has permission to read the specified resource.
-func (impl *resourcePermissionAppService) canRead(user primitive.Account, r domain.Resource) error {
-	if r.IsPublic() {
-		return nil
+// CanReadPrivate checks if the user has permission to read private the specified resource.
+func (impl *resourcePermissionAppService) CanReadPrivate(user primitive.Account, r domain.Resource) error {
+	err := impl.canReadPrivate(user, r)
+	if err != nil {
+		if err1 := impl.disableAdminCanRead(user, r); err1 == nil {
+			return nil
+		}
 	}
+	return err
+}
 
+// canReadPrivate checks if the user has permission to read private the specified resource.
+func (impl *resourcePermissionAppService) canReadPrivate(user primitive.Account, r domain.Resource) error {
 	// can't access private resource anonymously
 	if user == nil {
 		return allerror.NewNoPermission("no permission", fmt.Errorf("anno can not access private resource"))

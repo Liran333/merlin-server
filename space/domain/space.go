@@ -58,6 +58,22 @@ func (m *Space) IsDisable() bool {
 	return m.Disable
 }
 
+// GetLocalCmd return if the space is public.
+func (m *Space) GetLocalCmd() string {
+	if m.IsPublic() {
+		return m.LocalCmd
+	}
+	return ""
+}
+
+// GetLocalEnvInfo return if the space is public.
+func (m *Space) GetLocalEnvInfo() string {
+	if m.IsPublic() {
+		return m.LocalEnvInfo
+	}
+	return ""
+}
+
 // SpaceLabels represents labels associated with a space.
 type SpaceLabels struct {
 	Task       string           // task label

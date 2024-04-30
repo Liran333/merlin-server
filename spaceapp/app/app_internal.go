@@ -83,7 +83,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
-			logrus.Infof("get space failed, err:%s", err)
+			logrus.Errorf("spaceId：%s get space failed, err:%s", cmd.SpaceId.Identity(), err)
 		}
 
 		return err
@@ -93,7 +93,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	if err := s.spaceRepo.Save(&space); err != nil {
 		e := fmt.Errorf("failed to save latest commit id failed, spaceId:%s", space.Id.Identity())
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
-		logrus.Infof("save space failed, err:%s", err)
+		logrus.Errorf("save space failed, err:%s", err)
 		return err
 	}
 
@@ -101,24 +101,28 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 		e := fmt.Errorf("failed to create space failed, "+
 			"spaceId:%s is npu but not allocate computility", space.Id.Identity())
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
-		logrus.Infof("create space app failed, err:%s", err)
+		logrus.Errorf("create space app failed, err:%s", err)
 		return err
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err == nil && app.IsAppInitAllow() {
-		e := fmt.Errorf("spaceId:%s, not allow to init", app.SpaceId.Identity())
-		logrus.Infof("create space app failed, err:%s", e)
+		e := fmt.Errorf("spaceId:%s, not allow to init", space.Id.Identity())
+		logrus.Errorf("create space app failed, err:%s", e)
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
 	if err := s.repo.Add(&v); err != nil {
-		logrus.Info("create space app db failed")
+		logrus.Errorf("spaceId:%s create space app db failed, err:%s", space.Id.Identity(), err)
 		return err
 	}
 	e := domain.NewSpaceAppCreatedEvent(&v)
-
-	return s.msg.SendSpaceAppCreatedEvent(&e)
+	if err := s.msg.SendSpaceAppCreatedEvent(&e); err != nil {
+		logrus.Errorf("spaceId:%s send create topic failed, err:%v", space.Id.Identity(), err)
+		return err
+	}
+	logrus.Infof("spaceId:%s create app successful", space.Id.Identity())
+	return nil
 }
 
 func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (domain.SpaceApp, error) {
@@ -127,7 +131,7 @@ func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (do
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
 		}
-
+		logrus.Errorf("spaceId:%s get space failed, err:%s", spaceId.Identity(), err)
 		return domain.SpaceApp{}, err
 	}
 
@@ -136,7 +140,7 @@ func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (do
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
 		}
-
+		logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)
 		return domain.SpaceApp{}, err
 	}
 	return v, nil
@@ -146,108 +150,137 @@ func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (do
 func (s *spaceappInternalAppService) NotifyIsInvalid(cmd *CmdToNotifyFailedStatus) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 	if err := v.SetInvalid(cmd.Status, cmd.Reason); err != nil {
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
+			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
-
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify invalid successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsBuilding notifies that the build process of a SpaceApp has started.
 func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 
 	if err := v.StartBuilding(cmd.LogURL); err != nil {
-		logrus.Infof("set  space app building failed, err:%s", err)
+		logrus.Errorf("spaceId:%s set space app building failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
-
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify building successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedStatus) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 	if err := v.SetBuildFailed(cmd.Status, cmd.Reason); err != nil {
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
+			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
-
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify build failed successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsStarting notifies that the build process of a SpaceApp has finished.
 func (s *spaceappInternalAppService) NotifyIsStarting(cmd *CmdToCreateApp) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 
 	if err := v.SetStarting(); err != nil {
-		logrus.Infof("set space app starting failed, err:%s", err)
+		logrus.Errorf("spaceId:%s set space app starting failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
 
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify starting successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsStartFailed(cmd *CmdToNotifyFailedStatus) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 	if err := v.SetStartFailed(cmd.Status, cmd.Reason); err != nil {
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
+			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
 
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify start failed successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsServing notifies that a service of a SpaceApp has serving.
 func (s *spaceappInternalAppService) NotifyIsServing(cmd *CmdToNotifyServiceIsStarted) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 
 	if err := v.StartServing(cmd.AppURL, cmd.LogURL); err != nil {
-		logrus.Infof("set space app serving failed, err:%s", err)
+		logrus.Errorf("spaceId:%s set space app serving failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
 
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify serving successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsReStartFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsRestartFailed(cmd *CmdToNotifyFailedStatus) error {
 	v, err := s.getSpaceApp(cmd.SpaceId)
 	if err != nil {
-		logrus.Infof("get space app failed, err:%s", err)
 		return err
 	}
 	if err := v.SetRestartFailed(cmd.Status, cmd.Reason); err != nil {
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
+			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
 
-	return s.repo.Save(&v)
+	if err := s.repo.Save(&v); err != nil {
+		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+		return err
+	}
+	logrus.Infof("spaceId:%s notify restart failed successful", cmd.SpaceId.Identity())
+	return nil
 }
 
 // NotifyIsResumeFailed notifies change SpaceApp status.
@@ -256,7 +289,7 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
-			logrus.Infof("get space failed, err:%s", err)
+			logrus.Errorf("spaceId:%s get space failed, err:%s", cmd.SpaceId.Identity(), err)
 		}
 
 		return err
@@ -266,14 +299,15 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
-			logrus.Infof("get space app failed, err:%s", err)
+			logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)
 		}
 
 		return err
 	}
 
 	if err := app.SetResumeFailed(cmd.Status, cmd.Reason); err != nil {
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
+			space.Id.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
 
@@ -286,7 +320,8 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
 		err := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space %s status failed, err:%s",
+			space.Id.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
 
@@ -295,10 +330,11 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 			return err
 		}
 		err := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
-		logrus.Infof("set space %s status failed, err:%s", cmd.Status.AppStatus(), err)
+		logrus.Errorf("spaceId:%s set space %s status failed, err:%s",
+			space.Id.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
-
+	logrus.Infof("spaceId:%s notify resume failed successful", cmd.SpaceId.Identity())
 	return nil
 }
 
@@ -308,7 +344,7 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
-			logrus.Infof("get space failed, err:%s", err)
+			logrus.Errorf("spaceId:%s get space failed, err:%s", spaceId.Identity(), err)
 		}
 
 		return err
@@ -322,16 +358,16 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {
 		if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-			logrus.Infof("release space comp quota failed, err:%s", err)
+			logrus.Errorf("spaceId:%s release space comp quota failed, err:%s", space.Id.Identity(), err)
 			return err
 		}
 		err = newSpaceAppNotFound(err)
-		logrus.Infof("get space app failed, err:%s", err)
+		logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)
 		return err
 	}
 
 	if app.Status.IsPaused() {
-		logrus.Info("app is already paused")
+		logrus.Infof("spaceId:%s app is already paused", space.Id.Identity())
 		return nil
 	}
 	app.Status = appprimitive.AppStatusPaused
@@ -339,19 +375,27 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
 		e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		logrus.Errorf("spaceId:%s space unbind quota failed:%s", space.Id.Identity(), err)
 		return err
 	}
 
 	if err := s.repo.Save(&app); err != nil {
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
+			logrus.Errorf("spaceId:%s space bind quota failed:%s", space.Id.Identity(), err)
 			return err
 		}
 		e := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		logrus.Errorf("spaceId:%s save db failed:%s", space.Id.Identity(), err)
 		return err
 	}
 	e := spacedomain.NewSpaceForceEvent(space.Id.Identity(), spacedomain.ForceTypePause)
-	return s.msg.SendSpaceAppForcePauseEvent(&e)
+	if err := s.msg.SendSpaceAppForcePauseEvent(&e); err != nil {
+		logrus.Errorf("spaceId:%s send force pause topic failed:%s", space.Id.Identity(), err)
+		return err
+	}
+	logrus.Infof("spaceId:%s force paused app successful", space.Id.Identity())
+	return nil
 }
 
 func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) error {
@@ -359,7 +403,7 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceNotFound(err)
-			logrus.Infof("get space failed, err:%s", err)
+			logrus.Errorf("spaceId:%s get space failed, err:%s", spaceId.Identity(), err)
 		}
 
 		return err
@@ -367,11 +411,12 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 	app, err := s.repo.FindBySpaceId(space.Id)
 	if err != nil {
 		err = newSpaceAppNotFound(err)
-		logrus.Infof("get space app failed, err:%s", err)
+		logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)
 		return err
 	}
 
 	if err := app.PauseService(); err != nil {
+		logrus.Errorf("spaceId:%s paused service failed", space.Id.Identity())
 		return err
 	}
 
@@ -385,6 +430,7 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
 		e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		logrus.Errorf("spaceId:%s space unbind quota failed:%s", space.Id.Identity(), err)
 		return err
 	}
 
@@ -394,10 +440,16 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 		}
 		e := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		logrus.Errorf("spaceId:%s space bind quota failed:%s", space.Id.Identity(), err)
 		return err
 	}
 	e := domain.NewSpaceAppPauseEvent(&domain.SpaceAppIndex{
 		SpaceId: app.SpaceId,
 	})
-	return s.msg.SendSpaceAppPauseEvent(&e)
+	if err := s.msg.SendSpaceAppPauseEvent(&e); err != nil {
+		logrus.Errorf("spaceId:%s send pause topic failed:%s", space.Id.Identity(), err)
+		return err
+	}
+	logrus.Infof("spaceId:%s paused app successful", space.Id.Identity())
+	return nil
 }
