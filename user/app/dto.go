@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	sdk "github.com/openmerlin/merlin-sdk/user"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
@@ -125,10 +127,7 @@ func newTokenDTO(t *domain.PlatformToken) (dto TokenDTO) {
 }
 
 // AvatarDTO represents the data transfer object for an avatar.
-type AvatarDTO struct {
-	AvatarId string `json:"avatar_id"`
-	Name     string `json:"name"`
-}
+type AvatarDTO = sdk.AvatarDTO
 
 // ToAvatarDTO converts a domain.User object to an AvatarDTO.
 func ToAvatarDTO(a *domain.User) (dto AvatarDTO) {

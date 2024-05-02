@@ -1153,10 +1153,8 @@ github.com/openmerlin/merlin-sdk v0.0.0-20240421032417-539285cc4dde h1:utwFa0t1s
 github.com/openmerlin/merlin-sdk v0.0.0-20240421032417-539285cc4dde/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
 github.com/openmerlin/merlin-sdk v0.0.0-20240421050557-1622ae089014 h1:WELmTwiR31+Dk0Pli5KByxZa/98zv4puyVyxAG2iFK0=
 github.com/openmerlin/merlin-sdk v0.0.0-20240421050557-1622ae089014/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
-github.com/openmerlin/merlin-sdk v0.0.0-20240428133904-8f7a256beb68 h1:Aqycthli34gaWv/bRC+MrbS0KPJRQOvXQB3c5s3c788=
-github.com/openmerlin/merlin-sdk v0.0.0-20240428133904-8f7a256beb68/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
-github.com/openmerlin/merlin-sdk v0.0.0-20240429024820-92fd92b4496f h1:vRXVjQxDCmfotfliKYp7hPIrx2B6C6qBwvUz8k9ZY6U=
-github.com/openmerlin/merlin-sdk v0.0.0-20240429024820-92fd92b4496f/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
+github.com/openmerlin/merlin-sdk v0.0.0-20240429041135-e41b15dac90b h1:qckGCyWtGiohH369aF0A4bDBT0w3X9csc52YLM8oeWQ=
+github.com/openmerlin/merlin-sdk v0.0.0-20240429041135-e41b15dac90b/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771 h1:LefDtTbbfEIA8pV/q7w+m2lbau3SoxbzWoV664CiBkg=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771/go.mod h1:/d3aSeUZkqMS/B+EWPShLWBiSDKrzaeQI23fsD+g29E=
 github.com/opensourceways/go-gitee v0.0.0-20231106021446-9fc2a41b1faa/go.mod h1:OExGhjyeAI6nM597rup/xn+x1YN+90AwEZBazHzGdSY=

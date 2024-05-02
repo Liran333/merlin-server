@@ -155,6 +155,14 @@ func (s *SuiteUser) TestRequestDeleteCheckAdmin() {
 	assert.Nil(s.T(), err)
 }
 
+func (s *SuiteUser) TestGetAvatarId() {
+	data, r, err := ApiInteral.UserInternalApi.V1UserNameAvatarIdGet(Interal, "test1")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	assert.Equal(s.T(), "", data.Data.AvatarId)
+}
+
 // TestUser used for testing
 func TestUser(t *testing.T) {
 	suite.Run(t, new(SuiteUser))

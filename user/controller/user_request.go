@@ -40,7 +40,7 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 		cmd.RevokeDelete = true
 	}
 
-	if req.AvatarId == nil && req.Desc == nil && req.Fullname == nil && req.RevokeDelete == nil {
+	if req.Desc == nil && req.Fullname == nil && req.RevokeDelete == nil {
 		err = fmt.Errorf("all param are empty")
 		return
 	}

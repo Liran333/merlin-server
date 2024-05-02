@@ -27,6 +27,7 @@ func AddRouterForUserInternalController(
 
 	rg.POST("/v1/user/token/verify", m.Write, ctl.VerifyToken)
 	rg.GET("/v1/user/:name/platform", m.Write, ctl.GetPlatformUser)
+	rg.GET("/v1/user/:name/avatar_id", m.Write, ctl.GetUserAvatarId)
 
 }
 
@@ -42,7 +43,7 @@ type UserInernalController struct {
 // @Accept   json
 // @Param    body  body  tokenVerifyRequest  true  "body of token"
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=tokenVerifyResp,msg=string,code=string}
 // @Failure  400  token not provided
 // @Failure  401  token empty
 // @Failure  403  token invalid
@@ -78,7 +79,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 // @Accept   json
 // @Param    name  path  string  true  "name of the user"
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/user/{name}/platform [get]
 func (ctl *UserInernalController) GetPlatformUser(ctx *gin.Context) {
 	username, err := primitive.NewAccount(ctx.Param("name"))
@@ -88,6 +89,28 @@ func (ctl *UserInernalController) GetPlatformUser(ctx *gin.Context) {
 	}
 
 	if v, err := ctl.s.GetPlatformUserInfo(username); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, v)
+	}
+}
+
+// @Summary  get user's avatar id
+// @Description  get user's avatar id
+// @Tags     UserInternal
+// @Accept   json
+// @Param    name  path  string  true  "name of the user"
+// @Security Internal
+// @Success  200  {object}  commonctl.ResponseData{data=app.AvatarDTO,msg=string,code=string}
+// @Router   /v1/user/{name}/avatar_id [get]
+func (ctl *UserInernalController) GetUserAvatarId(ctx *gin.Context) {
+	username, err := primitive.NewAccount(ctx.Param("name"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, allerror.NewInvalidParam(err.Error(), err))
+		return
+	}
+
+	if v, err := ctl.s.GetUserAvatarId(username); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
