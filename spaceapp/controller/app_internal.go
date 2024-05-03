@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -70,7 +69,6 @@ func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.Create(&cmd); err != nil {
-		logrus.Errorf("create space app failed, err:%s", err)
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")

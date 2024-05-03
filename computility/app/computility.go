@@ -51,7 +51,7 @@ func (s *computilityAppService) GetAccountDetail(index domain.ComputilityAccount
 			return empty, nil
 		}
 
-		e := fmt.Errorf("find computility account error | user:%s, compute type:%s | %s",
+		e := fmt.Errorf("find computility account error | user:%s, compute type:%s | err: %w",
 			index.UserName.Account(), index.ComputeType.ComputilityType(), err,
 		)
 

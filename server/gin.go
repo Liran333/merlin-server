@@ -76,11 +76,11 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 		time.Sleep(time.Duration(waitServerStart) * time.Second)
 		if removeCfg {
 			if err := os.Remove(cert); err != nil {
-				logrus.Errorf("remove cert file: %s", err)
+				logrus.Fatalf("remove cert file: %s", err.Error())
 			}
 
 			if err := os.Remove(key); err != nil {
-				logrus.Errorf("remove key file: %s", err)
+				logrus.Fatalf("remove key file: %s", err.Error())
 			}
 		}
 
@@ -98,12 +98,8 @@ func logRequest() gin.HandlerFunc {
 
 		endTime := time.Now()
 
-		errmsg := ""
 		for _, ginErr := range c.Errors {
-			if errmsg != "" {
-				errmsg += ","
-			}
-			errmsg = fmt.Sprintf("%s%s", errmsg, ginErr.Error())
+			logrus.Errorf("error on %s %s:\n%+v", c.Request.Method, c.Request.RequestURI, ginErr.Unwrap())
 		}
 
 		if strings.Contains(c.Request.RequestURI, "/swagger/") ||
@@ -118,9 +114,6 @@ func logRequest() gin.HandlerFunc {
 			c.Request.Method,
 			c.Request.RequestURI,
 		)
-		if errmsg != "" {
-			log += fmt.Sprintf("| %s ", errmsg)
-		}
 
 		logrus.Info(log)
 	}

@@ -46,7 +46,7 @@ func (impl *streamTransfer) readAndWriteOnce() ([]byte, error) {
 func (impl *streamTransfer) parseEvent(r *bufio.Reader) (*Event, error) {
 	line, err := r.ReadBytes('\n')
 	if err != nil {
-		if err == io.EOF && len(line) != 0 {
+		if errors.Is(err, io.EOF) && len(line) != 0 {
 			err = errors.New("incomplete event at the end of the stream")
 		}
 		return nil, err

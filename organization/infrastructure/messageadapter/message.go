@@ -40,16 +40,16 @@ func (p *messageAdapter) SendComputilityOrgDeleteEvent(e message.EventMessage) e
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {
-		return fmt.Errorf("send msg topic:%s err:%w", topic, err)
+		return fmt.Errorf("send msg topic:%s err: %w", topic, err)
 	}
 
 	err = kfklib.Publish(topic, nil, body)
 	if err != nil {
-		logrus.Errorf("send msg topic:%s err:%s", topic, err)
-		err = fmt.Errorf("send publish topic:%s err:%s", topic, err)
+		logrus.Errorf("send msg topic:%s err: %s", topic, err)
+		err = fmt.Errorf("send publish topic:%s err: %w", topic, err)
 	}
 
-	logrus.Infof("send msg topic:%s success:%s", topic, err)
+	logrus.Infof("send msg topic:%s succeed", topic)
 
 	return err
 }

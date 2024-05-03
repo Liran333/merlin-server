@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -91,17 +92,15 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 
 	space.CommitId = cmd.CommitId
 	if err := s.spaceRepo.Save(&space); err != nil {
-		e := fmt.Errorf("failed to save latest commit id failed, spaceId:%s", space.Id.Identity())
+		e := xerrors.Errorf("failed to save latest commit id failed, spaceId:%s, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
-		logrus.Errorf("save space failed, err:%s", err)
 		return err
 	}
 
 	if space.Hardware.IsNpu() && !space.CompPowerAllocated {
-		e := fmt.Errorf("failed to create space failed, "+
+		e := xerrors.Errorf("failed to create space failed, "+
 			"spaceId:%s is npu but not allocate computility", space.Id.Identity())
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
-		logrus.Errorf("create space app failed, err:%s", err)
 		return err
 	}
 
@@ -311,16 +310,16 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 		return err
 	}
 
-	spaceCompCmd := spaceUserComputilityService {
-		userName: space.CreatedBy,
-		space: space,
-		spaceRepo: s.spaceRepo,
+	spaceCompCmd := spaceUserComputilityService{
+		userName:    space.CreatedBy,
+		space:       space,
+		spaceRepo:   s.spaceRepo,
 		computility: s.computility,
 	}
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-		err := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
-		logrus.Errorf("spaceId:%s set space %s status failed, err:%s",
+		err := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
+		logrus.Errorf("spaceId:%s set space %s status failed, err: %s",
 			space.Id.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
@@ -329,7 +328,7 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
 			return err
 		}
-		err := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
+		err := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
 		logrus.Errorf("spaceId:%s set space %s status failed, err:%s",
 			space.Id.Identity(), cmd.Status.AppStatus(), err)
 		return err
@@ -349,10 +348,10 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 
 		return err
 	}
-	spaceCompCmd := spaceUserComputilityService {
-		userName: space.CreatedBy,
-		space: space,
-		spaceRepo: s.spaceRepo,
+	spaceCompCmd := spaceUserComputilityService{
+		userName:    space.CreatedBy,
+		space:       space,
+		spaceRepo:   s.spaceRepo,
 		computility: s.computility,
 	}
 	app, err := s.repo.FindBySpaceId(space.Id)
@@ -373,7 +372,7 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 	app.Status = appprimitive.AppStatusPaused
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-		e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		logrus.Errorf("spaceId:%s space unbind quota failed:%s", space.Id.Identity(), err)
 		return err
@@ -384,7 +383,7 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 			logrus.Errorf("spaceId:%s space bind quota failed:%s", space.Id.Identity(), err)
 			return err
 		}
-		e := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		logrus.Errorf("spaceId:%s save db failed:%s", space.Id.Identity(), err)
 		return err
@@ -420,15 +419,15 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 		return err
 	}
 
-	spaceCompCmd := spaceUserComputilityService {
-		userName: space.CreatedBy,
-		space: space,
-		spaceRepo: s.spaceRepo,
+	spaceCompCmd := spaceUserComputilityService{
+		userName:    space.CreatedBy,
+		space:       space,
+		spaceRepo:   s.spaceRepo,
 		computility: s.computility,
 	}
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-		e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		logrus.Errorf("spaceId:%s space unbind quota failed:%s", space.Id.Identity(), err)
 		return err
@@ -438,7 +437,7 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
 			return err
 		}
-		e := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		logrus.Errorf("spaceId:%s space bind quota failed:%s", space.Id.Identity(), err)
 		return err

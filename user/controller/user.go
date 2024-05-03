@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -78,14 +78,14 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 	var req userBasicInfoUpdateRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse request body: %w", err))
 
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse request param: %w", err))
 
 		return
 	}
@@ -119,13 +119,13 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 		u, err := us.GetByAccount(user, user)
 		if err != nil {
 			securityLog.Warn(ctx, err.Error())
-			_ = ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("user not found"))
+			_ = ctx.AbortWithError(http.StatusBadRequest, xerrors.Errorf("failed to get user info: %w", err))
 		} else {
 			if u.Email != nil && *u.Email != "" {
 				ctx.Next()
 			} else {
 				// will call ctx.Abort() internally
-				e := fmt.Errorf("need bind user email firstly")
+				e := xerrors.Errorf("need bind user email firstly")
 				err := allerror.New(allerror.ErrorCodeNeedBindEmail, e.Error(), e)
 				securityLog.Warn(ctx, err.Error())
 				commonctl.SendError(ctx, err)
@@ -147,7 +147,7 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 
 	var req bindEmailRequest
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse request body: %w", err))
 
 		return
 	}
@@ -161,7 +161,7 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse request param: %w", err))
 
 		return
 	}
@@ -186,7 +186,7 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 
 	var req sendEmailRequest
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse request body: %w", err))
 
 		return
 	}
@@ -200,7 +200,7 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse request param: %w", err))
 
 		return
 	}
@@ -228,9 +228,9 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	// get user own info
 	u, err := ctl.s.UserInfo(user, user)
 	if err != nil {
-		logrus.Error(err)
-
 		commonctl.SendError(ctx, err)
+
+		return
 	}
 
 	if ctl.disable != nil {
@@ -266,7 +266,8 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 
 	name, err := primitive.NewTokenName(ctx.Param("name"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, fmt.Errorf("invalid token name"))
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("invalid token name: %w", err))
+		return
 	}
 
 	middleware.SetAction(ctx, fmt.Sprintf("delete token %s", name))
@@ -299,7 +300,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	var req tokenCreateRequest
 
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse request body: %w", err))
 
 		return
 	}
@@ -313,7 +314,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 
 	cmd, err := req.toCmd(user)
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse request param: %w", err))
 
 		return
 	}

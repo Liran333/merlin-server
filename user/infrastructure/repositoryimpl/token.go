@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"golang.org/x/xerrors"
 	"gorm.io/gorm/clause"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -35,6 +36,7 @@ func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToke
 
 	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
 	if err != nil {
+		err = xerrors.Errorf("failed to add token: %w", err)
 		return
 	}
 
@@ -45,8 +47,14 @@ func (impl *tokenRepoImpl) Add(u *domain.PlatformToken) (new domain.PlatformToke
 
 // Delete deletes a token from the repository based on the account and name.
 func (impl *tokenRepoImpl) Delete(acc primitive.Account, name primitive.TokenName) (err error) {
-	return impl.DB().Where(impl.EqualQuery(fieldName),
+	err = impl.DB().Where(impl.EqualQuery(fieldName),
 		name.TokenName()).Where(impl.EqualQuery(fieldOwner), acc.Account()).Delete(&TokenDO{}).Error
+	if err != nil {
+		err = xerrors.Errorf("failed to delete token: %w", err)
+		return
+	}
+
+	return
 }
 
 // GetByAccount retrieves all tokens owned by the given account.
@@ -59,7 +67,7 @@ func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.Plat
 
 	err = query.Find(&dos).Error
 	if err != nil || len(dos) == 0 {
-		return nil, err
+		return nil, xerrors.Errorf("failed to get token: %w", err)
 	}
 
 	r = make([]domain.PlatformToken, len(dos))
@@ -79,8 +87,10 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 	var dos []TokenDO
 
 	err = query.Find(&dos).Error
-	if err != nil || len(dos) == 0 {
-		return nil, err
+	if err != nil {
+		return nil, xerrors.Errorf("failed to get token by last eight: %w", err)
+	} else if len(dos) == 0 {
+		return nil, xerrors.Errorf("not a valid token")
 	}
 
 	r = make([]domain.PlatformToken, len(dos))
@@ -99,6 +109,7 @@ func (impl *tokenRepoImpl) GetByName(acc primitive.Account,
 	tmpDo.Owner = acc.Account()
 
 	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+		err = xerrors.Errorf("failed to get token by name: %w", err)
 		return
 	}
 

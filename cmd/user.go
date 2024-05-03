@@ -204,7 +204,7 @@ var userBindCmd = &cobra.Command{
 
 		email, err := primitive.NewUserEmail(viper.GetString("user.bind.email"))
 		if err != nil {
-			logrus.Fatalf("user email invalid, %s", err)
+			logrus.Fatalf("user email invalid, %s", err.Error())
 		}
 
 		err = userAppService.VerifyBindEmail(&userapp.CmdToVerifyBindEmail{

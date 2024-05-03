@@ -5,7 +5,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package allerror provides a set of error codes and error types used in the application.
 package allerror
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 const (
 	errorCodeNoPermission = "no_permission"
@@ -36,6 +39,9 @@ const (
 
 	// ErrorCodeTokenNotFound is const
 	ErrorCodeTokenNotFound = "token_not_found"
+
+	// ErrorCodeFailedToDeleteToken is const
+	ErrorFailedToDeleteToken = "failed_to_delete_token"
 
 	// ErrorCodeRepoNotFound is const
 	ErrorCodeRepoNotFound = "repo_not_found"
@@ -120,8 +126,14 @@ const (
 	// ErrorCodeUserDuplicateBind is const
 	ErrorCodeUserDuplicateBind = "user_duplicate_bind"
 
+	// ErrorVerifyEmailFailed is const
+	ErrorVerifyEmailFailed = "verify_email_failed"
+
 	// ErrorCodeEmailDuplicateBind is const
 	ErrorCodeEmailDuplicateBind = "email_duplicate_bind"
+
+	// ErrorCodeEmailVerifyFailed is const
+	ErrorCodeEmailVerifyFailed = "email_verify_failed"
 
 	// ErrorCodeEmailDuplicateSend is const
 	ErrorCodeEmailDuplicateSend = "email_duplicate_send"
@@ -192,6 +204,12 @@ const (
 	// failed to get user info
 	ErrorFailedToGetUserInfo = "failed_to_get_user_info"
 
+	// failed to revoke privacy
+	ErrorFailedToRevokePrivacy = "failed_to_revoke_privacy"
+
+	// failed to agree privacy
+	ErrorFailedToAgreePrivacy = "failed_to_agree_privacy"
+
 	// name %s is already been taken
 	ErrorNameAlreadyBeenTaken = "name_is_already_been_taken"
 
@@ -248,6 +266,9 @@ const (
 
 	// username invalid
 	ErrorUsernameInvalid = "username_invalid"
+
+	// failed to get platform user info
+	ErrorFailedToGetPlatformUserInfo = "failed_to_get_platform_user_info"
 
 	// failed to delete user in git server
 	ErrorFailedToDeleteUserInGitServer = "failed_to_delete_user_in_git_server"
@@ -353,18 +374,36 @@ func (e errorImpl) ErrorCode() string {
 	return e.code
 }
 
+type InnerError interface {
+	InnerError() error
+}
+
 func (e errorImpl) InnerError() error {
 	return e.innerErr
 }
 
 func InnerErr(err error) error {
-	if e, ok := err.(errorImpl); ok {
-		return e.innerErr
+	var v InnerError
+	if ok := errors.As(err, &v); ok {
+		return v.InnerError()
 	}
+
 	return err
 }
 
 // New creates a new error with the specified code and message.
+//
+// This function creates a new errorImpl struct with the specified code, message and error info
+// for diagnostic. If the message is empty, the function will replace all "_" in the code with
+// " " as the message.
+//
+// Parameters:
+//
+//	code: a string representing the type of the error
+//	msg: a string representing the error message, which is returned to client or end user
+//	err: error info for diagnostic, which is used for diagnostic by developers
+//
+// Returns an errorImpl struct.
 func New(code string, msg string, err error) errorImpl {
 	v := errorImpl{
 		code:     code,
@@ -398,10 +437,10 @@ func IsNotFound(err error) (notfoudError, bool) {
 	if err == nil {
 		return notfoudError{}, false
 	}
+	var v notfoudError
+	ok := errors.As(err, &v)
 
-	code, ok := err.(notfoudError)
-
-	return code, ok
+	return v, ok
 }
 
 // IsUserDuplicateBind checks if the given error is a user duplicate bind error.
@@ -410,7 +449,8 @@ func IsUserDuplicateBind(err error) bool {
 		return false
 	}
 
-	if e, ok := err.(errorImpl); ok {
+	var e errorImpl
+	if ok := errors.As(err, &e); ok {
 		if e.ErrorCode() == ErrorCodeUserDuplicateBind {
 			return true
 		}
@@ -438,7 +478,7 @@ func IsNoPermission(err error) bool {
 		return false
 	}
 
-	_, ok := err.(noPermissionError)
+	ok := errors.As(err, &noPermissionError{})
 
 	return ok
 }

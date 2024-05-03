@@ -6,11 +6,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
-	"fmt"
-
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
@@ -59,8 +58,8 @@ func NewActivityAppService(
 func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (ActivitysDTO, error) {
 	activities, _, err := s.repoAdapter.List(names, cmd)
 	if err != nil {
-		e := fmt.Errorf("failed to list activities: %s", err)
-		err = allerror.New(allerror.ErrorFailToRetrieveActivityData, e.Error(), e)
+		e := xerrors.Errorf("failed to list activities: %w", err)
+		err = allerror.New(allerror.ErrorFailToRetrieveActivityData, "", e)
 		return ActivitysDTO{}, err
 	}
 
@@ -84,7 +83,7 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 func (s *activityAppService) getActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
-		return ActivitySummaryDTO{}, fmt.Errorf("failed to get code repository by ID: %v", err)
+		return ActivitySummaryDTO{}, xerrors.Errorf("failed to get code repository by ID: %w", err)
 	}
 	activity.Name = codeRepo.Name
 	activity.Resource.Owner = codeRepo.Owner
@@ -92,7 +91,7 @@ func (s *activityAppService) getActivity(user primitive.Account, activity domain
 	stat := domain.Stat{}
 	err = s.getActivityInfo(user, codeRepo, &activity, &stat)
 	if err != nil {
-		return ActivitySummaryDTO{}, fmt.Errorf("failed to get activity info by ID: %v", err)
+		return ActivitySummaryDTO{}, xerrors.Errorf("failed to get activity info by ID: %w", err)
 	}
 
 	return toActivitySummaryDTO(&activity, &stat), nil
@@ -102,8 +101,7 @@ func (s *activityAppService) getActivityInfo(user primitive.Account, codeRepo co
 	if activity.Resource.Type == primitive.ObjTypeModel {
 		model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 		if err != nil {
-			logrus.Errorf("failed to get model, id:%v, err: %v", activity.Resource.Index, err)
-			return err
+			return xerrors.Errorf("failed to get model, id:%v, err: %w", activity.Resource.Index, err)
 		}
 		activity.Resource.Disable = model.Disable
 		statsMap.LikeCount = model.LikeCount

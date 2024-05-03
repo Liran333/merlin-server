@@ -5,6 +5,10 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package repository provides custom error types and utility functions for error handling.
 package repository
 
+import (
+	"errors"
+)
+
 // ErrorDuplicateCreating represents an error indicating a duplicate creation attempt.
 type ErrorDuplicateCreating struct {
 	error
@@ -37,21 +41,15 @@ func NewErrorConcurrentUpdating(err error) ErrorConcurrentUpdating {
 
 // IsErrorResourceNotExists checks if the given error is of type ErrorResourceNotExists.
 func IsErrorResourceNotExists(err error) bool {
-	_, ok := err.(ErrorResourceNotExists)
-
-	return ok
+	return errors.As(err, &ErrorResourceNotExists{})
 }
 
 // IsErrorDuplicateCreating checks if the given error is of type ErrorDuplicateCreating.
 func IsErrorDuplicateCreating(err error) bool {
-	_, ok := err.(ErrorDuplicateCreating)
-
-	return ok
+	return errors.As(err, &ErrorDuplicateCreating{})
 }
 
 // IsErrorConcurrentUpdating checks if the given error is of type ErrorConcurrentUpdating.
 func IsErrorConcurrentUpdating(err error) bool {
-	_, ok := err.(ErrorConcurrentUpdating)
-
-	return ok
+	return errors.As(err, &ErrorConcurrentUpdating{})
 }

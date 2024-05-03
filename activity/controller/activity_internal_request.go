@@ -8,9 +8,9 @@ package controller
 import (
 	"strconv"
 
-	"github.com/openmerlin/merlin-sdk/activityapp"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
+	"github.com/openmerlin/merlin-sdk/activityapp"
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -26,13 +26,12 @@ func ConvertReqToCreateActivityToCmd(req *activityapp.ReqToCreateActivity) (app.
 
 	timeInt, err := strconv.ParseInt(req.Time, parseIntBase, parseIntBitSize)
 	if err != nil {
-		return cmd, err
+		return cmd, xerrors.Errorf("failed to convert to int: %w", err)
 	}
 
 	resourceIdInt, err := strconv.ParseInt(req.ResourceId, parseIntBase, parseIntBitSize)
 	if err != nil {
-		logrus.Errorf("failed to convert to int: %s", err)
-		return cmd, err
+		return cmd, xerrors.Errorf("failed to convert to int: %w", err)
 	}
 
 	resource := domain.Resource{
@@ -55,8 +54,7 @@ func ConvertReqToDeleteActivityToCmd(user primitive.Account, req *activityapp.Re
 
 	resourceIdInt, err := strconv.ParseInt(req.ResourceId, 10, 64)
 	if err != nil {
-		logrus.Errorf("failed to convert to int: %s", err)
-		return cmd, err
+		return cmd, xerrors.Errorf("failed to convert to int: %w", err)
 	}
 
 	resource := domain.Resource{
@@ -77,8 +75,7 @@ func ConvertInternalReqToDeleteActivityToCmd(req *activityapp.ReqToDeleteActivit
 
 	resourceIdInt, err := strconv.ParseInt(req.ResourceId, parseIntBase, parseIntBitSize)
 	if err != nil {
-		logrus.Errorf("failed to convert to int: %s", err)
-		return cmd, err
+		return cmd, xerrors.Errorf("failed to convert to int: %w", err)
 	}
 
 	resource := domain.Resource{

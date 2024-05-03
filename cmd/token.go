@@ -82,7 +82,7 @@ var tokenAddCmd = &cobra.Command{
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
-			logrus.Fatalf("failed to get platform user %s", err)
+			logrus.Fatalf("failed to get platform user %s", err.Error())
 		}
 
 		perm, err := primitive.NewTokenPerm(tokenPerm)
@@ -122,7 +122,7 @@ var tokenDelCmd = &cobra.Command{
 
 		platform, err := userAppService.GetPlatformUser(acc)
 		if err != nil {
-			logrus.Fatalf("failed to get platform user , %s", err)
+			logrus.Fatalf("failed to get platform user , %s", err.Error())
 		}
 
 		fmt.Println("delete ", acc.Account(), tokenName)

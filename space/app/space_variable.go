@@ -110,25 +110,25 @@ func (s *spaceVariableService) CreateVariable(
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to create space variable",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			fmt.Errorf("space variable name:%s, err: %w", variable.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	if err = s.variableAdapter.AddVariable(variable); err != nil {
 		err = allerror.NewCommonRespError("failed to create space variable db",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			fmt.Errorf("space variable name:%s, err: %w", variable.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send add space variable event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	return "successful", action, err

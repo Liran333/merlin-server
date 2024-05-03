@@ -6,11 +6,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -25,8 +25,6 @@ const (
 	authTokenPrefix = "Bearer "
 	authTokenKey    = "user_id"
 )
-
-var errNoUserError = errors.New("no user")
 
 // RestfulAPI creates a new instance of the restfulAPI controller.
 func RestfulAPI(app userapp.UserService, securityLog middleware.SecurityLog) *restfulAPI {
@@ -110,7 +108,7 @@ func (m *restfulAPI) GetUserAndExitIfFailed(ctx *gin.Context) primitive.Account 
 		return v
 	}
 
-	commonctl.SendError(ctx, errNoUserError)
+	commonctl.SendError(ctx, xerrors.New("no user"))
 
 	return nil
 }

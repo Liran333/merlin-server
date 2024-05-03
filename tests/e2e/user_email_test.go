@@ -33,7 +33,7 @@ func (s *SuiteUserEmail) TestUserEmailBindFail() {
 	}
 
 	_, r, err := ApiRest.UserApi.V1UserEmailBindPost(AuthRest, d)
-	assert.Equal(s.T(), http.StatusInternalServerError, r.StatusCode)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 }
 

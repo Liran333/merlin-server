@@ -147,7 +147,8 @@ func (dao *daoImpl) TableName() string {
 
 // IsRecordExists checks if the given error indicates that a unique constraint violation occurred.
 func (dao *daoImpl) IsRecordExists(err error) bool {
-	pgError, ok := err.(*pgconn.PgError)
+	var pgError *pgconn.PgError
+	ok := errors.As(err, &pgError)
 	if !ok {
 		return false
 	}

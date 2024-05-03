@@ -18,6 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/throttled/throttled/v2"
 	"github.com/throttled/throttled/v2/store/goredisstore.v8"
+	"golang.org/x/xerrors"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
@@ -79,8 +80,7 @@ func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 	// Setup store
 	store, err := goredisstore.NewCtx(client, "api-rate-limit:")
 	if err != nil {
-		logrus.Infof("get new redis client err:%s", err)
-		return fmt.Errorf("init goredisstore failed, %s", err)
+		return xerrors.Errorf("init goredisstore failed: %w", err)
 	}
 
 	requestNum := RequestNumPerSec
@@ -98,8 +98,7 @@ func InitRateLimiter(cfg redislib.Config, rateCfg *Config) error {
 	}
 	rateLimitCtx, err := throttled.NewGCRARateLimiterCtx(store, quota)
 	if err != nil {
-		logrus.Errorf("get new rate store err:%s", err)
-		return fmt.Errorf("init NewGCRARateLimiterCtx failed, %s", err)
+		return xerrors.Errorf("init NewGCRARateLimiterCtx failed: %w", err)
 	}
 	// set max cas limit value because maxCASAttempts must be more over than requestNum
 	maxCASAttempts := requestNum * maxCASMultiplier

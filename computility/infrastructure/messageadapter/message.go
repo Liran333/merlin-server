@@ -29,12 +29,12 @@ func (p *messageAdapter) SendComputilityRecallEvent(e message.EventMessage) erro
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {
-		return fmt.Errorf("send msg topic:%s err:%w", topic, err)
+		return fmt.Errorf("send msg topic:%s err: %w", topic, err)
 	}
 
 	err = kfklib.Publish(topic, nil, body)
 	if err != nil {
-		err = fmt.Errorf("send publish topic:%s err:%w", topic, err)
+		err = fmt.Errorf("send publish topic:%s err: %w", topic, err)
 	}
 
 	return err

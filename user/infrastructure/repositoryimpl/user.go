@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -70,7 +71,7 @@ func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, er
 
 	if v.RowsAffected == 0 {
 		err = commonrepo.NewErrorConcurrentUpdating(
-			errors.New("concurrent updating"),
+			xerrors.Errorf("concurrent updating: %w", err),
 		)
 		return
 	}
@@ -218,7 +219,7 @@ func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) 
 
 	if v.RowsAffected == 0 {
 		err = commonrepo.NewErrorConcurrentUpdating(
-			errors.New("concurrent updating"),
+			xerrors.Errorf("concurrent updating: %w", err),
 		)
 		return
 	}
@@ -248,7 +249,7 @@ func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, e
 	err = query.First(&tmpDo).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = commonrepo.NewErrorResourceNotExists(errors.New("user not found"))
+			err = commonrepo.NewErrorResourceNotExists(xerrors.Errorf("user not found: %w", err))
 			return
 		}
 

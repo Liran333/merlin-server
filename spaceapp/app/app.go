@@ -239,7 +239,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 
 	if err = s.permission.CanUpdate(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			e := fmt.Errorf("no permission to exec spaceId:%s,err:%s", space.Id.Identity(), err)
+			e := fmt.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", e)
 		}
 
@@ -267,7 +267,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 	}
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-		e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		return err
 	}
@@ -276,7 +276,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
 			return err
 		}
-		e := fmt.Errorf("failed to save spaceId:%s db failed, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 		return err
 	}
@@ -356,7 +356,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 
 	if err = s.permission.CanUpdate(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			e := fmt.Errorf("no permission to exec spaceId:%s,err:%s", space.Id.Identity(), err)
+			e := fmt.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", e)
 		}
 
@@ -390,18 +390,18 @@ func (s *spaceappAppService) ResumeSpaceApp(
 	}
 
 	if err := app.ResumeService(); err != nil {
-		e := fmt.Errorf("resume spaceId:%s failed, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("resume spaceId:%s failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppResumeFailed, "resume space failed", e)
 		return err
 	}
 
 	if err := s.repo.Save(&app); err != nil {
 		if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-			e := fmt.Errorf("failed to release spaceId:%s comp quota, err:%s", space.Id.Identity(), err)
+			e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
 			err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
 			return err
 		}
-		e := fmt.Errorf("update resuming spaceId:%s failed, err:%s", space.Id.Identity(), err)
+		e := fmt.Errorf("update resuming spaceId:%s failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppResumeFailed, "update space failed", e)
 		return err
 	}

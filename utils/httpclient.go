@@ -6,12 +6,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package utils
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -41,8 +40,7 @@ func NewHttpClient(n, timeout int) HttpClient {
 func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, io.Reader) error) error {
 	resp, err := hc.do(req)
 	if err != nil || resp == nil {
-		logrus.Errorf("req remote url is err:%s", err)
-		return err
+		return xerrors.Errorf("send request error: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -50,13 +48,18 @@ func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, 
 	if resp.StatusCode < statusCodeUpLimit || resp.StatusCode > statusCodeDownLimit {
 		rb, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return err
+			return xerrors.Errorf("failed to read response body: %w", err)
 		}
-		return fmt.Errorf("response has status:%s and body:%q", resp.Status, rb)
+		return xerrors.Errorf("response has status:%s and body:%q", resp.Status, rb)
 	}
 
 	if handle != nil {
-		return handle(resp.Header, resp.Body)
+		err = handle(resp.Header, resp.Body)
+		if err != nil {
+			err = xerrors.Errorf("handle response error: %w", err)
+		}
+
+		return err
 	}
 
 	return nil

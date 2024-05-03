@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -288,7 +289,7 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 	event := domain.NewOrgDeleteEvent(cmd)
 	err = org.message.SendComputilityOrgDeleteEvent(&event)
 	if err != nil {
-		e := fmt.Errorf("send message to delete computility org failed, %s", err)
+		e := xerrors.Errorf("send message to delete computility org failed: %w", err)
 		err = allerror.New(allerror.ErrorMsgPublishFailed, "delete computility org failed", e)
 	}
 
@@ -316,7 +317,7 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = errOrgNotFound(fmt.Sprintf("org %s not found", cmd.OrgName.Account()),
-				fmt.Errorf("org %s not found, %w", cmd.OrgName.Account(), err))
+				fmt.Errorf("org %s not found: %w", cmd.OrgName.Account(), err))
 		}
 
 		return
@@ -377,7 +378,7 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 	for i := range members {
 		o, e := org.repo.GetOrgByName(members[i].OrgName)
 		if e != nil {
-			e := fmt.Errorf("failed to get org when get org by user, %w", e)
+			e := fmt.Errorf("failed to get org when get org by user: %w", e)
 			err = allerror.New(allerror.ErrorFailedToGetOrg, e.Error(), e)
 			return
 		}
@@ -477,18 +478,18 @@ func (org *orgService) ListMember(cmd *domain.OrgListMemberCmd) (dtos []MemberDT
 func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	err := cmd.Validate()
 	if err != nil {
-		e := fmt.Errorf("failed to validate cmd, %w", err)
+		e := fmt.Errorf("failed to validate cmd: %w", err)
 		return allerror.New(allerror.ErrorFailedToValidateCmd, e.Error(), e)
 	}
 
 	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetOrgInfo, "failed to get org info", fmt.Errorf("failed to get org info, %w", err))
+		return allerror.New(allerror.ErrorFailedToGetOrgInfo, "failed to get org info", fmt.Errorf("failed to get org info: %w", err))
 	}
 
 	memberInfo, err := org.repo.GetByAccount(cmd.User)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetMemberInfo, "failed to get member info", fmt.Errorf("failed to get member info, %w", err))
+		return allerror.New(allerror.ErrorFailedToGetMemberInfo, "failed to get member info", fmt.Errorf("failed to get member info: %w", err))
 	}
 
 	m := cmd.ToMember(memberInfo)
@@ -496,20 +497,20 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	pl, err := org.user.GetPlatformUser(cmd.Actor)
 	if err != nil {
 		return allerror.New(allerror.ErrorFailGetPlatformUser,
-			"failed to get platform user for adding member", fmt.Errorf("failed to get platform user for adding member, %w", err))
+			"failed to get platform user for adding member", fmt.Errorf("failed to get platform user for adding member: %w", err))
 	}
 
 	err = pl.AddMember(&o, &m)
 	if err != nil {
 		return allerror.New(allerror.ErrorFailedToAddMemberToOrg, fmt.Sprintf("failed to add member:%s to org:%s",
-			m.Username.Account(), o.Account.Account()), fmt.Errorf("failed to add member:%s to org:%s, %w",
+			m.Username.Account(), o.Account.Account()), fmt.Errorf("failed to add member:%s to org:%s err: %w",
 			m.Username.Account(), o.Account.Account(), err))
 	}
 
 	_, err = org.member.Add(&m)
 	if err != nil {
 		return allerror.New(allerror.ErrorFailedToSaveMemberForAddingMember, "failed to save member for adding member",
-			fmt.Errorf("failed to save member for adding member, %w", err))
+			fmt.Errorf("failed to save member for adding member: %w", err))
 	}
 
 	return nil
@@ -527,8 +528,8 @@ func (org *orgService) canEditMember(cmd *domain.OrgEditMemberCmd) (err error) {
 func (org *orgService) members(orgName primitive.Account) ([]domain.OrgMember, int, error) {
 	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: orgName})
 	if err != nil {
-		e := fmt.Errorf("failed to get members by org name: %s, %s", orgName, err)
-		err = allerror.New(allerror.ErrorFailedToGetMembersByOrgName,e.Error(), e)
+		e := fmt.Errorf("failed to get members by org name: %s err: %w", orgName, err)
+		err = allerror.New(allerror.ErrorFailedToGetMembersByOrgName, e.Error(), e)
 		return []domain.OrgMember{}, 0, err
 	}
 
@@ -539,8 +540,8 @@ func (org *orgService) members(orgName primitive.Account) ([]domain.OrgMember, i
 func (org *orgService) getOwners(orgName primitive.Account) ([]domain.OrgMember, error) {
 	members, err := org.member.GetByOrg(&domain.OrgListMemberCmd{Org: orgName, Role: primitive.Admin})
 	if err != nil {
-		e := fmt.Errorf("failed to get members by org name: %s, %s", orgName, err)
-		err = allerror.New(allerror.ErrorFailedToGetMembersByOrgName,e.Error(), e)
+		e := fmt.Errorf("failed to get members by org name: %s err: %w", orgName, err)
+		err = allerror.New(allerror.ErrorFailedToGetMembersByOrgName, e.Error(), e)
 		return []domain.OrgMember{}, err
 	}
 
@@ -608,13 +609,13 @@ func (org *orgService) canRemoveMember(cmd *domain.OrgRemoveMemberCmd) (err erro
 func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 	err := cmd.Validate()
 	if err != nil {
-		e := fmt.Errorf("failed to validate cmd, %w", err)
+		e := fmt.Errorf("failed to validate cmd: %w", err)
 		return allerror.New(allerror.ErrorFailedToValidateCmd, e.Error(), e)
 	}
 
 	err = org.canRemoveMember(cmd)
 	if err != nil {
-		e := fmt.Errorf("failed to validate cmd, %w", err)
+		e := fmt.Errorf("failed to validate cmd: %w", err)
 		return allerror.New(allerror.ErrorFailedToRemoveMember, e.Error(), e)
 	}
 
@@ -660,7 +661,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	owners, err := org.getOwners(cmd.Org)
 	if err != nil {
-		e := fmt.Errorf("failed to get owners of org when add new member: %s, %s", cmd.Org.Account(), err)
+		e := fmt.Errorf("failed to get owners of org when add new member: %s err: %w", cmd.Org.Account(), err)
 		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
@@ -678,7 +679,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 
 	err = pl.RemoveMember(&o, &m)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToDeleteGitMember,"failed to delete git member",
+		return allerror.New(allerror.ErrorFailedToDeleteGitMember, "failed to delete git member",
 			fmt.Errorf("failed to delete git member, %w", err))
 	}
 
@@ -702,7 +703,7 @@ func (org *orgService) RemoveMember(cmd *domain.OrgRemoveMemberCmd) error {
 	event := domain.NewUserRemoveEvent(cmd)
 	err = org.message.SendComputilityUserRemoveEvent(&event)
 	if err != nil {
-		e := fmt.Errorf("send message to user removed from computility org failed, %s", err)
+		e := xerrors.Errorf("send message to user removed from computility org failed: %w", err)
 		err = allerror.New(allerror.ErrorMsgPublishFailed, "user remove computility failed", e)
 	}
 
@@ -722,7 +723,7 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 
 	m, err := org.member.GetByOrgAndUser(cmd.Org.Account(), cmd.Account.Account())
 	if err != nil {
-		err = fmt.Errorf("failed to get member when edit member by org:%s and user:%s, %w",
+		err = fmt.Errorf("failed to get member when edit member by org:%s and user:%s err: %w",
 			cmd.Org.Account(), cmd.Account.Account(), err)
 		return
 	}
@@ -738,7 +739,7 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 
 	pl, err := org.user.GetPlatformUser(cmd.Actor)
 	if err != nil {
-		err = fmt.Errorf("failed to get platform user, %w", err)
+		err = fmt.Errorf("failed to get platform user: %w", err)
 		return
 	}
 
@@ -747,13 +748,13 @@ func (org *orgService) EditMember(cmd *domain.OrgEditMemberCmd) (dto MemberDTO, 
 		m.Role = cmd.Role
 		err = pl.EditMemberRole(&o, origRole, &m)
 		if err != nil {
-			err = fmt.Errorf("failed to edit git member, %w", err)
+			err = fmt.Errorf("failed to edit git member: %w", err)
 			return
 		}
 
 		m, err = org.member.Save(&m)
 		if err != nil {
-			err = fmt.Errorf("failed to save member, %w", err)
+			err = fmt.Errorf("failed to save member: %w", err)
 			return
 		}
 		dto = ToMemberDTO(&m)
@@ -815,7 +816,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 
 	*invite, err = org.invite.AddInvite(invite)
 	if err != nil {
-		err = fmt.Errorf("failed to save member, %w", err)
+		err = fmt.Errorf("failed to save member: %w", err)
 		return
 	}
 
@@ -955,7 +956,7 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 
 	owners, err := org.getOwners(cmd.Org)
 	if err != nil {
-		e := fmt.Errorf("failed to get owners of org when add new member: %s, %s", cmd.Org.Account(), err)
+		e := fmt.Errorf("failed to get owners of org when add new member: %s err: %w", cmd.Org.Account(), err)
 		err = allerror.NewInvalidParam(e.Error(), e)
 		return
 	}
@@ -994,8 +995,8 @@ func (org *orgService) AcceptInvite(cmd *domain.OrgAcceptInviteCmd) (dto Approve
 	event := domain.NewUserJoinEvent(&approve)
 	err = org.message.SendComputilityUserJoinEvent(&event)
 	if err != nil {
-		e := fmt.Errorf("send message to user join computility org failed, %s", err)
-		err = allerror.New(allerror.ErrorMsgPublishFailed, "user join computility failed", e)
+		e := xerrors.Errorf("send message to user join computility org failed: %w", err)
+		err = allerror.New(allerror.ErrorMsgPublishFailed, "", e)
 	}
 
 	return
@@ -1110,7 +1111,7 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 
 	updatedRequest, err := org.invite.SaveRequest(&approve)
 	if err != nil {
-		err = fmt.Errorf("failed to remove invite, %w", err)
+		err = fmt.Errorf("failed to remove invite: %w", err)
 		return
 	}
 
@@ -1208,7 +1209,7 @@ func (org *orgService) RevokeInvite(cmd *domain.OrgRemoveInviteCmd) (dto Approve
 
 	updatedInvite, err := org.invite.SaveInvite(&approve)
 	if err != nil {
-		err = fmt.Errorf("failed to remove invite, %w", err)
+		err = fmt.Errorf("failed to remove invite: %w", err)
 		return
 	}
 

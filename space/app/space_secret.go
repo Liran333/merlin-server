@@ -39,7 +39,7 @@ func NewSpaceSecretService(
 	return &spaceSecretService{
 		permission:           permission,
 		repoAdapter:          repoAdapter,
-		repo:				  repo,
+		repo:                 repo,
 		secretAdapter:        secretAdapter,
 		secureStorageAdapter: secureStorageAdapter,
 		msgAdapter:           msgAdapter,
@@ -49,7 +49,7 @@ func NewSpaceSecretService(
 type spaceSecretService struct {
 	permission           app.ResourcePermissionAppService
 	repoAdapter          spacerepo.SpaceRepositoryAdapter
-	repo 				 repository.Repository
+	repo                 repository.Repository
 	secretAdapter        spacerepo.SpaceSecretRepositoryAdapter
 	secureStorageAdapter securestorage.SpaceSecureManager
 	msgAdapter           message.SpaceMessage
@@ -109,25 +109,25 @@ func (s *spaceSecretService) CreateSecret(
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to create space secret",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	if err = s.secretAdapter.AddSecret(secret); err != nil {
 		err = allerror.NewCommonRespError("failed to create space secret db",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return "", action, err
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send create space secret event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	return "successful", action, err
@@ -186,25 +186,25 @@ func (s *spaceSecretService) DeleteSecret(
 	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(secret.GetSecretPath(), secret.Name.MSDName())
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to delete secret",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return
 	}
 
 	if err = s.secretAdapter.DeleteSecret(secret.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to delete secret db",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send delete space secret event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 	}
 	return
 }
@@ -253,26 +253,26 @@ func (s *spaceSecretService) UpdateSecret(
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to update secret",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return
 	}
 
 	err = s.secretAdapter.SaveSecret(&secret)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to update secret db",
-			fmt.Errorf("space secret name:%s, err:%w", secret.Name.MSDName(), err))
+			fmt.Errorf("space secret name:%s, err: %w", secret.Name.MSDName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send update space secret event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 	}
 	return
 }

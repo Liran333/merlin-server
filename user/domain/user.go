@@ -9,12 +9,10 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
-	"fmt"
 
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/xerrors"
 
-	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -112,15 +110,15 @@ func (t PlatformToken) isExpired() bool {
 // Check checks if the given token is valid and has the required permission.
 func (t PlatformToken) Check(token string, perm primitive.TokenPerm) error {
 	if t.isExpired() {
-		return allerror.NewNoPermission(tokenExpired, errors.New(tokenExpired))
+		return xerrors.New(tokenExpired)
 	}
 
 	if !t.Match(token) {
-		return allerror.NewNoPermission(tokenInvalid, errors.New(tokenInvalid))
+		return xerrors.New(tokenInvalid)
 	}
 
 	if !t.Permission.PermissionAllow(perm) {
-		return allerror.NewNoPermission(tokenPermDenied, errors.New(tokenPermDenied))
+		return xerrors.New(tokenPermDenied)
 	}
 
 	return nil
@@ -191,13 +189,11 @@ type TokenCreatedCmd struct {
 // Validate validates the TokenCreatedCmd.
 func (cmd TokenCreatedCmd) Validate() error {
 	if cmd.Name == nil {
-		e := fmt.Errorf("missing name when creating token")
-		return allerror.New(allerror.ErrorMissingName, e.Error(), e)
+		return xerrors.Errorf("missing name when creating token")
 	}
 
 	if cmd.Account == nil {
-		e := fmt.Errorf("missing account when creating token")
-		return allerror.New(allerror.ErrorMissingAccount, e.Error(), e)
+		return xerrors.Errorf("missing account when creating token")
 	}
 
 	return nil
@@ -212,13 +208,11 @@ type TokenDeletedCmd struct {
 // Validate validates the TokenDeletedCmd.
 func (cmd TokenDeletedCmd) Validate() error {
 	if cmd.Account == nil {
-		e := fmt.Errorf("missing account when delete token")
-		return allerror.New(allerror.ErrorMissingAccount, e.Error(), e)
+		return xerrors.Errorf("missing account when delete token")
 	}
 
 	if cmd.Name == nil {
-		e := fmt.Errorf("missing name when delete token")
-		return allerror.New(allerror.ErrorMissingName, e.Error(), e)
+		return xerrors.Errorf("missing name when delete token")
 	}
 
 	return nil
@@ -246,7 +240,7 @@ func (cmd *UserCreateCmd) Validate() error {
 		cmd.Phone != nil
 
 	if !b {
-		return errors.New("invalid cmd of creating user")
+		return xerrors.New("invalid cmd of creating user")
 	}
 
 	return nil

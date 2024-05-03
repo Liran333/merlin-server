@@ -96,8 +96,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) (options, error) {
 // @name TOKEN
 // @description Type "Internal" followed by a space and internal token.
 func main() {
-	logrus.SetReportCaller(true)
-
 	o, err := gatherOptions(
 		flag.NewFlagSet(os.Args[0], flag.ExitOnError),
 		os.Args[1:]...,
@@ -119,6 +117,12 @@ func main() {
 		logrus.Debug("debug enabled.")
 	}
 
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+		DisableColors: true,
+		DisableQuote:  true,
+	})
+
 	// cfg
 	cfg := new(config.Config)
 
@@ -131,7 +135,7 @@ func main() {
 	// ratelimit must init before redisdb
 	// bcs redisdb will delete the cert
 	if err := ratelimiter.InitRateLimiter(cfg.Redis, &cfg.RateLimiter); err != nil {
-		logrus.Errorf("init ratelimiter failed, err %s", err)
+		logrus.Errorf("init ratelimiter failed: %s", err.Error())
 
 		return
 	}

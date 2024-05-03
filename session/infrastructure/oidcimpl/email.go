@@ -8,11 +8,10 @@ package oidcimpl
 
 import (
 	"bytes"
-	"errors"
 	"net/http"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	libutils "github.com/opensourceways/server-common-lib/utils"
@@ -57,21 +56,24 @@ func (impl *user) getManagerToken() (token string, err error) {
 
 	body, err := libutils.JsonMarshal(&b)
 	if err != nil {
+		err = xerrors.Errorf("get manager token error: %w", err)
 		return
 	}
 
 	req, err := http.NewRequest(http.MethodPost, impl.getManagerTokenURL, bytes.NewBuffer(body))
 	if err != nil {
+		err = xerrors.Errorf("get manager token error: %w", err)
 		return
 	}
 
 	var res managerToken
 	if err = sendHttpRequest(req, &res); err != nil {
+		err = xerrors.Errorf("get manager token error: %w", err)
 		return
 	}
 
 	if res.Status != http.StatusOK {
-		err = errors.New("get token error")
+		err = xerrors.Errorf("get manager token error: status(%d) not ok", res.Status)
 		return
 	}
 
@@ -84,10 +86,17 @@ func (impl *user) getManagerToken() (token string, err error) {
 func (impl *user) SendBindEmail(email, capt string) (err error) {
 	token, err := impl.getManagerToken()
 	if err != nil {
+		err = xerrors.Errorf("get manager token error: %w", err)
 		return
 	}
 
-	return impl.sendEmail(token, bindEmail, email, capt)
+	err = impl.sendEmail(token, bindEmail, email, capt)
+	if err != nil {
+		err = xerrors.Errorf("send bind email error: %w", err)
+		return
+	}
+
+	return
 }
 
 type sendEmail struct {
@@ -102,8 +111,6 @@ type normalEmailRes struct {
 }
 
 func errorReturn(err error) error {
-	logrus.Errorf("email error: %s", err.Error())
-
 	errinfo := err.Error()
 	if strings.Contains(errinfo, infoCodeError) {
 		return allerror.New(allerror.ErrorEmailCodeError, "email verify code error", err)
@@ -139,11 +146,13 @@ func (impl *user) sendEmail(token, channel, email, capt string) (err error) {
 
 	body, err := libutils.JsonMarshal(&send)
 	if err != nil {
+		err = xerrors.Errorf("send email error: %w", errorReturn(err))
 		return
 	}
 
 	req, err := http.NewRequest(http.MethodPost, impl.sendEmailURL, bytes.NewBuffer(body))
 	if err != nil {
+		err = xerrors.Errorf("send email error: %w", errorReturn(err))
 		return
 	}
 
@@ -153,7 +162,7 @@ func (impl *user) sendEmail(token, channel, email, capt string) (err error) {
 	err = sendHttpRequest(req, &res)
 
 	if res.Status != http.StatusOK {
-		err = errorReturn(err)
+		err = xerrors.Errorf("send email error: %w", errorReturn(err))
 	}
 
 	return
@@ -176,11 +185,13 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 
 	body, err := libutils.JsonMarshal(&veri)
 	if err != nil {
+		err = xerrors.Errorf("marshal error: %w", err)
 		return
 	}
 
 	req, err := http.NewRequest(http.MethodPost, impl.bindEmailURL, bytes.NewBuffer(body))
 	if err != nil {
+		err = xerrors.Errorf("new request error: %w", err)
 		return
 	}
 
@@ -190,7 +201,7 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 	err = sendHttpRequest(req, &res)
 
 	if res.Code != http.StatusOK {
-		err = errorReturn(err)
+		err = xerrors.Errorf("verify bind email error: %w", errorReturn(err))
 	}
 
 	return
@@ -200,8 +211,15 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 func (impl *user) VerifyBindEmail(email, passCode, userid string) (err error) {
 	token, err := impl.getManagerToken()
 	if err != nil {
+		err = xerrors.Errorf("get manager token error: %w", err)
 		return
 	}
 
-	return impl.verifyBindEmail(token, email, passCode, userid)
+	err = impl.verifyBindEmail(token, email, passCode, userid)
+	if err != nil {
+		err = xerrors.Errorf("verify bind email error: %w", err)
+		return
+	}
+
+	return
 }

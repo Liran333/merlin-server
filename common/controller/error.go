@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
@@ -40,14 +41,18 @@ func httpError(err error) (int, string) {
 
 	sc := http.StatusInternalServerError
 	code := errorSystemError
+	var t errorCode
 
-	if v, ok := err.(errorCode); ok {
-		code = v.ErrorCode()
+	if ok := errors.As(err, &t); ok {
+		code = t.ErrorCode()
 
-		if _, ok := err.(errorNotFound); ok {
+		var n errorNotFound
+		var p errorNoPermission
+
+		if ok := errors.As(err, &n); ok {
 			sc = http.StatusNotFound
 
-		} else if _, ok := err.(errorNoPermission); ok {
+		} else if ok := errors.As(err, &p); ok {
 			sc = http.StatusForbidden
 
 		} else {
