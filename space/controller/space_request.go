@@ -266,15 +266,18 @@ type spaceDetail struct {
 
 // userSpacesInfo
 type userSpacesInfo struct {
-	Owner    string `json:"owner"`
-	AvatarId string `json:"avatar_id"`
+	Owner     string `json:"owner"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
 
 	*app.SpacesDTO
 }
 
 // spaceInfo
 type spaceInfo struct {
-	AvatarId string `json:"avatar_id"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
+	Owner     string `json:"owner"`
 
 	*repository.SpaceSummary
 }

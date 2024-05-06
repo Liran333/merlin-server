@@ -236,15 +236,18 @@ type modelDetail struct {
 
 // modelsInfo
 type userModelsInfo struct {
-	Owner    string `json:"owner"`
-	AvatarId string `json:"avatar_id"`
+	Owner     string `json:"owner"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
 
 	*app.ModelsDTO
 }
 
 // modelsInfo
 type modelInfo struct {
-	AvatarId string `json:"avatar_id"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
+	Owner     string `json:"owner"`
 
 	*repository.ModelSummary
 }

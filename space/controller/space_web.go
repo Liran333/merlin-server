@@ -159,10 +159,11 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 		SpacesDTO: &dto,
 	}
 
-	if avatar, err := ctl.user.GetUserAvatarId(cmd.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		result.AvatarId = avatar.AvatarId
+		result.AvatarId = userInfo.AvatarId
+		result.OwnerType = userInfo.Type
 
 		commonctl.SendRespOfGet(ctx, &result)
 	}
@@ -218,10 +219,9 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 	ms := dto.Spaces
 
 	// get avatars
-
-	v := map[string]bool{}
+	v := map[string]userapp.UserDTO{}
 	for i := range ms {
-		v[ms[i].Owner] = true
+		v[ms[i].Owner] = userapp.UserDTO{}
 	}
 
 	accounts := make([]primitive.Account, len(v))
@@ -229,29 +229,24 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
+		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		if err != nil {
+			return spacesInfo{}, err
+		}
+		v[k] = userInfo
 		i++
 	}
 
-	avatars, err := ctl.user.GetUsersAvatarId(accounts)
-	if err != nil {
-		return spacesInfo{}, err
-	}
-
 	// set avatars
-
-	am := map[string]string{}
-	for i := range avatars {
-		item := &avatars[i]
-
-		am[item.Name] = item.AvatarId
-	}
-
 	infos := make([]spaceInfo, len(ms))
 	for i := range ms {
 		item := &ms[i]
 
 		infos[i] = spaceInfo{
-			AvatarId:     am[item.Owner],
+			AvatarId:  v[item.Owner].AvatarId,
+			OwnerType: v[item.Owner].Type,
+			Owner:     item.Owner,
+
 			SpaceSummary: item,
 		}
 	}

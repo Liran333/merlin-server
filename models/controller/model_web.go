@@ -154,10 +154,11 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 		ModelsDTO: &dto,
 	}
 
-	if avatar, err := ctl.user.GetUserAvatarId(cmd.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		result.AvatarId = avatar.AvatarId
+		result.AvatarId = userInfo.AvatarId
+		result.OwnerType = userInfo.Type
 
 		commonctl.SendRespOfGet(ctx, &result)
 	}
@@ -202,51 +203,43 @@ func (ctl *ModelWebController) ListGlobal(ctx *gin.Context) {
 		return
 	}
 
-	if v, err := ctl.setAvatars(&result); err != nil {
+	if v, err := ctl.setUserInfo(&result); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
 	}
 }
 
-func (ctl *ModelWebController) setAvatars(dto *app.ModelsDTO) (modelsInfo, error) {
+func (ctl *ModelWebController) setUserInfo(dto *app.ModelsDTO) (modelsInfo, error) {
 	ms := dto.Models
 
 	// get avatars
-
-	v := map[string]bool{}
+	v := map[string]userapp.UserDTO{}
 	for i := range ms {
-		v[ms[i].Owner] = true
+		v[ms[i].Owner] = userapp.UserDTO{}
 	}
 
 	accounts := make([]primitive.Account, len(v))
-
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
+		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		if err != nil {
+			return modelsInfo{}, err
+		}
+		v[k] = userInfo
 		i++
 	}
 
-	avatars, err := ctl.user.GetUsersAvatarId(accounts)
-	if err != nil {
-		return modelsInfo{}, err
-	}
-
 	// set avatars
-
-	am := map[string]string{}
-	for i := range avatars {
-		item := &avatars[i]
-
-		am[item.Name] = item.AvatarId
-	}
-
 	infos := make([]modelInfo, len(ms))
 	for i := range ms {
 		item := &ms[i]
 
 		infos[i] = modelInfo{
-			AvatarId:     am[item.Owner],
+			AvatarId:     v[item.Owner].AvatarId,
+			OwnerType:    v[item.Owner].Type,
+			Owner:        item.Owner,
 			ModelSummary: item,
 		}
 	}

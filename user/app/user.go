@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
@@ -35,6 +37,7 @@ type UserService interface {
 	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
 	UserInfo(domain.Account, domain.Account) (UserInfoDTO, error)
 	GetByAccount(domain.Account, domain.Account) (UserDTO, error)
+	GetOrgOrUser(primitive.Account, primitive.Account) (UserDTO, error)
 	GetUserAvatarId(domain.Account) (AvatarDTO, error)
 	GetUserFullname(domain.Account) (string, error)
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
@@ -339,6 +342,30 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 
 	dto = newUserDTO(&u, actor)
 
+	return
+}
+
+// GetOrgOrUser retrieves either an organization or a user by their account and returns it as a UserDTO.
+func (s userService) GetOrgOrUser(actor, acc primitive.Account) (dto UserDTO, err error) {
+	u, err := s.repo.GetByAccount(acc)
+	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
+		return
+	} else if err == nil {
+		dto = NewUserDTO(&u, actor)
+		return
+	}
+
+	o, err := s.repo.GetOrgByName(acc)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.New(allerror.ErrorCodeUserNotFound, fmt.Sprintf("org %s not found", acc.Account()),
+				fmt.Errorf("org %s not found, %w", acc.Account(), err))
+		}
+
+		return
+	}
+
+	dto = ToDTO(&o)
 	return
 }
 

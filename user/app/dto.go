@@ -9,6 +9,7 @@ import (
 	sdk "github.com/openmerlin/merlin-sdk/user"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 )
@@ -50,6 +51,11 @@ type UserDTO struct {
 // NewUserDTO creates a new UserDTO based on the given domain.User object.
 func NewUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	return newUserDTO(u, actor)
+}
+
+// ToDTO converts a domain.Organization object to a userapp.UserDTO object.
+func ToDTO(org *orgdomain.Organization) UserDTO {
+	return NewUserDTO(org, nil)
 }
 
 func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
