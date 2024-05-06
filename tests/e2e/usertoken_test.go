@@ -38,11 +38,11 @@ func (s *SuiteUserToken) SetupSuite() {
 		Perm: "read",
 	}
 
-	data, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
+	tokenData, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	m := getData(s.T(), data.Data)
+	m := getData(s.T(), tokenData.Data)
 
 	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
 	assert.Equal(s.T(), s.id, m["owner_id"])
@@ -56,10 +56,10 @@ func (s *SuiteUserToken) SetupSuite() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	m = getData(s.T(), data.Data)
+	m1 := getData(s.T(), tokenData.Data)
 
-	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
-	assert.Equal(s.T(), s.id, m["owner_id"])
+	assert.NotEqual(s.T(), "", getString(s.T(), m1["token"]))
+	assert.Equal(s.T(), s.id, m1["owner_id"])
 }
 
 // TearDownSuite used for testing
@@ -104,7 +104,7 @@ func (s *SuiteUserToken) TestGetUserToken() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	tokens := getArrary(s.T(), data.Data)
+	tokens := getArrarys(s.T(), data.Data)
 
 	readFound := false
 	writeFound := false
@@ -210,7 +210,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 
 	auth := newAuthRestCtx(getString(s.T(), m["token"]))
 
-	data, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
+	_, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -239,7 +239,7 @@ func (s *SuiteUserToken) TestTokenCreateToken() {
 
 	auth = newAuthRestCtx(getString(s.T(), m["token"]))
 
-	data, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
+	_, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 

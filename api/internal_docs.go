@@ -1274,7 +1274,25 @@ const docTemplateinternal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.tokenVerifyResp"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1321,6 +1339,7 @@ const docTemplateinternal = `{
                 "summary": "GetPlatformUser info",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name of the user",
                         "name": "name",
@@ -1332,7 +1351,25 @@ const docTemplateinternal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1553,6 +1590,14 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.tokenVerifyResp": {
+            "type": "object",
+            "properties": {
+                "account": {
                     "type": "string"
                 }
             }

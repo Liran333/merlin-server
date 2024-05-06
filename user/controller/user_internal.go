@@ -77,7 +77,7 @@ func (ctl *UserInernalController) VerifyToken(ctx *gin.Context) {
 // @Description  Get platform user info
 // @Tags     UserInternal
 // @Accept   json
-// @Param    name  path  string  true  "name of the user"
+// @Param    name  path  string  true  "name of the user" MaxLength(40)
 // @Security Internal
 // @Success  200  {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/user/{name}/platform [get]

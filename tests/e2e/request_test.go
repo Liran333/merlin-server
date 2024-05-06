@@ -63,21 +63,21 @@ func (s *SuiteRequest) SetupSuite() {
 	s.requesterId = getString(s.T(), user["id"])
 
 	// 创建组织
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
+	orgData, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
 		Website:     s.website,
 		Description: s.desc,
 	})
-	o := getData(s.T(), data.Data)
+	o := getData(s.T(), orgData.Data)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
 	// 更新组织允许加入权限
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
+	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
 		swaggerRest.ControllerOrgBasicInfoUpdateRequest{
 			AllowRequest: true,
 		})

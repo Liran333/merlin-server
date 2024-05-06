@@ -139,6 +139,11 @@ definitions:
     - action
     - token
     type: object
+  controller.tokenVerifyResp:
+    properties:
+      account:
+        type: string
+    type: object
   session.RequestToCheckAndRefresh:
     properties:
       csrf_token:
@@ -906,6 +911,7 @@ paths:
       parameters:
       - description: name of the user
         in: path
+        maxLength: 40
         name: name
         required: true
         type: string
@@ -913,7 +919,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: GetPlatformUser info
@@ -935,7 +950,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.tokenVerifyResp'
+                msg:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:

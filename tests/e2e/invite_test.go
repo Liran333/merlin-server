@@ -70,7 +70,7 @@ func (s *SuiteInvite) SetupSuite() {
 	assert.NotEqual(s.T(), "", user["id"])
 	s.inviteeId = getString(s.T(), user["id"])
 
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
+	orgData, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
 		Name:        s.name,
 		Fullname:    s.fullname,
 		AvatarId:    s.avatarid,
@@ -78,7 +78,7 @@ func (s *SuiteInvite) SetupSuite() {
 		Description: s.desc,
 	})
 
-	o := getData(s.T(), data.Data)
+	o := getData(s.T(), orgData.Data)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)

@@ -70,7 +70,7 @@ type UserController struct {
 // @Param    body  body  userBasicInfoUpdateRequest  true  "body of updating user"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=app.UserDTO,msg=string,code=string}
 // @Router   /v1/user [put]
 func (ctl *UserController) Update(ctx *gin.Context) {
 	middleware.SetAction(ctx, "update user basic info")
@@ -140,7 +140,7 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 // @Param    body  body  bindEmailRequest  true  "body of bind email info"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/user/email/bind [post]
 func (ctl *UserController) BindEmail(ctx *gin.Context) {
 	middleware.SetAction(ctx, "bind email")
@@ -179,7 +179,7 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 // @Param    body  body  sendEmailRequest  true  "body of bind email info"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/user/email/send [post]
 func (ctl *UserController) SendEmail(ctx *gin.Context) {
 	middleware.SetAction(ctx, "send email verify code")
@@ -216,7 +216,7 @@ func (ctl *UserController) SendEmail(ctx *gin.Context) {
 // @Description  get current sign-in user info
 // @Tags     User
 // @Accept   json
-// @Success  200  {object}      commonctl.ResponseData
+// @Success  200  {object}   commonctl.ResponseData{data=app.UserInfoDTO,msg=string,code=string}
 // @Security Bearer
 // @Router   /v1/user [get]
 func (ctl *UserController) Get(ctx *gin.Context) {
@@ -292,7 +292,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 // @Param    body  body  tokenCreateRequest  true  "body of create token"
 // @Accept   json
 // @Security Bearer
-// @Success  201  {object}  commonctl.ResponseData
+// @Success  201  {object}  commonctl.ResponseData{data=app.TokenDTO,msg=string,code=string}
 // @Router   /v1/user/token [post]
 func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 	middleware.SetAction(ctx, "create a new platform token")
@@ -338,7 +338,7 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 // @Tags     User
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=[]app.TokenDTO,msg=string,code=string}
 // @Router   /v1/user/token [get]
 func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -358,7 +358,7 @@ func (ctl *UserController) GetTokenInfo(ctx *gin.Context) {
 // @Tags     User
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=revokePrivacyInfo,msg=string,code=string}
 // @Router   /v1/user/privacy [put]
 func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 	middleware.SetAction(ctx, "privacy revoke")

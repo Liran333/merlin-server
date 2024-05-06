@@ -124,11 +124,11 @@ func (s *SuiteUser) TestRequestDelete() {
 		RevokeDelete: true,
 	}
 
-	data, r, err = ApiRest.UserApi.V1UserPut(AuthRest, d)
+	userData, r, err := ApiRest.UserApi.V1UserPut(AuthRest, d)
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
-	assert.Nil(s.T(), err, data.Msg)
+	assert.Nil(s.T(), err, userData.Msg)
 
-	user = getData(s.T(), data.Data)
+	user = getData(s.T(), userData.Data)
 
 	assert.Equalf(s.T(), user["request_delete"], bool(false), "request delete not equal")
 	assert.Equalf(s.T(), getInt64(s.T(), user["request_delete_at"]), int64(0), "request delete at not equal")
