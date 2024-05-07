@@ -75,7 +75,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
+	molData, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest, swaggerRest.ControllerReqToCreateModel{
 		Name:       "testmodel",
 		Owner:      s.name,
 		License:    "mit",
@@ -85,7 +85,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	s.modelId = getString(s.T(), data.Data)
+	s.modelId = getString(s.T(), molData.Data)
 }
 
 func (s *SuiteModelBranch) TearDownSuite() {

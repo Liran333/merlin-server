@@ -146,15 +146,12 @@ func (s *SuiteUserModel) TestUserCanVisitSelfPublicModel() {
 	assert.Nil(s.T(), err)
 
 	count := 0
-	modelLists := getData(s.T(), list.Data)
+	modelLists := list.Data
 
-	for i := 0; i < len(modelLists["models"].([]interface{})); i++ {
-		model, ok := modelLists["models"].([]interface{})[i].(map[string]interface{})
-		if !ok {
-			continue
-		}
+	for i := 0; i < len(modelLists.Models); i++ {
+		model := modelLists.Models[i]
 
-		if _, ok := model["name"]; ok {
+		if model.Name != "" {
 			count++
 		}
 	}
@@ -194,12 +191,12 @@ func (s *SuiteUserModel) TestUserSetModelDownloadCount() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.ModelRestfulApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel")
+	data1, r, err := ApiRest.ModelRestfulApi.V1ModelOwnerNameGet(AuthRest2, "test2", "testmodel")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	model := getData(s.T(), data.Data)
-	assert.Equal(s.T(), float64(10), model["download_count"])
+	model := getData(s.T(), data1.Data)
+	assert.Equal(s.T(), int32(10), model["download_count"])
 
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

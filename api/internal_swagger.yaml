@@ -30,6 +30,66 @@ definitions:
       user_name:
         type: string
     type: object
+  app.AvatarDTO:
+    properties:
+      avatar_id:
+        type: string
+      name:
+        type: string
+    type: object
+  app.ModelDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.ModelLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      use_in_openmind:
+        type: string
+      visibility:
+        type: string
+    type: object
+  app.ModelLabelsDTO:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      others:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
+  app.SpaceIdModelDTO:
+    properties:
+      space_id:
+        items:
+          type: string
+        type: array
+    type: object
   controller.ModeIds:
     properties:
       ids:
@@ -46,6 +106,11 @@ definitions:
         type: string
     type: object
   controller.modelStatistics:
+    properties:
+      download_count:
+        type: integer
+    type: object
+  controller.repoStatistics:
     properties:
       download_count:
         type: integer
@@ -123,11 +188,6 @@ definitions:
         type: string
       user_name:
         type: string
-    type: object
-  controller.spaceStatistics:
-    properties:
-      download_count:
-        type: integer
     type: object
   controller.tokenVerifyRequest:
     properties:
@@ -255,6 +315,33 @@ paths:
       summary: AddActivity
       tags:
       - ActivityInternal
+  /v1/coderepo/{id}/statistic:
+    put:
+      consumes:
+      - application/json
+      description: update the download count of a model/space
+      parameters:
+      - description: id of model/space
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: body of updating model/space info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.repoStatistics'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Update
+      tags:
+      - Statistic
   /v1/coderepo/permission/read:
     post:
       consumes:
@@ -439,6 +526,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -446,7 +534,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.ModelDTO'
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: GetById
@@ -459,6 +556,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -472,7 +570,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: Update model info
@@ -486,6 +593,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -499,10 +607,56 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: ResetLabel
+      tags:
+      - ModelInternal
+  /v1/model/{id}/use_in_openmind:
+    put:
+      consumes:
+      - application/json
+      description: update space use in openmind info
+      parameters:
+      - description: id of model
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: use in openmind info
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: UpdateUseInOpenmind
       tags:
       - ModelInternal
   /v1/model/relation/{id}/space:
@@ -514,6 +668,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -521,7 +676,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.SpaceIdModelDTO'
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: GetSpacesByModelId
@@ -775,32 +939,6 @@ paths:
       summary: Get
       tags:
       - SpaceInternal
-    put:
-      consumes:
-      - application/json
-      description: update space info by id
-      parameters:
-      - description: id of space
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: body of updating space info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controller.spaceStatistics'
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/controller.ResponseData'
-      security:
-      - Internal: []
-      summary: Update space info
-      tags:
-      - SpaceInternal
   /v1/space/{id}/disable:
     put:
       consumes:
@@ -903,6 +1041,36 @@ paths:
       summary: UpdateSpaceModels
       tags:
       - SpaceInternal
+  /v1/user/{name}/avatar_id:
+    get:
+      consumes:
+      - application/json
+      description: get user's avatar id
+      parameters:
+      - description: name of the user
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.AvatarDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: get user's avatar id
+      tags:
+      - UserInternal
   /v1/user/{name}/platform:
     get:
       consumes:

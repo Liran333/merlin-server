@@ -237,6 +237,49 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/coderepo/{id}/statistic": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update the download count of a model/space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Statistic"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of model/space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating model/space info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.repoStatistics"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/computility/account": {
             "post": {
                 "security": [
@@ -485,6 +528,7 @@ const docTemplateinternal = `{
                 "summary": "GetSpacesByModelId",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -496,7 +540,25 @@ const docTemplateinternal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceIdModelDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -519,6 +581,7 @@ const docTemplateinternal = `{
                 "summary": "GetById",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -530,7 +593,25 @@ const docTemplateinternal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ModelDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -551,6 +632,7 @@ const docTemplateinternal = `{
                 "summary": "Update model info",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -571,7 +653,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -594,6 +694,7 @@ const docTemplateinternal = `{
                 "summary": "ResetLabel",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -614,7 +715,87 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/{id}/use_in_openmind": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update space use in openmind info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelInternal"
+                ],
+                "summary": "UpdateUseInOpenmind",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of model",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "use in openmind info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1038,47 +1219,6 @@ const docTemplateinternal = `{
                         }
                     }
                 }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Internal": []
-                    }
-                ],
-                "description": "update space info by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "SpaceInternal"
-                ],
-                "summary": "Update space info",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id of space",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "body of updating space info",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.spaceStatistics"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
-                        }
-                    }
-                }
             }
         },
         "/v1/space/{id}/disable": {
@@ -1322,6 +1462,58 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/user/{name}/avatar_id": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "get user's avatar id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserInternal"
+                ],
+                "summary": "get user's avatar id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the user",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.AvatarDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/{name}/platform": {
             "get": {
                 "security": [
@@ -1425,6 +1617,98 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "app.AvatarDTO": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.ModelDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "use_in_openmind": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.ModelLabelsDTO": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "others": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.SpaceIdModelDTO": {
+            "type": "object",
+            "properties": {
+                "space_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "controller.ModeIds": {
             "type": "object",
             "properties": {
@@ -1449,6 +1733,14 @@ const docTemplateinternal = `{
             }
         },
         "controller.modelStatistics": {
+            "type": "object",
+            "properties": {
+                "download_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controller.repoStatistics": {
             "type": "object",
             "properties": {
                 "download_count": {
@@ -1568,14 +1860,6 @@ const docTemplateinternal = `{
                 },
                 "user_name": {
                     "type": "string"
-                }
-            }
-        },
-        "controller.spaceStatistics": {
-            "type": "object",
-            "properties": {
-                "download_count": {
-                    "type": "integer"
                 }
             }
         },

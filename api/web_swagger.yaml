@@ -12,11 +12,28 @@ definitions:
       user_name:
         type: string
     type: object
-  app.ActivityDTO:
+  app.ActivitySummaryDTO:
+    properties:
+      Name:
+        type: string
+      Owner:
+        type: string
+      Resource:
+        $ref: '#/definitions/app.ResourceDTO'
+      Time:
+        type: integer
+      Type:
+        type: string
+      download_count:
+        type: integer
+      like_count:
+        type: integer
+    type: object
+  app.ActivitysDTO:
     properties:
       activity:
         items:
-          $ref: '#/definitions/domain.Activity'
+          $ref: '#/definitions/app.ActivitySummaryDTO'
         type: array
       avatar_id:
         type: string
@@ -52,6 +69,17 @@ definitions:
         type: string
       unified_social_credit_code:
         type: string
+    type: object
+  app.ResourceDTO:
+    properties:
+      Index:
+        type: integer
+      Owner:
+        type: string
+      Type:
+        type: string
+      disable:
+        type: boolean
     type: object
   app.SearchDTO:
     properties:
@@ -119,43 +147,6 @@ definitions:
         type: string
       updated_at:
         type: integer
-    type: object
-  app.UserInfoDTO:
-    properties:
-      account:
-        type: string
-      allow_request:
-        type: boolean
-      avatar_id:
-        type: string
-      created_at:
-        type: integer
-      default_role:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      fullname:
-        type: string
-      id:
-        type: string
-      owner:
-        type: string
-      owner_id:
-        type: string
-      phone:
-        type: string
-      request_delete:
-        type: boolean
-      request_delete_at:
-        type: integer
-      type:
-        type: integer
-      updated_at:
-        type: integer
-      website:
-        type: string
     type: object
   controller.OrgAcceptMemberRequest:
     properties:
@@ -266,6 +257,8 @@ definitions:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       fullname:
@@ -282,10 +275,10 @@ definitions:
         type: string
       owner:
         type: string
-      reason:
-        type: string
       updated_at:
         type: integer
+      use_in_openmind:
+        type: string
       visibility:
         type: string
     type: object
@@ -297,6 +290,8 @@ definitions:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       frameworks:
@@ -314,8 +309,6 @@ definitions:
       name:
         type: string
       owner:
-        type: string
-      reason:
         type: string
       task:
         type: string
@@ -526,6 +519,8 @@ definitions:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       exception:
@@ -552,8 +547,6 @@ definitions:
         type: string
       owner:
         type: string
-      reason:
-        type: string
       sdk:
         type: string
       space_avatar_id:
@@ -571,6 +564,8 @@ definitions:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       fullname:
@@ -582,8 +577,6 @@ definitions:
       name:
         type: string
       owner:
-        type: string
-      reason:
         type: string
       space_avatar_id:
         type: string
@@ -657,27 +650,6 @@ definitions:
       total:
         type: integer
     type: object
-  domain.Activity:
-    properties:
-      name: {}
-      owner: {}
-      resource:
-        $ref: '#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource'
-      time:
-        type: integer
-      type:
-        $ref: '#/definitions/domain.ActivityType'
-    type: object
-  domain.ActivityType:
-    enum:
-    - create
-    - update
-    - like
-    type: string
-    x-enum-varnames:
-    - Create
-    - Update
-    - Like
   domain.ModelResult:
     properties:
       name:
@@ -761,18 +733,6 @@ definitions:
       full_name:
         type: string
     type: object
-  github_com_openmerlin_merlin-server_activity_domain.Resource:
-    properties:
-      disable:
-        type: boolean
-      index:
-        description: Resource index
-      owner: {}
-      type:
-        allOf:
-        - $ref: '#/definitions/primitive.ObjType'
-        description: Resource type
-    type: object
   github_com_openmerlin_merlin-server_session_app.UserDTO:
     properties:
       account:
@@ -847,32 +807,53 @@ definitions:
       website:
         type: string
     type: object
-  primitive.ObjType:
-    enum:
-    - user
-    - organization
-    - model
-    - dataset
-    - space
-    - member
-    - invite
-    - codeRepo
-    type: string
-    x-enum-varnames:
-    - ObjTypeUser
-    - ObjTypeOrg
-    - ObjTypeModel
-    - ObjTypeDataset
-    - ObjTypeSpace
-    - ObjTypeMember
-    - ObjTypeInvite
-    - ObjTypeCodeRepo
+  github_com_openmerlin_merlin-server_user_app.UserInfoDTO:
+    properties:
+      account:
+        type: string
+      allow_request:
+        type: boolean
+      avatar_id:
+        type: string
+      created_at:
+        type: integer
+      default_role:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      is_disable_admin:
+        type: boolean
+      owner:
+        type: string
+      owner_id:
+        type: string
+      phone:
+        type: string
+      request_delete:
+        type: boolean
+      request_delete_at:
+        type: integer
+      type:
+        type: integer
+      updated_at:
+        type: integer
+      website:
+        type: string
+    type: object
   repository.ModelSummary:
     properties:
       desc:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       frameworks:
@@ -891,8 +872,6 @@ definitions:
         type: string
       owner:
         type: string
-      reason:
-        type: string
       task:
         type: string
       updated_at:
@@ -904,6 +883,8 @@ definitions:
         type: string
       disable:
         type: boolean
+      disable_reason:
+        type: string
       download_count:
         type: integer
       fullname:
@@ -915,8 +896,6 @@ definitions:
       name:
         type: string
       owner:
-        type: string
-      reason:
         type: string
       space_avatar_id:
         type: string
@@ -1146,30 +1125,44 @@ paths:
       parameters:
       - description: name of model
         in: query
+        maxLength: 100
         name: name
         type: string
       - description: task label
         in: query
+        maxLength: 100
         name: task
         type: string
       - description: other labels, separate multiple each ones with commas
         in: query
+        maxLength: 100
         name: others
         type: string
       - description: license label
         in: query
+        maxLength: 40
         name: license
         type: string
       - description: framework labels, separate multiple each ones with commas
         in: query
+        maxLength: 100
         name: frameworks
         type: string
       - description: whether to calculate the total
+        enum:
+        - true
+        - false
         in: query
         name: count
         type: boolean
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'
+        enum:
+        - most_likes
+        - alphabetical
+        - most_downloads
+        - recently_updated
+        - recently_created
         in: query
         name: sort_by
         type: string
@@ -1185,7 +1178,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.modelsInfo'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.modelsInfo'
+                msg:
+                  type: string
+              type: object
       summary: ListGlobal
       tags:
       - ModelWeb
@@ -1204,7 +1206,16 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: Create
@@ -1218,6 +1229,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1236,6 +1248,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1249,7 +1262,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: Update
@@ -1263,6 +1285,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1276,7 +1299,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: disable model
@@ -1290,19 +1322,30 @@ paths:
       parameters:
       - description: owner of model
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of model
         in: query
+        maxLength: 100
         name: name
         type: string
       - description: whether to calculate the total
+        enum:
+        - true
+        - false
         in: query
         name: count
         type: boolean
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'
+        enum:
+        - most_likes
+        - alphabetical
+        - most_downloads
+        - recently_updated
+        - recently_created
         in: query
         name: sort_by
         type: string
@@ -1330,11 +1373,13 @@ paths:
       parameters:
       - description: owner of model
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of model
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1342,7 +1387,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.modelDetail'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.modelDetail'
+                msg:
+                  type: string
+              type: object
       summary: Get
       tags:
       - ModelWeb
@@ -1354,6 +1408,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1361,9 +1416,18 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/app.SpaceModelDTO'
-            type: array
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/app.SpaceModelDTO'
+                  type: array
+                msg:
+                  type: string
+              type: object
       summary: GetSpacesByModelId
       tags:
       - ModelWeb
@@ -2526,7 +2590,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/app.UserInfoDTO'
+                  $ref: '#/definitions/github_com_openmerlin_merlin-server_user_app.UserInfoDTO'
                 msg:
                   type: string
               type: object
@@ -2596,7 +2660,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/app.ActivityDTO'
+                  $ref: '#/definitions/app.ActivitysDTO'
                 msg:
                   type: string
               type: object

@@ -61,10 +61,10 @@ type ModelWebController struct {
 // @Summary  Get
 // @Description  get model
 // @Tags     ModelWeb
-// @Param    owner  path  string  true  "owner of model"
-// @Param    name   path  string  true  "name of model"
+// @Param    owner  path  string  true  "owner of model" MaxLength(40)
+// @Param    name   path  string  true  "name of model" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  modelDetail
+// @Success  200  {object}  commonctl.ResponseData{data=modelDetail,msg=string,code=string}
 // @Router   /v1/model/{owner}/{name} [get]
 func (ctl *ModelWebController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -109,12 +109,12 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 // @Summary  List
 // @Description  list model
 // @Tags     ModelWeb
-// @Param    owner           path   string  true   "owner of model"
-// @Param    name            query  string  false  "name of model"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
+// @Param    owner           path   string  true   "owner of model" MaxLength(40)
+// @Param    name            query  string  false  "name of model" MaxLength(100)
+// @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
+// @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
 // @Success  200  {object}  userModelsInfo
 // @Router   /v1/model/{owner} [get]
@@ -167,17 +167,17 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 // @Summary  ListGlobal
 // @Description  list global public model
 // @Tags     ModelWeb
-// @Param    name            query  string  false  "name of model"
-// @Param    task            query  string  false  "task label"
-// @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
-// @Param    license         query  string  false  "license label"
-// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
+// @Param    name            query  string  false  "name of model" MaxLength(100)
+// @Param    task            query  string  false  "task label" MaxLength(100)
+// @Param    others          query  string  false  "other labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    license         query  string  false  "license label" MaxLength(40)
+// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
+// @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
-// @Success  200  {object}  modelsInfo
+// @Success  200  {object}  commonctl.ResponseData{data=modelsInfo,msg=string,code=string}
 // @Router   /v1/model [get]
 func (ctl *ModelWebController) ListGlobal(ctx *gin.Context) {
 	var req reqToListGlobalModels
@@ -253,9 +253,9 @@ func (ctl *ModelWebController) setUserInfo(dto *app.ModelsDTO) (modelsInfo, erro
 // @Summary  GetSpacesByModelId
 // @Description  get spaces related to a model
 // @Tags     ModelWeb
-// @Param    id    path  string   true  "id of model"
+// @Param    id    path  string   true  "id of model" MaxLength(20)
 // @Accept   json
-// @Success  200  {object}  []spaceapp.SpaceModelDTO
+// @Success  200  {object}  commonctl.ResponseData{data=[]spaceapp.SpaceModelDTO,msg=string,code=string}
 // @Router   /v1/model/relation/{id}/space [get]
 func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -288,11 +288,11 @@ func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
 // @Summary  disable model
 // @Description  disable the model
 // @Tags     ModelWeb
-// @Param    id      path  string  true  "id of model"
+// @Param    id      path  string  true  "id of model" MaxLength(20)
 // @Param    body  body      reqToDisableModel  true  "body of disable model"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/model/{id}/disable [put]
 func (ctl *ModelWebController) disable(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("disable model of %s", ctx.Param("id")))

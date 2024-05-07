@@ -4,6 +4,61 @@ definitions:
       branch_name:
         type: string
     type: object
+  app.ModelDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.ModelLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      use_in_openmind:
+        type: string
+      visibility:
+        type: string
+    type: object
+  app.ModelLabelsDTO:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      others:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
+  app.ModelsDTO:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/repository.ModelSummary'
+        type: array
+      total:
+        type: integer
+    type: object
   app.OrgCertificateDTO:
     properties:
       certificate_org_name:
@@ -18,6 +73,17 @@ definitions:
         type: string
       unified_social_credit_code:
         type: string
+    type: object
+  app.ResourceDTO:
+    properties:
+      Index:
+        type: integer
+      Owner:
+        type: string
+      Type:
+        type: string
+      disable:
+        type: boolean
     type: object
   app.TokenDTO:
     properties:
@@ -39,43 +105,6 @@ definitions:
         type: string
       updated_at:
         type: integer
-    type: object
-  app.UserInfoDTO:
-    properties:
-      account:
-        type: string
-      allow_request:
-        type: boolean
-      avatar_id:
-        type: string
-      created_at:
-        type: integer
-      default_role:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      fullname:
-        type: string
-      id:
-        type: string
-      owner:
-        type: string
-      owner_id:
-        type: string
-      phone:
-        type: string
-      request_delete:
-        type: boolean
-      request_delete_at:
-        type: integer
-      type:
-        type: integer
-      updated_at:
-        type: integer
-      website:
-        type: string
     type: object
   controller.OrgAcceptMemberRequest:
     properties:
@@ -172,16 +201,22 @@ definitions:
     type: object
   controller.activityInfo:
     properties:
+      Name:
+        type: string
+      Owner:
+        type: string
+      Resource:
+        $ref: '#/definitions/app.ResourceDTO'
+      Time:
+        type: integer
+      Type:
+        type: string
       avatar_id:
         type: string
-      name: {}
-      owner: {}
-      resource:
-        $ref: '#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource'
-      time:
+      download_count:
         type: integer
-      type:
-        $ref: '#/definitions/domain.ActivityType'
+      like_count:
+        type: integer
     type: object
   controller.bindEmailRequest:
     properties:
@@ -392,28 +427,6 @@ definitions:
       revoke_delete:
         type: boolean
     type: object
-  domain.ActivityType:
-    enum:
-    - create
-    - update
-    - like
-    type: string
-    x-enum-varnames:
-    - Create
-    - Update
-    - Like
-  github_com_openmerlin_merlin-server_activity_domain.Resource:
-    properties:
-      disable:
-        type: boolean
-      index:
-        description: Resource index
-      owner: {}
-      type:
-        allOf:
-        - $ref: '#/definitions/primitive.ObjType'
-        description: Resource type
-    type: object
   github_com_openmerlin_merlin-server_user_app.UserDTO:
     properties:
       account:
@@ -451,26 +464,76 @@ definitions:
       website:
         type: string
     type: object
-  primitive.ObjType:
-    enum:
-    - user
-    - organization
-    - model
-    - dataset
-    - space
-    - member
-    - invite
-    - codeRepo
-    type: string
-    x-enum-varnames:
-    - ObjTypeUser
-    - ObjTypeOrg
-    - ObjTypeModel
-    - ObjTypeDataset
-    - ObjTypeSpace
-    - ObjTypeMember
-    - ObjTypeInvite
-    - ObjTypeCodeRepo
+  github_com_openmerlin_merlin-server_user_app.UserInfoDTO:
+    properties:
+      account:
+        type: string
+      allow_request:
+        type: boolean
+      avatar_id:
+        type: string
+      created_at:
+        type: integer
+      default_role:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      is_disable_admin:
+        type: boolean
+      owner:
+        type: string
+      owner_id:
+        type: string
+      phone:
+        type: string
+      request_delete:
+        type: boolean
+      request_delete_at:
+        type: integer
+      type:
+        type: integer
+      updated_at:
+        type: integer
+      website:
+        type: string
+    type: object
+  repository.ModelSummary:
+    properties:
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      frameworks:
+        items:
+          type: string
+        type: array
+      fullname:
+        type: string
+      id:
+        type: string
+      license:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      task:
+        type: string
+      updated_at:
+        type: integer
+    type: object
 info:
   contact: {}
 paths:
@@ -679,35 +742,50 @@ paths:
       parameters:
       - description: name of model
         in: query
+        maxLength: 100
         name: name
         type: string
       - description: task label
         in: query
+        maxLength: 100
         name: task
         type: string
       - description: owner of model
         in: query
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: other labels, separate multiple each ones with commas
         in: query
+        maxLength: 100
         name: others
         type: string
       - description: license label
         in: query
+        maxLength: 40
         name: license
         type: string
       - description: framework labels, separate multiple each ones with commas
         in: query
+        maxLength: 100
         name: frameworks
         type: string
       - description: whether to calculate the total
+        enum:
+        - true
+        - false
         in: query
         name: count
         type: boolean
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'
+        enum:
+        - most_likes
+        - alphabetical
+        - most_downloads
+        - recently_updated
+        - recently_created
         in: query
         name: sort_by
         type: string
@@ -723,7 +801,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.ModelsDTO'
+                msg:
+                  type: string
+              type: object
       summary: List
       tags:
       - ModelRestful
@@ -742,7 +829,16 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: Create
@@ -756,6 +852,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -774,6 +871,7 @@ paths:
       parameters:
       - description: id of model
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -787,7 +885,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: Update
@@ -801,11 +908,13 @@ paths:
       parameters:
       - description: owner of model
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of model
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -813,7 +922,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.ModelDTO'
+                msg:
+                  type: string
+              type: object
       security:
       - Bearer: []
       summary: Get
@@ -1681,7 +1799,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/app.UserInfoDTO'
+                  $ref: '#/definitions/github_com_openmerlin_merlin-server_user_app.UserInfoDTO'
                 msg:
                   type: string
               type: object

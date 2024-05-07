@@ -367,42 +367,58 @@ const docTemplateweb = `{
                 "summary": "ListGlobal",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of model",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "task label",
                         "name": "task",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "other labels, separate multiple each ones with commas",
                         "name": "others",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "license label",
                         "name": "license",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "framework labels, separate multiple each ones with commas",
                         "name": "frameworks",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -425,7 +441,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.modelsInfo"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.modelsInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -459,7 +493,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -477,6 +529,7 @@ const docTemplateweb = `{
                 "summary": "GetSpacesByModelId",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -488,10 +541,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.SpaceModelDTO"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.SpaceModelDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -514,6 +585,7 @@ const docTemplateweb = `{
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -534,7 +606,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -555,6 +645,7 @@ const docTemplateweb = `{
                 "summary": "Delete",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -586,6 +677,7 @@ const docTemplateweb = `{
                 "summary": "disable model",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -606,7 +698,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -624,6 +734,7 @@ const docTemplateweb = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of model",
                         "name": "owner",
@@ -631,18 +742,30 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of model",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -683,6 +806,7 @@ const docTemplateweb = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of model",
                         "name": "owner",
@@ -690,6 +814,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of model",
                         "name": "name",
@@ -701,7 +826,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.modelDetail"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.modelDetail"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2526,7 +2669,7 @@ const docTemplateweb = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/app.UserInfoDTO"
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserInfoDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -2659,7 +2802,7 @@ const docTemplateweb = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/app.ActivityDTO"
+                                            "$ref": "#/definitions/app.ActivitysDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -3133,13 +3276,39 @@ const docTemplateweb = `{
                 }
             }
         },
-        "app.ActivityDTO": {
+        "app.ActivitySummaryDTO": {
+            "type": "object",
+            "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "Owner": {
+                    "type": "string"
+                },
+                "Resource": {
+                    "$ref": "#/definitions/app.ResourceDTO"
+                },
+                "Time": {
+                    "type": "integer"
+                },
+                "Type": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "like_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "app.ActivitysDTO": {
             "type": "object",
             "properties": {
                 "activity": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.Activity"
+                        "$ref": "#/definitions/app.ActivitySummaryDTO"
                     }
                 },
                 "avatar_id": {
@@ -3193,6 +3362,23 @@ const docTemplateweb = `{
                 },
                 "unified_social_credit_code": {
                     "type": "string"
+                }
+            }
+        },
+        "app.ResourceDTO": {
+            "type": "object",
+            "properties": {
+                "Index": {
+                    "type": "integer"
+                },
+                "Owner": {
+                    "type": "string"
+                },
+                "Type": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
                 }
             }
         },
@@ -3296,62 +3482,6 @@ const docTemplateweb = `{
                 },
                 "updated_at": {
                     "type": "integer"
-                }
-            }
-        },
-        "app.UserInfoDTO": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "allow_request": {
-                    "type": "boolean"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "owner_id": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "request_delete": {
-                    "type": "boolean"
-                },
-                "request_delete_at": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "website": {
-                    "type": "string"
                 }
             }
         },
@@ -3521,6 +3651,9 @@ const docTemplateweb = `{
                 "disable": {
                     "type": "boolean"
                 },
+                "disable_reason": {
+                    "type": "string"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -3545,11 +3678,11 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
-                "reason": {
-                    "type": "string"
-                },
                 "updated_at": {
                     "type": "integer"
+                },
+                "use_in_openmind": {
+                    "type": "string"
                 },
                 "visibility": {
                     "type": "string"
@@ -3567,6 +3700,9 @@ const docTemplateweb = `{
                 },
                 "disable": {
                     "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
                 },
                 "download_count": {
                     "type": "integer"
@@ -3593,9 +3729,6 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
-                    "type": "string"
-                },
-                "reason": {
                     "type": "string"
                 },
                 "task": {
@@ -3918,6 +4051,9 @@ const docTemplateweb = `{
                 "disable": {
                     "type": "boolean"
                 },
+                "disable_reason": {
+                    "type": "string"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -3957,9 +4093,6 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
-                "reason": {
-                    "type": "string"
-                },
                 "sdk": {
                     "type": "string"
                 },
@@ -3986,6 +4119,9 @@ const docTemplateweb = `{
                 "disable": {
                     "type": "boolean"
                 },
+                "disable_reason": {
+                    "type": "string"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -4002,9 +4138,6 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
-                    "type": "string"
-                },
-                "reason": {
                     "type": "string"
                 },
                 "space_avatar_id": {
@@ -4117,35 +4250,6 @@ const docTemplateweb = `{
                     "type": "integer"
                 }
             }
-        },
-        "domain.Activity": {
-            "type": "object",
-            "properties": {
-                "name": {},
-                "owner": {},
-                "resource": {
-                    "$ref": "#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource"
-                },
-                "time": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/domain.ActivityType"
-                }
-            }
-        },
-        "domain.ActivityType": {
-            "type": "string",
-            "enum": [
-                "create",
-                "update",
-                "like"
-            ],
-            "x-enum-varnames": [
-                "Create",
-                "Update",
-                "Like"
-            ]
         },
         "domain.ModelResult": {
             "type": "object",
@@ -4276,26 +4380,6 @@ const docTemplateweb = `{
                 }
             }
         },
-        "github_com_openmerlin_merlin-server_activity_domain.Resource": {
-            "type": "object",
-            "properties": {
-                "disable": {
-                    "type": "boolean"
-                },
-                "index": {
-                    "description": "Resource index"
-                },
-                "owner": {},
-                "type": {
-                    "description": "Resource type",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/primitive.ObjType"
-                        }
-                    ]
-                }
-            }
-        },
         "github_com_openmerlin_merlin-server_session_app.UserDTO": {
             "type": "object",
             "properties": {
@@ -4408,28 +4492,64 @@ const docTemplateweb = `{
                 }
             }
         },
-        "primitive.ObjType": {
-            "type": "string",
-            "enum": [
-                "user",
-                "organization",
-                "model",
-                "dataset",
-                "space",
-                "member",
-                "invite",
-                "codeRepo"
-            ],
-            "x-enum-varnames": [
-                "ObjTypeUser",
-                "ObjTypeOrg",
-                "ObjTypeModel",
-                "ObjTypeDataset",
-                "ObjTypeSpace",
-                "ObjTypeMember",
-                "ObjTypeInvite",
-                "ObjTypeCodeRepo"
-            ]
+        "github_com_openmerlin_merlin-server_user_app.UserInfoDTO": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "allow_request": {
+                    "type": "boolean"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_disable_admin": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "request_delete": {
+                    "type": "boolean"
+                },
+                "request_delete_at": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
         },
         "repository.ModelSummary": {
             "type": "object",
@@ -4439,6 +4559,9 @@ const docTemplateweb = `{
                 },
                 "disable": {
                     "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
                 },
                 "download_count": {
                     "type": "integer"
@@ -4467,9 +4590,6 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
-                "reason": {
-                    "type": "string"
-                },
                 "task": {
                     "type": "string"
                 },
@@ -4487,6 +4607,9 @@ const docTemplateweb = `{
                 "disable": {
                     "type": "boolean"
                 },
+                "disable_reason": {
+                    "type": "string"
+                },
                 "download_count": {
                     "type": "integer"
                 },
@@ -4503,9 +4626,6 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "owner": {
-                    "type": "string"
-                },
-                "reason": {
                     "type": "string"
                 },
                 "space_avatar_id": {

@@ -336,18 +336,21 @@ const docTemplaterest = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of model",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "task label",
                         "name": "task",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of model",
                         "name": "owner",
@@ -355,30 +358,44 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "other labels, separate multiple each ones with commas",
                         "name": "others",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "license label",
                         "name": "license",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "framework labels, separate multiple each ones with commas",
                         "name": "frameworks",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -401,7 +418,25 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ModelsDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -435,7 +470,25 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -458,6 +511,7 @@ const docTemplaterest = `{
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -478,7 +532,25 @@ const docTemplaterest = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -499,6 +571,7 @@ const docTemplaterest = `{
                 "summary": "Delete",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model",
                         "name": "id",
@@ -530,6 +603,7 @@ const docTemplaterest = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of model",
                         "name": "owner",
@@ -537,6 +611,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of model",
                         "name": "name",
@@ -548,7 +623,25 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ModelDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1908,7 +2001,7 @@ const docTemplaterest = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/app.UserInfoDTO"
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserInfoDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -2408,6 +2501,90 @@ const docTemplaterest = `{
                 }
             }
         },
+        "app.ModelDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "use_in_openmind": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.ModelLabelsDTO": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "others": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.ModelsDTO": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.ModelSummary"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "app.OrgCertificateDTO": {
             "type": "object",
             "properties": {
@@ -2428,6 +2605,23 @@ const docTemplaterest = `{
                 },
                 "unified_social_credit_code": {
                     "type": "string"
+                }
+            }
+        },
+        "app.ResourceDTO": {
+            "type": "object",
+            "properties": {
+                "Index": {
+                    "type": "integer"
+                },
+                "Owner": {
+                    "type": "string"
+                },
+                "Type": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
                 }
             }
         },
@@ -2460,62 +2654,6 @@ const docTemplaterest = `{
                 },
                 "updated_at": {
                     "type": "integer"
-                }
-            }
-        },
-        "app.UserInfoDTO": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "type": "string"
-                },
-                "allow_request": {
-                    "type": "boolean"
-                },
-                "avatar_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "fullname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "owner_id": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "request_delete": {
-                    "type": "boolean"
-                },
-                "request_delete_at": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "website": {
-                    "type": "string"
                 }
             }
         },
@@ -2664,19 +2802,29 @@ const docTemplaterest = `{
         "controller.activityInfo": {
             "type": "object",
             "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "Owner": {
+                    "type": "string"
+                },
+                "Resource": {
+                    "$ref": "#/definitions/app.ResourceDTO"
+                },
+                "Time": {
+                    "type": "integer"
+                },
+                "Type": {
+                    "type": "string"
+                },
                 "avatar_id": {
                     "type": "string"
                 },
-                "name": {},
-                "owner": {},
-                "resource": {
-                    "$ref": "#/definitions/github_com_openmerlin_merlin-server_activity_domain.Resource"
-                },
-                "time": {
+                "download_count": {
                     "type": "integer"
                 },
-                "type": {
-                    "$ref": "#/definitions/domain.ActivityType"
+                "like_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -2999,39 +3147,6 @@ const docTemplaterest = `{
                 }
             }
         },
-        "domain.ActivityType": {
-            "type": "string",
-            "enum": [
-                "create",
-                "update",
-                "like"
-            ],
-            "x-enum-varnames": [
-                "Create",
-                "Update",
-                "Like"
-            ]
-        },
-        "github_com_openmerlin_merlin-server_activity_domain.Resource": {
-            "type": "object",
-            "properties": {
-                "disable": {
-                    "type": "boolean"
-                },
-                "index": {
-                    "description": "Resource index"
-                },
-                "owner": {},
-                "type": {
-                    "description": "Resource type",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/primitive.ObjType"
-                        }
-                    ]
-                }
-            }
-        },
         "github_com_openmerlin_merlin-server_user_app.UserDTO": {
             "type": "object",
             "properties": {
@@ -3088,28 +3203,111 @@ const docTemplaterest = `{
                 }
             }
         },
-        "primitive.ObjType": {
-            "type": "string",
-            "enum": [
-                "user",
-                "organization",
-                "model",
-                "dataset",
-                "space",
-                "member",
-                "invite",
-                "codeRepo"
-            ],
-            "x-enum-varnames": [
-                "ObjTypeUser",
-                "ObjTypeOrg",
-                "ObjTypeModel",
-                "ObjTypeDataset",
-                "ObjTypeSpace",
-                "ObjTypeMember",
-                "ObjTypeInvite",
-                "ObjTypeCodeRepo"
-            ]
+        "github_com_openmerlin_merlin-server_user_app.UserInfoDTO": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "allow_request": {
+                    "type": "boolean"
+                },
+                "avatar_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_disable_admin": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "request_delete": {
+                    "type": "boolean"
+                },
+                "request_delete_at": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.ModelSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
         }
     },
     "securityDefinitions": {

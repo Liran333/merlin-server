@@ -47,7 +47,7 @@ type ModelController struct {
 // @Param    body  body      reqToCreateModel  true  "body of creating model"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/model [post]
 func (ctl *ModelController) Create(ctx *gin.Context) {
 	middleware.SetAction(ctx, "create model")
@@ -80,7 +80,7 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 // @Summary  Delete
 // @Description  delete model
 // @Tags     Model
-// @Param    id    path  string        true  "id of model"
+// @Param    id    path  string        true  "id of model" MaxLength(20)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -111,11 +111,11 @@ func (ctl *ModelController) Delete(ctx *gin.Context) {
 // @Summary  Update
 // @Description  update model
 // @Tags     Model
-// @Param    id    path  string            true  "id of model"
+// @Param    id    path  string            true  "id of model" MaxLength(20)
 // @Param    body  body  reqToUpdateModel  true  "body of updating model"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/model/{id} [put]
 func (ctl *ModelController) Update(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("update model of %s", ctx.Param("id")))

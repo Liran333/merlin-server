@@ -32,7 +32,8 @@ func AddRouterForModelInternalController(
 	r.PUT("/v1/model/:id", m.Write, ctl.Update)
 
 	r.PUT("/v1/model/:id/use_in_openmind", m.Write, ctl.UpdateUseInOpenmind)
-	r.GET("/v1/model/relation/:id/space", m.Read, ctl.GetSpacesByModelId)}
+	r.GET("/v1/model/relation/:id/space", m.Read, ctl.GetSpacesByModelId)
+}
 
 // ModelInternalController is a struct that holds the app service for model internal operations.
 type ModelInternalController struct {
@@ -43,11 +44,11 @@ type ModelInternalController struct {
 // @Summary  ResetLabel
 // @Description  reset label of model
 // @Tags     ModelInternal
-// @Param    id    path  string            true  "id of model"
+// @Param    id    path  string            true  "id of model" MaxLength(20)
 // @Param    body  body  reqToResetLabel  true  "body"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/model/{id}/label [put]
 func (ctl *ModelInternalController) ResetLabel(ctx *gin.Context) {
 	req := reqToResetLabel{}
@@ -77,10 +78,10 @@ func (ctl *ModelInternalController) ResetLabel(ctx *gin.Context) {
 // @Summary  GetById
 // @Description  get model info by id
 // @Tags     ModelInternal
-// @Param    id    path  string   true  "id of model"
+// @Param    id    path  string   true  "id of model" MaxLength(20)
 // @Accept   json
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=app.ModelDTO,msg=string,code=string}
 // @Router   /v1/model/{id} [get]
 func (ctl *ModelInternalController) GetById(ctx *gin.Context) {
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -101,11 +102,11 @@ func (ctl *ModelInternalController) GetById(ctx *gin.Context) {
 // @Summary  Update model info
 // @Description  update model info by id
 // @Tags     ModelInternal
-// @Param    id    path  string   true  "id of model"
+// @Param    id    path  string   true  "id of model" MaxLength(20)
 // @Param    body  body  modelStatistics  true  "body of updating model info"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/model/{id} [put]
 func (ctl *ModelInternalController) Update(ctx *gin.Context) {
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -135,11 +136,11 @@ func (ctl *ModelInternalController) Update(ctx *gin.Context) {
 // @Summary  UpdateUseInOpenmind
 // @Description  update space use in openmind info
 // @Tags     ModelInternal
-// @Param    id    path  string   true  "id of model"
+// @Param    id    path  string   true  "id of model" MaxLength(20)
 // @Param    body  body  string   true  "use in openmind info"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/model/{id}/use_in_openmind [put]
 func (ctl *ModelInternalController) UpdateUseInOpenmind(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -169,10 +170,10 @@ func (ctl *ModelInternalController) UpdateUseInOpenmind(ctx *gin.Context) {
 // @Summary  GetSpacesByModelId
 // @Description  get all spaces related to a model, including those that have been disabled.
 // @Tags     ModelInternal
-// @Param    id    path  string   true  "id of model"
+// @Param    id    path  string   true  "id of model" MaxLength(20)
 // @Accept   json
 // @Security Internal
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpaceIdModelDTO,msg=string,code=string}
 // @Router   /v1/model/relation/{id}/space [get]
 func (ctl *ModelInternalController) GetSpacesByModelId(ctx *gin.Context) {
 	modelId, err := primitive.NewIdentity(ctx.Param("id"))

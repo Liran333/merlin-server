@@ -72,11 +72,11 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 		Sdk:        "gradio",
 		Visibility: "public",
 	}
-	data, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest2, spaceParam)
+	spaData, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest2, spaceParam)
 
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
-	s.spaceIdTest2Public = getString(s.T(), data.Data)
+	s.spaceIdTest2Public = getString(s.T(), spaData.Data)
 
 	s.notExistId = "-1"
 }

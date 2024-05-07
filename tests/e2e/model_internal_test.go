@@ -109,9 +109,10 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	assert.Nil(s.T(), err)
 
 	modelData := getData(s.T(), modelRes.Data)
+	labels := getData(s.T(), modelData["labels"])
 	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{"PyTorch"}, "license": "apache-2.0", "others": []interface{}{}, "task": "document-question-answering"}),
-		modelData["labels"])
+		map[string]interface{}(map[string]interface{}{"frameworks": []string{"PyTorch"}, "license": "apache-2.0", "others": []string{}, "task": "document-question-answering"}),
+		labels)
 
 	// 修改模型label，其中frameworks有多个
 	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
@@ -129,21 +130,22 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	assert.Nil(s.T(), err)
 
 	modelData = getData(s.T(), modelRes.Data)
+	labels = getData(s.T(), modelData["labels"])
 	expectedValue1 := map[string]interface{}{
-		"frameworks": []interface{}{"PyTorch", "MindSpore"},
+		"frameworks": []string{"PyTorch", "MindSpore"},
 		"license":    "apache-2.0",
-		"others":     []interface{}{},
+		"others":     []string{},
 		"task":       "copa",
 	}
 	expectedValue2 := map[string]interface{}{
-		"frameworks": []interface{}{"MindSpore", "PyTorch"},
+		"frameworks": []string{"MindSpore", "PyTorch"},
 		"license":    "apache-2.0",
-		"others":     []interface{}{},
+		"others":     []string{},
 		"task":       "copa",
 	}
 	assert.Contains(s.T(),
 		[]map[string]interface{}{expectedValue1, expectedValue2},
-		modelData["labels"])
+		labels)
 
 	// 删除模型
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
@@ -183,10 +185,11 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	assert.Nil(s.T(), err)
 
 	modelData := getData(s.T(), modelRes.Data)
+	labels := getData(s.T(), modelData["labels"])
 	// 非法的Frameworks与Task不会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []interface{}{}, "license": "apache-2.0", "others": []interface{}{}, "task": ""},
-		modelData["labels"])
+		map[string]interface{}{"frameworks": []string{}, "license": "apache-2.0", "others": []string{}, "task": ""},
+		labels)
 
 	// 使用部分合法的字段修改模型label
 	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
@@ -204,10 +207,11 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	assert.Nil(s.T(), err)
 
 	modelData = getData(s.T(), modelRes.Data)
+	labels = getData(s.T(), modelData["labels"])
 	// 只有合法的Frameworks会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []interface{}{"MindSpore"}, "license": "apache-2.0", "others": []interface{}{}, "task": ""},
-		modelData["labels"])
+		map[string]interface{}{"frameworks": []string{"MindSpore"}, "license": "apache-2.0", "others": []string{}, "task": ""},
+		labels)
 
 	// 删除模型
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
