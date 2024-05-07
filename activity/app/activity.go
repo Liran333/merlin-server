@@ -6,9 +6,6 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
-	"github.com/openmerlin/merlin-server/common/domain/allerror"
-
-	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
@@ -16,6 +13,7 @@ import (
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	modelApp "github.com/openmerlin/merlin-server/models/app"
 	spaceApp "github.com/openmerlin/merlin-server/space/app"
@@ -65,9 +63,8 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 
 	var filteredActivities []ActivitySummaryDTO
 	for _, activity := range activities {
-		activitySummary, err := s.getActivity(user, activity)
-		if err != nil {
-			logrus.Infof("User %v %v repo id:%v", user, err, activity.Resource.Index)
+		activitySummary, errProcess := s.processActivity(user, activity)
+		if errProcess != nil {
 			continue
 		}
 		filteredActivities = append(filteredActivities, activitySummary)
@@ -79,45 +76,51 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 	}, nil
 }
 
-// getActivity retrieves statistics based on the activity type.
-func (s *activityAppService) getActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
+func (s *activityAppService) processActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
 		return ActivitySummaryDTO{}, xerrors.Errorf("failed to get code repository by ID: %w", err)
 	}
+
 	activity.Name = codeRepo.Name
 	activity.Resource.Owner = codeRepo.Owner
 
-	stat := domain.Stat{}
-	err = s.getActivityInfo(user, codeRepo, &activity, &stat)
-	if err != nil {
-		return ActivitySummaryDTO{}, xerrors.Errorf("failed to get activity info by ID: %w", err)
+	switch activity.Resource.Type {
+	case primitive.ObjTypeModel:
+		return s.processModelActivity(user, codeRepo, activity)
+	case primitive.ObjTypeSpace:
+		return s.processSpaceActivity(user, codeRepo, activity)
+	default:
+		return ActivitySummaryDTO{}, xerrors.Errorf("unknown resource type")
 	}
-
-	return toActivitySummaryDTO(&activity, &stat), nil
 }
 
-func (s *activityAppService) getActivityInfo(user primitive.Account, codeRepo coderepo.CodeRepo, activity *domain.Activity, statsMap *domain.Stat) error {
-	if activity.Resource.Type == primitive.ObjTypeModel {
-		model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
-		if err != nil {
-			return xerrors.Errorf("failed to get model, id:%v, err: %w", activity.Resource.Index, err)
-		}
-		activity.Resource.Disable = model.Disable
-		statsMap.LikeCount = model.LikeCount
-		statsMap.DownloadCount = model.DownloadCount
-
-	} else {
-		space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
-		if err != nil {
-			logrus.Errorf("failed to get space, id:%v, err: %v", activity.Resource.Index, err)
-			return err
-		}
-		activity.Resource.Disable = space.Disable
-		statsMap.LikeCount = space.LikeCount
-		statsMap.DownloadCount = space.DownloadCount
+func (s *activityAppService) processModelActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	if err != nil {
+		return ActivitySummaryDTO{}, err
 	}
-	return nil
+	activity.Resource.Disable = model.Disable
+	stat := domain.Stat{
+		LikeCount:     model.LikeCount,
+		DownloadCount: model.DownloadCount,
+	}
+	additionInfo := fromModelDTO(model, &activity, &stat)
+	return additionInfo, nil
+}
+
+func (s *activityAppService) processSpaceActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	if err != nil {
+		return ActivitySummaryDTO{}, err
+	}
+	activity.Resource.Disable = space.Disable
+	stat := domain.Stat{
+		LikeCount:     space.LikeCount,
+		DownloadCount: space.DownloadCount,
+	}
+	additionInfo := fromSpaceDTO(space, &activity, &stat)
+	return additionInfo, nil
 }
 
 // Create function to check if a "like" already exists before saving.
