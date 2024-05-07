@@ -1336,18 +1336,21 @@ const docTemplaterest = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "task label",
                         "name": "task",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1355,30 +1358,44 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "other labels, separate multiple each ones with commas",
                         "name": "others",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "license label",
                         "name": "license",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "framework labels, separate multiple each ones with commas",
                         "name": "frameworks",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -1401,7 +1418,25 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpacesDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1435,7 +1470,25 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1586,6 +1639,7 @@ const docTemplaterest = `{
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1606,7 +1660,25 @@ const docTemplaterest = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1627,6 +1699,7 @@ const docTemplaterest = `{
                 "summary": "Delete",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1658,6 +1731,7 @@ const docTemplaterest = `{
                 "summary": "Disable space",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1678,7 +1752,25 @@ const docTemplaterest = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1701,6 +1793,7 @@ const docTemplaterest = `{
                 "summary": "DeleteSecret",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1708,6 +1801,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of secret",
                         "name": "sid",
@@ -1739,6 +1833,7 @@ const docTemplaterest = `{
                 "summary": "UpdateSecret",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1746,6 +1841,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of secret",
                         "name": "sid",
@@ -1766,7 +1862,25 @@ const docTemplaterest = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1802,7 +1916,25 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1825,6 +1957,7 @@ const docTemplaterest = `{
                 "summary": "UpdateVariable",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1832,6 +1965,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of variable",
                         "name": "vid",
@@ -1852,7 +1986,25 @@ const docTemplaterest = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1873,6 +2025,7 @@ const docTemplaterest = `{
                 "summary": "DeleteVariable",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1880,6 +2033,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of variable",
                         "name": "vid",
@@ -1911,6 +2065,7 @@ const docTemplaterest = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -1918,6 +2073,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -1929,7 +2085,25 @@ const docTemplaterest = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.spaceDetail"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1965,7 +2139,25 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2611,17 +2803,54 @@ const docTemplaterest = `{
         "app.ResourceDTO": {
             "type": "object",
             "properties": {
-                "Index": {
-                    "type": "integer"
-                },
-                "Owner": {
-                    "type": "string"
-                },
-                "Type": {
-                    "type": "string"
-                },
                 "disable": {
                     "type": "boolean"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.SpaceLabelsDTO": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "others": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.SpacesDTO": {
+            "type": "object",
+            "properties": {
+                "spaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.SpaceSummary"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -2802,29 +3031,38 @@ const docTemplaterest = `{
         "controller.activityInfo": {
             "type": "object",
             "properties": {
-                "Name": {
-                    "type": "string"
-                },
-                "Owner": {
-                    "type": "string"
-                },
-                "Resource": {
-                    "$ref": "#/definitions/app.ResourceDTO"
-                },
-                "Time": {
-                    "type": "integer"
-                },
-                "Type": {
-                    "type": "string"
-                },
                 "avatar_id": {
                     "type": "string"
                 },
                 "download_count": {
                     "type": "integer"
                 },
+                "fullname": {
+                    "type": "string"
+                },
                 "like_count": {
                     "type": "integer"
+                },
+                "model_labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "resource": {
+                    "$ref": "#/definitions/app.ResourceDTO"
+                },
+                "space_avatar_id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -3115,6 +3353,80 @@ const docTemplaterest = `{
                 }
             }
         },
+        "controller.spaceDetail": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
+                "comp_power_allocated": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "exception": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "hardware": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_npu": {
+                    "type": "boolean"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.SpaceLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "liked": {
+                    "type": "boolean"
+                },
+                "local_cmd": {
+                    "type": "string"
+                },
+                "local_env_info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "sdk": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.tokenCreateRequest": {
             "type": "object",
             "required": [
@@ -3299,6 +3611,47 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "owner": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "repository.SpaceSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
                     "type": "string"
                 },
                 "task": {

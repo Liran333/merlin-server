@@ -53,7 +53,7 @@ type SpaceController struct {
 // @Param    body  body      reqToCreateSpace  true  "body of creating space"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/space [post]
 func (ctl *SpaceController) Create(ctx *gin.Context) {
 	middleware.SetAction(ctx, "create space")
@@ -86,7 +86,7 @@ func (ctl *SpaceController) Create(ctx *gin.Context) {
 // @Summary  Delete
 // @Description  delete space
 // @Tags     Space
-// @Param    id    path  string        true  "id of space"
+// @Param    id    path  string        true  "id of space" MaxLength(20)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -117,11 +117,11 @@ func (ctl *SpaceController) Delete(ctx *gin.Context) {
 // @Summary  Update
 // @Description  update space
 // @Tags     Space
-// @Param    id    path  string            true  "id of space"
+// @Param    id    path  string            true  "id of space" MaxLength(20)
 // @Param    body  body  reqToUpdateSpace  true  "body of updating space"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id} [put]
 func (ctl *SpaceController) Update(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("update space of %s", ctx.Param("id")))
@@ -180,11 +180,11 @@ func (ctl *SpaceController) parseIndex(ctx *gin.Context) (index domain.SpaceInde
 // @Summary  Disable space
 // @Description  disable space
 // @Tags     Space
-// @Param    id    path  string            true  "id of space"
+// @Param    id    path  string            true  "id of space" MaxLength(20)
 // @Param    body  body  reqToDisableSpace  true  "body of disable space"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/disable [put]
 func (ctl *SpaceController) Disable(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("disable space of %s", ctx.Param("id")))

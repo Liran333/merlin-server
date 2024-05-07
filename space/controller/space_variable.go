@@ -40,7 +40,7 @@ func addRouteForSpaceVariableController(
 // @Param    body  body      reqToCreateSpaceVariable  true  "body of creating space variable"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/space/{id}/variable [post]
 func (ctl *SpaceController) CreateVariable(ctx *gin.Context) {
 	req := reqToCreateSpaceVariable{}
@@ -76,8 +76,8 @@ func (ctl *SpaceController) CreateVariable(ctx *gin.Context) {
 // @Summary  DeleteVariable
 // @Description  delete space variable
 // @Tags     Space
-// @Param    id    path  string        true  "id of space"
-// @Param    vid    path  string        true  "id of variable"
+// @Param    id    path  string        true  "id of space" MaxLength(20)
+// @Param    vid    path  string        true  "id of variable" MaxLength(20)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -110,12 +110,12 @@ func (ctl *SpaceController) DeleteVariable(ctx *gin.Context) {
 // @Summary  UpdateVariable
 // @Description  update space variable
 // @Tags     Space
-// @Param    id     path  string            true  "id of space"
-// @Param    vid    path  string            true  "id of variable"
+// @Param    id     path  string            true  "id of space" MaxLength(20)
+// @Param    vid    path  string            true  "id of variable" MaxLength(20)
 // @Param    body   body  reqToUpdateSpaceVariable  true  "body of updating space variable"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/variable/{vid} [put]
 func (ctl *SpaceController) UpdateVariable(ctx *gin.Context) {
 	req := reqToUpdateSpaceVariable{}
@@ -160,7 +160,7 @@ func (ctl *SpaceController) UpdateVariable(ctx *gin.Context) {
 // @Description  list space variable secret
 // @Tags     SpaceWeb
 // @Accept   json
-// @Success  200  {object}  userSpacesInfo
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpaceVariableSecretDTO,msg=string,code=string}
 // @Router   /v1/space/:owner/:name/variable-secret [get]
 func (ctl *SpaceController) GetVariableSecret(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)

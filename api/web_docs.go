@@ -1696,42 +1696,58 @@ const docTemplateweb = `{
                 "summary": "ListGlobal",
                 "parameters": [
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "task label",
                         "name": "task",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "other labels, separate multiple each ones with commas",
                         "name": "others",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "license label",
                         "name": "license",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "framework labels, separate multiple each ones with commas",
                         "name": "frameworks",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -1788,7 +1804,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2145,7 +2179,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.userSpacesInfo"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceVariableSecretDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2163,6 +2215,7 @@ const docTemplateweb = `{
                 "summary": "GetModelsBySpaceId",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2174,10 +2227,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/app.SpaceModelDTO"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.SpaceModelDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2200,6 +2271,7 @@ const docTemplateweb = `{
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2220,7 +2292,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2241,6 +2331,7 @@ const docTemplateweb = `{
                 "summary": "Delete",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2272,6 +2363,7 @@ const docTemplateweb = `{
                 "summary": "Disable space",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2292,7 +2384,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2315,6 +2425,7 @@ const docTemplateweb = `{
                 "summary": "DeleteSecret",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2322,6 +2433,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of secret",
                         "name": "sid",
@@ -2353,6 +2465,7 @@ const docTemplateweb = `{
                 "summary": "UpdateSecret",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2360,6 +2473,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of secret",
                         "name": "sid",
@@ -2380,7 +2494,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2416,7 +2548,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2439,6 +2589,7 @@ const docTemplateweb = `{
                 "summary": "UpdateVariable",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2446,6 +2597,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of variable",
                         "name": "vid",
@@ -2466,7 +2618,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2487,6 +2657,7 @@ const docTemplateweb = `{
                 "summary": "DeleteVariable",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -2494,6 +2665,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of variable",
                         "name": "vid",
@@ -2520,6 +2692,7 @@ const docTemplateweb = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -2527,18 +2700,30 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            true,
+                            false
+                        ],
                         "type": "boolean",
                         "description": "whether to calculate the total",
                         "name": "count",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
                         "type": "string",
                         "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
                         "name": "sort_by",
@@ -2561,7 +2746,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.userSpacesInfo"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.userSpacesInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2579,6 +2782,7 @@ const docTemplateweb = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space",
                         "name": "owner",
@@ -2586,6 +2790,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space",
                         "name": "name",
@@ -2597,7 +2802,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.spaceDetail"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.spaceDetail"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -2633,7 +2856,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -3279,26 +3520,35 @@ const docTemplateweb = `{
         "app.ActivitySummaryDTO": {
             "type": "object",
             "properties": {
-                "Name": {
-                    "type": "string"
-                },
-                "Owner": {
-                    "type": "string"
-                },
-                "Resource": {
-                    "$ref": "#/definitions/app.ResourceDTO"
-                },
-                "Time": {
-                    "type": "integer"
-                },
-                "Type": {
-                    "type": "string"
-                },
                 "download_count": {
                     "type": "integer"
                 },
+                "fullname": {
+                    "type": "string"
+                },
                 "like_count": {
                     "type": "integer"
+                },
+                "model_labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "resource": {
+                    "$ref": "#/definitions/app.ResourceDTO"
+                },
+                "space_avatar_id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -3368,17 +3618,17 @@ const docTemplateweb = `{
         "app.ResourceDTO": {
             "type": "object",
             "properties": {
-                "Index": {
-                    "type": "integer"
-                },
-                "Owner": {
-                    "type": "string"
-                },
-                "Type": {
-                    "type": "string"
-                },
                 "disable": {
                     "type": "boolean"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -3450,6 +3700,17 @@ const docTemplateweb = `{
                 },
                 "updated_at": {
                     "type": "integer"
+                }
+            }
+        },
+        "app.SpaceVariableSecretDTO": {
+            "type": "object",
+            "properties": {
+                "space_variable_secret": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.SpaceVariableSecretSummary"
+                    }
                 }
             }
         },
@@ -3730,6 +3991,9 @@ const docTemplateweb = `{
                 },
                 "owner": {
                     "type": "string"
+                },
+                "owner_type": {
+                    "type": "integer"
                 },
                 "task": {
                     "type": "string"
@@ -4140,6 +4404,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "space_avatar_id": {
                     "type": "string"
                 },
@@ -4226,6 +4493,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "total": {
                     "type": "integer"
                 }
@@ -4239,6 +4509,9 @@ const docTemplateweb = `{
                 },
                 "owner": {
                     "type": "string"
+                },
+                "owner_type": {
+                    "type": "integer"
                 },
                 "spaces": {
                     "type": "array",
@@ -4636,6 +4909,29 @@ const docTemplateweb = `{
                 },
                 "updated_at": {
                     "type": "integer"
+                }
+            }
+        },
+        "repository.SpaceVariableSecretSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         }

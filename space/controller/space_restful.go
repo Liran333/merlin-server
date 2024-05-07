@@ -51,11 +51,11 @@ type SpaceRestfulController struct {
 // @Summary  Get
 // @Description  get space
 // @Tags     SpaceRestful
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=spaceDetail,msg=string,code=string}
 // @Router   /v1/space/{owner}/{name} [get]
 func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -99,18 +99,18 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Summary  List
 // @Description  list global public space
 // @Tags     SpaceRestful
-// @Param    name            query  string  false  "name of space"
-// @Param    task            query  string  false  "task label"
-// @Param    owner           query  string  true   "owner of space"
-// @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
-// @Param    license         query  string  false  "license label"
-// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
+// @Param    name            query  string  false  "name of space" MaxLength(100)
+// @Param    task            query  string  false  "task label" MaxLength(100)
+// @Param    owner           query  string  true   "owner of space" MaxLength(40)
+// @Param    others          query  string  false  "other labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    license         query  string  false  "license label" MaxLength(40)
+// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
+// @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=app.SpacesDTO,msg=string,code=string}
 // @Router   /v1/space [get]
 func (ctl *SpaceRestfulController) List(ctx *gin.Context) {
 	var req restfulReqToListSpaces

@@ -156,15 +156,12 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 	assert.Nil(s.T(), err)
 
 	count := 0
-	spaceLists := getData(s.T(), list.Data)
+	spaceLists := list.Data
 
-	for i := 0; i < len(spaceLists["spaces"].([]interface{})); i++ {
-		model, ok := spaceLists["spaces"].([]interface{})[i].(map[string]interface{})
-		if !ok {
-			continue
-		}
+	for i := 0; i < len(spaceLists.Spaces); i++ {
+		model := spaceLists.Spaces[i]
 
-		if _, ok := model["name"]; ok {
+		if model.Name != "" {
 			count++
 		}
 	}
@@ -194,18 +191,19 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
+	data1, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	space := getData(s.T(), data.Data)
+	space := getData(s.T(), data1.Data)
+	labels := getData(s.T(), space["labels"])
 
 	assert.Equal(s.T(), "space desc", space["desc"])
 	assert.Equal(s.T(), "spacefullname", space["fullname"])
 	assert.Equal(s.T(), strings.ToLower("CPU basic 2 vCPU · 16GB · FREE"), space["hardware"])
 	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []interface{}{}, "license": "mit", "others": []interface{}{}, "task": ""}),
-		space["labels"])
+		map[string]interface{}(map[string]interface{}{"frameworks": []string{}, "license": "mit", "others": []string{}, "task": ""}),
+		labels)
 	assert.Equal(s.T(), "testspace", space["name"])
 	assert.Equal(s.T(), "test1", space["owner"])
 	assert.Equal(s.T(), "gradio", space["sdk"])
@@ -245,12 +243,12 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
+	data1, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	model := getData(s.T(), data.Data)
-	assert.Equal(s.T(), float64(15), model["download_count"])
+	model := getData(s.T(), data1.Data)
+	assert.Equal(s.T(), int32(15), model["download_count"])
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 

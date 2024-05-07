@@ -37,7 +37,7 @@ func addRouteForSpaceSecretController(
 // @Param    body  body      reqToCreateSpaceSecret  true  "body of creating space secret"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  commonctl.ResponseData
+// @Success  201   {object}  commonctl.ResponseData{data=string,msg=string,code=string}
 // @Router   /v1/space{id}/secret  [post]
 func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 	req := reqToCreateSpaceSecret{}
@@ -76,8 +76,8 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 // @Summary  DeleteSecret
 // @Description  delete space secret
 // @Tags     Space
-// @Param    id    path  string        true  "id of space"
-// @Param    sid    path  string        true  "id of secret"
+// @Param    id    path  string        true  "id of space" MaxLength(20)
+// @Param    sid    path  string        true  "id of secret" MaxLength(20)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -110,12 +110,12 @@ func (ctl *SpaceController) DeleteSecret(ctx *gin.Context) {
 // @Summary  UpdateSecret
 // @Description  update space secret
 // @Tags     Space
-// @Param    id    path  string            true  "id of space"
-// @Param    sid   path  string            true  "id of secret"
+// @Param    id    path  string            true  "id of space" MaxLength(20)
+// @Param    sid   path  string            true  "id of secret" MaxLength(20)
 // @Param    body  body  reqToUpdateSpaceSecret  true  "body of updating space secret"
 // @Accept   json
 // @Security Bearer
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/secret/{vid} [put]
 func (ctl *SpaceController) UpdateSecret(ctx *gin.Context) {
 	req := reqToUpdateSpaceSecret{}

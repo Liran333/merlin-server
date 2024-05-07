@@ -1204,6 +1204,7 @@ const docTemplateinternal = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1215,7 +1216,25 @@ const docTemplateinternal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.SpaceMetaDTO1"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1238,6 +1257,7 @@ const docTemplateinternal = `{
                 "summary": "Disable space",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1249,7 +1269,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1272,6 +1310,7 @@ const docTemplateinternal = `{
                 "summary": "UpdateSpaceLocalCmd",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1292,7 +1331,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1315,6 +1372,7 @@ const docTemplateinternal = `{
                 "summary": "UpdateSpaceLocalEnvInfo",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1335,7 +1393,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1358,6 +1434,7 @@ const docTemplateinternal = `{
                 "summary": "UpdateSpaceModels",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of space",
                         "name": "id",
@@ -1378,7 +1455,25 @@ const docTemplateinternal = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1706,6 +1801,32 @@ const docTemplateinternal = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "app.SpaceMetaDTO1": {
+            "type": "object",
+            "properties": {
+                "disable": {
+                    "type": "boolean"
+                },
+                "hardware": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "sdk": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
                 }
             }
         },

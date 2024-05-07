@@ -41,10 +41,10 @@ type SpaceInternalController struct {
 // @Summary  Get
 // @Description  get space
 // @Tags     SpaceInternal
-// @Param    id  path  string  true  "id of space"
+// @Param    id  path  string  true  "id of space" MaxLength(20)
 // @Accept   json
 // @Security Internal
-// @Success  200  {object} commonctl.ResponseData
+// @Success  200  {object} commonctl.ResponseData{data=app.SpaceMetaDTO1,msg=string,code=string}
 // @Router   /v1/space/{id} [get]
 func (ctl *SpaceInternalController) Get(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -64,11 +64,11 @@ func (ctl *SpaceInternalController) Get(ctx *gin.Context) {
 // @Summary  UpdateSpaceModels
 // @Description  update space models relations
 // @Tags     SpaceInternal
-// @Param    id    path  string   true  "id of space"
+// @Param    id    path  string   true  "id of space" MaxLength(20)
 // @Param    body  body  ModeIds  true  "body"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/model [put]
 func (ctl *SpaceInternalController) UpdateSpaceModels(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -103,11 +103,11 @@ func (ctl *SpaceInternalController) UpdateSpaceModels(ctx *gin.Context) {
 // @Summary  UpdateSpaceLocalCmd
 // @Description  update space local cmd
 // @Tags     SpaceInternal
-// @Param    id    path  string   true  "id of space"
+// @Param    id    path  string   true  "id of space" MaxLength(20)
 // @Param    body  body  string  true  "local cmd to reproduce the space"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/local_cmd [put]
 func (ctl *SpaceInternalController) UpdateSpaceLocalCMD(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -137,11 +137,11 @@ func (ctl *SpaceInternalController) UpdateSpaceLocalCMD(ctx *gin.Context) {
 // @Summary  UpdateSpaceLocalEnvInfo
 // @Description  update space local env info
 // @Tags     SpaceInternal
-// @Param    id    path  string   true  "id of space"
+// @Param    id    path  string   true  "id of space" MaxLength(20)
 // @Param    body  body  string   true  "local env info to update local space env info"
 // @Accept   json
 // @Security Internal
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/local_env_info [put]
 func (ctl *SpaceInternalController) UpdateSpaceLocalEnvInfo(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
@@ -171,10 +171,10 @@ func (ctl *SpaceInternalController) UpdateSpaceLocalEnvInfo(ctx *gin.Context) {
 // @Summary  Disable space
 // @Description  disable space
 // @Tags     SpaceInternal
-// @Param    id    path  string            true  "id of space"
+// @Param    id    path  string            true  "id of space" MaxLength(20)
 // @Accept   json
 // @Security Internal
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/space/{id}/disable [put]
 func (ctl *SpaceInternalController) Disable(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))

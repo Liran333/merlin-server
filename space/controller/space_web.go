@@ -66,10 +66,10 @@ type SpaceWebController struct {
 // @Summary  Get
 // @Description  get space
 // @Tags     SpaceWeb
-// @Param    owner  path  string  true  "owner of space"
-// @Param    name   path  string  true  "name of space"
+// @Param    owner  path  string  true  "owner of space" MaxLength(40)
+// @Param    name   path  string  true  "name of space" MaxLength(100)
 // @Accept   json
-// @Success  200  {object}  spaceDetail
+// @Success  200  {object}  commonctl.ResponseData{data=spaceDetail,msg=string,code=string}
 // @Router   /v1/space/{owner}/{name} [get]
 func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 	index, err := ctl.parseIndex(ctx)
@@ -114,14 +114,14 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 // @Summary  List
 // @Description  list space
 // @Tags     SpaceWeb
-// @Param    owner           path   string  true   "owner of space"
-// @Param    name            query  string  false  "name of space"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
+// @Param    owner           path   string  true   "owner of space" MaxLength(40)
+// @Param    name            query  string  false  "name of space" MaxLength(100)
+// @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
+// @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
-// @Success  200  {object}  userSpacesInfo
+// @Success  200  {object}  commonctl.ResponseData{data=userSpacesInfo,msg=string,code=string}
 // @Router   /v1/space/{owner} [get]
 func (ctl *SpaceWebController) List(ctx *gin.Context) {
 	var req reqToListUserSpaces
@@ -172,15 +172,15 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 // @Summary  ListGlobal
 // @Description  list global public space
 // @Tags     SpaceWeb
-// @Param    name            query  string  false  "name of space"
-// @Param    task            query  string  false  "task label"
-// @Param    others          query  string  false  "other labels, separate multiple each ones with commas"
-// @Param    license         query  string  false  "license label"
-// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas"
-// @Param    count           query  bool    false  "whether to calculate the total"
-// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created"
-// @Param    page_num        query  int     false  "page num which starts from 1"
-// @Param    count_per_page  query  int     false  "count per page"
+// @Param    name            query  string  false  "name of space" MaxLength(100)
+// @Param    task            query  string  false  "task label"  MaxLength(100)
+// @Param    others          query  string  false  "other labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    license         query  string  false  "license label" MaxLength(40)
+// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
+// @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
 // @Success  200  {object}  spacesInfo
 // @Router   /v1/space [get]
@@ -260,9 +260,9 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 // @Summary  GetModelsBySpaceId
 // @Description  get models related to a space
 // @Tags     SpaceWeb
-// @Param    id    path  string   true  "id of space"
+// @Param    id    path  string   true  "id of space" MaxLength(20)
 // @Accept   json
-// @Success  200  {object}  []app.SpaceModelDTO
+// @Success  200  {object}  commonctl.ResponseData{data=[]app.SpaceModelDTO,msg=string,code=string}
 // @Router   /v1/space/relation/{id}/model [get]
 func (ctl *SpaceWebController) GetModelsBySpaceId(ctx *gin.Context) {
 	spaceId, err := primitive.NewIdentity(ctx.Param("id"))

@@ -205,3 +205,5 @@ func (s *spaceInternalAppService) RemoveException(spaceId primitive.Identity) er
 	space.Exception = primitive.CreateException("")
 	return s.repoAdapter.Save(&space)
 }
+
+type SpaceMetaDTO1 = sdk.SpaceMetaDTO

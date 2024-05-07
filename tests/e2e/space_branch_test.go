@@ -74,7 +74,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+	spaData, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       "space desc",
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
@@ -88,7 +88,7 @@ func (s *SuiteSpaceBranch) SetupSuite() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	s.spaceId = getString(s.T(), data.Data)
+	s.spaceId = getString(s.T(), spaData.Data)
 }
 
 func (s *SuiteSpaceBranch) TearDownSuite() {

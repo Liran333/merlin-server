@@ -90,6 +90,23 @@ definitions:
           type: string
         type: array
     type: object
+  app.SpaceMetaDTO1:
+    properties:
+      disable:
+        type: boolean
+      hardware:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      sdk:
+        type: string
+      visibility:
+        type: string
+    type: object
   controller.ModeIds:
     properties:
       ids:
@@ -926,6 +943,7 @@ paths:
       parameters:
       - description: id of space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -933,7 +951,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.SpaceMetaDTO1'
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: Get
@@ -947,6 +974,7 @@ paths:
       parameters:
       - description: id of space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -954,7 +982,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: Disable space
@@ -968,6 +1005,7 @@ paths:
       parameters:
       - description: id of space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -981,7 +1019,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: UpdateSpaceLocalCmd
@@ -995,6 +1042,7 @@ paths:
       parameters:
       - description: id of space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1008,7 +1056,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: UpdateSpaceLocalEnvInfo
@@ -1022,6 +1079,7 @@ paths:
       parameters:
       - description: id of space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -1035,7 +1093,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: UpdateSpaceModels
