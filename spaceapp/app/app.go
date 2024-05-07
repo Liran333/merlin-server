@@ -137,7 +137,7 @@ func (s *spaceappAppService) GetByName(
 		return dto, err
 	}
 
-	if err = s.permission.CanReadPrivate(user, &space); err != nil {
+	if err = s.permission.CanRead(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceAppNotFound(err)
 		}
