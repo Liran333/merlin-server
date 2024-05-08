@@ -99,11 +99,11 @@ type OrgController struct {
 // @Summary  Update
 // @Description  update org basic info
 // @Tags     Organization
-// @Param    name  path  string                     true  "name"
+// @Param    name  path  string                     true  "name" MaxLength(40)
 // @Param    body  body  orgBasicInfoUpdateRequest  true  "body of new organization"
 // @Accept   json
 // @Security Bearer
-// @Success  202  {object}  commonctl.ResponseData
+// @Success  202  {object}  commonctl.ResponseData{data=userapp.UserDTO,msg=string,code=string}
 // @Router   /v1/organization/{name} [put]
 func (ctl *OrgController) Update(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("update basic info of %s", ctx.Param("name")))
@@ -138,9 +138,9 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 // @Summary  Get
 // @Description  get organization info
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=userapp.UserDTO,msg=string,code=string}
 // @Router   /v1/organization/{name} [get]
 func (ctl *OrgController) Get(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
@@ -160,11 +160,11 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 // @Summary   User or organization info
 // @Description  get organization or user info
 // @Tags     Organization
-// @Param    name  path  string  true  "name of the user of organization"
+// @Param    name  path  string  true  "name of the user of organization" MaxLength(40)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=userapp.UserDTO,msg=string,code=string}
 // @Failure  404  "user not found"
-// @Failure  400  {object}  commonctl.ResponseData
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router   /v1/account/{name} [get]
 func (ctl *OrgController) GetUser(ctx *gin.Context) {
 	name, err := primitive.NewAccount(ctx.Param("name"))
@@ -186,7 +186,7 @@ func (ctl *OrgController) GetUser(ctx *gin.Context) {
 // @Summary  Check
 // @Description  Check the name is available
 // @Tags     Organization
-// @Param    name  query  string  true  "the name to be check whether it's usable"
+// @Param    name  query  string  true  "the name to be check whether it's usable" MaxLength(40)
 // @Accept   json
 // @Security Bearer
 // @Success  200  "name is valid"
@@ -219,13 +219,13 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Summary  List
 // @Description  get organization info
 // @Tags     Organization
-// @Param    owner     query  string  false  "filter by owner"
-// @Param    username  query  string  false  "filter by username"
-// @Param    roles     query  []string  false  "filter by roles"
+// @Param    owner     query  string  false  "filter by owner" MaxLength(40)
+// @Param    username  query  string  false  "filter by username" MaxLength(40)
+// @Param    roles     query  []string  false  "filter by roles" Enums(read, write,admin)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
-// @Failure  400  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=[]userapp.UserDTO,msg=string,code=string}
+// @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router   /v1/organization [get]
 func (ctl *OrgController) List(ctx *gin.Context) {
 	var req orgListRequest
@@ -267,7 +267,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 // @Param    body  body  orgCreateRequest  true  "body of new organization"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData
+// @Success  201 {object}  commonctl.ResponseData{data=userapp.UserDTO,msg=string,code=string}
 // @Router   /v1/organization [post]
 func (ctl *OrgController) Create(ctx *gin.Context) {
 	middleware.SetAction(ctx, "create organization")
@@ -307,7 +307,7 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 // @Summary  Delete
 // @Description  delete a organization
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -341,12 +341,12 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 // @Summary  ListMember
 // @Description  list organization members
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
-// @Param    username  query  string  false  "filter by username"
-// @Param    role  query  string  false  "filter by role"
+// @Param    name  path  string  true  "name" MaxLength(40)
+// @Param    username  query  string  false  "filter by username" MaxLength(40)
+// @Param    role  query  string  false  "filter by role" Enums(read, write,admin)
 // @Accept   json
 // @Security Bearer
-// @Success  200 {object}  commonctl.ResponseData
+// @Success  200 {object}  commonctl.ResponseData{data=[]app.MemberDTO,msg=string,code=string}
 // @Router   /v1/organization/{name}/member [get]
 func (ctl *OrgController) ListMember(ctx *gin.Context) {
 	orgName, err := primitive.NewAccount(ctx.Param("name"))
@@ -380,10 +380,10 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 // @Description Edit a member to the organization's role
 // @Tags     Organization
 // @Param    body  body  OrgMemberEditRequest  true  "body of new member"
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
 // @Security Bearer
-// @Success  202 {object}  commonctl.ResponseData
+// @Success  202 {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/organization/{name}/member [put]
 func (ctl *OrgController) EditMember(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("edit member of %s", ctx.Param("name")))
@@ -422,7 +422,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 // @Description Remove a member from a organization
 // @Tags     Organization
 // @Param    body  body  orgMemberRemoveRequest  true  "body of the removed member"
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -463,7 +463,7 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 // @Summary  Leave
 // @Description  leave the organization
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
 // @Security Bearer
 // @Success  204
@@ -503,7 +503,7 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 // @Param    body  body  OrgInviteMemberRequest  true  "body of the invitation"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData
+// @Success  201 {object}  commonctl.ResponseData{data=app.ApproveDTO,msg=string,code=string}
 // @Router   /v1/invite [post]
 func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 	middleware.SetAction(ctx, "invite member")
@@ -540,15 +540,15 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 // @Summary  ListInvitation
 // @Description List invitation of the organization
 // @Tags     Organization
-// @Param    org_name   query  string  false  "organization name"
-// @Param    invitee    query  string  false  "invitee name"
-// @Param    inviter    query  string  false  "inviter name"
-// @Param    status     query  string  false  "invitation status, can be: pending/approved/rejected"
-// @Param    page_size  query  int     false  "page size"
-// @Param    page       query  int     false  "page index"
+// @Param    org_name   query  string  false  "organization name" MaxLength(40)
+// @Param    invitee    query  string  false  "invitee name" MaxLength(40)
+// @Param    inviter    query  string  false  "inviter name" MaxLength(40)
+// @Param    status     query  string  false  "invitation status, can be: pending/approved/rejected" Enums(pending, approved,rejected)
+// @Param    page_size  query  int     false  "page size" Mininum(1)
+// @Param    page       query  int     false  "page index" Mininum(1)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=[]app.ApproveDTO,msg=string,code=string}
 // @Router   /v1/invite [get]
 func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -633,7 +633,7 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 // @Param    body  body  OrgReqMemberRequest  true  "body of the member request"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData
+// @Success  201 {object}  commonctl.ResponseData{data=app.MemberRequestDTO,msg=string,code=string}
 // @Router   /v1/request [post]
 func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 	middleware.SetAction(ctx, "request to be a member")
@@ -673,7 +673,7 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 // @Param    body  body  OrgApproveMemberRequest  true  "body of the accept"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData
+// @Success  201 {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/request [put]
 func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 	middleware.SetAction(ctx, "approve request to be a member")
@@ -710,14 +710,14 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 // @Summary  ListRequests
 // @Description  List requests of the organization
 // @Tags     Organization
-// @Param    org_name   query  string  false  "organization name"
-// @Param    requester  query  string  false  "invitee name"
-// @Param    status     query  string  false  "invitation status, can be: pending/approved/rejected"
-// @Param    page_size  query  int     false  "page size"
-// @Param    page       query  int     false  "page index"
+// @Param    org_name   query  string  false  "organization name" MaxLength(40)
+// @Param    requester  query  string  false  "invitee name" MaxLength(40)
+// @Param    status     query  string  false  "invitation status, can be: pending/approved/rejected" Enums(pending, approved,rejected)
+// @Param    page_size  query  int     false  "page size" Mininum(1)
+// @Param    page       query  int     false  "page index" Mininum(1)
 // @Accept   json
 // @Security Bearer
-// @Success  200 {object}  commonctl.ResponseData
+// @Success  200 {object}  commonctl.ResponseData{data=[]app.MemberRequestDTO,msg=string,code=string}
 // @Router   /v1/request [get]
 func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -793,7 +793,7 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 // @Param    body  body  OrgAcceptMemberRequest  true  "body of the invitation"
 // @Accept   json
 // @Security Bearer
-// @Success  202 {object}  commonctl.ResponseData
+// @Success  202 {object}  commonctl.ResponseData{data=app.ApproveDTO,msg=string,code=string}
 // @Router   /v1/invite [put]
 func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 	middleware.SetAction(ctx, "accept invite")
@@ -830,10 +830,10 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 // @Summary  List User's privilege organization info
 // @Description List User's privilege organization info
 // @Tags     Organization
-// @Param    type   query  string  true  "privilege type, can be: npu/disable"
+// @Param    type   query  string  true  "privilege type, can be: npu/disable" Enums(npu, disable)
 // @Param    user   query  string  false  "user name to filter the organizations which contain the user"
 // @Security Bearer
-// @Success  200 {object}  commonctl.ResponseData
+// @Success  200 {object}  commonctl.ResponseData{data=[]userapp.UserDTO,msg=string,code=string}
 // @Router   /v1/user/privilege [get]
 func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -887,11 +887,11 @@ func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
 // @Summary  Certification
 // @Description organization certification
 // @Tags     Organization
-// @Param    name  path  string  true  "organization name"
+// @Param    name  path  string  true  "organization name" MaxLength(40)
 // @Param    body  body orgCertificateRequest  true  "body of certificate"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData
+// @Success  201 {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Router   /v1/organization/{name}/certificate [post]
 func (ctl *OrgController) Certificate(ctx *gin.Context) {
 	middleware.SetAction(ctx, "organization certification")
@@ -925,7 +925,7 @@ func (ctl *OrgController) Certificate(ctx *gin.Context) {
 // @Summary  Certification
 // @Description get organization certification
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
+// @Param    name  path  string  true  "name" MaxLength(40)
 // @Accept   json
 // @Security Bearer
 // @Success  200  {object}  commonctl.ResponseData{data=app.OrgCertificateDTO,msg=string,code=string}
@@ -951,13 +951,13 @@ func (ctl *OrgController) GetCertification(ctx *gin.Context) {
 // @Summary  Certification
 // @Description check organization certification
 // @Tags     Organization
-// @Param    name  path  string  true  "name"
-// @Param    certificate_org_name   query  string  false  "certificate organization name"
-// @Param    unified_social_credit_code   query  string  false  "the unified social credit code"
-// @Param    phone   query  string  false  "phone number"
+// @Param    name  path  string  true  "name" MaxLength(40)
+// @Param    certificate_org_name   query  string  false  "certificate organization name" MaxLength(100)
+// @Param    unified_social_credit_code   query  string  false  "the unified social credit code" MaxLength(100)
+// @Param    phone   query  string  false  "phone number" MaxLength(16)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData
+// @Success  200  {object}  commonctl.ResponseData{data=bool,msg=string,code=string}
 // @Router   /v1/organization/{name}/certificate/check [get]
 func (ctl *OrgController) CertificateCheck(ctx *gin.Context) {
 	middleware.SetAction(ctx, "check certification")

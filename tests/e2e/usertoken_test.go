@@ -104,7 +104,7 @@ func (s *SuiteUserToken) TestGetUserToken() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	tokens := getArrarys(s.T(), data.Data)
+	tokens := getArrary(s.T(), data.Data)
 
 	readFound := false
 	writeFound := false

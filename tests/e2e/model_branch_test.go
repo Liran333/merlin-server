@@ -56,7 +56,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
 
-	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
@@ -67,7 +67,7 @@ func (s *SuiteModelBranch) SetupSuite() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})

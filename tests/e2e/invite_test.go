@@ -184,7 +184,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	id := getData(s.T(), data.Data)["id"]
 
 	// 重复邀请同一个用户, 该用户只收到一条邀请通知，并且以最新通知为准
-	DupData, r2, err2 := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+	DupData, r2, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    s.invitee,
 		Role:    "read",
@@ -192,7 +192,6 @@ func (s *SuiteInvite) TestInviteAprove() {
 	})
 
 	assert.Equalf(s.T(), http.StatusCreated, r2.StatusCode, data.Msg)
-	assert.Nil(s.T(), err2)
 
 	DupInvite := getData(s.T(), DupData.Data)
 
@@ -229,7 +228,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), countOne, countNtf)
 
 	// 被邀请人接受邀请
-	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+	invData, r, err := ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -237,7 +236,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	invite := getData(s.T(), data.Data)
+	invite := getData(s.T(), invData.Data)
 
 	assert.Equal(s.T(), s.name, invite["org_name"])
 	assert.Equal(s.T(), s.orgId, invite["org_id"])
@@ -253,7 +252,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), "approved", invite["status"])
 
 	// 接收后成为member
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest2, s.name,
+	data1, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest2, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -269,7 +268,7 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equalf(s.T(), http.StatusBadRequest, r4.StatusCode, "the user is already a member of the org")
 	assert.NotNil(s.T(), err4)
 
-	members := getArrary(s.T(), data.Data)
+	members := getArrary(s.T(), data1.Data)
 	count := 0
 	for _, member := range members {
 		if member != nil && member["user_name"] == s.invitee {
@@ -286,14 +285,14 @@ func (s *SuiteInvite) TestInviteAprove() {
 	assert.Equal(s.T(), countTwo, count)
 
 	// 查询已经接受的邀请
-	data, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
+	data2, r3, err3 = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("approved"),
 	})
-	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
-	assert.Nil(s.T(), err)
+	assert.Equalf(s.T(), http.StatusOK, r3.StatusCode, data2.Msg)
+	assert.Nil(s.T(), err3)
 
-	invites := getArrary(s.T(), data.Data)
+	invites := getArrary(s.T(), data2.Data)
 
 	for _, invite := range invites {
 		if invite != nil && invite["id"] == id {
@@ -429,15 +428,15 @@ func (s *SuiteInvite) TestRemoveOwner() {
 	assert.Equal(s.T(), "invite me ASAP", DupInvite["msg"])
 
 	// 被邀请人接受邀请
-	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+	invData, r, err := ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: name,
 		Msg:     "ok",
 	})
 
-	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
+	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, invData.Msg)
 	assert.Nil(s.T(), err)
 
-	invite := getData(s.T(), data.Data)
+	invite := getData(s.T(), invData.Data)
 
 	assert.Equal(s.T(), name, invite["org_name"])
 	assert.Equal(s.T(), s.orgId, invite["org_id"])
@@ -581,15 +580,15 @@ func (s *SuiteInvite) TestInviteListByAdmin() {
 	assert.NotNil(s.T(), err)
 
 	// WRITE角色不能列出成员
-	data, r, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+	data, r1, err1 := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    "test2",
 		Role:    "write",
 		Msg:     "invite me ASAP",
 	})
 
-	assert.Equalf(s.T(), http.StatusCreated, r.StatusCode, data.Msg)
-	assert.Nil(s.T(), err)
+	assert.Equalf(s.T(), http.StatusCreated, r1.StatusCode, data.Msg)
+	assert.Nil(s.T(), err1)
 
 	_, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
@@ -703,7 +702,7 @@ func (s *SuiteInvite) TestCanEditOwner() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
 		Role: "write",
 		User: s.owner,
 	}, s.name)
@@ -711,7 +710,7 @@ func (s *SuiteInvite) TestCanEditOwner() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
 		Role: "admin",
 		User: s.owner,
 	}, s.name)

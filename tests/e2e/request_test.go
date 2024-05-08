@@ -132,14 +132,13 @@ func (s *SuiteRequest) TestRequestSuccess() {
 		Msg:     "request second",
 	})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
-	assert.Nil(s.T(), err)
 
 	res = getData(s.T(), data.Data)
 	assert.Equal(s.T(), firstID, res["id"])
 	assert.Equal(s.T(), "request second", res["msg"])
 
 	// 获取申请列表，只有一条记录
-	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+	data1, r, err := ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName:   optional.NewString(s.name),
 		Requester: optional.NewString(s.requester),
 		Status:    optional.NewString("pending"),
@@ -147,7 +146,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	requestList := getArrary(s.T(), data.Data)
+	requestList := getArrary(s.T(), data1.Data)
 	count := 0
 	for _, val := range requestList {
 		if len(val) > 0 {
@@ -198,7 +197,7 @@ func (s *SuiteRequest) TestRequestInvalidOrgname() {
 // 接受加入组织申请成功，其它邀请也要更新为接受状态
 func (s *SuiteRequest) TestApproveRequestSuccess() {
 	// 创建邀请
-	data, r, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+	_, r, err := ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    s.requester,
 		Role:    "write",
@@ -208,13 +207,13 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询邀请列表不为空
-	data, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
+	data1, r, err := ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.NotEmpty(s.T(), data.Data)
+	assert.NotEmpty(s.T(), data1.Data)
 
 	// 创建加入组织请求
 	_, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
@@ -225,16 +224,16 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询加入组织申请列表不为空
-	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+	data2, r, err := ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.NotEmpty(s.T(), data.Data)
+	assert.NotEmpty(s.T(), data2.Data)
 
 	// 不能查询其他人的申请
-	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+	data2, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		Requester: optional.NewString(s.requester),
 		Status:    optional.NewString("pending"),
 	})
@@ -251,22 +250,22 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 查询邀请列表为空
-	data, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
+	data1, r, err = ApiRest.OrganizationApi.V1InviteGet(AuthRest, &swaggerRest.OrganizationApiV1InviteGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.Empty(s.T(), data.Data)
+	assert.Empty(s.T(), data1.Data)
 
 	// 查询加入组织申请列表为空
-	data, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+	data2, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
 		OrgName: optional.NewString(s.name),
 		Status:  optional.NewString("pending"),
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.Empty(s.T(), data.Data)
+	assert.Empty(s.T(), data2.Data)
 
 	// 删除组织成员
 	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,

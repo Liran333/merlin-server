@@ -13,10 +13,6 @@ import (
 )
 
 func getInt64(t *testing.T, data interface{}) int64 {
-	if d, ok := data.(float64); ok {
-		assert.Truef(t, ok, "data can't convert to int64")
-		return int64(d)
-	}
 	d, ok := data.(int32)
 	assert.Truef(t, ok, "data can't convert to int32")
 	return int64(d)
@@ -67,25 +63,6 @@ func getData(t *testing.T, data interface{}) map[string]interface{} {
 }
 
 func getArrary(t *testing.T, data interface{}) []map[string]interface{} {
-	assert.NotNil(t, data)
-
-	datalist, ok := data.([]interface{})
-	assert.Truef(t, ok, "data is not a []interface{} actual: %T", data)
-
-	var out []map[string]interface{}
-	out = make([]map[string]interface{}, len(datalist))
-
-	for item := range datalist {
-		assert.NotNil(t, datalist[item])
-		d, ok := datalist[item].(map[string]interface{})
-		assert.Truef(t, ok, "data is not a map[string]interface{} actual: %T", datalist[item])
-		out = append(out, d)
-	}
-
-	return out
-}
-
-func getArrarys(t *testing.T, data interface{}) []map[string]interface{} {
 	assert.NotNil(t, data)
 
 	value := reflect.ValueOf(data)

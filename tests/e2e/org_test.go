@@ -93,15 +93,15 @@ func (s *SuiteOrg) TestOrgCreate() {
 	allow, ok := org["allow_request"].(bool)
 	assert.Equal(s.T(), true, ok)
 	assert.Equal(s.T(), false, allow)
-	assert.Nil(s.T(), org["email"])
+	assert.Equal(s.T(), "", org["email"])
 
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationGet(AuthRest,
+	orgData, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest,
 		&swaggerRest.OrganizationApiV1OrganizationGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	count := 0
-	orgs := getArrary(s.T(), data.Data)
+	orgs := getArrary(s.T(), orgData.Data)
 	for _, v := range orgs {
 		if v != nil {
 			count++
@@ -566,19 +566,19 @@ func (s *SuiteOrg) TestListMemberSucess() {
 		Fullname: s.fullname,
 	}
 
-	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	// 用户名搜索存在成员列表不为空
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+	orgData, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Username: optional.NewString(s.owner)},
 	)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	count := 0
-	orgs := getArrary(s.T(), data.Data)
+	orgs := getArrary(s.T(), orgData.Data)
 	for _, v := range orgs {
 		if v != nil {
 			assert.Equal(s.T(), s.owner, v["user_name"])
@@ -588,24 +588,24 @@ func (s *SuiteOrg) TestListMemberSucess() {
 	assert.Equal(s.T(), countOne, count)
 
 	// 用户名搜索不存在成员列表为空
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Username: optional.NewString("test2")},
 	)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	orgs = getArrary(s.T(), data.Data)
+	orgs = getArrary(s.T(), orgData.Data)
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 角色搜索存在成员列表不为空
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString(s.defaultRole)},
 	)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
 	count = 0
-	orgs = getArrary(s.T(), data.Data)
+	orgs = getArrary(s.T(), orgData.Data)
 	for _, v := range orgs {
 		if v != nil {
 			assert.Equal(s.T(), s.owner, v["user_name"])
@@ -615,17 +615,17 @@ func (s *SuiteOrg) TestListMemberSucess() {
 	assert.Equal(s.T(), countOne, count)
 
 	// 角色搜索不存在成员列表为空
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString("write")},
 	)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	orgs = getArrary(s.T(), data.Data)
+	orgs = getArrary(s.T(), orgData.Data)
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 角色搜索不合法角色，返回400
-	data, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
+	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name,
 		&swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{Role: optional.NewString("invalid")},
 	)
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
@@ -658,7 +658,7 @@ func (s *SuiteOrg) TestOrgLeaveSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 邀请进入组织
-	data, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
 		OrgName: s.name,
 		User:    s.invitee,
 		Role:    "write",
@@ -668,7 +668,7 @@ func (s *SuiteOrg) TestOrgLeaveSuccess() {
 	assert.Nil(s.T(), err)
 
 	// 被邀请人接受邀请
-	data, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
+	_, r, err = ApiRest.OrganizationApi.V1InvitePut(AuthRest2, swaggerRest.ControllerOrgAcceptMemberRequest{
 		OrgName: s.name,
 		Msg:     "ok",
 	})
@@ -699,21 +699,21 @@ func (s *SuiteOrg) TestPrivilegeOrg() {
 	assert.Nil(s.T(), err)
 
 	// 未配置特权组织，无法查询到用户属于某个特权组织
-	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "npu", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err := ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "npu", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
-	orgs := getArrary(s.T(), data.Data)
+	orgs := getArrary(s.T(), orgData.Data)
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 未配置特权组织，无法查询到用户属于某个特权组织
-	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "disable", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "disable", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
-	orgs = getArrary(s.T(), data.Data)
+	orgs = getArrary(s.T(), orgData.Data)
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 无效参数
-	data, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "test", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "test", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 

@@ -27,6 +27,7 @@ const docTemplateweb = `{
                 "summary": "User or organization info",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name of the user of organization",
                         "name": "name",
@@ -38,13 +39,47 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "404": {
@@ -210,24 +245,32 @@ const docTemplateweb = `{
                 "summary": "ListInvitation",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "organization name",
                         "name": "org_name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "invitee name",
                         "name": "invitee",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "inviter name",
                         "name": "inviter",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ],
                         "type": "string",
                         "description": "invitation status, can be: pending/approved/rejected",
                         "name": "status",
@@ -250,7 +293,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.ApproveDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -284,7 +348,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ApproveDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -318,7 +400,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.ApproveDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -867,6 +967,7 @@ const docTemplateweb = `{
                 "summary": "Check",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "the name to be check whether it's usable",
                         "name": "name",
@@ -901,12 +1002,14 @@ const docTemplateweb = `{
                 "summary": "List",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "filter by owner",
                         "name": "owner",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "filter by username",
                         "name": "username",
@@ -915,6 +1018,11 @@ const docTemplateweb = `{
                     {
                         "type": "array",
                         "items": {
+                            "enum": [
+                                "read",
+                                "write",
+                                "admin"
+                            ],
                             "type": "string"
                         },
                         "collectionFormat": "csv",
@@ -927,13 +1035,50 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {},
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -967,7 +1112,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -985,6 +1148,7 @@ const docTemplateweb = `{
                 "summary": "Get",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -996,7 +1160,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1017,6 +1199,7 @@ const docTemplateweb = `{
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1037,7 +1220,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1058,6 +1259,7 @@ const docTemplateweb = `{
                 "summary": "Leave",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1087,6 +1289,7 @@ const docTemplateweb = `{
                 "summary": "Delete",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1118,6 +1321,7 @@ const docTemplateweb = `{
                 "summary": "Certification",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1168,6 +1372,7 @@ const docTemplateweb = `{
                 "summary": "Certification",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "organization name",
                         "name": "name",
@@ -1188,7 +1393,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1211,6 +1434,7 @@ const docTemplateweb = `{
                 "summary": "Certification",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1218,18 +1442,21 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "certificate organization name",
                         "name": "certificate_org_name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "the unified social credit code",
                         "name": "unified_social_credit_code",
                         "in": "query"
                     },
                     {
+                        "maxLength": 16,
                         "type": "string",
                         "description": "phone number",
                         "name": "phone",
@@ -1240,7 +1467,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "boolean"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1263,6 +1508,7 @@ const docTemplateweb = `{
                 "summary": "ListMember",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1270,12 +1516,18 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "filter by username",
                         "name": "username",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "read",
+                            "write",
+                            "admin"
+                        ],
                         "type": "string",
                         "description": "filter by role",
                         "name": "role",
@@ -1286,7 +1538,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.MemberDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1316,6 +1589,7 @@ const docTemplateweb = `{
                         }
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1327,7 +1601,25 @@ const docTemplateweb = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1357,6 +1649,7 @@ const docTemplateweb = `{
                         }
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -1388,18 +1681,25 @@ const docTemplateweb = `{
                 "summary": "ListRequests",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "organization name",
                         "name": "org_name",
                         "in": "query"
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "invitee name",
                         "name": "requester",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ],
                         "type": "string",
                         "description": "invitation status, can be: pending/approved/rejected",
                         "name": "status",
@@ -1422,7 +1722,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/app.MemberRequestDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1456,7 +1777,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1490,7 +1829,25 @@ const docTemplateweb = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.MemberRequestDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -3243,6 +3600,10 @@ const docTemplateweb = `{
                 "summary": "List User's privilege organization info",
                 "parameters": [
                     {
+                        "enum": [
+                            "npu",
+                            "disable"
+                        ],
                         "type": "string",
                         "description": "privilege type, can be: npu/disable",
                         "name": "type",
@@ -3260,7 +3621,28 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -3566,6 +3948,132 @@ const docTemplateweb = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "app.ApproveDTO": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "expires_at": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inviter": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "org_full_name": {
+                    "type": "string"
+                },
+                "org_id": {
+                    "type": "string"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.MemberDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "org_fullname": {
+                    "type": "string"
+                },
+                "org_id": {
+                    "type": "string"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.MemberRequestDTO": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "org_id": {
+                    "type": "string"
+                },
+                "org_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
