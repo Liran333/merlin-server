@@ -67,7 +67,7 @@ func (impl *tokenRepoImpl) GetByAccount(account domain.Account) (r []domain.Plat
 
 	err = query.Find(&dos).Error
 	if err != nil || len(dos) == 0 {
-		return nil, xerrors.Errorf("failed to get token: %w", err)
+		return nil, err
 	}
 
 	r = make([]domain.PlatformToken, len(dos))
