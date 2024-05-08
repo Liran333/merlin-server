@@ -330,7 +330,7 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", account.Account(), err)
-			err = allerror.New(allerror.ErrorCodeUserNotFound, "", e)
+			err = allerror.NewNotFound(allerror.ErrorCodeUserNotFound, "", e)
 		} else {
 			err = xerrors.Errorf("failed to get user: %w", err)
 		}
