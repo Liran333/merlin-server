@@ -71,7 +71,7 @@ type ModelDTO struct {
 	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
 	Visibility    string         `json:"visibility"`
-	UseInOpenmind string         `json:"use_in_openmind"`
+	Usage         string         `json:"usage"`
 	DownloadCount int            `json:"download_count"`
 	Disable       bool           `json:"disable"`
 	DisableReason string         `json:"disable_reason"`
@@ -79,20 +79,22 @@ type ModelDTO struct {
 
 // ModelLabelsDTO is a struct that represents a data transfer object for model labels.
 type ModelLabelsDTO struct {
-	Task       string   `json:"task"`
-	Others     []string `json:"others"`
-	License    string   `json:"license"`
-	Frameworks []string `json:"frameworks"`
+	Task        string   `json:"task"`
+	Others      []string `json:"others"`
+	License     string   `json:"license"`
+	Frameworks  []string `json:"frameworks"`
+	LibraryName string   `json:"library_name"`
 }
 
 func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
 	labels := &model.Labels
 
 	return ModelLabelsDTO{
-		Task:       labels.Task,
-		Others:     labels.Others.UnsortedList(),
-		License:    model.License.License(),
-		Frameworks: labels.Frameworks.UnsortedList(),
+		Task:        labels.Task,
+		Others:      labels.Others.UnsortedList(),
+		License:     model.License.License(),
+		Frameworks:  labels.Frameworks.UnsortedList(),
+		LibraryName: labels.LibraryName,
 	}
 }
 
@@ -108,9 +110,9 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		Visibility:    model.Visibility.Visibility(),
 		DownloadCount: model.DownloadCount,
 
-		UseInOpenmind: model.UseInOpenmind,
+		Usage:         model.UseInOpenmind,
 		Disable:       model.Disable,
-		DisableReason: model.DisableReason.DisableReason(),	}
+		DisableReason: model.DisableReason.DisableReason()}
 
 	if model.Desc != nil {
 		dto.Desc = model.Desc.MSDDesc()

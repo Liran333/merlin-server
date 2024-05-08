@@ -29,6 +29,7 @@ const (
 	fieldVisibility    = "visibility"
 	fieldFrameworks    = "frameworks"
 	fieldLikeCount     = "like_count"
+	filedLibraryName   = "library_name"
 	fieldDownloadCount = "download_count"
 	fieldUseInOpenmind = "use_in_openmind"
 )
@@ -65,8 +66,9 @@ func toModelDO(m *domain.Model) modelDO {
 
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
 	do := modelDO{
-		Task:    labels.Task,
-		License: labels.License,
+		Task:        labels.Task,
+		License:     labels.License,
+		LibraryName: labels.LibraryName,
 	}
 
 	if labels.Others != nil {
@@ -98,9 +100,10 @@ type modelDO struct {
 	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
 
 	// labels
-	Task       string         `gorm:"column:task;index:task"`
-	Others     pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
-	Frameworks pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
+	Task        string         `gorm:"column:task;index:task"`
+	LibraryName string         `gorm:"column:library_name"`
+	Others      pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
+	Frameworks  pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
 
 	// for openmind
 	UseInOpenmind string `gorm:"column:use_in_openmind"`
@@ -133,9 +136,10 @@ func (do *modelDO) toModel() domain.Model {
 		UseInOpenmind: do.UseInOpenmind,
 
 		Labels: domain.ModelLabels{
-			Task:       do.Task,
-			Others:     sets.New[string](do.Others...),
-			Frameworks: sets.New[string](do.Frameworks...),
+			Task:        do.Task,
+			LibraryName: do.LibraryName,
+			Others:      sets.New[string](do.Others...),
+			Frameworks:  sets.New[string](do.Frameworks...),
 		},
 	}
 }

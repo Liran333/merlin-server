@@ -12,10 +12,11 @@ import (
 )
 
 type reqToResetLabel struct {
-	Task       string   `yaml:"pipeline_tag"`
-	Tags       []string `yaml:"tags"`
-	License    string   `yaml:"license"`
-	Frameworks []string `yaml:"frameworks"`
+	Task        string   `yaml:"pipeline_tag"`
+	Tags        []string `yaml:"tags"`
+	License     string   `yaml:"license"`
+	Frameworks  []string `yaml:"frameworks"`
+	LibraryName string   `yaml:"library_name"`
 }
 
 func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
@@ -23,6 +24,10 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 
 	if config.tasks.Has(req.Task) {
 		cmd.Task = req.Task
+	}
+
+	if config.libraryName.Has(req.LibraryName) {
+		cmd.LibraryName = req.LibraryName
 	}
 
 	if len(req.Tags) > 0 {

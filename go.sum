@@ -1145,6 +1145,10 @@ github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458 h1:r6zjQcs
 github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458/go.mod h1:N2bJRJk7R6JpPhximPutkVBxUBLVcDsSrRVoGm6dRFc=
 github.com/openmerlin/merlin-sdk v0.0.0-20240429041135-e41b15dac90b h1:qckGCyWtGiohH369aF0A4bDBT0w3X9csc52YLM8oeWQ=
 github.com/openmerlin/merlin-sdk v0.0.0-20240429041135-e41b15dac90b/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
+github.com/openmerlin/merlin-sdk v0.0.0-20240507111548-929b6c576bcd h1:luQS5sxq8rWTFyFCTvMNU96g5PTxOtBOhW7oCFrKLj8=
+github.com/openmerlin/merlin-sdk v0.0.0-20240507111548-929b6c576bcd/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
+github.com/openmerlin/merlin-sdk v0.0.0-20240508070309-7b1c297370a0 h1:wLEmRVmYCnU5XbFTAVsGPzAkY0idfTRaFPtFk7qgukw=
+github.com/openmerlin/merlin-sdk v0.0.0-20240508070309-7b1c297370a0/go.mod h1:EvByolTqLh7k0QUr72bLSh71QGRml1SpvIdsVFyZ4ZA=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771 h1:LefDtTbbfEIA8pV/q7w+m2lbau3SoxbzWoV664CiBkg=
 github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771/go.mod h1:/d3aSeUZkqMS/B+EWPShLWBiSDKrzaeQI23fsD+g29E=
 github.com/opensourceways/go-gitee v0.0.0-20231106021446-9fc2a41b1faa/go.mod h1:OExGhjyeAI6nM597rup/xn+x1YN+90AwEZBazHzGdSY=

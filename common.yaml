@@ -105,6 +105,8 @@ PIPELINE_TAGS:
 FRAMEWORKS:
   - 'MindSpore'
   - 'PyTorch'
+LIBRARY_NAME:
+  - 'openMind'
 
 ACCEPTABLE_AVATAR_DOMAINS: 
   - "https://gitee.com"

@@ -182,6 +182,10 @@ model:
   {{- range (ds "common").FRAMEWORKS}}
     - "{{ . }}"
   {{- end }}
+    library_name:
+  {{- range (ds "common").LIBRARY_NAME}}
+    - "{{ . }}"
+  {{- end }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}

@@ -20,10 +20,12 @@ func Init(cfg *Config) {
 type Config struct {
 	Tasks           []string `json:"tasks"               required:"true"`
 	Frameworks      []string `json:"frameworks"          required:"true"`
+	LibraryName     []string `json:"library_name"        required:"true"`
 	MaxCountPerPage int      `json:"max_count_per_page"`
 
-	tasks      sets.Set[string]
-	frameworks sets.Set[string]
+	tasks       sets.Set[string]
+	frameworks  sets.Set[string]
+	libraryName sets.Set[string]
 }
 
 // SetDefault sets the default values for the configuration.
@@ -41,6 +43,10 @@ func (cfg *Config) Validate() (err error) {
 
 	if len(cfg.Frameworks) > 0 {
 		cfg.frameworks = sets.New[string](cfg.Frameworks...)
+	}
+
+	if len(cfg.LibraryName) > 0 {
+		cfg.libraryName = sets.New[string](cfg.LibraryName...)
 	}
 
 	return

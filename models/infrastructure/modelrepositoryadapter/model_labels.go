@@ -24,7 +24,7 @@ func (adapter *modelLabelsAdapter) Save(modelId primitive.Identity, labels *doma
 	v := adapter.db().Model(
 		&modelDO{Id: modelId.Integer()},
 	).Select(
-		fieldTask, fieldOthers, fieldFrameworks, fieldLicense,
+		fieldTask, fieldOthers, fieldFrameworks, fieldLicense, filedLibraryName,
 	).Updates(&do)
 
 	if v.Error != nil {

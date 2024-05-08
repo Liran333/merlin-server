@@ -43,10 +43,11 @@ func (m *Model) IsDisable() bool {
 
 // ModelLabels represents the labels associated with a model, including task labels, other labels, and framework labels.
 type ModelLabels struct {
-	Task       string           // task label
-	License    string           // license label
-	Others     sets.Set[string] // other labels
-	Frameworks sets.Set[string] // framework labels
+	Task        string           // task label
+	License     string           // license label
+	LibraryName string           // library label
+	Others      sets.Set[string] // other labels
+	Frameworks  sets.Set[string] // framework labels
 }
 
 // ModelIndex represents the index for models in the code repository.
