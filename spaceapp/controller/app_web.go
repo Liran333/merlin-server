@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -103,13 +104,10 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spaceApp, err := ctl.appService.GetByName(user, &index)
+	buildLog, err := ctl.appService.GetBuildLog(user, &index)
 	if err != nil {
-		ctx.SSEvent("error", err.Error())
-		return
-	}
-	if spaceApp.BuildLogURL == "" {
-		ctx.SSEvent("error", "space app is not building")
+		logrus.Errorf("get build log err:%s", err)
+		ctx.SSEvent("error", "get build log failed")
 		return
 	}
 
@@ -128,7 +126,7 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 
 	params := domain.StreamParameter{
 		Token:     config.SSEToken,
-		StreamUrl: spaceApp.BuildLogURL,
+		StreamUrl: buildLog,
 	}
 	cmd := &domain.SeverSentStream{
 		Parameter:   params,
@@ -158,13 +156,10 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spaceApp, err := ctl.appService.GetByName(user, &index)
+	spaceLog, err := ctl.appService.GetSpaceLog(user, &index)
 	if err != nil {
-		ctx.SSEvent("error", err.Error())
-		return
-	}
-	if spaceApp.AppLogURL == "" {
-		ctx.SSEvent("error", "space app is not serving")
+		logrus.Errorf("get space log err:%s", err)
+		ctx.SSEvent("error", "get space log failed")
 		return
 	}
 
@@ -183,7 +178,7 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 
 	params := domain.StreamParameter{
 		Token:     config.SSEToken,
-		StreamUrl: spaceApp.AppLogURL,
+		StreamUrl: spaceLog,
 	}
 	cmd := &domain.SeverSentStream{
 		Parameter:   params,

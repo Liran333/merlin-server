@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
@@ -28,6 +29,8 @@ import (
 // SpaceappAppService is the interface for the space app service.
 type SpaceappAppService interface {
 	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
+	GetBuildLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
+	GetSpaceLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
 	GetRequestDataStream(*domain.SeverSentStream) error
 	RestartSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
 	PauseSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
@@ -155,6 +158,77 @@ func (s *spaceappAppService) GetByName(
 	}
 
 	return toSpaceAppDTO(&app), nil
+}
+
+func (s *spaceappAppService) getPrivateReadSpaceApp (
+	user primitive.Account, index *spacedomain.SpaceIndex,
+) (SpaceAppDTO, error) {
+	var dto SpaceAppDTO
+
+	space, err := s.spaceRepo.FindByName(index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("space not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space, err:%w", err)
+		}
+
+		return dto, err
+	}
+
+	if err = s.permission.CanReadPrivate(user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space no permission, err:%w", err))
+		} else {
+			err = xerrors.Errorf("no permission to get space, err:%w", err)
+		}
+
+		return dto, err
+	}
+
+	app, err := s.repo.FindBySpaceId(space.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space app, err:%w", err)
+		}
+
+		return dto, err
+	}
+	return toSpaceAppDTO(&app), nil
+}
+
+// GetBuildLog for get build log
+func (s *spaceappAppService) GetBuildLog(
+	user primitive.Account, index *spacedomain.SpaceIndex,
+) (string, error) {
+	app, err := s.getPrivateReadSpaceApp(user, index)
+	if err != nil {
+		return "", xerrors.Errorf("failed to get space app:%w", err)
+	}
+
+	if app.BuildLogURL == "" {
+		return "", xerrors.New("space app is not building")
+	}
+
+	return app.BuildLogURL, nil
+}
+
+// GetSpaceLog for get serving log
+func (s *spaceappAppService) GetSpaceLog(
+	user primitive.Account, index *spacedomain.SpaceIndex,
+) (string, error) {
+	app, err := s.getPrivateReadSpaceApp(user, index)
+	if err != nil {
+		return "", xerrors.Errorf("failed to get space app:%w", err)
+	}
+
+	if app.AppLogURL == "" {
+		return "", xerrors.New("space app is not serving")
+	}
+
+	return app.AppLogURL, nil
 }
 
 // GetRequestDataStream
