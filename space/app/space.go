@@ -312,7 +312,7 @@ func (s *spaceAppService) delSpaceVariableSecret(spaceId primitive.Identity) err
 				continue
 			}
 			if err = s.secureStorageAdapter.DeleteSpaceEnvSecret(
-				variable.GetVariablePath(), variable.Name.MSDName()); err != nil {
+				variable.GetVariablePath(), variable.Name.ENVName()); err != nil {
 				logrus.Errorf("failed to delete variable, err:%s", err)
 				continue
 			}
@@ -328,7 +328,7 @@ func (s *spaceAppService) delSpaceVariableSecret(spaceId primitive.Identity) err
 				continue
 			}
 			if err = s.secureStorageAdapter.DeleteSpaceEnvSecret(
-				secret.GetSecretPath(), secret.Name.MSDName()); err != nil {
+				secret.GetSecretPath(), secret.Name.ENVName()); err != nil {
 				logrus.Errorf("failed to delete secret, err:%s", err)
 				continue
 			}

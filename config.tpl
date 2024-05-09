@@ -61,6 +61,7 @@ space:
     env:
       env_value_min_length: {{(ds "common").ENV_VALUE_MIN_LEN }}
       env_value_max_length: {{(ds "common").ENV_VALUE_MAX_LEN }}
+      env_name_regexp: {{(ds "common").ENV_NAME_REGEXP }}
   topics:
     space_created: space_created
     space_updated: space_updated

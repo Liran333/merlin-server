@@ -31,7 +31,7 @@ func toSpaceVariableDO(m *domain.SpaceVariable) spaceEnvSecretDO {
 	return spaceEnvSecretDO{
 		SpaceId:   m.SpaceId.Integer(),
 		Desc:      resDesc,
-		Name:      m.Name.MSDName(),
+		Name:      m.Name.ENVName(),
 		Value:     m.Value.ENVValue(),
 		Type:      variableTypeName,
 		UpdatedAt: m.UpdatedAt,
@@ -46,7 +46,7 @@ func toSpaceSecretDO(m *domain.SpaceSecret) spaceEnvSecretDO {
 	return spaceEnvSecretDO{
 		SpaceId:   m.SpaceId.Integer(),
 		Desc:      resDesc,
-		Name:      m.Name.MSDName(),
+		Name:      m.Name.ENVName(),
 		Type:      secretTypeName,
 		UpdatedAt: m.UpdatedAt,
 	}
@@ -71,7 +71,7 @@ func (do *spaceEnvSecretDO) toSpaceVariable() domain.SpaceVariable {
 	return domain.SpaceVariable{
 		Id:        primitive.CreateIdentity(do.Id),
 		SpaceId:   primitive.CreateIdentity(do.SpaceId),
-		Name:      primitive.CreateMSDName(do.Name),
+		Name:      spaceprimitive.CreateENVName(do.Name),
 		Desc:      primitive.CreateMSDDesc(do.Desc),
 		Value:     spaceprimitive.CreateENVValue(do.Value),
 		UpdatedAt: do.UpdatedAt,
@@ -82,7 +82,7 @@ func (do *spaceEnvSecretDO) toSpaceSecret() domain.SpaceSecret {
 	return domain.SpaceSecret{
 		Id:        primitive.CreateIdentity(do.Id),
 		SpaceId:   primitive.CreateIdentity(do.SpaceId),
-		Name:      primitive.CreateMSDName(do.Name),
+		Name:      spaceprimitive.CreateENVName(do.Name),
 		Desc:      primitive.CreateMSDDesc(do.Desc),
 		Value:     spaceprimitive.CreateENVValue(do.Value),
 		UpdatedAt: do.UpdatedAt,

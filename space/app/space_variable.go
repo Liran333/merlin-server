@@ -7,6 +7,8 @@ package app
 import (
 	"fmt"
 
+	"golang.org/x/xerrors"
+
 	"github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -83,7 +85,7 @@ func (s *spaceVariableService) CreateVariable(
 
 	action = fmt.Sprintf(
 		"add space variable of %s:%s/%s:%s",
-		spaceId.Identity(), space.Owner.Account(), cmd.Name.MSDName(), cmd.Value.ENVValue(),
+		spaceId.Identity(), space.Owner.Account(), cmd.Name.ENVName(), cmd.Value.ENVValue(),
 	)
 
 	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
@@ -110,25 +112,25 @@ func (s *spaceVariableService) CreateVariable(
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to create space variable",
-			fmt.Errorf("space variable name:%s, err: %w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err: %w", variable.Name.ENVName(), err))
 		return "", action, err
 	}
 
 	if err = s.variableAdapter.AddVariable(variable); err != nil {
 		err = allerror.NewCommonRespError("failed to create space variable db",
-			fmt.Errorf("space variable name:%s, err: %w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err: %w", variable.Name.ENVName(), err))
 		return "", action, err
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send add space variable event",
-			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
 	return "successful", action, err
@@ -172,7 +174,7 @@ func (s *spaceVariableService) DeleteVariable(
 
 	action = fmt.Sprintf(
 		"delete space variable of %s:%s/%s",
-		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
+		spaceId.Identity(), space.Owner.Account(), variable.Name.ENVName(),
 	)
 
 	notFound, err := app.CanDeleteOrNotFound(user, &space, s.permission)
@@ -180,32 +182,32 @@ func (s *spaceVariableService) DeleteVariable(
 		return
 	}
 	if notFound {
-		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
+		err = newSpaceNotFound(xerrors.Errorf("%s not found", spaceId.Identity()))
 		return
 	}
 
-	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(variable.GetVariablePath(), variable.Name.MSDName())
+	err = s.secureStorageAdapter.DeleteSpaceEnvSecret(variable.GetVariablePath(), variable.Name.ENVName())
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to delete space variable",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err:%w", variable.Name.ENVName(), err))
 		return
 	}
 
 	if err = s.variableAdapter.DeleteVariable(variable.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to delete space variable db",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err:%w", variable.Name.ENVName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send delete space variable event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 		return
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return
 }
@@ -233,7 +235,7 @@ func (s *spaceVariableService) UpdateVariable(
 
 	action = fmt.Sprintf(
 		"update space variable of %s:%s/%s",
-		spaceId.Identity(), space.Owner.Account(), variable.Name.MSDName(),
+		spaceId.Identity(), space.Owner.Account(), variable.Name.ENVName(),
 	)
 
 	notFound, err := app.CanUpdateOrNotFound(user, &space, s.permission)
@@ -241,13 +243,13 @@ func (s *spaceVariableService) UpdateVariable(
 		return
 	}
 	if notFound {
-		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId.Identity()))
+		err = newSpaceNotFound(xerrors.Errorf("%s not found", spaceId.Identity()))
 		return
 	}
 
 	b := cmd.toSpaceVariable(&variable)
 	if !b {
-		err = newSpaceVariableNotFound(fmt.Errorf("%s not found", variableId.Identity()))
+		err = newSpaceVariableNotFound(xerrors.Errorf("%s not found", variableId.Identity()))
 		return
 	}
 
@@ -255,25 +257,25 @@ func (s *spaceVariableService) UpdateVariable(
 	err = s.secureStorageAdapter.SaveSpaceEnvSecret(es)
 	if err != nil {
 		err = allerror.NewCommonRespError("failed to update space variable",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err:%w", variable.Name.ENVName(), err))
 		return
 	}
 
 	if err = s.variableAdapter.SaveVariable(&variable); err != nil {
 		err = allerror.NewCommonRespError("failed to update space variable db",
-			fmt.Errorf("space variable name:%s, err:%w", variable.Name.MSDName(), err))
+			xerrors.Errorf("space variable name:%s, err:%w", variable.Name.ENVName(), err))
 		return
 	}
 
 	e := domain.NewSpaceEnvChangedEvent(user, &space)
 	if err = s.msgAdapter.SendSpaceEnvChangedEvent(&e); err != nil {
 		err = allerror.NewCommonRespError("failed to send update space variable event",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 		return
 	}
 	if err = s.setAppRestarting(space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
-			fmt.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
+			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
 	return
 }
@@ -284,7 +286,7 @@ func (s *spaceVariableService) ListVariableSecret(spaceId string) (
 ) {
 	variableSecretList, err := s.variableAdapter.ListVariableSecret(spaceId)
 	if err != nil {
-		err = newSpaceNotFound(fmt.Errorf("%s not found", spaceId))
+		err = newSpaceNotFound(xerrors.Errorf("%s not found", spaceId))
 		return SpaceVariableSecretDTO{}, err
 	}
 

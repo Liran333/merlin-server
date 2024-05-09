@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package primitive
 
 import (
+	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -22,10 +23,26 @@ type Config struct {
 	ENVConfig  ENVConfig   `json:"env"`
 }
 
+// ConfigItems returns a slice of interface{} containing pointers to the configuration items.
+func (cfg *Config) ConfigItems() []interface{} {
+	return []interface{}{
+		&cfg.ENVConfig,
+	}
+}
+
 // ENVConfig represents the configuration for env.
 type ENVConfig struct {
-	MinValueLength int `json:"env_value_min_length"      required:"true"`
-	MaxValueLength int `json:"env_value_max_length"      required:"true"`
+	MinValueLength int    `json:"env_value_min_length"      required:"true"`
+	MaxValueLength int    `json:"env_value_max_length"      required:"true"`
+	NameRegexp     string `json:"env_name_regexp"        required:"true"`
+
+	nameRegexp *regexp.Regexp
+}
+
+// Validate check values for ENVConfig whether they are valid.
+func (cfg *ENVConfig) Validate() (err error) {
+	cfg.nameRegexp, err = regexp.Compile(cfg.NameRegexp)
+	return
 }
 
 type SDKObject struct {

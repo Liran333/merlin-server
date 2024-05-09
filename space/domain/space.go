@@ -87,7 +87,7 @@ type SpaceIndex = coderepo.CodeRepoIndex
 type SpaceVariable struct {
 	Id      primitive.Identity
 	SpaceId primitive.Identity
-	Name    primitive.MSDName
+	Name    spaceprimitive.ENVName
 	Desc    primitive.MSDDesc
 	Value   spaceprimitive.ENVValue
 
@@ -99,7 +99,7 @@ type SpaceVariable struct {
 func NewSpaceVariableVault(variable *SpaceVariable) securestorage.SpaceEnvSecret {
 	return securestorage.SpaceEnvSecret{
 		Path:  variablePath + variable.SpaceId.Identity(),
-		Name:  variable.Name.MSDName(),
+		Name:  variable.Name.ENVName(),
 		Value: variable.Value.ENVValue(),
 	}
 }
@@ -112,7 +112,7 @@ func (variable *SpaceVariable) GetVariablePath() string {
 type SpaceSecret struct {
 	Id      primitive.Identity
 	SpaceId primitive.Identity
-	Name    primitive.MSDName
+	Name    spaceprimitive.ENVName
 	Desc    primitive.MSDDesc
 	Value   spaceprimitive.ENVValue
 
@@ -124,7 +124,7 @@ type SpaceSecret struct {
 func NewSpaceSecretVault(secret *SpaceSecret) securestorage.SpaceEnvSecret {
 	return securestorage.SpaceEnvSecret{
 		Path:  secretePath + secret.SpaceId.Identity(),
-		Name:  secret.Name.MSDName(),
+		Name:  secret.Name.ENVName(),
 		Value: secret.Value.ENVValue(),
 	}
 }

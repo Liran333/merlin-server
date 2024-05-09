@@ -217,7 +217,7 @@ type SpaceIdModelDTO struct {
 
 // CmdToCreateSpaceVariable is a struct used to create a space variable.
 type CmdToCreateSpaceVariable struct {
-	Name  primitive.MSDName
+	Name  spaceprimitive.ENVName
 	Desc  primitive.MSDDesc
 	Value spaceprimitive.ENVValue
 }
@@ -249,7 +249,7 @@ type SpaceVariableSecretDTO struct {
 
 // CmdToCreateSpaceSecret is a struct used to create a space secret.
 type CmdToCreateSpaceSecret struct {
-	Name  primitive.MSDName
+	Name  spaceprimitive.ENVName
 	Desc  primitive.MSDDesc
 	Value spaceprimitive.ENVValue
 }

@@ -40,6 +40,7 @@ SPACE_SDK:
 
 ENV_VALUE_MIN_LEN: 1
 ENV_VALUE_MAX_LEN: 100
+ENV_NAME_REGEXP: (^[-._a-zA-Z][-._a-zA-Z0-9]*)
 
 LICENSES:
   - 'apache-2.0'

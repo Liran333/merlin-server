@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-sdk/space"
@@ -327,19 +328,22 @@ type reqToCreateSpaceVariable struct {
 
 func (p *reqToCreateSpaceVariable) toCmd() (cmd app.CmdToCreateSpaceVariable, err error) {
 	if p.Name != nil {
-		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
+		if cmd.Name, err = spaceprimitive.NewENVName(*p.Name); err != nil {
+			err = xerrors.Errorf("failed to create env name, err:%w", err)
 			return
 		}
 	}
 
 	if p.Desc != nil {
 		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			err = xerrors.Errorf("failed to create env desc, err:%w", err)
 			return
 		}
 	}
 
 	if p.Value != nil {
 		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
+			err = xerrors.Errorf("failed to create env value, err:%w", err)
 			return
 		}
 	}
@@ -389,19 +393,22 @@ type reqToCreateSpaceSecret struct {
 
 func (p *reqToCreateSpaceSecret) toCmd() (cmd app.CmdToCreateSpaceSecret, err error) {
 	if p.Name != nil {
-		if cmd.Name, err = primitive.NewMSDName(*p.Name); err != nil {
+		if cmd.Name, err = spaceprimitive.NewENVName(*p.Name); err != nil {
+			err = xerrors.Errorf("failed to create env name, err:%w", err)
 			return
 		}
 	}
 
 	if p.Desc != nil {
 		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
+			err = xerrors.Errorf("failed to create env desc, err:%w", err)
 			return
 		}
 	}
 
 	if p.Value != nil {
 		if cmd.Value, err = spaceprimitive.NewENVValue(*p.Value); err != nil {
+			err = xerrors.Errorf("failed to create env value, err:%w", err)
 			return
 		}
 	}
