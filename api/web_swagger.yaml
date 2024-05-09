@@ -1137,11 +1137,13 @@ paths:
       parameters:
       - description: owner of repo
         in: path
+        maxLength: 40
         name: owner
         required: true
         type: string
       - description: name of repo
         in: path
+        maxLength: 100
         name: name
         required: true
         type: string
@@ -1149,7 +1151,16 @@ paths:
         "200":
           description: OK
           schema:
-            type: boolean
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: boolean
+                msg:
+                  type: string
+              type: object
       summary: Get coderepo and check it
       tags:
       - CodeRepo

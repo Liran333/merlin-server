@@ -48,6 +48,7 @@ type PermissionInternalController struct {
 // @Param    body  body  reqToCheckPermission  true  "body of request"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
+// @x-example {"data": "successfully"}
 // @Security Internal
 // @Router   /v1/coderepo/permission/update [post]
 func (ctl *PermissionInternalController) Update(ctx *gin.Context) {
@@ -69,6 +70,7 @@ func (ctl *PermissionInternalController) Update(ctx *gin.Context) {
 // @Param    body  body  reqToCheckPermission  true  "body of request"
 // @Accept   json
 // @Success  201   {object}  commonctl.ResponseData
+// @x-example {"data": "successfully"}
 // @Security Internal
 // @Router   /v1/coderepo/permission/read [post]
 func (ctl *PermissionInternalController) Read(ctx *gin.Context) {

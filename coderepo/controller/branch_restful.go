@@ -41,13 +41,13 @@ type BranchRestfulController struct {
 // @Summary  CreateBranch
 // @Description  create repo branch
 // @Tags     BranchRestful
-// @Param    type  path  string  true  "type of space/model"
-// @Param    owner  path  string  true  "owner of space/model"
-// @Param    repo  path  string  true  "name of space/model"
+// @Param    type  path  string  true  "type of space/model" Enums(space, model)
+// @Param    owner  path  string  true  "owner of space/model" MaxLength(40)
+// @Param    repo  path  string  true  "name of space/model" MaxLength(100)
 // @Param    body     body restfulReqToCreateBranch true  "restfulReqToCreateBranch"
 // @Accept   json
 // @Security Bearer
-// @Success  201   {object}  app.BranchCreateDTO
+// @Success  201   {object}  commonctl.ResponseData{data=app.BranchCreateDTO,msg=string,code=string}
 // @Router   /v1/branch/{type}/{owner}/{repo} [post]
 func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 	var req restfulReqToCreateBranch
@@ -79,10 +79,10 @@ func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 // @Summary  DeleteBranch
 // @Description  delete repo branch
 // @Tags     BranchRestful
-// @Param    type  path  string  true  "repo type"
-// @Param    owner  path  string  true  "repo owner"
-// @Param    repo  path  string  true  "repo name"
-// @Param    branch  path  string  true  "branch name"
+// @Param    type  path  string  true  "repo type" Enums(space, model)
+// @Param    owner  path  string  true  "repo owner" MaxLength(40)
+// @Param    repo  path  string  true  "repo name" MaxLength(100)
+// @Param    branch  path  string  true  "branch name" MaxLength(100)
 // @Accept   json
 // @Security Bearer
 // @Success  204

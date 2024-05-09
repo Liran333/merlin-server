@@ -340,6 +340,7 @@ paths:
       parameters:
       - description: id of model/space
         in: path
+        maxLength: 20
         name: id
         required: true
         type: string
@@ -353,7 +354,16 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/controller.ResponseData'
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
       security:
       - Internal: []
       summary: Update
@@ -381,6 +391,8 @@ paths:
       summary: Read
       tags:
       - Permission
+      x-example:
+        data: successfully
   /v1/coderepo/permission/update:
     post:
       consumes:
@@ -404,6 +416,8 @@ paths:
       summary: Update
       tags:
       - Permission
+      x-example:
+        data: successfully
   /v1/computility/account:
     post:
       consumes:

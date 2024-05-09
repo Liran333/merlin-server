@@ -37,10 +37,10 @@ type CodeRepoController struct {
 // @Summary  Get coderepo and check it
 // @Description  check whether the repo exists
 // @Tags     CodeRepo
-// @Param    owner  path  string  true  "owner of repo"
-// @Param    name   path  string  true  "name of repo"
+// @Param    owner  path  string  true  "owner of repo" MaxLength(40)
+// @Param    name   path  string  true  "name of repo" MaxLength(100)
 // @Accept   json
-// @Success  200  {object} bool
+// @Success  200  {object} commonctl.ResponseData{data=bool,msg=string,code=string}
 // @Router   /v1/exists/:owner/:name [get]
 func (ctl *CodeRepoController) Get(ctx *gin.Context) {
 	codeRepo, err := ToCmdToCheckRepoExists(ctx)

@@ -204,6 +204,7 @@ const docTemplateweb = `{
                 "summary": "Get coderepo and check it",
                 "parameters": [
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of repo",
                         "name": "owner",
@@ -211,6 +212,7 @@ const docTemplateweb = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of repo",
                         "name": "name",
@@ -222,7 +224,25 @@ const docTemplateweb = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "boolean"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "boolean"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }

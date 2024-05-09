@@ -46,10 +46,10 @@ type StatisticInternalController struct {
 // @Summary  Update
 // @Description  update the download count of a model/space
 // @Tags     Statistic
-// @Param    id    path  string   true  "id of model/space"
+// @Param    id    path  string   true  "id of model/space" MaxLength(20)
 // @Param    body  body  repoStatistics  true  "body of updating model/space info"
 // @Accept   json
-// @Success  202   {object}  commonctl.ResponseData
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/coderepo/{id}/statistic [put]
 func (ctl *StatisticInternalController) Update(ctx *gin.Context) {

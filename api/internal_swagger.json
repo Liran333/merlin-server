@@ -187,6 +187,9 @@
                             "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
+                },
+                "x-example": {
+                    "data": "successfully"
                 }
             }
         },
@@ -223,6 +226,9 @@
                             "$ref": "#/definitions/controller.ResponseData"
                         }
                     }
+                },
+                "x-example": {
+                    "data": "successfully"
                 }
             }
         },
@@ -243,6 +249,7 @@
                 "summary": "Update",
                 "parameters": [
                     {
+                        "maxLength": 20,
                         "type": "string",
                         "description": "id of model/space",
                         "name": "id",
@@ -263,7 +270,25 @@
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/controller.ResponseData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }

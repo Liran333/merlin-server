@@ -105,6 +105,10 @@ const docTemplaterest = `{
                 "summary": "CreateBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "type of space/model",
                         "name": "type",
@@ -112,6 +116,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "owner of space/model",
                         "name": "owner",
@@ -119,6 +124,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "name of space/model",
                         "name": "repo",
@@ -139,7 +145,25 @@ const docTemplaterest = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/app.BranchCreateDTO"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.BranchCreateDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -162,6 +186,10 @@ const docTemplaterest = `{
                 "summary": "DeleteBranch",
                 "parameters": [
                     {
+                        "enum": [
+                            "space",
+                            "model"
+                        ],
                         "type": "string",
                         "description": "repo type",
                         "name": "type",
@@ -169,6 +197,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 40,
                         "type": "string",
                         "description": "repo owner",
                         "name": "owner",
@@ -176,6 +205,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "repo name",
                         "name": "repo",
@@ -183,6 +213,7 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
+                        "maxLength": 100,
                         "type": "string",
                         "description": "branch name",
                         "name": "branch",
