@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 )
 

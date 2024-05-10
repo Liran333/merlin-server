@@ -7,7 +7,7 @@ package spacerepositoryadapter
 
 // Tables is a struct that represents a table with a space.
 type Tables struct {
-	Space      string `json:"space" required:"true"`
-	SpaceModel string `json:"space_model" required:"true"`
+	Space          string `json:"space" required:"true"`
+	SpaceModel     string `json:"space_model" required:"true"`
 	SpaceEnvSecret string `json:"space_env_secret" required:"true"`
 }

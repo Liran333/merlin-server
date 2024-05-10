@@ -160,7 +160,7 @@ func (s *spaceappAppService) GetByName(
 	return toSpaceAppDTO(&app), nil
 }
 
-func (s *spaceappAppService) getPrivateReadSpaceApp (
+func (s *spaceappAppService) getPrivateReadSpaceApp(
 	user primitive.Account, index *spacedomain.SpaceIndex,
 ) (SpaceAppDTO, error) {
 	var dto SpaceAppDTO

@@ -6,6 +6,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"

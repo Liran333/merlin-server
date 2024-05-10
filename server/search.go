@@ -7,11 +7,11 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
-	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
-
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/search/app"
 	"github.com/openmerlin/merlin-server/search/controller"
 	"github.com/openmerlin/merlin-server/search/infrastructure/resourceadapterimpl"

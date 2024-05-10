@@ -52,7 +52,7 @@ func ConvertReqToCreateActivityToCmd(req *activityapp.ReqToCreateActivity) (app.
 func ConvertReqToDeleteActivityToCmd(user primitive.Account, req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 
-	resourceIdInt, err := strconv.ParseInt(req.ResourceId, 10, 64)
+	resourceIdInt, err := strconv.ParseInt(req.ResourceId, parseIntBase, parseIntBitSize)
 	if err != nil {
 		return cmd, xerrors.Errorf("failed to convert to int: %w", err)
 	}

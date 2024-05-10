@@ -17,13 +17,14 @@ import (
 
 const (
 	refererHeader = "Referer"
+	clientNums    = 3
 )
 
 func AddRouterForOtherController(rg *gin.RouterGroup, c *config.Config) {
 	ctl := OtherController{
 		domain: strings.Trim(c.Session.Controller.SessionDomain, "."),
 		cfg:    &c.OtherConfig.Analyse,
-		cli:    utils.NewHttpClient(3),
+		cli:    utils.NewHttpClient(clientNums),
 	}
 
 	rg.GET("/v1/analytics/key", ctl.Get)

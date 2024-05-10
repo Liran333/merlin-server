@@ -3,11 +3,12 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain/privilege"
 	userapp "github.com/openmerlin/merlin-server/user/app"
-	"github.com/sirupsen/logrus"
 )
 
 type action string

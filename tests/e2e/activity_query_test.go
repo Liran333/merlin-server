@@ -5,13 +5,14 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package e2e
 
 import (
+	"net/http"
+	"testing"
+
 	swaggerInternal "e2e/client_internal"
 	swaggerRest "e2e/client_rest"
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 // SuiteActivityInternal used for testing
