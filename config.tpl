@@ -199,6 +199,9 @@ activity:
     activity: activity
   usages:
     max_record_per_person: 100
+  topics:
+    like_create: like_create
+    like_delete: like_delete
 
 user:
   tables:

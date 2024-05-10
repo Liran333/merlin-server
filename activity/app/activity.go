@@ -6,12 +6,15 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/activity/domain"
+	"github.com/openmerlin/merlin-server/activity/domain/message"
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/coderepo/domain/resourceadapter"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -28,11 +31,13 @@ type ActivityAppService interface {
 }
 
 type activityAppService struct {
-	permission  commonapp.ResourcePermissionAppService
-	codeRepoApp coderepoapp.CodeRepoAppService
-	repoAdapter repository.ActivitiesRepositoryAdapter
-	modelApp    modelApp.ModelAppService
-	spaceApp    spaceApp.SpaceAppService
+	permission      commonapp.ResourcePermissionAppService
+	codeRepoApp     coderepoapp.CodeRepoAppService
+	repoAdapter     repository.ActivitiesRepositoryAdapter
+	modelApp        modelApp.ModelAppService
+	spaceApp        spaceApp.SpaceAppService
+	msgAdapter      message.ActivityMessage
+	resourceAdapter resourceadapter.ResourceAdapter
 }
 
 // NewActivityAppService creates a new instance of the Activity application service.
@@ -42,13 +47,17 @@ func NewActivityAppService(
 	repoAdapter repository.ActivitiesRepositoryAdapter,
 	modelApp modelApp.ModelAppService,
 	spaceApp spaceApp.SpaceAppService,
+	msgAdapter message.ActivityMessage,
+	resourceAdapter resourceadapter.ResourceAdapter,
 ) ActivityAppService {
 	return &activityAppService{
-		permission:  permission,
-		codeRepoApp: codeRepoApp,
-		repoAdapter: repoAdapter,
-		modelApp:    modelApp,
-		spaceApp:    spaceApp,
+		permission:      permission,
+		codeRepoApp:     codeRepoApp,
+		repoAdapter:     repoAdapter,
+		modelApp:        modelApp,
+		spaceApp:        spaceApp,
+		msgAdapter:      msgAdapter,
+		resourceAdapter: resourceAdapter,
 	}
 }
 
@@ -137,13 +146,25 @@ func (s *activityAppService) Create(cmd *CmdToAddActivity) error {
 	// Retrieve the code repository information.
 	codeRepo, err := s.codeRepoApp.GetById(cmd.Resource.Index)
 	if err != nil {
-		return err
+		return xerrors.Errorf("failed to get a coderepo by id, error: %w", err)
 	}
 
 	// Only proceed if the repository is public.
 	isPublic := codeRepo.IsPublic()
 	if !isPublic {
 		return nil
+	}
+
+	// Retrieve the code repository information.
+	Repo, err := s.resourceAdapter.GetByIndex(cmd.Resource.Index)
+	if err != nil {
+		return xerrors.Errorf("failed to get a resouce by id, error: %w", err)
+	}
+
+	e := domain.NewLikeCreatedEvent(&codeRepo, string(Repo.ResourceType()))
+	if err := s.msgAdapter.SendLikeCreatedEvent(&e); err != nil {
+		logrus.Errorf("failed to send like created event, error:%s", err)
+
 	}
 
 	// Save the new activity.
@@ -159,6 +180,24 @@ func (s *activityAppService) Delete(cmd *CmdToAddActivity) error {
 	if !has {
 		return nil
 	}
+
+	// Retrieve the code repository information.
+	codeRepo, err := s.codeRepoApp.GetById(cmd.Resource.Index)
+	if err != nil {
+		return xerrors.Errorf("failed to get a coderepo by id, error:%w", err)
+	}
+
+	// Retrieve the code repository information.
+	Repo, err := s.resourceAdapter.GetByIndex(cmd.Resource.Index)
+	if err != nil {
+		return xerrors.Errorf("failed to get a resource by id, error: %w", err)
+	}
+
+	e := domain.NewLikeCreatedEvent(&codeRepo, string(Repo.ResourceType()))
+	if err := s.msgAdapter.SendLikeDeletedEvent(&e); err != nil {
+		logrus.Errorf("failed to send like deleted event, error:%s", err)
+	}
+
 	return s.repoAdapter.Delete(cmd)
 }
 

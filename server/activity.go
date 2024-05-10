@@ -11,8 +11,12 @@ import (
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/activity/controller"
 	"github.com/openmerlin/merlin-server/activity/insfrastructure/activityrepositoryadapter"
+	"github.com/openmerlin/merlin-server/activity/insfrastructure/messageadapter"
+	"github.com/openmerlin/merlin-server/coderepo/infrastructure/resourceadapterimpl"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
+	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
 func initActivity(cfg *config.Config, services *allServices) error {
@@ -27,6 +31,11 @@ func initActivity(cfg *config.Config, services *allServices) error {
 		activityrepositoryadapter.ActivityAdapter(),
 		services.modelApp,
 		services.spaceApp,
+		messageadapter.MessageAdapter(&cfg.Activity.Topics),
+		resourceadapterimpl.NewResourceAdapterImpl(
+			modelrepositoryadapter.ModelAdapter(),
+			spacerepositoryadapter.SpaceAdapter(),
+		),
 	)
 
 	return nil

@@ -17,6 +17,7 @@ type modelCreatedEvent struct {
 	Time      int64  `json:"time"`
 	Owner     string `json:"owner"`
 	ModelId   string `json:"model_id"`
+	ModelName string `json:"model_name"`
 	CreatedBy string `json:"created_by"`
 }
 
@@ -30,13 +31,17 @@ func NewModelCreatedEvent(m *Model) modelCreatedEvent {
 		Time:      utils.Now(),
 		Owner:     m.Owner.Account(),
 		ModelId:   m.Id.Identity(),
+		ModelName: m.Name.MSDName(),
 		CreatedBy: m.CreatedBy.Account(),
 	}
 }
 
 // modelDeletedEvent
 type modelDeletedEvent struct {
+	Time      int64  `json:"time"`
+	Owner     string `json:"owner"`
 	ModelId   string `json:"model_id"`
+	ModelName string `json:"model_name"`
 	DeletedBy string `json:"deleted_by"`
 }
 
@@ -45,9 +50,12 @@ func (e *modelDeletedEvent) Message() ([]byte, error) {
 }
 
 // NewModelDeletedEvent return a modelDeletedEvent
-func NewModelDeletedEvent(user primitive.Account, modelId primitive.Identity) modelDeletedEvent {
+func NewModelDeletedEvent(user primitive.Account, m Model) modelDeletedEvent {
 	return modelDeletedEvent{
-		ModelId:   modelId.Identity(),
+		Time:      utils.Now(),
+		Owner:     m.Owner.Account(),
+		ModelId:   m.Id.Identity(),
+		ModelName: m.Name.MSDName(),
 		DeletedBy: user.Account(),
 	}
 }
@@ -58,6 +66,7 @@ type modelUpdatedEvent struct {
 	Repo       string `json:"repo"`
 	Owner      string `json:"owner"`
 	ModelId    string `json:"model_id"`
+	ModelName  string `json:"model_name"`
 	UpdatedBy  string `json:"updated_by"`
 	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
 }
@@ -74,6 +83,7 @@ func NewModelUpdatedEvent(m *Model, user primitive.Account, b bool) modelUpdated
 		Owner:      m.Owner.Account(),
 		ModelId:    m.Id.Identity(),
 		UpdatedBy:  user.Account(),
+		ModelName:  m.Name.MSDName(),
 		IsPriToPub: b,
 	}
 }

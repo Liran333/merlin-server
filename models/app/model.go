@@ -134,9 +134,9 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		return
 	}
 
-	e := domain.NewModelDeletedEvent(user, modelId)
-	if err1 := s.msgAdapter.SendModelDeletedEvent(&e); err1 != nil {
-		logrus.Errorf("failed to send model deleted event, model id:%s", modelId.Identity())
+	e := domain.NewModelDeletedEvent(user, model)
+	if err := s.msgAdapter.SendModelDeletedEvent(&e); err != nil {
+		logrus.Errorf("failed to send model deleted event, model id:%s, error: %s", modelId.Identity(), err)
 	}
 
 	return

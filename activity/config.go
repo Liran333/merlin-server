@@ -9,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/activity/controller"
 	"github.com/openmerlin/merlin-server/activity/insfrastructure/activityrepositoryadapter"
+	"github.com/openmerlin/merlin-server/activity/insfrastructure/messageadapter"
 )
 
 // Config is a struct that represents the overall configuration for the application.
@@ -17,6 +18,7 @@ type Config struct {
 	Tables     activityrepositoryadapter.Tables `json:"tables"`
 	Usages     activityrepositoryadapter.Config `json:"usages"`
 	Controller controller.Config                `json:"controller"`
+	Topics     messageadapter.Topics            `json:"topics"`
 }
 
 // ConfigItems returns a slice of interface{} containing pointers to the configuration items in the Config struct.

@@ -10,9 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/common/domain/repository"
 )
 
 var dbInstance *gorm.DB
@@ -30,40 +28,6 @@ func (dao *daoImpl) db() *gorm.DB {
 	return dbInstance.Table(dao.table)
 }
 
-// GetRecord retrieves a single record from the database based on the provided filter
-// and stores it in the result parameter.
-func (dao *daoImpl) GetRecord(filter, result interface{}) error {
-	err := dao.db().Where(filter).First(result).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
-	}
-
-	return err
-}
-
-// GetByPrimaryKey retrieves a single record from the database based on the primary key of the row parameter.
-func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
-	err := dao.db().First(row).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
-	}
-
-	return err
-}
-
-// DeleteByPrimaryKey deletes a single record from the database based on the primary key of the row parameter.
-func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
-	err := dao.db().Delete(row).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
-	}
-
-	return err
-}
-
 func orderByDesc(field string) string {
 	return field + " desc"
 }
@@ -78,8 +42,8 @@ func (adapter *activityAdapter) deleteLikeByOwnerAndIndex(owner primitive.Accoun
 	const condition = "type = ? AND owner = ? AND resource_id = ?"
 
 	// Execute the deletion with the provided conditions.
-	if err := db.Where(condition, fieldLike, owner, index).
-		Delete(&domain.Activity{}).Error; err != nil {
+	if err := db.Where(condition, fieldLike, owner.Account(), index).
+		Delete(&activityDO{}).Error; err != nil {
 		return err
 	}
 

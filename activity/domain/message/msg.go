@@ -10,10 +10,8 @@ type EventMessage interface {
 	Message() ([]byte, error)
 }
 
-// ModelMessage is an interface that defines methods for sending space-related events.
-type ModelMessage interface {
-	SendModelCreatedEvent(EventMessage) error
-	SendModelDeletedEvent(EventMessage) error
-	SendModelUpdatedEvent(EventMessage) error
-	SendModelDisableEvent(EventMessage) error
+// ActivityMessage is an interface that defines methods for sending space-related events.
+type ActivityMessage interface {
+	SendLikeCreatedEvent(EventMessage) error
+	SendLikeDeletedEvent(EventMessage) error
 }
