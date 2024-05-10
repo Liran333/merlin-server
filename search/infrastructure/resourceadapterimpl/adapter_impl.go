@@ -44,9 +44,11 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	var result domain.SearchResult
 	if utils.Contains(opt.SearchType, primitive.SearchTypeModel) {
 		cmd := &modelrepo.ListOption{
-			Name:         opt.SearchKey,
-			PageNum:      DefaultPage,
-			CountPerPage: opt.Size,
+			Name:            opt.SearchKey,
+			PageNum:         DefaultPage,
+			CountPerPage:    opt.Size,
+			ExcludeFullname: true,
+			Count:           true,
 		}
 		models, err := adapter.SearchModel(cmd, opt.Account)
 		if err != nil {
@@ -57,9 +59,11 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 
 	if utils.Contains(opt.SearchType, primitive.SearchTypeSpace) {
 		cmd := &spacerepo.ListOption{
-			Name:         opt.SearchKey,
-			PageNum:      DefaultPage,
-			CountPerPage: opt.Size,
+			Name:            opt.SearchKey,
+			PageNum:         DefaultPage,
+			CountPerPage:    opt.Size,
+			ExcludeFullname: true,
+			Count:           true,
 		}
 		spaces, err := adapter.SearchSpace(cmd, opt.Account)
 		if err != nil {
@@ -100,7 +104,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (
 	domain.SearchResultModel, error) {
 	var result domain.SearchResultModel
-	v, count, err := adapter.model.SearchModel(cmd, account, adapter.member)
+	v, count, err := adapter.model.List(cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}
@@ -121,7 +125,7 @@ func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account dom
 	domain.SearchResultSpace, error) {
 	var result domain.SearchResultSpace
 
-	v, count, err := adapter.space.SearchSpace(cmd, account, adapter.member)
+	v, count, err := adapter.space.List(cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}

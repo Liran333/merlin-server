@@ -33,6 +33,8 @@ type ListOption struct {
 	// because the Name can be subpart of the real resource name
 	Name string
 
+	ExcludeFullname bool
+
 	// list the space of Owner
 	Owner primitive.Account
 
@@ -72,7 +74,6 @@ type SpaceRepositoryAdapter interface {
 	Save(*domain.Space) error
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
 	Count(*ListOption) (int, error)
-	SearchSpace(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
 	AddLike(domain.Space) error
 	DeleteLike(domain.Space) error
 }

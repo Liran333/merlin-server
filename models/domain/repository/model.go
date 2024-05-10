@@ -34,6 +34,8 @@ type ListOption struct {
 	// because the Name can be subpart of the real resource name
 	Name string
 
+	ExcludeFullname bool
+
 	// list the models of Owner
 	Owner primitive.Account
 
@@ -73,7 +75,6 @@ type ModelRepositoryAdapter interface {
 	Save(*domain.Model) error
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
-	SearchModel(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	AddLike(domain.Model) error
 	DeleteLike(domain.Model) error
 }
