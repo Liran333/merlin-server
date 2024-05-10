@@ -41,6 +41,7 @@ func (r *CodeRepo) RepoIndex() CodeRepoIndex {
 	return CodeRepoIndex{
 		Name:  r.Name,
 		Owner: r.Owner,
+		Id:    r.Id,
 	}
 }
 
@@ -59,11 +60,18 @@ func (m *CodeRepo) OwnedByPerson() bool {
 	return m.Owner == m.CreatedBy
 }
 
-// CodeRepoIndex represents the index of a code repository.
-type CodeRepoIndex struct {
-	Name  primitive.MSDName
-	Owner primitive.Account
+// Visibility returns the visibility of the code repository.
+func (m *CodeRepo) ResourceVisibility() primitive.Visibility {
+	return m.Visibility
 }
+
+// License returns the license of the code repository.
+func (m *CodeRepo) ResourceLicense() primitive.License {
+	return m.License
+}
+
+// CodeRepoIndex represents the index of a code repository.
+type CodeRepoIndex = commondomain.CodeRepoIndex
 
 // Resource represents a common resource.
 type Resource = commondomain.Resource

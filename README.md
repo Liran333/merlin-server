@@ -29,7 +29,7 @@ swag init --parseDependency --parseInternal --instanceName rest -o api -t Organi
 
 swag init --parseDependency --parseInternal --instanceName web -o api -t Organization,User,Session,Model,ModelWeb,Space,SpaceWeb,SpaceAppWeb,CodeRepo,ActivityWeb,SearchWeb,ComputilityWeb,Other
 
-swag init --parseDependency --parseInternal --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp,ActivityInternal,ComputilityInternal,Statistic
+swag init --parseDependency --parseInternal --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp,ActivityInternal,ComputilityInternal,CodeRepoInternal
 ```
 
 ## run end to end test

@@ -9,6 +9,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/coderepo/domain/resourceadapter"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -33,6 +35,7 @@ func AddRouteForCodeRepoStatisticInternalController(
 	}
 
 	r.PUT(`/v1/coderepo/:id/statistic`, m.Write, ctl.Update)
+	r.GET(`/v1/coderepo/:id`, m.Read, ctl.Get)
 }
 
 // StatisticInternalController is a struct that holds the necessary services
@@ -45,7 +48,7 @@ type StatisticInternalController struct {
 
 // @Summary  Update
 // @Description  update the download count of a model/space
-// @Tags     Statistic
+// @Tags     CodeRepoInternal
 // @Param    id    path  string   true  "id of model/space" MaxLength(20)
 // @Param    body  body  repoStatistics  true  "body of updating model/space info"
 // @Accept   json
@@ -91,4 +94,28 @@ func (ctl *StatisticInternalController) Update(ctx *gin.Context) {
 	}
 
 	commonctl.SendRespOfPut(ctx, nil)
+}
+
+// @Summary  Get coderepo info
+// @Description  Get coderepo info
+// @Tags     CodeRepoInternal
+// @Param    id    path  string   true  "id of coderepo"
+// @Accept   json
+// @Success  200   {object}  commonctl.ResponseData
+// @Security Internal
+// @Router   /v1/coderepo/{id} [get]
+func (ctl *StatisticInternalController) Get(ctx *gin.Context) {
+	repoId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+
+	repo, err := ctl.repo.GetByIndex(repoId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+		return
+	}
+
+	commonctl.SendRespOfGet(ctx, app.ToCodeRepoInfo(repo))
 }

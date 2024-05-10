@@ -184,7 +184,7 @@ func (s *SuiteUserModel) TestUserSetModelDownloadCount() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建模型返回400
-	_, r, err = ApiInteral.StatisticApi.V1CoderepoIdStatisticPut(
+	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(
 		Interal, id, swaggerInternal.ControllerRepoStatistics{
 			DownloadCount: 10,
 		})

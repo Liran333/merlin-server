@@ -15,11 +15,15 @@ type Resource interface {
 	ResourceType() primitive.ObjType
 	ResourceOwner() primitive.Account
 	OwnedByPerson() bool
+	RepoIndex() CodeRepoIndex
 	IsDisable() bool
+	ResourceVisibility() primitive.Visibility
+	ResourceLicense() primitive.License
 }
 
 // CodeRepoIndex represents a code repository index with a name and owner.
 type CodeRepoIndex struct {
 	Name  primitive.MSDName
 	Owner primitive.Account
+	Id    primitive.Identity
 }

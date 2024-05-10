@@ -8,6 +8,7 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repoadapter"
+	commondomain "github.com/openmerlin/merlin-server/common/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -16,7 +17,7 @@ import (
 // CodeRepoAppService is an interface for code repository application service.
 type CodeRepoAppService interface {
 	Create(primitive.Account, *CmdToCreateRepo) (domain.CodeRepo, error)
-	Delete(domain.CodeRepoIndex) error
+	Delete(commondomain.CodeRepoIndex) error
 	Update(*domain.CodeRepo, *CmdToUpdateRepo) (bool, error)
 	GetById(primitive.Identity) (domain.CodeRepo, error)
 }
@@ -53,7 +54,7 @@ func (s *codeRepoAppService) GetById(index primitive.Identity) (domain.CodeRepo,
 }
 
 // Delete deletes a code repository by its index.
-func (s *codeRepoAppService) Delete(index domain.CodeRepoIndex) error {
+func (s *codeRepoAppService) Delete(index commondomain.CodeRepoIndex) error {
 
 	return s.repoAdapter.Delete(&index)
 }

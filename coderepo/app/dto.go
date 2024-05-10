@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	sdk "github.com/openmerlin/merlin-sdk/coderepo"
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -85,3 +86,16 @@ type CmdToDeleteBranch struct {
 
 // CmdToCheckRepoExists is an alias type for the domain.CodeRepoIndex.
 type CmdToCheckRepoExists = domain.CodeRepoIndex
+
+type CodeRepoInfo = sdk.CodeRepo
+
+func ToCodeRepoInfo(v domain.Resource) CodeRepoInfo {
+	return CodeRepoInfo{
+		Id:         v.RepoIndex().Id.Identity(),
+		Name:       v.RepoIndex().Name.MSDName(),
+		Type:       string(v.ResourceType()),
+		Owner:      v.RepoIndex().Owner.Account(),
+		License:    v.ResourceLicense().License(),
+		Visibility: v.ResourceVisibility().Visibility(),
+	}
+}
