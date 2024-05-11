@@ -449,3 +449,11 @@ type localEnvInfo space.LocalEnvInfo
 func (req *localEnvInfo) toCmd() string {
 	return req.EnvInfo
 }
+
+type spaceRecommendInfo struct {
+	*app.SpaceDTO
+}
+
+type spacesRecommendInfo struct {
+	Spaces []spaceRecommendInfo `json:"spaces"`
+}

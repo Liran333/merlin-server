@@ -75,6 +75,11 @@ space:
     {{- range (ds "common").SPACE_AVATAR_IDS}}
       - "{{ . }}"
     {{- end }}
+    recommend_spaces:
+    {{- range $v := (ds "common").RECOMMEND_SPACES }}
+    - owner: {{ $v.owner }}
+      reponame: {{ $v.reponame }}
+    {{- end }}
 permission:
   permissions:
     - object_type: member
@@ -187,6 +192,13 @@ model:
   {{- range (ds "common").LIBRARY_NAME}}
     - "{{ . }}"
   {{- end }}
+
+  app:
+    recommend_models:
+    {{- range $v := (ds "common").RECOMMEND_MODELS }}
+    - owner: {{ $v.owner }}
+      reponame: {{ $v.reponame }}
+    {{- end }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}

@@ -135,6 +135,8 @@ definitions:
         items:
           type: string
         type: array
+      library_name:
+        type: string
       license:
         type: string
       others:
@@ -373,7 +375,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      use_in_openmind:
+      usage:
         type: string
       visibility:
         type: string
@@ -413,6 +415,37 @@ definitions:
       updated_at:
         type: integer
     type: object
+  controller.modelRecommendInfo:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.ModelLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      usage:
+        type: string
+      visibility:
+        type: string
+    type: object
   controller.modelsInfo:
     properties:
       models:
@@ -421,6 +454,13 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  controller.modelsRecommendInfo:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/controller.modelRecommendInfo'
+        type: array
     type: object
   controller.orgBasicInfoUpdateRequest:
     properties:
@@ -685,6 +725,51 @@ definitions:
       updated_at:
         type: integer
     type: object
+  controller.spaceRecommendInfo:
+    properties:
+      comp_power_allocated:
+        type: boolean
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      exception:
+        type: string
+      fullname:
+        type: string
+      hardware:
+        type: string
+      id:
+        type: string
+      is_npu:
+        type: boolean
+      labels:
+        $ref: '#/definitions/app.SpaceLabelsDTO'
+      like_count:
+        type: integer
+      local_cmd:
+        type: string
+      local_env_info:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      sdk:
+        type: string
+      space_avatar_id:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
   controller.spacesInfo:
     properties:
       spaces:
@@ -693,6 +778,13 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  controller.spacesRecommendInfo:
+    properties:
+      spaces:
+        items:
+          $ref: '#/definitions/controller.spaceRecommendInfo'
+        type: array
     type: object
   controller.tokenCreateRequest:
     properties:
@@ -1582,6 +1674,28 @@ paths:
                   type: string
               type: object
       summary: Get
+      tags:
+      - ModelWeb
+  /v1/model/recommend:
+    get:
+      consumes:
+      - application/json
+      description: list recommend models
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.modelsRecommendInfo'
+                msg:
+                  type: string
+              type: object
+      summary: ListRecommends
       tags:
       - ModelWeb
   /v1/model/relation/{id}/space:
@@ -2965,6 +3079,28 @@ paths:
                   type: string
               type: object
       summary: Get
+      tags:
+      - SpaceWeb
+  /v1/space/recommend:
+    get:
+      consumes:
+      - application/json
+      description: list recommend space
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.spacesRecommendInfo'
+                msg:
+                  type: string
+              type: object
+      summary: ListRecommends
       tags:
       - SpaceWeb
   /v1/space/relation/{id}/model:

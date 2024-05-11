@@ -274,3 +274,11 @@ type useInOpenmind models.UseInOpenmind
 func (req *useInOpenmind) toCmd() string {
 	return req.UseInOpenmind
 }
+
+type modelRecommendInfo struct {
+	*app.ModelDTO
+}
+
+type modelsRecommendInfo struct {
+	Models []modelRecommendInfo `json:"models"`
+}

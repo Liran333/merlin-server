@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
@@ -33,6 +34,7 @@ type ModelAppService interface {
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
+	Recommend(primitive.Account) ([]ModelDTO, error)
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -386,4 +388,32 @@ func (s *modelAppService) DeleteLike(modelId primitive.Identity) error {
 		return err
 	}
 	return nil
+}
+
+func (s *modelAppService) Recommend(user primitive.Account) ([]ModelDTO, error) {
+	if len(config.RecommendModels) == 0 {
+		return nil, xerrors.Errorf("missing recommend models config")
+	}
+
+	indexs := make([]domain.ModelIndex, len(config.RecommendModels))
+	for _, v := range config.RecommendModels {
+		idx := domain.ModelIndex{
+			Name:  primitive.CreateMSDName(v.Reponame),
+			Owner: primitive.CreateAccount(v.Owner),
+		}
+		indexs = append(indexs, idx)
+	}
+
+	modelsDTO := make([]ModelDTO, len(indexs))
+	for _, index := range indexs {
+		idx := index
+		dto, err := s.GetByName(user, &idx)
+		if err != nil {
+			return nil, err
+		}
+
+		modelsDTO = append(modelsDTO, dto)
+	}
+
+	return modelsDTO, nil
 }

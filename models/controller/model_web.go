@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -47,6 +48,7 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, ctl.Get)
 	r.GET("/v1/model/:owner", p.CheckOwner, m.Optional, ctl.List)
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
+	r.GET("/v1/model/recommend", m.Optional, ctl.ListRecommends)
 	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
 
 	r.PUT("/v1/model/:id/disable", ctl.ModelController.userMiddleWare.Write, l.Write, ctl.disable)
@@ -162,6 +164,40 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 
 		commonctl.SendRespOfGet(ctx, &result)
 	}
+}
+
+// @Summary  ListRecommends
+// @Description  list recommend models
+// @Tags     ModelWeb
+// @Accept   json
+// @Success  200  {object}  commonctl.ResponseData{data=modelsRecommendInfo,msg=string,code=string}
+// @Router   /v1/model/recommend [get]
+func (ctl *ModelWebController) ListRecommends(ctx *gin.Context) {
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	modelsDTO, err := ctl.appService.Recommend(user)
+	if err != nil {
+		commonctl.SendError(ctx, xerrors.Errorf("failed to get recommend models: %w", err))
+
+		return
+	}
+
+	mrs := make([]modelRecommendInfo, len(modelsDTO))
+
+	for _, v := range modelsDTO {
+		m := v
+		mr := modelRecommendInfo{
+			ModelDTO: &m,
+		}
+
+		mrs = append(mrs, mr)
+	}
+
+	result := modelsRecommendInfo{
+		Models: mrs,
+	}
+
+	commonctl.SendRespOfGet(ctx, result)
 }
 
 // @Summary  ListGlobal

@@ -31,6 +31,12 @@ type Config struct {
 	MaxCountSpaceSecret   int      `json:"max_count_space_secret"`
 	MaxCountSpaceVariable int      `json:"max_count_space_variable"`
 	avatarIdsSet          sets.Set[string]
+	RecommendSpaces       []RecommendIndex `json:"recommend_spaces"`
+}
+
+type RecommendIndex struct {
+	Owner    string `json:"owner" required:"true"`
+	Reponame string `json:"reponame" required:"true"`
 }
 
 // SetDefault sets the default values for the Config struct.

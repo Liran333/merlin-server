@@ -6,6 +6,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -52,6 +53,7 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.ListGlobal)
+	r.GET("/v1/space/recommend", m.Optional, rl.CheckLimit, ctl.ListRecommends)
 	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
 
 	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
@@ -167,6 +169,40 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 
 		commonctl.SendRespOfGet(ctx, &result)
 	}
+}
+
+// @Summary  ListRecommends
+// @Description  list recommend space
+// @Tags     SpaceWeb
+// @Accept   json
+// @Success  200  {object}  commonctl.ResponseData{data=spacesRecommendInfo,msg=string,code=string}
+// @Router   /v1/space/recommend [get]
+func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	spacesDTO, err := ctl.appService.Recommend(user)
+	if err != nil {
+		commonctl.SendError(ctx, xerrors.Errorf("failed to get recommend spaces: %w", err))
+
+		return
+	}
+
+	sps := make([]spaceRecommendInfo, len(spacesDTO))
+
+	for _, v := range spacesDTO {
+		s := v
+		sp := spaceRecommendInfo{
+			SpaceDTO: &s,
+		}
+
+		sps = append(sps, sp)
+	}
+
+	result := spacesRecommendInfo{
+		Spaces: sps,
+	}
+
+	commonctl.SendRespOfGet(ctx, &result)
 }
 
 // @Summary  ListGlobal

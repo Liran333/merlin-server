@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	commonapp "github.com/openmerlin/merlin-server/common/app"
@@ -75,6 +76,7 @@ type SpaceAppService interface {
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
+	Recommend(primitive.Account) ([]SpaceDTO, error)
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -617,4 +619,32 @@ func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
 		return err
 	}
 	return nil
+}
+
+func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) {
+	if len(config.RecommendSpaces) == 0 {
+		return nil, xerrors.Errorf("missing recommend spaces config")
+	}
+
+	indexs := make([]domain.SpaceIndex, len(config.RecommendSpaces))
+	for _, v := range config.RecommendSpaces {
+		idx := domain.SpaceIndex{
+			Name:  primitive.CreateMSDName(v.Reponame),
+			Owner: primitive.CreateAccount(v.Owner),
+		}
+		indexs = append(indexs, idx)
+	}
+
+	spacesDTO := make([]SpaceDTO, len(indexs))
+	for _, index := range indexs {
+		idx := index
+		dto, err := s.GetByName(user, &idx)
+		if err != nil {
+			return nil, err
+		}
+
+		spacesDTO = append(spacesDTO, dto)
+	}
+
+	return spacesDTO, nil
 }

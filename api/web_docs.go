@@ -637,6 +637,44 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/model/recommend": {
+            "get": {
+                "description": "list recommend models",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelWeb"
+                ],
+                "summary": "ListRecommends",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.modelsRecommendInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/relation/{id}/space": {
             "get": {
                 "description": "get spaces related to a model",
@@ -2580,6 +2618,44 @@ const docTemplateweb = `{
                 }
             }
         },
+        "/v1/space/recommend": {
+            "get": {
+                "description": "list recommend space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceWeb"
+                ],
+                "summary": "ListRecommends",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.spacesRecommendInfo"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/relation/{id}/model": {
             "get": {
                 "description": "get models related to a space",
@@ -4106,6 +4182,9 @@ const docTemplateweb = `{
                         "type": "string"
                     }
                 },
+                "library_name": {
+                    "type": "string"
+                },
                 "license": {
                     "type": "string"
                 },
@@ -4470,7 +4549,7 @@ const docTemplateweb = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "use_in_openmind": {
+                "usage": {
                     "type": "string"
                 },
                 "visibility": {
@@ -4531,6 +4610,53 @@ const docTemplateweb = `{
                 }
             }
         },
+        "controller.modelRecommendInfo": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.ModelLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "usage": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.modelsInfo": {
             "type": "object",
             "properties": {
@@ -4542,6 +4668,17 @@ const docTemplateweb = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "controller.modelsRecommendInfo": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.modelRecommendInfo"
+                    }
                 }
             }
         },
@@ -4946,6 +5083,74 @@ const docTemplateweb = `{
                 }
             }
         },
+        "controller.spaceRecommendInfo": {
+            "type": "object",
+            "properties": {
+                "comp_power_allocated": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "exception": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "hardware": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_npu": {
+                    "type": "boolean"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.SpaceLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "local_cmd": {
+                    "type": "string"
+                },
+                "local_env_info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "sdk": {
+                    "type": "string"
+                },
+                "space_avatar_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.spacesInfo": {
             "type": "object",
             "properties": {
@@ -4957,6 +5162,17 @@ const docTemplateweb = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "controller.spacesRecommendInfo": {
+            "type": "object",
+            "properties": {
+                "spaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.spaceRecommendInfo"
+                    }
                 }
             }
         },
