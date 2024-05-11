@@ -395,7 +395,7 @@ func (s *modelAppService) Recommend(user primitive.Account) ([]ModelDTO, error) 
 		return nil, xerrors.Errorf("missing recommend models config")
 	}
 
-	indexs := make([]domain.ModelIndex, len(config.RecommendModels))
+	indexs := make([]domain.ModelIndex, 0, len(config.RecommendModels))
 	for _, v := range config.RecommendModels {
 		idx := domain.ModelIndex{
 			Name:  primitive.CreateMSDName(v.Reponame),
@@ -404,7 +404,7 @@ func (s *modelAppService) Recommend(user primitive.Account) ([]ModelDTO, error) 
 		indexs = append(indexs, idx)
 	}
 
-	modelsDTO := make([]ModelDTO, len(indexs))
+	modelsDTO := make([]ModelDTO, 0, len(indexs))
 	for _, index := range indexs {
 		idx := index
 		dto, err := s.GetByName(user, &idx)

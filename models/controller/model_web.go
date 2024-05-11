@@ -182,7 +182,7 @@ func (ctl *ModelWebController) ListRecommends(ctx *gin.Context) {
 		return
 	}
 
-	mrs := make([]modelRecommendInfo, len(modelsDTO))
+	mrs := make([]modelRecommendInfo, 0, len(modelsDTO))
 
 	for _, v := range modelsDTO {
 		m := v

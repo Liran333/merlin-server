@@ -187,7 +187,7 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 		return
 	}
 
-	sps := make([]spaceRecommendInfo, len(spacesDTO))
+	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
 
 	for _, v := range spacesDTO {
 		s := v

@@ -626,7 +626,7 @@ func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) 
 		return nil, xerrors.Errorf("missing recommend spaces config")
 	}
 
-	indexs := make([]domain.SpaceIndex, len(config.RecommendSpaces))
+	indexs := make([]domain.SpaceIndex, 0, len(config.RecommendSpaces))
 	for _, v := range config.RecommendSpaces {
 		idx := domain.SpaceIndex{
 			Name:  primitive.CreateMSDName(v.Reponame),
@@ -635,7 +635,7 @@ func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) 
 		indexs = append(indexs, idx)
 	}
 
-	spacesDTO := make([]SpaceDTO, len(indexs))
+	spacesDTO := make([]SpaceDTO, 0, len(indexs))
 	for _, index := range indexs {
 		idx := index
 		dto, err := s.GetByName(user, &idx)
