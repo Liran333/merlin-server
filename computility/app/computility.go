@@ -5,7 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
-	"fmt"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -51,9 +52,11 @@ func (s *computilityAppService) GetAccountDetail(index domain.ComputilityAccount
 			return empty, nil
 		}
 
-		e := fmt.Errorf("find computility account error | user:%s, compute type:%s | err: %w",
+		e := xerrors.Errorf("find computility account error | user:%s, compute type:%s | err: %w",
 			index.UserName.Account(), index.ComputeType.ComputilityType(), err,
 		)
+
+		logrus.Error(e)
 
 		return AccountQuotaDetailDTO{}, allerror.New(
 			allerror.ErrorCodeComputilityAccountFindError,

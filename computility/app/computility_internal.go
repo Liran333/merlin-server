@@ -5,9 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -68,7 +67,7 @@ func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error 
 			org.OrgName.Account(), cmd.UserName.Account(),
 		)
 
-		e := fmt.Errorf("organization:%s has no balance to assign to user:%s",
+		e := xerrors.Errorf("organization:%s has no balance to assign to user:%s",
 			org.OrgName.Account(), cmd.UserName.Account(),
 		)
 
@@ -338,8 +337,10 @@ func (s *computilityInternalAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdat
 		return err
 	}
 	if !b {
-		e := fmt.Errorf("user %s no quota banlance for %s",
+		e := xerrors.Errorf("user %s no quota banlance for %s",
 			user.Account(), cmd.Index.ComputeType.ComputilityType())
+
+		logrus.Errorf("consume quota error| %s", e)
 
 		return allerror.New(
 			allerror.ErrorCodeNoNpuPermission,
@@ -360,7 +361,9 @@ func (s *computilityInternalAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdat
 
 	balance := account.QuotaCount - account.UsedQuota
 	if balance < 1 {
-		e := fmt.Errorf("user %s insufficient computing quota balance", user.Account())
+		e := xerrors.Errorf("user %s insufficient computing quota balance", user.Account())
+
+		logrus.Errorf("consume quota error| %s", e)
 
 		return allerror.New(
 			allerror.ErrorCodeInsufficientQuota,
@@ -395,7 +398,7 @@ func (s *computilityInternalAppService) SpaceCreateSupply(cmd CmdToSupplyRecord)
 		return err
 	}
 	if !b {
-		e := fmt.Errorf("user %s no permission for npu space", cmd.Index.UserName)
+		e := xerrors.Errorf("user %s no permission for npu space", cmd.Index.UserName)
 
 		return allerror.New(
 			allerror.ErrorCodeNoNpuPermission,

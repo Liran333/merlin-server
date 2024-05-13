@@ -150,19 +150,19 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		QuotaCount: count,
 	}
 
-	err = s.computilityApp.UserQuotaConsume(compCmd)
-	if err != nil {
-		logrus.Errorf("space create | call api for quota consume failed: %s", err)
-
-		return "", err
-	}
-
 	if err := s.spaceCountCheck(cmd.Owner); err != nil {
 		return "", err
 	}
 
 	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
 	if err != nil {
+		return "", err
+	}
+
+	err = s.computilityApp.UserQuotaConsume(compCmd)
+	if err != nil {
+		logrus.Errorf("space create error | call api for quota consume failed: %s", err)
+
 		return "", err
 	}
 
@@ -180,6 +180,13 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		ierr := s.computilityApp.UserQuotaRelease(compCmd)
 		if ierr != nil {
 			logrus.Errorf("realese user:%s quota failed after add space failed: %v", user, ierr)
+
+			return "", err
+		}
+
+		if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
+			logrus.Errorf("delete user:%s space repo:%v failed after add space failed: %v",
+				user, space.RepoIndex(), ierr)
 
 			return "", err
 		}
