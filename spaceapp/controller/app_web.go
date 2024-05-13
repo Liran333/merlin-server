@@ -115,6 +115,12 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 		ctx.Stream(func(w io.Writer) bool {
 			done, err := doOnce()
 			if err != nil {
+				if err.Error() == "finish" {
+					ctx.SSEvent("message", "")
+				} else {
+					logrus.Errorf("request build log err:%s", err)
+					ctx.SSEvent("error", "request build log failed")
+				}
 				return false
 			}
 			if done != nil {
@@ -167,6 +173,12 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 		ctx.Stream(func(w io.Writer) bool {
 			done, err := doOnce()
 			if err != nil {
+				if err.Error() == "finish" {
+					ctx.SSEvent("message", "")
+				} else {
+					logrus.Errorf("request space log err:%s", err)
+					ctx.SSEvent("error", "request space log failed")
+				}
 				return false
 			}
 			if done != nil {
