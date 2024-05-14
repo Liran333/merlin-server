@@ -224,8 +224,8 @@ func (app *SpaceApp) ResumeService() error {
 	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 }
 
-// IsAppInitAllow app can be init
-func (app *SpaceApp) IsAppInitAllow() bool {
+// IsAppNotAllowToInit app can be init if return false
+func (app *SpaceApp) IsAppNotAllowToInit() bool {
 	if app.Status.IsPaused() || app.Status.IsResuming() || app.Status.IsResumeFailed() {
 		return true
 	}

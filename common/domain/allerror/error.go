@@ -58,6 +58,9 @@ const (
 	// ErrorCodeSpaceAppCreateFailed is const
 	ErrorCodeSpaceAppCreateFailed = "space_app_create_failed"
 
+	// ErrorCodeSpaceCommitConflict is const
+	ErrorCodeSpaceCommitConflict = "space_commit_conflict"
+
 	// ErrorCodeSpaceAppUnmatchedStatus is const
 	ErrorCodeSpaceAppUnmatchedStatus = "space_app_unmatched_status"
 

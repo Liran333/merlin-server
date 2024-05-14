@@ -105,7 +105,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
-	if err == nil && app.IsAppInitAllow() {
+	if err == nil && app.IsAppNotAllowToInit() {
 		e := fmt.Errorf("spaceId:%s, not allow to init", space.Id.Identity())
 		logrus.Errorf("create space app failed, err:%s", e)
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
@@ -124,13 +124,22 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	return nil
 }
 
-func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (domain.SpaceApp, error) {
-	space, err := s.spaceRepo.FindById(spaceId)
+func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.SpaceApp, error) {
+	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = newSpaceNotFound(err)
+			err = newSpaceNotFound(xerrors.Errorf("space not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space, err:%w", err)
 		}
-		logrus.Errorf("spaceId:%s get space failed, err:%s", spaceId.Identity(), err)
+		logrus.Errorf("spaceId:%s get space failed, err:%s", cmd.SpaceId.Identity(), err)
+		return domain.SpaceApp{}, err
+	}
+
+	if space.CommitId != cmd.CommitId {
+		err = allerror.New(allerror.ErrorCodeSpaceCommitConflict, "commit conflict",
+			xerrors.Errorf("spaceId:%s commit conflict", space.Id.Identity()))
+		logrus.Errorf("spaceId:%s not latest commit, err:%s", cmd.SpaceId.Identity(), err)
 		return domain.SpaceApp{}, err
 	}
 
@@ -147,7 +156,7 @@ func (s *spaceappInternalAppService) getSpaceApp(spaceId primitive.Identity) (do
 
 // NotifyIsInvalid notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsInvalid(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -166,7 +175,7 @@ func (s *spaceappInternalAppService) NotifyIsInvalid(cmd *CmdToNotifyFailedStatu
 
 // NotifyIsBuilding notifies that the build process of a SpaceApp has started.
 func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -185,7 +194,7 @@ func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsSta
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -204,7 +213,7 @@ func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedS
 
 // NotifyIsStarting notifies that the build process of a SpaceApp has finished.
 func (s *spaceappInternalAppService) NotifyIsStarting(cmd *CmdToCreateApp) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(*cmd)
 	if err != nil {
 		return err
 	}
@@ -224,7 +233,7 @@ func (s *spaceappInternalAppService) NotifyIsStarting(cmd *CmdToCreateApp) error
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsStartFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -244,7 +253,7 @@ func (s *spaceappInternalAppService) NotifyIsStartFailed(cmd *CmdToNotifyFailedS
 
 // NotifyIsServing notifies that a service of a SpaceApp has serving.
 func (s *spaceappInternalAppService) NotifyIsServing(cmd *CmdToNotifyServiceIsStarted) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -259,12 +268,13 @@ func (s *spaceappInternalAppService) NotifyIsServing(cmd *CmdToNotifyServiceIsSt
 		return err
 	}
 	logrus.Infof("spaceId:%s notify serving successful", cmd.SpaceId.Identity())
+
 	return nil
 }
 
 // NotifyIsReStartFailed notifies change SpaceApp status.
 func (s *spaceappInternalAppService) NotifyIsRestartFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceId)
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
