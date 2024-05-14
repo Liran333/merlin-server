@@ -26,6 +26,7 @@ var (
 	randomIdLength          int
 	passwordInstance        *passwordImpl
 	acceptableAvatarDomains []string
+	skipAvatarids           sets.Set[string]
 )
 
 // Init initializes the configuration with the given Config struct.
@@ -56,6 +57,11 @@ func Init(cfg *Config) (err error) {
 
 	acceptableAvatarDomains = cfg.AcceptableAvatarDomains
 
+	skipAvatarids = sets.New[string]()
+	for _, v := range cfg.SkipAvatarIds {
+		skipAvatarids.Insert(v)
+	}
+
 	return
 }
 
@@ -71,6 +77,7 @@ type Config struct {
 	RandomIdLength          int            `json:"random_id_length"`
 	PasswordConfig          PasswordConfig `json:"password_config"`
 	AcceptableAvatarDomains []string       `json:"acceptable_avatar_domains" required:"true"`
+	SkipAvatarIds           []string       `json:"skip_avatar_ids"`
 }
 
 // SetDefault sets default values for Config if they are not provided.

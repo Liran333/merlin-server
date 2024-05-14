@@ -127,3 +127,6 @@ RECOMMEND_SPACES:
 RECOMMEND_MODELS:
   - owner: Coopermassaki
     reponame: fuyong-test
+
+SKIP_AVATAR_IDS:
+  - "https://files.authing.co/authing-console/default-user-avatar.png"

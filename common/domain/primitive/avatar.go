@@ -27,16 +27,25 @@ func NewAvatarId(v string) (AvatarId, error) {
 		return nil, errors.New("avatar must be a valid uri")
 	}
 
+	if skipAvatarids.Has(v) {
+		return dpAvatarId(""), nil
+	}
+
 	for _, domain := range acceptableAvatarDomains {
 		if strings.HasPrefix(v, domain) {
 			return dpAvatarId(avatarId.String()), nil
 		}
 	}
+
 	return nil, errors.New("avatar url domain not allowed")
 }
 
 // CreateAvatarId creates a new AvatarId instance from the given string.
 func CreateAvatarId(v string) AvatarId {
+	if skipAvatarids.Has(v) {
+		return dpAvatarId("")
+	}
+
 	return dpAvatarId(v)
 }
 

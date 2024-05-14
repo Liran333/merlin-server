@@ -268,6 +268,10 @@ primitive:
 {{- range (ds "common").ACCEPTABLE_AVATAR_DOMAINS}}
   - "{{ . }}"
 {{- end }}
+  skip_avatar_ids:
+{{- range (ds "common").SKIP_AVATAR_IDS}}
+  - "{{ . }}"
+{{- end }}
 
 postgresql:
   host: {{(ds "secret").data.PG_HOST }}
