@@ -162,11 +162,12 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 
 	if opt.Name != "" {
 		_, arg := likeFilter(fieldName, opt.Name)
-		db = db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg))
 
 		if !opt.ExcludeFullname {
 			query2, arg2 := likeFilter(fieldFullName, opt.Name)
-			db = db.Or(query2, arg2)
+			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)).Or(query2, arg2))
+		} else {
+			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)))
 		}
 
 		if strings.Contains(readme, strings.ToLower(opt.Name)) {
