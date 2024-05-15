@@ -49,6 +49,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			CountPerPage:    opt.Size,
 			ExcludeFullname: true,
 			Count:           true,
+			Visibility:      primitive.VisibilityPublic,
 		}
 		models, err := adapter.SearchModel(cmd, opt.Account)
 		if err != nil {
@@ -64,6 +65,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			CountPerPage:    opt.Size,
 			ExcludeFullname: true,
 			Count:           true,
+			Visibility:      primitive.VisibilityPublic,
 		}
 		spaces, err := adapter.SearchSpace(cmd, opt.Account)
 		if err != nil {
