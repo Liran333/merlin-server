@@ -32,6 +32,16 @@ func NewHardware(v string, sdk string) (Hardware, error) {
 	return hardware(v), nil
 }
 
+func IsValidHardware(h string) bool {
+	for _, sdk := range sdkObjects {
+		if sdk.Has(h) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // CreateHardware creates a new Hardware instance based on the given string.
 func CreateHardware(v string) Hardware {
 	return hardware(v)

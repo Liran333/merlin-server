@@ -185,20 +185,17 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(equalQuery(fieldLicense), opt.License.License())
 	}
 
-	if v := opt.Labels.Task; v != "" {
-		db = db.Where(equalQuery(fieldTask), v)
+	if opt.Labels.Task != nil {
+		db = db.Where(equalQuery(fieldTask), opt.Labels.Task.Task())
 	}
 
-	if v := opt.Labels.Others; v != nil && v.Len() > 0 {
-		query, arg := intersectionFilter(fieldOthers, v.UnsortedList())
-
-		db = db.Where(query, arg)
+	if opt.Hardware != nil {
+		db = db.Where(equalQuery(fieldHardware), opt.Hardware.Hardware())
 	}
 
-	if v := opt.Labels.Frameworks; v != nil && v.Len() > 0 {
-		query, arg := intersectionFilter(fieldFrameworks, v.UnsortedList())
-
-		db = db.Where(query, arg)
+	if v := opt.Framework; v != "" {
+		query1, arg1 := likeFilter(fieldBaseImage, v)
+		db = db.Where(db.Where(query1, arg1))
 	}
 
 	return db

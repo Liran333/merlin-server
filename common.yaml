@@ -1,4 +1,4 @@
-ACCOUNT_NAME_REGEXP: ^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]$
+ACCOUNT_NAME_REGEXP: ^[a-zA-Z]([-_.]([a-zA-Z0-9])|[a-zA-Z0-9])+$
 ACCOUNT_NAME_MIN_LEN: 3
 ACCOUNT_NAME_MAX_LEN: 20
 ACCOUNT_DESC_MAX_LEN: 255
@@ -33,7 +33,7 @@ SPACE_SDK:
 - TYPE: Gradio
   HARDWARE:
   - 'CPU basic 2 vCPU · 16GB · FREE'
-  - 'NPU basic 8 vCPU · 32GB · FREE' 
+  - 'NPU basic 8 vCPU · 32GB · FREE'
 - TYPE: Static
   HARDWARE:
   - 'CPU basic 2 vCPU · 16GB · FREE'
@@ -109,7 +109,7 @@ FRAMEWORKS:
 LIBRARY_NAME:
   - 'openMind'
 
-ACCEPTABLE_AVATAR_DOMAINS: 
+ACCEPTABLE_AVATAR_DOMAINS:
   - "https://gitee.com"
   - "https://files.authing.co"
   - "https://avatars.githubusercontent.com"
@@ -130,3 +130,26 @@ RECOMMEND_MODELS:
 
 SKIP_AVATAR_IDS:
   - "https://files.authing.co/authing-console/default-user-avatar.png"
+
+BASE_IMAGE:
+- TYPE: 'CPU basic 2 vCPU · 16GB · FREE'
+  BASE_IMAGE:
+  - "python3.8-pytorch2.1"
+  - "python3.8-mindspore2.3"
+- TYPE: 'NPU basic 8 vCPU · 32GB · FREE'
+  BASE_IMAGE:
+  - "python3.8-cann8.0-pytorch2.1"
+  - "python3.8-cann8.0-mindspore2.3"
+
+SPACE_TASKS:
+  - nlp
+  - cv
+  - multi-modal
+  - audio
+
+MAX_INVITE: 4
+MAX_TOKEN: 4
+MAX_MODEL_PER_USER: 4
+MAX_MODEL_PER_ORG: 4
+MAX_SPACE_PER_ORG: 4
+MAX_SPACE_PER_USER: 4

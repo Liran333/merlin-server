@@ -67,6 +67,7 @@ func (s *SuiteSpaceModelRelation) SetupSuite() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace1",
 		Owner:      "test2",
 		Sdk:        "gradio",

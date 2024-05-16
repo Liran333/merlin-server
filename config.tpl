@@ -13,6 +13,7 @@ organization:
     org_user_joined: org_user_joined
     org_user_removed: org_user_removed
     org_deleted: org_deleted
+  max_invite_count: {{(ds "common").MAX_INVITE }}
 
 computility:
   tables:
@@ -62,6 +63,19 @@ space:
       env_value_min_length: {{(ds "common").ENV_VALUE_MIN_LEN }}
       env_value_max_length: {{(ds "common").ENV_VALUE_MAX_LEN }}
       env_name_regexp: {{(ds "common").ENV_NAME_REGEXP }}
+    base_image:
+  {{- range (ds "common").BASE_IMAGE}}
+    - type: {{.TYPE}}
+      base_image:
+    {{- range .BASE_IMAGE}}
+      - '{{.}}'
+    {{- end }}
+  {{- end }}
+    tasks:
+  {{- range (ds "common").SPACE_TASKS}}
+    - {{.}}
+  {{- end }}
+
   topics:
     space_created: space_created
     space_updated: space_updated
@@ -80,6 +94,8 @@ space:
     - owner: {{ $v.owner }}
       reponame: {{ $v.reponame }}
     {{- end }}
+    max_count_per_user: {{(ds "common").MAX_SPACE_PER_USER }}
+    max_count_per_org: {{(ds "common").MAX_SPACE_PER_ORG }}
 permission:
   permissions:
     - object_type: member
@@ -199,6 +215,8 @@ model:
     - owner: {{ $v.owner }}
       reponame: {{ $v.reponame }}
     {{- end }}
+    max_count_per_org: {{(ds "common").MAX_MODEL_PER_ORG }}
+    max_count_per_user: {{(ds "common").MAX_MODEL_PER_USER }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}
@@ -220,6 +238,7 @@ user:
     user: user
     token: token
   key: {{(ds "secret").data.USER_ENC_KEY }}
+  max_token_per_user: {{ (ds "common").MAX_TOKEN }}
 
 coderepo:
   primitive:

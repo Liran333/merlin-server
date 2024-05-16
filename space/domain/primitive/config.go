@@ -15,12 +15,16 @@ import (
 var (
 	envConfig  ENVConfig
 	sdkObjects map[string]sets.Set[string]
+	baseImages map[string]sets.Set[string]
+	tasks      sets.Set[string]
 )
 
 // Config represents the configuration structure for initialization.
 type Config struct {
-	SDKObjects []SDKObject `json:"sdk"`
-	ENVConfig  ENVConfig   `json:"env"`
+	SDKObjects []SDKObject     `json:"sdk"`
+	ENVConfig  ENVConfig       `json:"env"`
+	Tasks      []string        `json:"tasks"      required:"true"`
+	BaseImages []baseImageConf `json:"base_image"   required:"true"`
 }
 
 // ConfigItems returns a slice of interface{} containing pointers to the configuration items.
@@ -50,12 +54,17 @@ type SDKObject struct {
 	Hardware []string `json:"hardware"    required:"true"`
 }
 
+type baseImageConf struct {
+	HardwareType string   `json:"type"        required:"true"`
+	BaseImage    []string `json:"base_image"    required:"true"`
+}
+
 // Init initializes the system with the provided configuration.
 func Init(cfg *Config) {
 	if cfg == nil {
 		return
 	}
-
+	// init sdk
 	sdkObjects = make(map[string]sets.Set[string])
 	for _, sdkobj := range cfg.SDKObjects {
 		sdkType := strings.ToLower(sdkobj.SdkType)
@@ -67,6 +76,21 @@ func Init(cfg *Config) {
 	}
 
 	envConfig = cfg.ENVConfig
+	// init base image
+	baseImages = make(map[string]sets.Set[string])
+	for _, img := range cfg.BaseImages {
+		hardwareType := strings.ToLower(img.HardwareType)
+		for i, baseImage := range img.BaseImage {
+			img.BaseImage[i] = strings.ToLower(baseImage)
+		}
+		baseImages[hardwareType] = sets.New[string]()
+		baseImages[hardwareType].Insert(img.BaseImage...)
+	}
+
+	tasks = sets.New[string]()
+	for _, task := range cfg.Tasks {
+		tasks.Insert(task)
+	}
 }
 
 // SetDefault sets default values for PasswordConfig if they are not provided.

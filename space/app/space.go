@@ -25,6 +25,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 	spaceappApp "github.com/openmerlin/merlin-server/spaceapp/app"
 	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
+	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -35,10 +36,6 @@ const (
 
 func newSpaceNotFound(err error) error {
 	return allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", err)
-}
-
-func newSpaceCountExceeded(err error) error {
-	return allerror.NewCountExceeded("space count exceed", err)
 }
 
 func newModelNotFound(err error) error {
@@ -94,6 +91,7 @@ func NewSpaceAppService(
 	disableOrg orgapp.PrivilegeOrg,
 	computilityApp computilityapp.ComputilityInternalAppService,
 	spaceappApp spaceappApp.SpaceappAppService,
+	user userapp.UserService,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -109,6 +107,7 @@ func NewSpaceAppService(
 		disableOrg:           disableOrg,
 		computilityApp:       computilityApp,
 		spaceappApp:          spaceappApp,
+		user:                 user,
 	}
 }
 
@@ -126,13 +125,14 @@ type spaceAppService struct {
 	disableOrg           orgapp.PrivilegeOrg
 	computilityApp       computilityapp.ComputilityInternalAppService
 	spaceappApp          spaceappApp.SpaceappAppService
+	user                 userapp.UserService
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
 func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) (string, error) {
 	err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeSpace)
 	if err != nil {
-		return "", err
+		return "", xerrors.Errorf("failed to create space: %w", err)
 	}
 
 	now := utils.Now()
@@ -175,13 +175,11 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	}
 
 	if err = s.repoAdapter.Add(&space); err != nil {
-		logrus.Infof("space create failed | realese user:%s quota ", user)
+		logrus.Errorf("space create failed | realese user:%s quota ", user)
 
 		ierr := s.computilityApp.UserQuotaRelease(compCmd)
 		if ierr != nil {
-			logrus.Errorf("realese user:%s quota failed after add space failed: %v", user, ierr)
-
-			return "", err
+			return "", xerrors.Errorf("realese user:%s quota failed after add space failed: %w", user, ierr)
 		}
 
 		if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
@@ -209,22 +207,22 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		if err != nil {
 			logrus.Errorf("delete space after add space id supplyment failed, %s", err)
 
-			return "", err
+			return "", xerrors.Errorf("add space id supplyment failed: %w", err)
 		}
 
 		err = s.computilityApp.UserQuotaRelease(compCmd)
 		if err != nil {
 			logrus.Errorf("release quota after add space id supplyment failed, %s", err)
 
-			return "", err
+			return "", xerrors.Errorf("add space id supplyment failed: %w", err)
 		}
 
-		return "", err
+		return "", xerrors.Errorf("add space id supplyment failed: %w", err)
 	}
 
 	e := domain.NewSpaceCreatedEvent(&space)
 	if err1 := s.msgAdapter.SendSpaceCreatedEvent(&e); err1 != nil {
-		logrus.Errorf("failed to send space created event, space id:%s", space.Id.Identity())
+		logrus.Errorf("failed to send space created event, space id: %s err: %s", space.Id.Identity(), err1)
 	}
 
 	return space.Id.Identity(), nil
@@ -580,11 +578,17 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 
 	total, err := s.repoAdapter.Count(&cmdToList)
 	if err != nil {
-		return err
+		return allerror.NewCommonRespError("failed to count spaces", xerrors.Errorf("failed to count spaces: %w", err))
 	}
 
-	if total >= config.MaxCountPerOwner {
-		return newSpaceCountExceeded(fmt.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
+	if s.user.IsOrganization(owner) && total >= config.MaxCountPerOrg {
+		return allerror.NewCountExceeded("space count exceed",
+			xerrors.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerOrg))
+	}
+
+	if !s.user.IsOrganization(owner) && total >= config.MaxCountPerUser {
+		return allerror.NewCountExceeded("space count exceed",
+			xerrors.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerUser))
 	}
 
 	return nil

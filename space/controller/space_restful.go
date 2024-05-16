@@ -100,11 +100,10 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Description  list global public space
 // @Tags     SpaceRestful
 // @Param    name            query  string  false  "name of space" MaxLength(100)
-// @Param    task            query  string  false  "task label" MaxLength(100)
+// @Param    domain          query  string  false  "domain label" MaxLength(100)
 // @Param    owner           query  string  true   "owner of space" MaxLength(40)
-// @Param    others          query  string  false  "other labels, separate multiple each ones with commas" MaxLength(100)
 // @Param    license         query  string  false  "license label" MaxLength(40)
-// @Param    frameworks      query  string  false  "framework labels, separate multiple each ones with commas" MaxLength(100)
+// @Param    framework       query  string  false  "framework " Enums(pytorch, mindspore)
 // @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
 // @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)

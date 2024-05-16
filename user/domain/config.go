@@ -12,6 +12,14 @@ type tables struct {
 
 // Config is a struct that holds the configuration for the program.
 type Config struct {
-	Tables tables `json:"tables" required:"true"`
-	Key    []byte `json:"key"    required:"true"`
+	Key             []byte `json:"key"    required:"true"`
+	Tables          tables `json:"tables" required:"true"`
+	MaxTokenPerUser int    `json:"max_token_per_user" required:"true"`
+}
+
+// SetDefault sets the default values for the Config struct if they are not already set.
+func (cfg *Config) SetDefault() {
+	if cfg.MaxTokenPerUser <= 0 {
+		cfg.MaxTokenPerUser = 20
+	}
 }

@@ -231,6 +231,88 @@ func (s *SuiteUserModel) TestModelOwnerNameGetPrivateModel() {
 	assert.Nil(s.T(), err)
 }
 
+// model不能创建超过配置，当前限制是4个
+func (s *SuiteUserModel) TestUserCreateModelMaxCount() {
+	modelParam := swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel1",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+	data, r, err := ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	id1 := data.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelParam = swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel2",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	id2 := data.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelParam = swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel3",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	id3 := data.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelParam = swaggerRest.ControllerReqToCreateModel{
+		Name:       "testmodel4",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+	data, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	id4 := data.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	modelParam = swaggerRest.ControllerReqToCreateModel{
+		Name:       "cantcreate",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	}
+	_, r, err = ApiRest.ModelApi.V1ModelPost(AuthRest2, modelParam)
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 清理
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id1)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id2)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id3)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id4)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUserModel used for testing
 func TestUserModel(t *testing.T) {
 	suite.Run(t, new(SuiteUserModel))

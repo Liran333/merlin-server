@@ -17,4 +17,5 @@ type Token interface {
 	GetByAccount(primitive.Account) ([]domain.PlatformToken, error)
 	GetByLastEight(string) ([]domain.PlatformToken, error)
 	GetByName(primitive.Account, primitive.TokenName) (domain.PlatformToken, error)
+	Count(primitive.Account) (int64, error)
 }

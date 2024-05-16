@@ -42,6 +42,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		services.disable,
 		services.computilityApp,
 		services.spaceappApp,
+		services.userApp,
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(

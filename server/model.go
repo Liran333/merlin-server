@@ -30,6 +30,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 		modelrepositoryadapter.ModelAdapter(),
 		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
 		services.disable,
+		services.userApp,
 	)
 
 	return nil

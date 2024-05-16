@@ -8,6 +8,7 @@ package repositoryimpl
 import (
 	"errors"
 
+	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -64,7 +65,18 @@ func (impl *inviteRepoImpl) ListInvitation(cmd *domain.OrgInvitationListCmd) (ap
 	}
 
 	return
+}
 
+func (impl *inviteRepoImpl) Count(user primitive.Account) (c int64, err error) {
+	query := impl.DB().Where(impl.EqualQuery(fieldInviter), user.Account())
+	query = query.Where(impl.EqualQuery(fieldStatus), domain.ApproveStatusPending)
+
+	err = query.Count(&c).Error
+	if err != nil {
+		return 0, xerrors.Errorf("failed to count: %w", err)
+	}
+
+	return
 }
 
 // AddInvite adds a new invite to the database.

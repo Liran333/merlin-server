@@ -38,6 +38,7 @@ func (s *SuiteUserSpace) TestUserCanCreateUpdateDeleteSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test2",
 		Sdk:        "gradio",
@@ -90,6 +91,7 @@ func (s *SuiteUserSpace) TestUserCreateUpdateInvalidSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test2",
 		Sdk:        "gradio",
@@ -114,6 +116,7 @@ func (s *SuiteUserSpace) TestNotLoginCantCreateSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test2",
 		Sdk:        "gradio",
@@ -132,6 +135,7 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test2",
 		Sdk:        "gradio",
@@ -180,6 +184,7 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test1",
 		Sdk:        "gradio",
@@ -195,21 +200,19 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	space := getData(s.T(), data1.Data)
-	labels := getData(s.T(), space["labels"])
+	space := data1.Data
 
-	assert.Equal(s.T(), "space desc", space["desc"])
-	assert.Equal(s.T(), "spacefullname", space["fullname"])
-	assert.Equal(s.T(), strings.ToLower("CPU basic 2 vCPU · 16GB · FREE"), space["hardware"])
-	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []string{}, "license": "mit", "others": []string{}, "task": ""}),
-		labels)
-	assert.Equal(s.T(), "testspace", space["name"])
-	assert.Equal(s.T(), "test1", space["owner"])
-	assert.Equal(s.T(), "gradio", space["sdk"])
-	assert.Equal(s.T(), "public", space["visibility"])
-	assert.Equal(s.T(), "https://gitee.com/1", space["space_avatar_id"])
-	assert.Equal(s.T(), "", space["avatar_id"])
+	assert.Equal(s.T(), "space desc", space.Desc)
+	assert.Equal(s.T(), "spacefullname", space.Fullname)
+	assert.Equal(s.T(), strings.ToLower("CPU basic 2 vCPU · 16GB · FREE"), space.Hardware)
+	assert.Equal(s.T(), "pytorch", space.Labels.Framework)
+	assert.Equal(s.T(), "python3.8-pytorch2.1", space.BaseImage)
+	assert.Equal(s.T(), "mit", space.Labels.License)
+	assert.Equal(s.T(), "test1", space.Owner)
+	assert.Equal(s.T(), "gradio", space.Sdk)
+	assert.Equal(s.T(), "public", space.Visibility)
+	assert.Equal(s.T(), "https://gitee.com/1", space.SpaceAvatarId)
+	assert.Equal(s.T(), "", space.AvatarId)
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 
@@ -225,6 +228,7 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspace",
 		Owner:      "test1",
 		Sdk:        "gradio",
@@ -264,6 +268,7 @@ func (s *SuiteUserSpace) TestSpaceOwnerNameGetPrivateSpace() {
 		Fullname:   "spacefullname",
 		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
 		License:    "mit",
+		BaseImage:  "python3.8-pytorch2.1",
 		Name:       "testspaceprivate",
 		Owner:      "test2",
 		Sdk:        "gradio",

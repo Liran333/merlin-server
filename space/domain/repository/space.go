@@ -9,22 +9,24 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
+	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 )
 
 // SpaceSummary represents a summary of a space.
 type SpaceSummary struct {
-	Id            string `json:"id"`
-	Name          string `json:"name"`
-	Desc          string `json:"desc"`
-	Task          string `json:"task"`
-	Owner         string `json:"owner"`
-	AvatarId      string `json:"space_avatar_id"`
-	Fullname      string `json:"fullname"`
-	UpdatedAt     int64  `json:"updated_at"`
-	LikeCount     int    `json:"like_count"`
-	DownloadCount int    `json:"download_count"`
-	Disable       bool   `json:"disable"`
-	DisableReason string `json:"disable_reason"`
+	Id            string             `json:"id"`
+	Name          string             `json:"name"`
+	Desc          string             `json:"desc"`
+	Owner         string             `json:"owner"`
+	AvatarId      string             `json:"space_avatar_id"`
+	Fullname      string             `json:"fullname"`
+	BaseImage     string             `json:"base_image"`
+	UpdatedAt     int64              `json:"updated_at"`
+	LikeCount     int                `json:"like_count"`
+	DownloadCount int                `json:"download_count"`
+	Disable       bool               `json:"disable"`
+	DisableReason string             `json:"disable_reason"`
+	Labels        domain.SpaceLabels `json:"labels"`
 }
 
 // ListOption contains options for listing spaces.
@@ -44,8 +46,14 @@ type ListOption struct {
 	// list space which have one of licenses
 	License primitive.License
 
+	// list space which have one of framework
+	Framework string
+
 	// list space which have at least one label for each kind of lables.
 	Labels domain.SpaceLabels
+
+	// Hardware is an interface that defines hardware-related operations.
+	Hardware spaceprimitive.Hardware
 
 	// sort
 	SortType primitive.SortType

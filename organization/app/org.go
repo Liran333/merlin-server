@@ -75,32 +75,32 @@ func NewOrgService(
 	cert repository.Certificate,
 ) OrgService {
 	return &orgService{
-		user:             user,
-		repo:             repo,
-		member:           member,
-		perm:             perm,
-		invite:           invite,
-		defaultRole:      primitive.CreateRole(cfg.DefaultRole),
-		inviteExpiry:     cfg.InviteExpiry,
-		MaxCountPerOwner: cfg.MaxCountPerOwner,
-		git:              git,
-		message:          message,
-		certificate:      cert,
+		user:         user,
+		repo:         repo,
+		member:       member,
+		perm:         perm,
+		invite:       invite,
+		defaultRole:  primitive.CreateRole(cfg.DefaultRole),
+		inviteExpiry: cfg.InviteExpiry,
+		config:       cfg,
+		git:          git,
+		message:      message,
+		certificate:  cert,
 	}
 }
 
 type orgService struct {
-	MaxCountPerOwner int64
-	inviteExpiry     int64
-	defaultRole      primitive.Role
-	user             userapp.UserService
-	repo             userrepo.User
-	member           repository.OrgMember
-	invite           repository.Approve
-	perm             *permService
-	git              git.User
-	message          message.OrgnizationMessage
-	certificate      repository.Certificate
+	config       *domain.Config
+	inviteExpiry int64
+	defaultRole  primitive.Role
+	user         userapp.UserService
+	repo         userrepo.User
+	member       repository.OrgMember
+	invite       repository.Approve
+	perm         *permService
+	git          git.User
+	message      message.OrgnizationMessage
+	certificate  repository.Certificate
 }
 
 // Create creates a new organization with the given command and returns the created organization as a UserDTO.
@@ -174,9 +174,9 @@ func (org *orgService) orgCountCheck(owner primitive.Account) error {
 		return err
 	}
 
-	if total >= org.MaxCountPerOwner {
+	if total >= org.config.MaxCountPerOwner {
 		return allerror.NewCountExceeded("org count exceed", fmt.Errorf("org count(now:%d max:%d) exceed",
-			total, org.MaxCountPerOwner))
+			total, org.config.MaxCountPerOwner))
 	}
 
 	return nil
@@ -804,7 +804,7 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 		return
 	}
 
-	err = org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
+	err = org.canInvite(cmd)
 	if err != nil {
 		return
 	}
@@ -823,6 +823,26 @@ func (org *orgService) InviteMember(cmd *domain.OrgInviteMemberCmd) (dto Approve
 	dto = ToApproveDTO(invite, org.user)
 
 	return
+}
+
+func (org *orgService) canInvite(cmd *domain.OrgInviteMemberCmd) error {
+	err := org.perm.Check(cmd.Actor, cmd.Org, primitive.ObjTypeMember, primitive.ActionCreate)
+	if err != nil {
+		return err
+	}
+
+	c, err := org.invite.Count(cmd.Actor)
+	if err != nil {
+		return xerrors.Errorf("failed to count invite: %w", err)
+	}
+
+	logrus.Infof("invite count: %d max: %d", c, org.config.MaxInviteCount)
+
+	if c >= org.config.MaxInviteCount {
+		return allerror.NewCountExceeded("exceed max invite count", xerrors.Errorf("invite count(now:%d max:%d) exceed", c, org.config.MaxInviteCount))
+	}
+
+	return nil
 }
 
 // HasMember returns true if the user is already a member of the organization.

@@ -27,7 +27,8 @@ func Init(cfg *Config) {
 // Config is a struct that holds the configuration for max count per owner.
 type Config struct {
 	AvatarIds             []string `json:"avatar_ids" required:"true"`
-	MaxCountPerOwner      int      `json:"max_count_per_owner"`
+	MaxCountPerUser       int      `json:"max_count_per_user"`
+	MaxCountPerOrg        int      `json:"max_count_per_org"`
 	MaxCountSpaceSecret   int      `json:"max_count_space_secret"`
 	MaxCountSpaceVariable int      `json:"max_count_space_variable"`
 	avatarIdsSet          sets.Set[string]
@@ -41,12 +42,18 @@ type RecommendIndex struct {
 
 // SetDefault sets the default values for the Config struct.
 func (cfg *Config) SetDefault() {
-	if cfg.MaxCountPerOwner <= 0 {
-		cfg.MaxCountPerOwner = 1000
+	if cfg.MaxCountPerUser <= 0 {
+		cfg.MaxCountPerUser = 50
 	}
+
+	if cfg.MaxCountPerOrg <= 0 {
+		cfg.MaxCountPerOrg = 200
+	}
+
 	if cfg.MaxCountSpaceVariable <= 0 {
 		cfg.MaxCountSpaceVariable = 100
 	}
+
 	if cfg.MaxCountSpaceSecret <= 0 {
 		cfg.MaxCountSpaceSecret = 100
 	}

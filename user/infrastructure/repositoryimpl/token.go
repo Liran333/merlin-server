@@ -117,3 +117,17 @@ func (impl *tokenRepoImpl) GetByName(acc primitive.Account,
 
 	return
 }
+
+// Count retrieves token number of one user
+func (impl *tokenRepoImpl) Count(account domain.Account) (c int64, err error) {
+	query := impl.DB().Where(
+		impl.EqualQuery(fieldOwner), account.Account(),
+	)
+
+	err = query.Count(&c).Error
+	if err != nil {
+		return 0, xerrors.Errorf("failed to count token: %w", err)
+	}
+
+	return
+}

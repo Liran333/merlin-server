@@ -13,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/computility/domain"
 	"github.com/openmerlin/merlin-server/computility/domain/message"
 	"github.com/openmerlin/merlin-server/computility/domain/repository"
+	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -34,6 +35,7 @@ func NewComputilityInternalAppService(
 	accountAdapter repository.ComputilityAccountRepositoryAdapter,
 	accountRecordAtapter repository.ComputilityAccountRecordRepositoryAdapter,
 	messageAdapter message.ComputilityMessage,
+	privilege orgapp.PrivilegeOrg,
 ) ComputilityInternalAppService {
 	return &computilityInternalAppService{
 		orgAdapter:           orgAdapter,
@@ -41,6 +43,7 @@ func NewComputilityInternalAppService(
 		accountAdapter:       accountAdapter,
 		accountRecordAtapter: accountRecordAtapter,
 		messageAdapter:       messageAdapter,
+		privilege:            privilege,
 	}
 }
 
@@ -50,9 +53,14 @@ type computilityInternalAppService struct {
 	detailAdapter        repository.ComputilityDetailRepositoryAdapter
 	accountRecordAtapter repository.ComputilityAccountRecordRepositoryAdapter
 	messageAdapter       message.ComputilityMessage
+	privilege            orgapp.PrivilegeOrg
 }
 
 func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error {
+	if s.privilege == nil {
+		return nil
+	}
+
 	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -130,6 +138,10 @@ func (s *computilityInternalAppService) UserJoin(cmd CmdToUserOrgOperate) error 
 func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) (
 	QuotaRecallDTO, error,
 ) {
+	if s.privilege == nil {
+		return QuotaRecallDTO{}, nil
+	}
+
 	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -162,6 +174,10 @@ func (s *computilityInternalAppService) UserRemove(cmd CmdToUserOrgOperate) (
 func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) (
 	[]QuotaRecallDTO, error,
 ) {
+	if s.privilege == nil {
+		return nil, nil
+	}
+
 	org, err := s.orgAdapter.FindByOrgName(cmd.OrgName)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -200,6 +216,10 @@ func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) (
 func (s *computilityInternalAppService) userRemoveOperate(index *domain.ComputilityIndex) (
 	QuotaRecallDTO, error,
 ) {
+	if s.privilege == nil {
+		return QuotaRecallDTO{}, nil
+	}
+
 	detail, err := s.detailAdapter.FindByIndex(index)
 	if err != nil {
 		return QuotaRecallDTO{}, err
@@ -267,6 +287,10 @@ func (s *computilityInternalAppService) UserQuotaRelease(cmd CmdToUserQuotaUpdat
 		return nil
 	}
 
+	if s.privilege == nil {
+		return nil
+	}
+
 	record, err := s.accountRecordAtapter.FindByRecordIndex(cmd.Index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -321,6 +345,10 @@ func (s *computilityInternalAppService) UserQuotaRelease(cmd CmdToUserQuotaUpdat
 
 func (s *computilityInternalAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdate) error {
 	if cmd.Index.ComputeType.IsCpu() {
+		return nil
+	}
+
+	if s.privilege == nil {
 		return nil
 	}
 
@@ -390,6 +418,10 @@ func (s *computilityInternalAppService) UserQuotaConsume(cmd CmdToUserQuotaUpdat
 
 func (s *computilityInternalAppService) SpaceCreateSupply(cmd CmdToSupplyRecord) error {
 	if cmd.Index.ComputeType.IsCpu() {
+		return nil
+	}
+
+	if s.privilege == nil {
 		return nil
 	}
 

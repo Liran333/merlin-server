@@ -48,6 +48,7 @@ func initUser(cfg *config.Config, services *allServices) {
 		loginrepositoryadapter.LoginAdapter(),
 		oidcimpl.NewAuthingUser(),
 		session,
+		&cfg.User,
 	)
 }
 

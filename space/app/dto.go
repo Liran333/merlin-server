@@ -21,11 +21,12 @@ import (
 type CmdToCreateSpace struct {
 	coderepoapp.CmdToCreateRepo
 
-	SDK      spaceprimitive.SDK
-	Desc     primitive.MSDDesc
-	Fullname primitive.MSDFullname
-	Hardware spaceprimitive.Hardware
-	AvatarId primitive.AvatarId
+	SDK       spaceprimitive.SDK
+	Desc      primitive.MSDDesc
+	Fullname  primitive.MSDFullname
+	Hardware  spaceprimitive.Hardware
+	BaseImage spaceprimitive.BaseImage
+	AvatarId  primitive.AvatarId
 }
 
 func (cmd *CmdToCreateSpace) toSpace() domain.Space {
@@ -33,12 +34,19 @@ func (cmd *CmdToCreateSpace) toSpace() domain.Space {
 		cmd.AvatarId = primitive.CreateAvatarId(config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))]) // #nosec G404
 	}
 
+	label := domain.SpaceLabels{
+		Framework: cmd.BaseImage.Type(),
+		License:   cmd.License,
+	}
+
 	return domain.Space{
-		SDK:      cmd.SDK,
-		Desc:     cmd.Desc,
-		Hardware: cmd.Hardware,
-		Fullname: cmd.Fullname,
-		AvatarId: cmd.AvatarId,
+		SDK:       cmd.SDK,
+		Desc:      cmd.Desc,
+		Hardware:  cmd.Hardware,
+		BaseImage: cmd.BaseImage,
+		Fullname:  cmd.Fullname,
+		AvatarId:  cmd.AvatarId,
+		Labels:    label,
 	}
 }
 
@@ -109,6 +117,7 @@ type SpaceDTO struct {
 	Fullname      string         `json:"fullname"`
 	AvatarId      string         `json:"space_avatar_id"`
 	Hardware      string         `json:"hardware"`
+	BaseImage     string         `json:"base_image"`
 	CreatedAt     int64          `json:"created_at"`
 	UpdatedAt     int64          `json:"updated_at"`
 	LikeCount     int            `json:"like_count"`
@@ -126,20 +135,18 @@ type SpaceDTO struct {
 
 // SpaceLabelsDTO is a struct used to represent labels of a space.
 type SpaceLabelsDTO struct {
-	Task       string   `json:"task"`
-	Others     []string `json:"others"`
-	License    string   `json:"license"`
-	Frameworks []string `json:"frameworks"`
+	Task      string `json:"task"`
+	License   string `json:"license"`
+	Framework string `json:"framework"`
 }
 
 func toSpaceLabelsDTO(space *domain.Space) SpaceLabelsDTO {
 	labels := &space.Labels
 
 	return SpaceLabelsDTO{
-		Task:       labels.Task,
-		Others:     labels.Others.UnsortedList(),
-		License:    space.License.License(),
-		Frameworks: labels.Frameworks.UnsortedList(),
+		Task:      labels.Task.Task(),
+		License:   space.License.License(),
+		Framework: labels.Framework,
 	}
 }
 
@@ -151,6 +158,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		Owner:         space.Owner.Account(),
 		Labels:        toSpaceLabelsDTO(space),
 		Hardware:      space.Hardware.Hardware(),
+		BaseImage:     space.BaseImage.BaseImage(),
 		CreatedAt:     space.CreatedAt,
 		UpdatedAt:     space.UpdatedAt,
 		LikeCount:     space.LikeCount,
@@ -194,6 +202,7 @@ func toSpaceMetaDTO(space *domain.Space) sdk.SpaceMetaDTO {
 		Name:       space.Name.MSDName(),
 		Owner:      space.Owner.Account(),
 		Hardware:   space.Hardware.Hardware(),
+		BaseImage:  space.BaseImage.BaseImage(),
 		Visibility: space.CodeRepo.Visibility.Visibility(),
 		Disable:    space.Disable,
 	}
@@ -274,7 +283,13 @@ func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret
 	return
 }
 
-// CmdToUpdateStatistics is a type alias for domain.ModelLabels, representing a command to update model statistics.
+// CmdToUpdateStatistics is to update download count
 type CmdToUpdateStatistics struct {
 	DownloadCount int `json:"download_count"`
+}
+
+// CmdToResetLabels is a type alias for domain.SpaceLabels, representing a command to reset space labels.
+type CmdToResetLabels struct {
+	Task    spaceprimitive.Task
+	License primitive.License
 }

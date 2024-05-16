@@ -770,6 +770,318 @@ func (s *SuiteOrg) TestCertificate() {
 	assert.Nil(s.T(), err)
 }
 
+func (s *SuiteOrg) TestMaxInvite() {
+	// 测试环境配置了最多可以邀请4个
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg1",
+		Fullname: s.fullname,
+	}
+
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg1",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg2",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg2",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg3",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg3",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg4",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg4",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg5",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg5",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 删除邀请
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg1",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg4",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg3",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg2",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg1")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg2")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg3")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg4")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg5")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+func (s *SuiteOrg) TestMaxRequest() {
+	// 测试环境配置了最多可以邀请4个
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg1",
+		Fullname: s.fullname,
+	}
+
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg1",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg2",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg2",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg3",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg3",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg4",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg4",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testinviteorg5",
+		Fullname: s.fullname,
+	}
+
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	_, r, err = ApiRest.OrganizationApi.V1InvitePost(AuthRest, swaggerRest.ControllerOrgInviteMemberRequest{
+		OrgName: "testinviteorg5",
+		User:    s.invitee,
+		Role:    "write",
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 删除邀请
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg1",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg4",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg3",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1InviteDelete(AuthRest, swaggerRest.ControllerOrgRevokeInviteRequest{
+		OrgName: "testinviteorg2",
+		User:    s.invitee,
+		Msg:     "invite me",
+	})
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg1")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg2")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg3")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg4")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testinviteorg5")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestOrg used for testing
 func TestOrg(t *testing.T) {
 	suite.Run(t, new(SuiteOrg))

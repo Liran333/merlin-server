@@ -14,8 +14,9 @@ func Init(cfg *Config) {
 
 // Config is a struct that holds the configuration for max count per owner.
 type Config struct {
-	MaxCountPerOwner int              `json:"max_count_per_owner"`
-	RecommendModels  []RecommendIndex `json:"recommend_models"`
+	MaxCountPerOrg  int              `json:"max_count_per_org"`
+	MaxCountPerUser int              `json:"max_count_per_user"`
+	RecommendModels []RecommendIndex `json:"recommend_models"`
 }
 
 type RecommendIndex struct {
@@ -25,7 +26,11 @@ type RecommendIndex struct {
 
 // SetDefault sets the default values for the Config struct.
 func (cfg *Config) SetDefault() {
-	if cfg.MaxCountPerOwner <= 0 {
-		cfg.MaxCountPerOwner = 1000
+	if cfg.MaxCountPerUser <= 0 {
+		cfg.MaxCountPerUser = 50
+	}
+
+	if cfg.MaxCountPerOrg <= 0 {
+		cfg.MaxCountPerOrg = 200
 	}
 }

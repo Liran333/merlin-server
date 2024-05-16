@@ -8,16 +8,12 @@ package controller
 import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	sdk "github.com/openmerlin/merlin-sdk/models"
+
 	"github.com/openmerlin/merlin-server/models/app"
 )
 
-type reqToResetLabel struct {
-	Task        string   `yaml:"pipeline_tag"`
-	Tags        []string `yaml:"tags"`
-	License     string   `yaml:"license"`
-	Frameworks  []string `yaml:"frameworks"`
-	LibraryName string   `yaml:"library_name"`
-}
+type reqToResetLabel sdk.ReqToResetLabel
 
 func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 	cmd := app.CmdToResetLabels{}

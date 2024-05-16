@@ -94,7 +94,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	id := getString(s.T(), data.Data)
 
 	// 修改模型label
-	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
+	resetLabelBody := swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch"},
 		License:    "apache-2.0",
 		Task:       "document-question-answering",
@@ -115,7 +115,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 		labels)
 
 	// 修改模型label，其中frameworks有多个
-	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
+	resetLabelBody = swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch", "MindSpore"},
 		License:    "apache-2.0",
 		Task:       "copa",
@@ -172,7 +172,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	id := getString(s.T(), data.Data)
 
 	// 使用非法字段修改模型label
-	resetLabelBody := swaggerInternal.ControllerReqToResetLabel{
+	resetLabelBody := swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch123"},
 		License:    "apache-2.0",
 		Task:       "copa123",
@@ -194,7 +194,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 		labels)
 
 	// 使用部分合法的字段修改模型label
-	resetLabelBody = swaggerInternal.ControllerReqToResetLabel{
+	resetLabelBody = swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks: []string{"PyTorch123", "MindSpore"},
 		License:    "apache-2.0",
 		Task:       "copa123",

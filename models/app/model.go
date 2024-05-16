@@ -21,6 +21,7 @@ import (
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
+	userapp "github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -45,6 +46,7 @@ func NewModelAppService(
 	repoAdapter repository.ModelRepositoryAdapter,
 	member orgrepo.OrgMember,
 	disableOrg orgapp.PrivilegeOrg,
+	user userapp.UserService,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
@@ -53,6 +55,7 @@ func NewModelAppService(
 		repoAdapter: repoAdapter,
 		member:      member,
 		disableOrg:  disableOrg,
+		user:        user,
 	}
 }
 
@@ -63,6 +66,7 @@ type modelAppService struct {
 	repoAdapter repository.ModelRepositoryAdapter
 	member      orgrepo.OrgMember
 	disableOrg  orgapp.PrivilegeOrg
+	user        userapp.UserService
 }
 
 // Create creates a new model.
@@ -340,12 +344,17 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 
 	total, err := s.repoAdapter.Count(&cmdToList)
 	if err != nil {
-		return err
+		return xerrors.Errorf("get model count error: %w", err)
 	}
 
-	if total >= config.MaxCountPerOwner {
+	if s.user.IsOrganization(owner) && total >= config.MaxCountPerOrg {
 		return allerror.NewCountExceeded("model count exceed",
-			fmt.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOwner))
+			xerrors.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOrg))
+	}
+
+	if !s.user.IsOrganization(owner) && total >= config.MaxCountPerUser {
+		return allerror.NewCountExceeded("model count exceed",
+			xerrors.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerUser))
 	}
 
 	return nil

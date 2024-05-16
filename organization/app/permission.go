@@ -6,9 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -91,18 +90,18 @@ func (p *permService) Check(
 	op primitive.Action,
 ) error {
 	if user == nil {
-		e := fmt.Errorf("user is nil")
+		e := xerrors.Errorf("user is nil")
 		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	if org == nil {
-		e := fmt.Errorf("org is nil")
+		e := xerrors.Errorf("org is nil")
 		return allerror.NewNoPermission(e.Error(), e)
 	}
 
 	m, err := p.org.GetByOrgAndUser(org.Account(), user.Account())
 	if err != nil {
-		e := fmt.Errorf(
+		e := xerrors.Errorf(
 			"%s does not have a valid role in %s", user.Account(), org.Account(),
 		)
 		return allerror.NewNoPermission(e.Error(), e)
@@ -120,7 +119,7 @@ func (p *permService) Check(
 	)
 
 	if !ok {
-		e := fmt.Errorf(
+		e := xerrors.Errorf(
 			"%s %s %s permission denied", user.Account(), op.String(), string(objType),
 		)
 		return allerror.NewNoPermission(e.Error(), e)

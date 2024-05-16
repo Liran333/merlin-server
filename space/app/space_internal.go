@@ -9,6 +9,7 @@ import (
 
 	sdk "github.com/openmerlin/merlin-sdk/space"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -30,6 +31,7 @@ type SpaceInternalAppService interface {
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
 	Disable(primitive.Identity) error
 	RemoveException(spaceId primitive.Identity) error
+	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 }
 
 // NewSpaceInternalAppService creates a new instance of SpaceInternalAppService
@@ -207,3 +209,36 @@ func (s *spaceInternalAppService) RemoveException(spaceId primitive.Identity) er
 }
 
 type SpaceMetaDTO1 = sdk.SpaceMetaDTO
+
+func (s *spaceInternalAppService) ResetLabels(spaceId primitive.Identity, cmd *CmdToResetLabels) error {
+	space, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("not found, err: %w", err))
+		} else {
+			err = xerrors.Errorf("find space by id failed, err: %w", err)
+		}
+
+		return err
+	}
+
+	if space.IsDisable() {
+		errInfo := fmt.Errorf("space %v was disable", space.Name.MSDName())
+		return allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, errInfo.Error(), errInfo)
+	}
+
+	if cmd.Task != nil {
+		space.Labels.Task = cmd.Task
+	}
+
+	if cmd.License != nil {
+		space.License = cmd.License
+	}
+
+	err = s.repoAdapter.Save(&space)
+	if err != nil {
+		err = xerrors.Errorf("save space failed, err: %w", err)
+	}
+
+	return err
+}

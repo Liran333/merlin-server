@@ -17,6 +17,7 @@ type Approve interface {
 	AddRequest(*domain.MemberRequest) (domain.MemberRequest, error)
 	SaveRequest(*domain.MemberRequest) (domain.MemberRequest, error)
 	DeleteInviteAndReqByOrg(primitive.Account) error
+	Count(primitive.Account) (int64, error)
 	// DeleteRequestByOrg(primitive.Account) error
 	ListInvitation(*domain.OrgInvitationListCmd) ([]domain.Approve, error)
 	ListRequests(*domain.OrgMemberReqListCmd) ([]domain.MemberRequest, error)

@@ -52,7 +52,7 @@ func inittoken() {
 	)
 
 	userAppService = userapp.NewUserService(
-		userrepo, member, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session)
+		userrepo, member, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session, &cfg.User)
 }
 
 var tokenCmd = &cobra.Command{

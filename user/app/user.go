@@ -43,6 +43,8 @@ type UserService interface {
 	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
 	HasUser(primitive.Account) bool
 
+	IsOrganization(domain.Account) bool
+
 	ListUsers(primitive.Account) ([]UserDTO, error)
 
 	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
@@ -71,6 +73,7 @@ func NewUserService(
 	session session.SessionRepositoryAdapter,
 	oidc session.OIDCAdapter,
 	sc SessionClearAppService,
+	config *domain.Config,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -80,6 +83,7 @@ func NewUserService(
 		token:        token,
 		session:      session,
 		sessionClear: sc,
+		config:       config,
 	}
 }
 
@@ -91,6 +95,7 @@ type userService struct {
 	token        repository.Token
 	session      session.SessionRepositoryAdapter
 	sessionClear SessionClearAppService
+	config       *domain.Config
 }
 
 // Create creates a new user in the system.
@@ -465,6 +470,11 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
 		return
 	}
 
+	if ok, err1 := s.CanCreateToken(cmd.Account); !ok {
+		err = allerror.NewCountExceeded("token count exceed", xerrors.Errorf("create token failed :%w", err1))
+		return
+	}
+
 	owner, err := s.repo.GetByAccount(cmd.Account)
 	if err != nil {
 		err = xerrors.Errorf("failed to get user: %w", err)
@@ -794,4 +804,40 @@ func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
 	}
 
 	return userInfo.IsAgreePrivacy, nil
+}
+
+// IsOrganization checks if the given user is an organization.
+//
+// Parameters:
+// - user: The user account to check.
+//
+// Returns:
+// - bool: True if the user is an organization, false otherwise.
+func (s userService) IsOrganization(user domain.Account) bool {
+	userInfo, err := s.repo.GetByAccount(user)
+	if err != nil {
+		return false
+	}
+
+	return userInfo.IsOrganization()
+}
+
+// CanCreateToken checks if the given user can create a token.
+//
+// Parameters:
+// - user: The user account to check.
+//
+// Returns:
+// - bool: True if the user can create a token, false otherwise.
+func (s userService) CanCreateToken(user domain.Account) (bool, error) {
+	c, err := s.token.Count(user)
+	if err != nil {
+		return false, xerrors.Errorf("failed to count token: %w", err)
+	}
+
+	if c >= int64(s.config.MaxTokenPerUser) {
+		return false, xerrors.Errorf("token count(now:%d max:%d) exceed", c, s.config.MaxTokenPerUser)
+	}
+
+	return true, nil
 }

@@ -5,7 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
-	"k8s.io/apimachinery/pkg/util/sets"
+	"strings"
 
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -25,13 +25,13 @@ const (
 type Space struct {
 	coderepo.CodeRepo
 
-	SDK      spaceprimitive.SDK
-	Desc     primitive.MSDDesc
-	Labels   SpaceLabels
-	Fullname primitive.MSDFullname
-	Hardware spaceprimitive.Hardware
-	AvatarId primitive.AvatarId
-
+	SDK           spaceprimitive.SDK
+	Desc          primitive.MSDDesc
+	Labels        SpaceLabels
+	Fullname      primitive.MSDFullname
+	Hardware      spaceprimitive.Hardware
+	AvatarId      primitive.AvatarId
+	BaseImage     spaceprimitive.BaseImage
 	LocalCmd      string
 	LocalEnvInfo  string
 	Version       int
@@ -76,9 +76,9 @@ func (m *Space) GetLocalEnvInfo() string {
 
 // SpaceLabels represents labels associated with a space.
 type SpaceLabels struct {
-	Task       string           // task label
-	Others     sets.Set[string] // other labels
-	Frameworks sets.Set[string] // framework labels
+	Task      spaceprimitive.Task // task label
+	License   primitive.License   // license label
+	Framework string              // framework
 }
 
 // SpaceIndex represents an index for spaces in the code repository.
@@ -152,4 +152,8 @@ func (s *Space) GetQuotaCount() int {
 	}
 
 	return 0
+}
+
+func IsValidHardwareType(h string) bool {
+	return strings.ToLower(h) == computilityTypeNpu || strings.ToLower(h) == computilityTypeCpu
 }

@@ -13,6 +13,7 @@ import (
 // Config is a structure that holds the configuration settings for the application.
 type Config struct {
 	MaxCountPerOwner int64                 `json:"max_count_per_owner"`
+	MaxInviteCount   int64                 `json:"max_invite_count"`
 	InviteExpiry     int64                 `json:"invite_expiry"`
 	DefaultRole      string                `json:"default_role"`
 	Tables           tables                `json:"tables"`
@@ -31,6 +32,10 @@ type tables struct {
 func (cfg *Config) SetDefault() {
 	if cfg.MaxCountPerOwner <= 0 {
 		cfg.MaxCountPerOwner = 10
+	}
+
+	if cfg.MaxInviteCount <= 0 {
+		cfg.MaxInviteCount = 100
 	}
 }
 

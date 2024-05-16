@@ -24,7 +24,7 @@ func (adapter *spaceLabelsAdapter) Save(index *domain.SpaceIndex, labels *domain
 	).Where(
 		equalQuery(fieldName), index.Name.MSDName(),
 	).Select(
-		fieldTask, fieldOthers, fieldFrameworks,
+		fieldTask, fieldOthers, fieldBaseImage,
 	).Updates(&do)
 
 	if v.Error != nil {

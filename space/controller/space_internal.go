@@ -6,6 +6,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -30,6 +31,7 @@ func AddRouterForSpaceInternalController(
 	r.PUT("/v1/space/:id/local_cmd", m.Write, ctl.UpdateSpaceLocalCMD)
 	r.PUT("/v1/space/:id/local_env_info", m.Write, ctl.UpdateSpaceLocalEnvInfo)
 	r.PUT("/v1/space/:id/disable", m.Write, ctl.Disable)
+	r.PUT("/v1/space/:id/label", m.Write, ctl.ResetLabel)
 }
 
 // SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
@@ -187,6 +189,44 @@ func (ctl *SpaceInternalController) Disable(ctx *gin.Context) {
 	err = ctl.appService.Disable(spaceId)
 
 	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  ResetLabel
+// @Description  reset label of space
+// @Tags     SpaceInternal
+// @Param    id    path  string            true  "id of space" MaxLength(20)
+// @Param    body  body  reqToResetLabel  true  "body"
+// @Accept   json
+// @Security Internal
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/space/{id}/label [put]
+func (ctl *SpaceInternalController) ResetLabel(ctx *gin.Context) {
+	req := reqToResetLabel{}
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("invalid space id: %w", err))
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("invalid request body: %w", err))
+
+		return
+	}
+
+	if err := ctl.appService.ResetLabels(spaceId, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)

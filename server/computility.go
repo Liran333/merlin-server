@@ -19,6 +19,7 @@ func initComputilityApp(cfg *config.Config, services *allServices) error {
 		repositoryadapter.ComputilityAccountAdapter(),
 		repositoryadapter.ComputilityAccountRecordAdapter(),
 		messageadapter.MessageAdapter(&cfg.Computility.Topics),
+		services.npuGatekeeper,
 	)
 
 	return err

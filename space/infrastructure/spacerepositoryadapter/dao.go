@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
@@ -83,14 +82,6 @@ func likeFilter(field, value string) (query, arg string) {
 	query = fmt.Sprintf(`%s ilike ?`, field)
 
 	arg = `%` + utils.EscapePgsqlValue(value) + `%`
-
-	return
-}
-
-func intersectionFilter(field string, value []string) (query string, arg pq.StringArray) {
-	query = fmt.Sprintf(`%s @> ?`, field)
-
-	arg = pq.StringArray(value)
 
 	return
 }

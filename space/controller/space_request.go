@@ -12,7 +12,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-sdk/space"
 
@@ -37,6 +36,7 @@ type reqToCreateSpace struct {
 	Owner      string `json:"owner"      required:"true"`
 	License    string `json:"license"    required:"true"`
 	Hardware   string `json:"hardware"   required:"true"`
+	BaseImage  string `json:"base_image" required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
 	AvatarId   string `json:"avatar_id"`
@@ -48,38 +48,52 @@ func (req *reqToCreateSpace) action() string {
 
 func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 	if cmd.SDK, err = spaceprimitive.NewSDK(req.SDK); err != nil {
+		err = xerrors.Errorf("invalid sdk: %w", err)
 		return
 	}
 
 	if cmd.Name, err = primitive.NewMSDName(req.Name); err != nil {
+		err = xerrors.Errorf("invalid name: %w", err)
 		return
 	}
 
 	if cmd.Desc, err = primitive.NewMSDDesc(req.Desc); err != nil {
+		err = xerrors.Errorf("invalid desc: %w", err)
 		return
 	}
 
 	if cmd.Owner, err = primitive.NewAccount(req.Owner); err != nil {
+		err = xerrors.Errorf("invalid owner: %w", err)
 		return
 	}
 
 	if cmd.License, err = primitive.NewLicense(req.License); err != nil {
+		err = xerrors.Errorf("invalid license: %w", err)
 		return
 	}
 
 	if cmd.Hardware, err = spaceprimitive.NewHardware(req.Hardware, req.SDK); err != nil {
+		err = xerrors.Errorf("invalid hardware: %w", err)
 		return
 	}
 
 	if cmd.Visibility, err = primitive.NewVisibility(req.Visibility); err != nil {
+		err = xerrors.Errorf("invalid visibility: %w", err)
 		return
 	}
 
 	if cmd.Fullname, err = primitive.NewMSDFullname(req.Fullname); err != nil {
+		err = xerrors.Errorf("invalid fullname: %w", err)
 		return
 	}
 
 	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+		err = xerrors.Errorf("invalid avatar id: %w", err)
+		return
+	}
+
+	if cmd.BaseImage, err = spaceprimitive.NewBaseImage(req.BaseImage, req.Hardware); err != nil {
+		err = xerrors.Errorf("invalid base image: %w", err)
 		return
 	}
 
@@ -195,10 +209,10 @@ func (req *reqToListUserSpaces) toCmd() (cmd app.CmdToListSpaces, err error) {
 
 // reqToListGlobalSpaces
 type reqToListGlobalSpaces struct {
-	Task       string `form:"task"`
-	Others     string `form:"others"`
-	License    string `form:"license"`
-	Frameworks string `form:"frameworks"`
+	Domain    string `form:"domain"`
+	License   string `form:"license"`
+	Hardware  string `form:"hardware"`
+	Framework string `form:"framework"`
 
 	reqToListUserSpaces
 }
@@ -209,30 +223,33 @@ func (req *reqToListGlobalSpaces) toCmd() (app.CmdToListSpaces, error) {
 		return cmd, err
 	}
 
-	// TODO check each label if it is valid
-
-	cmd.Labels.Task = req.Task
-
 	if req.License != "" {
 		if cmd.License, err = primitive.NewLicense(req.License); err != nil {
-			return cmd, err
+			return cmd, xerrors.Errorf("invalid license: %w", err)
 		}
 	}
 
-	cmd.Labels.Others = toStringsSets(req.Others)
-	cmd.Labels.Frameworks = toStringsSets(req.Frameworks)
-
-	return cmd, nil
-}
-
-func toStringsSets(v string) sets.Set[string] {
-	if v == "" {
-		return nil
+	if req.Domain != "" {
+		if cmd.Labels.Task, err = spaceprimitive.NewTask(req.Domain); err != nil {
+			return cmd, xerrors.Errorf("invalid task: %w", err)
+		}
 	}
 
-	items := strings.Split(v, labelSpliter)
+	if req.Hardware != "" {
+		if !spaceprimitive.IsValidHardware(req.Hardware) {
+			return cmd, xerrors.Errorf("invalid hardware: %s", req.Hardware)
+		}
+		cmd.Hardware = spaceprimitive.CreateHardware(req.Hardware)
+	}
 
-	return sets.New[string](items...)
+	if req.Framework != "" {
+		if !spaceprimitive.IsValidFramework(req.Framework) {
+			return cmd, xerrors.Errorf("invalid framework: %s, shoulde be %s or %s", req.Framework, spaceprimitive.PyTorch, spaceprimitive.MindSpore)
+		}
+		cmd.Framework = req.Framework
+	}
+
+	return cmd, nil
 }
 
 // restfulReqToListSpaces
@@ -456,4 +473,23 @@ type spaceRecommendInfo struct {
 
 type spacesRecommendInfo struct {
 	Spaces []spaceRecommendInfo `json:"spaces"`
+}
+
+type reqToResetLabel struct {
+	License string
+	Task    string
+}
+
+func (req *reqToResetLabel) toCmd() (cmd app.CmdToResetLabels, err error) {
+	if req.License != "" {
+		if cmd.License, err = primitive.NewLicense(req.License); err != nil {
+			return cmd, xerrors.Errorf("invalid license: %w", err)
+		}
+	}
+
+	if cmd.Task, err = spaceprimitive.NewTask(req.Task); err != nil {
+		return cmd, xerrors.Errorf("invalid task: %w", err)
+	}
+
+	return
 }

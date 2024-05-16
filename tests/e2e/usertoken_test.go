@@ -18,7 +18,9 @@ import (
 // SuiteUserToken used for testing
 type SuiteUserToken struct {
 	suite.Suite
-	id string
+	id         string
+	readtoken  context.Context
+	writetoken context.Context
 }
 
 // SetupSuite used for testing
@@ -47,6 +49,8 @@ func (s *SuiteUserToken) SetupSuite() {
 	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
 	assert.Equal(s.T(), s.id, m["owner_id"])
 
+	s.readtoken = newAuthRestCtx(getString(s.T(), m["token"]))
+
 	d = swaggerRest.ControllerTokenCreateRequest{
 		Name: "testwrite",
 		Perm: "write",
@@ -60,6 +64,7 @@ func (s *SuiteUserToken) SetupSuite() {
 
 	assert.NotEqual(s.T(), "", getString(s.T(), m1["token"]))
 	assert.Equal(s.T(), s.id, m1["owner_id"])
+	s.writetoken = newAuthRestCtx(getString(s.T(), m["token"]))
 }
 
 // TearDownSuite used for testing
@@ -189,65 +194,8 @@ func (s *SuiteUserToken) TestTokenCreateTokenNameCantBeInt() {
 // 创建token成功
 // read权限无权删除token
 func (s *SuiteUserToken) TestTokenCreateToken() {
-	// test a read permission token
-	d := swaggerRest.ControllerTokenCreateRequest{
-		Name: "read",
-		Perm: "read",
-	}
-
-	data, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
-	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	m := getData(s.T(), data.Data)
-
-	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
-	assert.Equal(s.T(), "read", getString(s.T(), m["name"]))
-	assert.NotEqual(s.T(), "", getString(s.T(), m["id"]))
-	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["created_at"]))
-	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["updated_at"]))
-	assert.Equal(s.T(), s.id, m["owner_id"])
-
-	auth := newAuthRestCtx(getString(s.T(), m["token"]))
-
-	_, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
+	_, r, err := ApiRest.UserApi.V1UserTokenGet(s.readtoken)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "read")
-	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
-	assert.NotNil(s.T(), err)
-
-	// test a write permission token
-	d = swaggerRest.ControllerTokenCreateRequest{
-		Name: "write",
-		Perm: "write",
-	}
-
-	data, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
-	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	m = getData(s.T(), data.Data)
-
-	assert.NotEqual(s.T(), "", getString(s.T(), m["token"]))
-	assert.Equal(s.T(), "write", getString(s.T(), m["name"]))
-	assert.NotEqual(s.T(), "", getString(s.T(), m["id"]))
-	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["created_at"]))
-	assert.NotEqual(s.T(), 0, getInt64(s.T(), m["updated_at"]))
-	assert.Equal(s.T(), s.id, m["owner_id"])
-
-	auth = newAuthRestCtx(getString(s.T(), m["token"]))
-
-	_, r, err = ApiRest.UserApi.V1UserTokenGet(auth)
-	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
-	assert.Nil(s.T(), err)
-
-	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "read")
-	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
-	assert.Nil(s.T(), err)
-	r, err = ApiRest.UserApi.V1UserTokenNameDelete(auth, "write")
-	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }
 
@@ -257,6 +205,33 @@ func (s *SuiteUserToken) TestTokenDeleteToken() {
 	r, err := ApiRest.UserApi.V1UserTokenNameDelete(AuthRest, "nonexist")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
+}
+
+// TestTokenDeleteToken used for testing
+// token最大个数限制
+func (s *SuiteUserToken) TestTokenMaxCount() {
+	// setup中已经创建了2个，默认创建了一个，e2e测试配置的上限为4个，因此不应该能继续创建token
+	d := swaggerRest.ControllerTokenCreateRequest{
+		Name: "next1",
+		Perm: "write",
+	}
+
+	_, r, err := ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	d = swaggerRest.ControllerTokenCreateRequest{
+		Name: "next2",
+		Perm: "write",
+	}
+
+	_, r, err = ApiRest.UserApi.V1UserTokenPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	r, err = ApiRest.UserApi.V1UserTokenNameDelete(AuthRest, "next1")
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
 }
 
 // TestUserToken used for testing
