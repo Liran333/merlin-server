@@ -120,6 +120,9 @@ docker logs merlin-server-server-1
 docker exec -i merlin-server-pg-1 psql -U gitea -d merlin -c "INSERT INTO computility_org
 (org_id , org_name , compute_type, quota_count,used_quota, default_assign_quota, version)
 VALUES ( 1776909238086406144, 'test-npu', 'npu', 10, 0, 5, 0);"
+docker exec -i merlin-server-pg-1 psql -U gitea -d merlin -c "INSERT INTO computility_org
+(org_id , org_name , compute_type, quota_count,used_quota, default_assign_quota, version)
+VALUES ( 1776909238086406145, 'test-npu-2', 'npu', 10, 0, 5, 0);"
 echo "start to init users"
 # create user and token for server
 docker exec -i merlin-server-server-1 ./cmd -c config.yml user add -n test1 -e test@123.com -p 13333333334

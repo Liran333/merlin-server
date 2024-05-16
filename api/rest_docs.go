@@ -3271,7 +3271,7 @@ const docTemplaterest = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "use_in_openmind": {
+                "usage": {
                     "type": "string"
                 },
                 "visibility": {
@@ -3287,6 +3287,9 @@ const docTemplaterest = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "library_name": {
+                    "type": "string"
                 },
                 "license": {
                     "type": "string"

@@ -243,6 +243,40 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/coderepo/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "Get coderepo info",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CodeRepoInternal"
+                ],
+                "summary": "Get coderepo info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of coderepo",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/coderepo/{id}/statistic": {
             "put": {
                 "security": [
@@ -255,7 +289,7 @@ const docTemplateinternal = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Statistic"
+                    "CodeRepoInternal"
                 ],
                 "summary": "Update",
                 "parameters": [
@@ -1787,7 +1821,7 @@ const docTemplateinternal = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "use_in_openmind": {
+                "usage": {
                     "type": "string"
                 },
                 "visibility": {
@@ -1803,6 +1837,9 @@ const docTemplateinternal = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "library_name": {
+                    "type": "string"
                 },
                 "license": {
                     "type": "string"
@@ -1832,6 +1869,9 @@ const docTemplateinternal = `{
         "app.SpaceMetaDTO1": {
             "type": "object",
             "properties": {
+                "base_image": {
+                    "type": "string"
+                },
                 "disable": {
                     "type": "boolean"
                 },
@@ -1952,6 +1992,9 @@ const docTemplateinternal = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "libraryName": {
+                    "type": "string"
                 },
                 "license": {
                     "type": "string"

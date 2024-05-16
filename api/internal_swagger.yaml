@@ -63,7 +63,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      use_in_openmind:
+      usage:
         type: string
       visibility:
         type: string
@@ -74,6 +74,8 @@ definitions:
         items:
           type: string
         type: array
+      library_name:
+        type: string
       license:
         type: string
       others:
@@ -92,6 +94,8 @@ definitions:
     type: object
   app.SpaceMetaDTO1:
     properties:
+      base_image:
+        type: string
       disable:
         type: boolean
       hardware:
@@ -170,6 +174,8 @@ definitions:
         items:
           type: string
         type: array
+      libraryName:
+        type: string
       license:
         type: string
       tags:
@@ -332,6 +338,27 @@ paths:
       summary: AddActivity
       tags:
       - ActivityInternal
+  /v1/coderepo/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get coderepo info
+      parameters:
+      - description: id of coderepo
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Get coderepo info
+      tags:
+      - CodeRepoInternal
   /v1/coderepo/{id}/statistic:
     put:
       consumes:
@@ -368,7 +395,7 @@ paths:
       - Internal: []
       summary: Update
       tags:
-      - Statistic
+      - CodeRepoInternal
   /v1/coderepo/permission/read:
     post:
       consumes:
