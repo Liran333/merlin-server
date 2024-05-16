@@ -252,13 +252,12 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 }
 
 func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
-	ac := dto.Activities
+	as := dto.Activities
 
 	// get avatars
-
-	v := map[string]bool{}
-	for i := range ac {
-		v[ac[i].Resource.Owner] = true
+	v := map[string]userapp.UserDTO{}
+	for i := range as {
+		v[as[i].Resource.Owner] = userapp.UserDTO{}
 	}
 
 	accounts := make([]primitive.Account, len(v))
@@ -266,29 +265,21 @@ func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesI
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
+		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		if err != nil {
+			return activitiesInfo{}, err
+		}
+		v[k] = userInfo
 		i++
 	}
 
-	avatars, err := ctl.user.GetUsersAvatarId(accounts)
-	if err != nil {
-		return activitiesInfo{}, err
-	}
-
-	// set avatars
-
-	am := map[string]string{}
-	for i := range avatars {
-		item := &avatars[i]
-
-		am[item.Name] = item.AvatarId
-	}
-
-	infos := make([]activityInfo, len(ac))
-	for i := range ac {
-		item := &ac[i]
+	infos := make([]activityInfo, len(as))
+	for i := range as {
+		item := &as[i]
 
 		infos[i] = activityInfo{
-			AvatarId:           am[item.Resource.Owner],
+			AvatarId:           v[item.Resource.Owner].AvatarId,
+			OwnerType:          v[item.Resource.Owner].Type,
 			ActivitySummaryDTO: item,
 		}
 	}

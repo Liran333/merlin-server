@@ -17,7 +17,8 @@ const (
 
 // activityInfo
 type activityInfo struct {
-	AvatarId string `json:"avatar_id"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
 	*app.ActivitySummaryDTO
 }
 
