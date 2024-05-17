@@ -128,6 +128,10 @@ RECOMMEND_MODELS:
   - owner: Coopermassaki
     reponame: fuyong-test
 
+BOUTIQUE_SPACES:
+  - owner: Coopermassaki
+    reponame: fighting
+
 SKIP_AVATAR_IDS:
   - "https://files.authing.co/authing-console/default-user-avatar.png"
 

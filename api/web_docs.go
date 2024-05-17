@@ -2120,15 +2120,8 @@ const docTemplateweb = `{
                     {
                         "maxLength": 100,
                         "type": "string",
-                        "description": "task label",
-                        "name": "task",
-                        "in": "query"
-                    },
-                    {
-                        "maxLength": 100,
-                        "type": "string",
-                        "description": "other labels, separate multiple each ones with commas",
-                        "name": "others",
+                        "description": "domain label",
+                        "name": "domain",
                         "in": "query"
                     },
                     {
@@ -2139,10 +2132,13 @@ const docTemplateweb = `{
                         "in": "query"
                     },
                     {
-                        "maxLength": 100,
+                        "enum": [
+                            "pytorch",
+                            "mindspore"
+                        ],
                         "type": "string",
-                        "description": "framework labels, separate multiple each ones with commas",
-                        "name": "frameworks",
+                        "description": "framework ",
+                        "name": "framework",
                         "in": "query"
                     },
                     {
@@ -2606,6 +2602,44 @@ const docTemplateweb = `{
                                         },
                                         "data": {
                                             "$ref": "#/definitions/app.SpaceVariableSecretDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/boutique": {
+            "get": {
+                "description": "list boutique space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceWeb"
+                ],
+                "summary": "ListBoutiques",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/controller.spacesRecommendInfo"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -4267,20 +4301,11 @@ const docTemplateweb = `{
         "app.SpaceLabelsDTO": {
             "type": "object",
             "properties": {
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "framework": {
+                    "type": "string"
                 },
                 "license": {
                     "type": "string"
-                },
-                "others": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "task": {
                     "type": "string"
@@ -4799,6 +4824,9 @@ const docTemplateweb = `{
                 "avatar_id": {
                     "type": "string"
                 },
+                "base_image": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -4968,6 +4996,9 @@ const docTemplateweb = `{
                 "avatar_id": {
                     "type": "string"
                 },
+                "base_image": {
+                    "type": "string"
+                },
                 "comp_power_allocated": {
                     "type": "boolean"
                 },
@@ -5042,6 +5073,9 @@ const docTemplateweb = `{
                 "avatar_id": {
                     "type": "string"
                 },
+                "base_image": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -5060,6 +5094,9 @@ const docTemplateweb = `{
                 "id": {
                     "type": "string"
                 },
+                "labels": {
+                    "$ref": "#/definitions/domain.SpaceLabels"
+                },
                 "like_count": {
                     "type": "integer"
                 },
@@ -5075,9 +5112,6 @@ const docTemplateweb = `{
                 "space_avatar_id": {
                     "type": "string"
                 },
-                "task": {
-                    "type": "string"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -5086,6 +5120,9 @@ const docTemplateweb = `{
         "controller.spaceRecommendInfo": {
             "type": "object",
             "properties": {
+                "base_image": {
+                    "type": "string"
+                },
                 "comp_power_allocated": {
                     "type": "boolean"
                 },
@@ -5369,6 +5406,21 @@ const docTemplateweb = `{
                 }
             }
         },
+        "domain.SpaceLabels": {
+            "type": "object",
+            "properties": {
+                "framework": {
+                    "description": "framework",
+                    "type": "string"
+                },
+                "license": {
+                    "description": "license label"
+                },
+                "task": {
+                    "description": "task label"
+                }
+            }
+        },
         "domain.SpaceResult": {
             "type": "object",
             "properties": {
@@ -5618,6 +5670,9 @@ const docTemplateweb = `{
         "repository.SpaceSummary": {
             "type": "object",
             "properties": {
+                "base_image": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -5636,6 +5691,9 @@ const docTemplateweb = `{
                 "id": {
                     "type": "string"
                 },
+                "labels": {
+                    "$ref": "#/definitions/domain.SpaceLabels"
+                },
                 "like_count": {
                     "type": "integer"
                 },
@@ -5646,9 +5704,6 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "space_avatar_id": {
-                    "type": "string"
-                },
-                "task": {
                     "type": "string"
                 },
                 "updated_at": {

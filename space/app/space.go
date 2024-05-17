@@ -74,6 +74,7 @@ type SpaceAppService interface {
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
 	Recommend(primitive.Account) ([]SpaceDTO, error)
+	Boutique(primitive.Account) ([]SpaceDTO, error)
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -639,6 +640,34 @@ func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) 
 
 	indexs := make([]domain.SpaceIndex, 0, len(config.RecommendSpaces))
 	for _, v := range config.RecommendSpaces {
+		idx := domain.SpaceIndex{
+			Name:  primitive.CreateMSDName(v.Reponame),
+			Owner: primitive.CreateAccount(v.Owner),
+		}
+		indexs = append(indexs, idx)
+	}
+
+	spacesDTO := make([]SpaceDTO, 0, len(indexs))
+	for _, index := range indexs {
+		idx := index
+		dto, err := s.GetByName(user, &idx)
+		if err != nil {
+			return nil, err
+		}
+
+		spacesDTO = append(spacesDTO, dto)
+	}
+
+	return spacesDTO, nil
+}
+
+func (s *spaceAppService) Boutique(user primitive.Account) ([]SpaceDTO, error) {
+	if len(config.BoutiqueSpaces) == 0 {
+		return nil, xerrors.Errorf("missing boutique spaces config")
+	}
+
+	indexs := make([]domain.SpaceIndex, 0, len(config.BoutiqueSpaces))
+	for _, v := range config.BoutiqueSpaces {
 		idx := domain.SpaceIndex{
 			Name:  primitive.CreateMSDName(v.Reponame),
 			Owner: primitive.CreateAccount(v.Owner),

@@ -54,6 +54,7 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.ListGlobal)
 	r.GET("/v1/space/recommend", m.Optional, rl.CheckLimit, ctl.ListRecommends)
+	r.GET("/v1/space/boutique", m.Optional, rl.CheckLimit, ctl.ListBoutiques)
 	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
 
 	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
@@ -187,6 +188,33 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 		return
 	}
 
+	result := ctl.parseToSpacesRecommendInfo(spacesDTO)
+
+	commonctl.SendRespOfGet(ctx, &result)
+}
+
+// @Summary  ListBoutiques
+// @Description  list boutique space
+// @Tags     SpaceWeb
+// @Accept   json
+// @Success  200  {object}  commonctl.ResponseData{data=spacesRecommendInfo,msg=string,code=string}
+// @Router   /v1/space/boutique [get]
+func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	spacesDTO, err := ctl.appService.Boutique(user)
+	if err != nil {
+		commonctl.SendError(ctx, xerrors.Errorf("failed to get boutique spaces: %w", err))
+
+		return
+	}
+
+	result := ctl.parseToSpacesRecommendInfo(spacesDTO)
+
+	commonctl.SendRespOfGet(ctx, &result)
+}
+
+func (ctl *SpaceWebController) parseToSpacesRecommendInfo(spacesDTO []app.SpaceDTO) spacesRecommendInfo {
 	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
 
 	for _, v := range spacesDTO {
@@ -198,11 +226,9 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 		sps = append(sps, sp)
 	}
 
-	result := spacesRecommendInfo{
+	return spacesRecommendInfo{
 		Spaces: sps,
 	}
-
-	commonctl.SendRespOfGet(ctx, &result)
 }
 
 // @Summary  ListGlobal

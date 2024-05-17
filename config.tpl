@@ -94,6 +94,11 @@ space:
     - owner: {{ $v.owner }}
       reponame: {{ $v.reponame }}
     {{- end }}
+    boutique_spaces:
+    {{- range $v := (ds "common").BOUTIQUE_SPACES }}
+    - owner: {{ $v.owner }}
+      reponame: {{ $v.reponame }}
+    {{- end }}
     max_count_per_user: {{(ds "common").MAX_SPACE_PER_USER }}
     max_count_per_org: {{(ds "common").MAX_SPACE_PER_ORG }}
 permission:

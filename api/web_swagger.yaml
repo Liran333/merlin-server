@@ -190,16 +190,10 @@ definitions:
     type: object
   app.SpaceLabelsDTO:
     properties:
-      frameworks:
-        items:
-          type: string
-        type: array
+      framework:
+        type: string
       license:
         type: string
-      others:
-        items:
-          type: string
-        type: array
       task:
         type: string
     type: object
@@ -540,6 +534,8 @@ definitions:
     properties:
       avatar_id:
         type: string
+      base_image:
+        type: string
       desc:
         type: string
       fullname:
@@ -649,6 +645,8 @@ definitions:
     properties:
       avatar_id:
         type: string
+      base_image:
+        type: string
       comp_power_allocated:
         type: boolean
       created_at:
@@ -698,6 +696,8 @@ definitions:
     properties:
       avatar_id:
         type: string
+      base_image:
+        type: string
       desc:
         type: string
       disable:
@@ -710,6 +710,8 @@ definitions:
         type: string
       id:
         type: string
+      labels:
+        $ref: '#/definitions/domain.SpaceLabels'
       like_count:
         type: integer
       name:
@@ -720,13 +722,13 @@ definitions:
         type: integer
       space_avatar_id:
         type: string
-      task:
-        type: string
       updated_at:
         type: integer
     type: object
   controller.spaceRecommendInfo:
     properties:
+      base_image:
+        type: string
       comp_power_allocated:
         type: boolean
       created_at:
@@ -911,6 +913,16 @@ definitions:
           $ref: '#/definitions/domain.UserResult'
         type: array
     type: object
+  domain.SpaceLabels:
+    properties:
+      framework:
+        description: framework
+        type: string
+      license:
+        description: license label
+      task:
+        description: task label
+    type: object
   domain.SpaceResult:
     properties:
       name:
@@ -1075,6 +1087,8 @@ definitions:
     type: object
   repository.SpaceSummary:
     properties:
+      base_image:
+        type: string
       desc:
         type: string
       disable:
@@ -1087,6 +1101,8 @@ definitions:
         type: string
       id:
         type: string
+      labels:
+        $ref: '#/definitions/domain.SpaceLabels'
       like_count:
         type: integer
       name:
@@ -1094,8 +1110,6 @@ definitions:
       owner:
         type: string
       space_avatar_id:
-        type: string
-      task:
         type: string
       updated_at:
         type: integer
@@ -2404,25 +2418,22 @@ paths:
         maxLength: 100
         name: name
         type: string
-      - description: task label
+      - description: domain label
         in: query
         maxLength: 100
-        name: task
-        type: string
-      - description: other labels, separate multiple each ones with commas
-        in: query
-        maxLength: 100
-        name: others
+        name: domain
         type: string
       - description: license label
         in: query
         maxLength: 40
         name: license
         type: string
-      - description: framework labels, separate multiple each ones with commas
+      - description: 'framework '
+        enum:
+        - pytorch
+        - mindspore
         in: query
-        maxLength: 100
-        name: frameworks
+        name: framework
         type: string
       - description: whether to calculate the total
         enum:
@@ -3079,6 +3090,28 @@ paths:
                   type: string
               type: object
       summary: Get
+      tags:
+      - SpaceWeb
+  /v1/space/boutique:
+    get:
+      consumes:
+      - application/json
+      description: list boutique space
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/controller.spacesRecommendInfo'
+                msg:
+                  type: string
+              type: object
+      summary: ListBoutiques
       tags:
       - SpaceWeb
   /v1/space/recommend:
