@@ -506,7 +506,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 		Name:       s.Name,
 		Owner:      s.Owner,
 		Sdk:        s.Sdk,
-		Visibility: s.Visibility,
+		Visibility: "private",
 		BaseImage:  s.BaseImageMSNPU,
 	})
 
@@ -523,7 +523,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 		Name:       s.Name1,
 		Owner:      s.Owner,
 		Sdk:        s.Sdk,
-		Visibility: s.Visibility,
+		Visibility: "private",
 		BaseImage:  s.BaseImageMSCPU,
 	})
 
@@ -535,6 +535,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	space, r, err = ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
 		Desc:       s.Desc,
 		Hardware:   s.CPU,
+		Fullname:   "xxx",
 		License:    "mpl-2.0",
 		Name:       s.Name2,
 		Owner:      s.Owner,
@@ -573,7 +574,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), int32(4), data.Data.Total)
+	assert.Equal(s.T(), int32(2), data.Data.Total)
 
 	// 通过fullname可以进行搜索
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
@@ -595,7 +596,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), int32(4), data.Data.Total)
+	assert.Equal(s.T(), int32(2), data.Data.Total)
 
 	// 通过owner/name可以进行搜索
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
@@ -606,7 +607,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), int32(4), data.Data.Total)
+	assert.Equal(s.T(), int32(2), data.Data.Total)
 
 	// 通过name可以进行搜索模糊搜索
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
@@ -617,7 +618,7 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), int32(4), data.Data.Total)
+	assert.Equal(s.T(), int32(2), data.Data.Total)
 	// 无效的过滤参数
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
 		License: optional.NewString("mit1"),
@@ -633,6 +634,26 @@ func (s *SuiteSpace) TestSpaceSearch() {
 
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
+
+	// 其他人无法搜索到私有仓库
+	// fullname 为 xxx的有2个space，一个公有，一个私有，应该可以查出来1个
+	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest2, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
+		Name:  optional.NewString("xxx"),
+		Count: optional.NewBool(true),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), int32(1), data.Data.Total)
+
+	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest2, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
+		Name:  optional.NewString("yyy"),
+		Count: optional.NewBool(true),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), int32(0), data.Data.Total)
 
 	// 删除space
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id1)

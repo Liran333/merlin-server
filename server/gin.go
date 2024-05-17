@@ -108,7 +108,8 @@ func logRequest() gin.HandlerFunc {
 		}
 
 		log := fmt.Sprintf(
-			"| %d | %d | %s | %s ",
+			"request_id: %s | %d | %d | %s | %s ",
+			c.GetHeader("X-Request-Id"),
 			c.Writer.Status(),
 			endTime.Sub(startTime),
 			c.Request.Method,
