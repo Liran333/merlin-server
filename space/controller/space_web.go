@@ -53,8 +53,6 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/space/:owner", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.List)
 	r.GET("/v1/space", m.Optional, rl.CheckLimit, ctl.ListGlobal)
-	r.GET("/v1/space/recommend", m.Optional, rl.CheckLimit, ctl.ListRecommends)
-	r.GET("/v1/space/boutique", m.Optional, rl.CheckLimit, ctl.ListBoutiques)
 	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
 
 	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
@@ -128,48 +126,59 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 // @Success  200  {object}  commonctl.ResponseData{data=userSpacesInfo,msg=string,code=string}
 // @Router   /v1/space/{owner} [get]
 func (ctl *SpaceWebController) List(ctx *gin.Context) {
-	var req reqToListUserSpaces
-	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+	owner := ctx.Param("owner")
 
+	switch owner {
+	case "recommend":
+		ctl.ListRecommends(ctx)
 		return
-	}
-
-	cmd, err := req.toCmd()
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
-
+	case "boutique":
+		ctl.ListBoutiques(ctx)
 		return
-	}
+	default:
+		var req reqToListUserSpaces
+		if err := ctx.BindQuery(&req); err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-	cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+			return
+		}
 
-		return
-	}
+		cmd, err := req.toCmd()
+		if err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+			return
+		}
 
-	dto, err := ctl.appService.List(user, &cmd)
-	if err != nil {
-		commonctl.SendError(ctx, err)
+		cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
+		if err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-		return
-	}
+			return
+		}
 
-	result := userSpacesInfo{
-		Owner:     cmd.Owner.Account(),
-		SpacesDTO: &dto,
-	}
+		user := ctl.userMiddleWare.GetUser(ctx)
 
-	if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
-		commonctl.SendError(ctx, err)
-	} else {
-		result.AvatarId = userInfo.AvatarId
-		result.OwnerType = userInfo.Type
+		dto, err := ctl.appService.List(user, &cmd)
+		if err != nil {
+			commonctl.SendError(ctx, err)
 
-		commonctl.SendRespOfGet(ctx, &result)
+			return
+		}
+
+		result := userSpacesInfo{
+			Owner:     cmd.Owner.Account(),
+			SpacesDTO: &dto,
+		}
+
+		if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
+			commonctl.SendError(ctx, err)
+		} else {
+			result.AvatarId = userInfo.AvatarId
+			result.OwnerType = userInfo.Type
+
+			commonctl.SendRespOfGet(ctx, &result)
+		}
 	}
 }
 

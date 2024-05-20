@@ -48,7 +48,6 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, ctl.Get)
 	r.GET("/v1/model/:owner", p.CheckOwner, m.Optional, ctl.List)
 	r.GET("/v1/model", m.Optional, ctl.ListGlobal)
-	r.GET("/v1/model/recommend", m.Optional, ctl.ListRecommends)
 	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
 
 	r.PUT("/v1/model/:id/disable", ctl.ModelController.userMiddleWare.Write, l.Write, ctl.disable)
@@ -122,48 +121,56 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 // @Success  200  {object}  userModelsInfo
 // @Router   /v1/model/{owner} [get]
 func (ctl *ModelWebController) List(ctx *gin.Context) {
-	var req reqToListUserModels
-	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+	owner := ctx.Param("owner")
 
+	switch owner {
+	case "recommend":
+		ctl.ListRecommends(ctx)
 		return
-	}
+	default:
+		var req reqToListUserModels
+		if err := ctx.BindQuery(&req); err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-	cmd, err := req.toCmd()
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+			return
+		}
 
-		return
-	}
+		cmd, err := req.toCmd()
+		if err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-	cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
-	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+			return
+		}
 
-		return
-	}
+		cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
+		if err != nil {
+			commonctl.SendBadRequestParam(ctx, err)
 
-	user := ctl.userMiddleWare.GetUser(ctx)
+			return
+		}
 
-	dto, err := ctl.appService.List(user, &cmd)
-	if err != nil {
-		commonctl.SendError(ctx, err)
+		user := ctl.userMiddleWare.GetUser(ctx)
 
-		return
-	}
+		dto, err := ctl.appService.List(user, &cmd)
+		if err != nil {
+			commonctl.SendError(ctx, err)
 
-	result := userModelsInfo{
-		Owner:     cmd.Owner.Account(),
-		ModelsDTO: &dto,
-	}
+			return
+		}
 
-	if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
-		commonctl.SendError(ctx, err)
-	} else {
-		result.AvatarId = userInfo.AvatarId
-		result.OwnerType = userInfo.Type
+		result := userModelsInfo{
+			Owner:     cmd.Owner.Account(),
+			ModelsDTO: &dto,
+		}
 
-		commonctl.SendRespOfGet(ctx, &result)
+		if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
+			commonctl.SendError(ctx, err)
+		} else {
+			result.AvatarId = userInfo.AvatarId
+			result.OwnerType = userInfo.Type
+
+			commonctl.SendRespOfGet(ctx, &result)
+		}
 	}
 }
 
