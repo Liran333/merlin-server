@@ -99,10 +99,11 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 		ModelDTO: &dto,
 	}
 
-	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(user, index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		detail.AvatarId = avatar.AvatarId
+		detail.AvatarId = userInfo.AvatarId
+		detail.OwnerType = userInfo.Type
 
 		commonctl.SendRespOfGet(ctx, &detail)
 	}

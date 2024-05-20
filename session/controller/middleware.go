@@ -194,7 +194,7 @@ func (m *webAPIMiddleware) parseCSRFToken(ctx *gin.Context) (primitive.RandomId,
 }
 
 func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId, error) {
-	v, err := commonctl.GetCookie(ctx, cookieSessionId)
+	v, err := commonctl.GetCookie(ctx, config.CookieSessionId)
 	if err != nil {
 		return nil, allerror.New(allerror.ErrorCodeCSRFTokenMissing, "no session id found", err)
 	}

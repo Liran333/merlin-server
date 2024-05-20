@@ -18,13 +18,6 @@ import (
 	"github.com/openmerlin/merlin-server/session/app"
 )
 
-const (
-	cookieCSRFToken = "csrf_token"
-	cookieSessionId = "session_id"
-	oneidUT         = "_U_T_"
-	oneidYG         = "_Y_G_"
-)
-
 // AddRouterForSessionController adds routes for session controller to the given router group.
 func AddRouterForSessionController(
 	rg *gin.RouterGroup,
@@ -114,7 +107,7 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 // @Success  202  {object}  commonctl.ResponseData{data=logoutInfo,msg=string,code=string}
 // @Router   /v1/session [put]
 func (ctl *SessionController) Logout(ctx *gin.Context) {
-	v, err := commonctl.GetCookie(ctx, cookieSessionId)
+	v, err := commonctl.GetCookie(ctx, config.CookieSessionId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -145,15 +138,15 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 }
 
 func setCookieOfCSRFToken(ctx *gin.Context, value, domain string, expiry *time.Time) {
-	commonctl.SetCookie(ctx, cookieCSRFToken, value, domain, false, expiry, http.SameSiteStrictMode)
+	commonctl.SetCookie(ctx, config.CookieCSRFToken, value, domain, false, expiry, http.SameSiteStrictMode)
 	if config.LocalDomainCookie {
-		commonctl.SetCookie(ctx, cookieCSRFToken, value, "", false, expiry, http.SameSiteLaxMode)
+		commonctl.SetCookie(ctx, config.CookieCSRFToken, value, "", false, expiry, http.SameSiteLaxMode)
 	}
 }
 
 func setCookieOfSessionId(ctx *gin.Context, value, domain string, expiry *time.Time) {
-	commonctl.SetCookie(ctx, cookieSessionId, value, domain, true, expiry, http.SameSiteLaxMode)
+	commonctl.SetCookie(ctx, config.CookieSessionId, value, domain, true, expiry, http.SameSiteLaxMode)
 	if config.LocalDomainCookie {
-		commonctl.SetCookie(ctx, cookieSessionId, value, "", true, expiry, http.SameSiteLaxMode)
+		commonctl.SetCookie(ctx, config.CookieSessionId, value, "", true, expiry, http.SameSiteLaxMode)
 	}
 }

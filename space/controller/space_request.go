@@ -278,6 +278,7 @@ func (req *restfulReqToListSpaces) toCmd() (app.CmdToListSpaces, error) {
 type spaceDetail struct {
 	Liked         bool   `json:"liked"`
 	OwnerAvatarId string `json:"avatar_id"`
+	OwnerType     int    `json:"owner_type"`
 
 	*app.SpaceDTO
 }
@@ -468,6 +469,7 @@ func (req *localEnvInfo) toCmd() string {
 }
 
 type spaceRecommendInfo struct {
+	OwnerType int `json:"owner_type"`
 	*app.SpaceDTO
 }
 

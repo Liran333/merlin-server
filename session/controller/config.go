@@ -20,6 +20,8 @@ type Config struct {
 	CSRFTokenCookieExpiry int64  `json:"csrf_token_cookie_expiry"`
 	SessionDomain         string `json:"session_domain"`
 	LocalDomainCookie     bool   `json:"local_domain_cookie"`
+	CookieCSRFToken       string `json:"cookie_csrf_token" required:"true"`
+	CookieSessionId       string `json:"cookie_session_id" required:"true"`
 }
 
 // SetDefault sets default values for the Config struct.

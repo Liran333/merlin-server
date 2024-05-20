@@ -40,6 +40,8 @@ session:
   controller:
     csrf_token_cookie_expiry: {{(ds "data").CSRF_TOKEN_COOKIE_EXPIRY }}
     session_domain: ".fatedomain.com"
+    cookie_csrf_token: {{(ds "common").COOKIE_CSRF_TOKEN }}
+    cookie_session_id: {{(ds "common").COOKIE_SESSION_ID }}
 
 gitea:
   url: {{(ds "secret").data.GITEA_BASE_URL }}

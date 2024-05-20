@@ -105,10 +105,11 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 		SpaceDTO: &dto,
 	}
 
-	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(user, index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		detail.OwnerAvatarId = avatar.AvatarId
+		detail.OwnerAvatarId = userInfo.AvatarId
+		detail.OwnerType = userInfo.Type
 
 		commonctl.SendRespOfGet(ctx, &detail)
 	}
@@ -188,7 +189,26 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 		return
 	}
 
-	result := ctl.parseToSpacesRecommendInfo(spacesDTO)
+	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
+
+	for _, v := range spacesDTO {
+		userInfo, err := ctl.user.GetOrgOrUser(nil, primitive.CreateAccount(v.Owner))
+		if err != nil {
+			commonctl.SendError(ctx, err)
+		}
+
+		s := v
+		sp := spaceRecommendInfo{
+			OwnerType: userInfo.Type,
+			SpaceDTO:  &s,
+		}
+
+		sps = append(sps, sp)
+	}
+
+	result := spacesRecommendInfo{
+		Spaces: sps,
+	}
 
 	commonctl.SendRespOfGet(ctx, &result)
 }
@@ -209,12 +229,6 @@ func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 		return
 	}
 
-	result := ctl.parseToSpacesRecommendInfo(spacesDTO)
-
-	commonctl.SendRespOfGet(ctx, &result)
-}
-
-func (ctl *SpaceWebController) parseToSpacesRecommendInfo(spacesDTO []app.SpaceDTO) spacesRecommendInfo {
 	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
 
 	for _, v := range spacesDTO {
@@ -226,9 +240,11 @@ func (ctl *SpaceWebController) parseToSpacesRecommendInfo(spacesDTO []app.SpaceD
 		sps = append(sps, sp)
 	}
 
-	return spacesRecommendInfo{
+	result := spacesRecommendInfo{
 		Spaces: sps,
 	}
+
+	commonctl.SendRespOfGet(ctx, &result)
 }
 
 // @Summary  ListGlobal

@@ -228,8 +228,9 @@ func (req *restfulReqToListModels) toCmd() (app.CmdToListModels, error) {
 
 // modelDetail
 type modelDetail struct {
-	Liked    bool   `json:"liked"`
-	AvatarId string `json:"avatar_id"`
+	Liked     bool   `json:"liked"`
+	AvatarId  string `json:"avatar_id"`
+	OwnerType int    `json:"owner_type"`
 
 	*app.ModelDTO
 }
