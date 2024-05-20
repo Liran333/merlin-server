@@ -24,3 +24,5 @@ jobs:
         run: bash -x scripts/init-env.sh && bash -x scripts/openapi.sh && cd tests/e2e && go test -v -count=1 ./...
       - name: Self Hosted Runner Post Job Cleanup Action
         uses: TooMuch4U/actions-clean@master
+      - name: cleanup
+        run: rm -f ~/.netrc
