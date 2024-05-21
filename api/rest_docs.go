@@ -1746,13 +1746,6 @@ const docTemplaterest = `{
                         "required": true
                     },
                     {
-                        "maxLength": 100,
-                        "type": "string",
-                        "description": "other labels, separate multiple each ones with commas",
-                        "name": "others",
-                        "in": "query"
-                    },
-                    {
                         "maxLength": 40,
                         "type": "string",
                         "description": "license label",
@@ -1760,10 +1753,13 @@ const docTemplaterest = `{
                         "in": "query"
                     },
                     {
-                        "maxLength": 100,
+                        "enum": [
+                            "pytorch",
+                            "mindspore"
+                        ],
                         "type": "string",
-                        "description": "framework labels, separate multiple each ones with commas",
-                        "name": "frameworks",
+                        "description": "framework ",
+                        "name": "framework",
                         "in": "query"
                     },
                     {
@@ -3362,20 +3358,11 @@ const docTemplaterest = `{
         "app.SpaceLabelsDTO": {
             "type": "object",
             "properties": {
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "framework": {
+                    "type": "string"
                 },
                 "license": {
                     "type": "string"
-                },
-                "others": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "task": {
                     "type": "string"
@@ -3594,6 +3581,9 @@ const docTemplaterest = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "resource": {
                     "$ref": "#/definitions/app.ResourceDTO"
                 },
@@ -3738,6 +3728,9 @@ const docTemplaterest = `{
             "type": "object",
             "properties": {
                 "avatar_id": {
+                    "type": "string"
+                },
+                "base_image": {
                     "type": "string"
                 },
                 "desc": {
@@ -3901,6 +3894,9 @@ const docTemplaterest = `{
                 "avatar_id": {
                     "type": "string"
                 },
+                "base_image": {
+                    "type": "string"
+                },
                 "comp_power_allocated": {
                     "type": "boolean"
                 },
@@ -3955,6 +3951,9 @@ const docTemplaterest = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "sdk": {
                     "type": "string"
                 },
@@ -3998,6 +3997,21 @@ const docTemplaterest = `{
                 },
                 "revoke_delete": {
                     "type": "boolean"
+                }
+            }
+        },
+        "domain.SpaceLabels": {
+            "type": "object",
+            "properties": {
+                "framework": {
+                    "description": "framework",
+                    "type": "string"
+                },
+                "license": {
+                    "description": "license label"
+                },
+                "task": {
+                    "description": "task label"
                 }
             }
         },
@@ -4166,6 +4180,9 @@ const docTemplaterest = `{
         "repository.SpaceSummary": {
             "type": "object",
             "properties": {
+                "base_image": {
+                    "type": "string"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -4184,6 +4201,9 @@ const docTemplaterest = `{
                 "id": {
                     "type": "string"
                 },
+                "labels": {
+                    "$ref": "#/definitions/domain.SpaceLabels"
+                },
                 "like_count": {
                     "type": "integer"
                 },
@@ -4194,9 +4214,6 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "space_avatar_id": {
-                    "type": "string"
-                },
-                "task": {
                     "type": "string"
                 },
                 "updated_at": {

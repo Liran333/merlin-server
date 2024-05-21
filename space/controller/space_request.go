@@ -209,7 +209,7 @@ func (req *reqToListUserSpaces) toCmd() (cmd app.CmdToListSpaces, err error) {
 
 // reqToListGlobalSpaces
 type reqToListGlobalSpaces struct {
-	Domain    string `form:"domain"`
+	Task      string `form:"task"`
 	License   string `form:"license"`
 	Hardware  string `form:"hardware"`
 	Framework string `form:"framework"`
@@ -229,8 +229,8 @@ func (req *reqToListGlobalSpaces) toCmd() (app.CmdToListSpaces, error) {
 		}
 	}
 
-	if req.Domain != "" {
-		if cmd.Labels.Task, err = spaceprimitive.NewTask(req.Domain); err != nil {
+	if req.Task != "" {
+		if cmd.Labels.Task, err = spaceprimitive.NewTask(req.Task); err != nil {
 			return cmd, xerrors.Errorf("invalid task: %w", err)
 		}
 	}

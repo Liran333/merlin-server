@@ -172,16 +172,10 @@ definitions:
     type: object
   app.SpaceLabelsDTO:
     properties:
-      frameworks:
-        items:
-          type: string
-        type: array
+      framework:
+        type: string
       license:
         type: string
-      others:
-        items:
-          type: string
-        type: array
       task:
         type: string
     type: object
@@ -324,6 +318,8 @@ definitions:
         type: string
       owner:
         type: string
+      owner_type:
+        type: integer
       resource:
         $ref: '#/definitions/app.ResourceDTO'
       space_avatar_id:
@@ -420,6 +416,8 @@ definitions:
   controller.reqToCreateSpace:
     properties:
       avatar_id:
+        type: string
+      base_image:
         type: string
       desc:
         type: string
@@ -525,6 +523,8 @@ definitions:
     properties:
       avatar_id:
         type: string
+      base_image:
+        type: string
       comp_power_allocated:
         type: boolean
       created_at:
@@ -561,6 +561,8 @@ definitions:
         type: string
       owner:
         type: string
+      owner_type:
+        type: integer
       sdk:
         type: string
       space_avatar_id:
@@ -590,6 +592,16 @@ definitions:
         type: string
       revoke_delete:
         type: boolean
+    type: object
+  domain.SpaceLabels:
+    properties:
+      framework:
+        description: framework
+        type: string
+      license:
+        description: license label
+      task:
+        description: task label
     type: object
   github_com_openmerlin_merlin-server_user_app.UserDTO:
     properties:
@@ -700,6 +712,8 @@ definitions:
     type: object
   repository.SpaceSummary:
     properties:
+      base_image:
+        type: string
       desc:
         type: string
       disable:
@@ -712,6 +726,8 @@ definitions:
         type: string
       id:
         type: string
+      labels:
+        $ref: '#/definitions/domain.SpaceLabels'
       like_count:
         type: integer
       name:
@@ -719,8 +735,6 @@ definitions:
       owner:
         type: string
       space_avatar_id:
-        type: string
-      task:
         type: string
       updated_at:
         type: integer
@@ -1791,20 +1805,17 @@ paths:
         name: owner
         required: true
         type: string
-      - description: other labels, separate multiple each ones with commas
-        in: query
-        maxLength: 100
-        name: others
-        type: string
       - description: license label
         in: query
         maxLength: 40
         name: license
         type: string
-      - description: framework labels, separate multiple each ones with commas
+      - description: 'framework '
+        enum:
+        - pytorch
+        - mindspore
         in: query
-        maxLength: 100
-        name: frameworks
+        name: framework
         type: string
       - description: whether to calculate the total
         enum:

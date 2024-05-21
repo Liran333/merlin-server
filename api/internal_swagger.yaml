@@ -168,23 +168,6 @@ definitions:
       org_name:
         type: string
     type: object
-  controller.reqToResetLabel:
-    properties:
-      frameworks:
-        items:
-          type: string
-        type: array
-      libraryName:
-        type: string
-      license:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      task:
-        type: string
-    type: object
   controller.reqToUpdateBuildInfo:
     properties:
       commit_id:
@@ -225,6 +208,30 @@ definitions:
   controller.tokenVerifyResp:
     properties:
       account:
+        type: string
+    type: object
+  github_com_openmerlin_merlin-server_models_controller.reqToResetLabel:
+    properties:
+      frameworks:
+        items:
+          type: string
+        type: array
+      libraryName:
+        type: string
+      license:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      task:
+        type: string
+    type: object
+  github_com_openmerlin_merlin-server_space_controller.reqToResetLabel:
+    properties:
+      license:
+        type: string
+      task:
         type: string
     type: object
   session.RequestToCheckAndRefresh:
@@ -660,7 +667,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.reqToResetLabel'
+          $ref: '#/definitions/github_com_openmerlin_merlin-server_models_controller.reqToResetLabel'
       responses:
         "202":
           description: Accepted
@@ -1036,6 +1043,43 @@ paths:
       security:
       - Internal: []
       summary: Disable space
+      tags:
+      - SpaceInternal
+  /v1/space/{id}/label:
+    put:
+      consumes:
+      - application/json
+      description: reset label of space
+      parameters:
+      - description: id of space
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_openmerlin_merlin-server_space_controller.reqToResetLabel'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: ResetLabel
       tags:
       - SpaceInternal
   /v1/space/{id}/local_cmd:

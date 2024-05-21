@@ -619,6 +619,18 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), int32(2), data.Data.Total)
+
+	// 通过task可以进行搜索模糊搜索
+	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
+		Task:  optional.NewString("nlp"),
+		Count: optional.NewBool(true),
+	})
+
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	assert.Equal(s.T(), int32(0), data.Data.Total)
+
 	// 无效的过滤参数
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
 		License: optional.NewString("mit1"),
@@ -630,6 +642,14 @@ func (s *SuiteSpace) TestSpaceSearch() {
 	// 无效的过滤参数
 	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
 		Framework: optional.NewString("pppp"),
+	})
+
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
+
+	// 无效的过滤参数
+	data, r, err = ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest, s.Owner, &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{
+		Task: optional.NewString("test"),
 	})
 
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)

@@ -766,7 +766,7 @@ const docTemplateinternal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.reqToResetLabel"
+                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_models_controller.reqToResetLabel"
                         }
                     }
                 ],
@@ -1322,6 +1322,68 @@ const docTemplateinternal = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/{id}/label": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "reset label of space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "ResetLabel",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_openmerlin_merlin-server_space_controller.reqToResetLabel"
+                        }
                     }
                 ],
                 "responses": {
@@ -1984,32 +2046,6 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "controller.reqToResetLabel": {
-            "type": "object",
-            "properties": {
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "libraryName": {
-                    "type": "string"
-                },
-                "license": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "task": {
-                    "type": "string"
-                }
-            }
-        },
         "controller.reqToUpdateBuildInfo": {
             "type": "object",
             "properties": {
@@ -2071,6 +2107,43 @@ const docTemplateinternal = `{
             "type": "object",
             "properties": {
                 "account": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_openmerlin_merlin-server_models_controller.reqToResetLabel": {
+            "type": "object",
+            "properties": {
+                "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "libraryName": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_openmerlin_merlin-server_space_controller.reqToResetLabel": {
+            "type": "object",
+            "properties": {
+                "license": {
+                    "type": "string"
+                },
+                "task": {
                     "type": "string"
                 }
             }

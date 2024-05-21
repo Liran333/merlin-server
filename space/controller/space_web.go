@@ -249,7 +249,7 @@ func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 // @Description  list global public space
 // @Tags     SpaceWeb
 // @Param    name            query  string  false  "name of space" MaxLength(100)
-// @Param    domain          query  string  false  "domain label" MaxLength(100)
+// @Param    task            query  string  false  "task label" MaxLength(100)
 // @Param    license         query  string  false  "license label" MaxLength(40)
 // @Param    framework       query  string  false  "framework " Enums(pytorch, mindspore)
 // @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)

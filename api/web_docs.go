@@ -2120,8 +2120,8 @@ const docTemplateweb = `{
                     {
                         "maxLength": 100,
                         "type": "string",
-                        "description": "domain label",
-                        "name": "domain",
+                        "description": "task label",
+                        "name": "task",
                         "in": "query"
                     },
                     {
@@ -4571,6 +4571,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -5053,6 +5056,9 @@ const docTemplateweb = `{
                 "owner": {
                     "type": "string"
                 },
+                "owner_type": {
+                    "type": "integer"
+                },
                 "sdk": {
                     "type": "string"
                 },
@@ -5173,6 +5179,9 @@ const docTemplateweb = `{
                 },
                 "owner": {
                     "type": "string"
+                },
+                "owner_type": {
+                    "type": "integer"
                 },
                 "sdk": {
                     "type": "string"
