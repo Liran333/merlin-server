@@ -6,7 +6,6 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -191,12 +190,7 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesDTO, err := ctl.appService.Recommend(user)
-	if err != nil {
-		commonctl.SendError(ctx, xerrors.Errorf("failed to get recommend spaces: %w", err))
-
-		return
-	}
+	spacesDTO := ctl.appService.Recommend(user)
 
 	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
 
@@ -231,12 +225,7 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesDTO, err := ctl.appService.Boutique(user)
-	if err != nil {
-		commonctl.SendError(ctx, xerrors.Errorf("failed to get boutique spaces: %w", err))
-
-		return
-	}
+	spacesDTO := ctl.appService.Boutique(user)
 
 	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
 

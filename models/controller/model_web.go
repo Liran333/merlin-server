@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -183,12 +182,7 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 func (ctl *ModelWebController) ListRecommends(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	modelsDTO, err := ctl.appService.Recommend(user)
-	if err != nil {
-		commonctl.SendError(ctx, xerrors.Errorf("failed to get recommend models: %w", err))
-
-		return
-	}
+	modelsDTO := ctl.appService.Recommend(user)
 
 	mrs := make([]modelRecommendInfo, 0, len(modelsDTO))
 

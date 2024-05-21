@@ -73,8 +73,8 @@ type SpaceAppService interface {
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
-	Recommend(primitive.Account) ([]SpaceDTO, error)
-	Boutique(primitive.Account) ([]SpaceDTO, error)
+	Recommend(primitive.Account) []SpaceDTO
+	Boutique(primitive.Account) []SpaceDTO
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -633,9 +633,12 @@ func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
 	return nil
 }
 
-func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) {
+func (s *spaceAppService) Recommend(user primitive.Account) []SpaceDTO {
+	var spacesDTO []SpaceDTO
+
 	if len(config.RecommendSpaces) == 0 {
-		return nil, xerrors.Errorf("missing recommend spaces config")
+		logrus.Errorf("missing recommend spaces config")
+		return spacesDTO
 	}
 
 	indexs := make([]domain.SpaceIndex, 0, len(config.RecommendSpaces))
@@ -647,23 +650,26 @@ func (s *spaceAppService) Recommend(user primitive.Account) ([]SpaceDTO, error) 
 		indexs = append(indexs, idx)
 	}
 
-	spacesDTO := make([]SpaceDTO, 0, len(indexs))
 	for _, index := range indexs {
 		idx := index
 		dto, err := s.GetByName(user, &idx)
 		if err != nil {
-			return nil, err
+			logrus.Errorf("failed to get recommend space by name:%s err:%s", idx.Name.MSDName(), err)
+			continue
 		}
 
 		spacesDTO = append(spacesDTO, dto)
 	}
 
-	return spacesDTO, nil
+	return spacesDTO
 }
 
-func (s *spaceAppService) Boutique(user primitive.Account) ([]SpaceDTO, error) {
+func (s *spaceAppService) Boutique(user primitive.Account) []SpaceDTO {
+	var spacesDTO []SpaceDTO
+
 	if len(config.BoutiqueSpaces) == 0 {
-		return nil, xerrors.Errorf("missing boutique spaces config")
+		logrus.Errorf("missing boutique spaces config")
+		return spacesDTO
 	}
 
 	indexs := make([]domain.SpaceIndex, 0, len(config.BoutiqueSpaces))
@@ -675,16 +681,16 @@ func (s *spaceAppService) Boutique(user primitive.Account) ([]SpaceDTO, error) {
 		indexs = append(indexs, idx)
 	}
 
-	spacesDTO := make([]SpaceDTO, 0, len(indexs))
 	for _, index := range indexs {
 		idx := index
 		dto, err := s.GetByName(user, &idx)
 		if err != nil {
-			return nil, err
+			logrus.Errorf("failed to get boutique space by name:%s err:%s", idx.Name.MSDName(), err)
+			continue
 		}
 
 		spacesDTO = append(spacesDTO, dto)
 	}
 
-	return spacesDTO, nil
+	return spacesDTO
 }

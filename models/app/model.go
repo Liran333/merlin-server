@@ -35,7 +35,7 @@ type ModelAppService interface {
 	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
-	Recommend(primitive.Account) ([]ModelDTO, error)
+	Recommend(primitive.Account) []ModelDTO
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -399,9 +399,12 @@ func (s *modelAppService) DeleteLike(modelId primitive.Identity) error {
 	return nil
 }
 
-func (s *modelAppService) Recommend(user primitive.Account) ([]ModelDTO, error) {
+func (s *modelAppService) Recommend(user primitive.Account) []ModelDTO {
+	var modelsDTO []ModelDTO
+
 	if len(config.RecommendModels) == 0 {
-		return nil, xerrors.Errorf("missing recommend models config")
+		logrus.Errorf("missing recommend models config")
+		return modelsDTO
 	}
 
 	indexs := make([]domain.ModelIndex, 0, len(config.RecommendModels))
@@ -413,16 +416,16 @@ func (s *modelAppService) Recommend(user primitive.Account) ([]ModelDTO, error) 
 		indexs = append(indexs, idx)
 	}
 
-	modelsDTO := make([]ModelDTO, 0, len(indexs))
 	for _, index := range indexs {
 		idx := index
 		dto, err := s.GetByName(user, &idx)
 		if err != nil {
-			return nil, err
+			logrus.Errorf("failed to get model by name:%s err:%s", idx.Name.MSDName(), err)
+			continue
 		}
 
 		modelsDTO = append(modelsDTO, dto)
 	}
 
-	return modelsDTO, nil
+	return modelsDTO
 }
