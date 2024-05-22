@@ -816,7 +816,7 @@ func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
 func (s userService) IsOrganization(user domain.Account) bool {
 	userInfo, err := s.repo.GetByAccount(user)
 	if err != nil {
-		return false
+		return true
 	}
 
 	return userInfo.IsOrganization()
