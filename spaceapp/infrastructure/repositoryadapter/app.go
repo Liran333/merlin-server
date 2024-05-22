@@ -31,10 +31,6 @@ type appRepositoryAdapter struct {
 
 // Add adds a space application to the repository.
 func (adapter *appRepositoryAdapter) Add(m *domain.SpaceApp) error {
-	if err := adapter.remove(m.SpaceId); err != nil {
-		return err
-	}
-
 	do := toSpaceAppDO(m)
 
 	err := adapter.dao.DB().Create(&do).Error
@@ -47,7 +43,7 @@ func (adapter *appRepositoryAdapter) Add(m *domain.SpaceApp) error {
 	return err
 }
 
-func (adapter *appRepositoryAdapter) remove(spaceId primitive.Identity) error {
+func (adapter *appRepositoryAdapter) Remove(spaceId primitive.Identity) error {
 	return adapter.dao.DB().Where(
 		adapter.dao.EqualQuery(fieldSpaceId), spaceId.Identity(),
 	).Delete(

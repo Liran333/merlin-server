@@ -28,6 +28,9 @@ const (
 	// ErrorCodeResourceDisabled is const
 	ErrorCodeResourceDisabled = "resource_disabled"
 
+	// ErrorCodeResourceNoApplicationFile is const
+	ErrorCodeResourceNoApplicationFile = "resource_no_application_file"
+
 	// ErrorCodeResourceAlreadyDisabled is const
 	ErrorCodeResourceAlreadyDisabled = "resource_already_disabled"
 
@@ -69,6 +72,9 @@ const (
 
 	// ErrorCodeSpaceAppPauseFailed pause space app
 	ErrorCodeSpaceAppPauseFailed = "space_app_pause_failed"
+
+	// ErrorCodeCompAccountException comp account exception when pause space app
+	ErrorCodeCompAccountException = "comp_account_exception"
 
 	// ErrorCodeSpaceAppResumeFailed pause space app
 	ErrorCodeSpaceAppResumeFailed = "space_app_resume_failed"

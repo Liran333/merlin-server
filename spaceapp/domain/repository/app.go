@@ -13,6 +13,7 @@ import (
 // Repository is an interface that defines methods for managing space app repositories.
 type Repository interface {
 	Add(*domain.SpaceApp) error
+	Remove(primitive.Identity) error
 	Find(*domain.SpaceAppIndex) (domain.SpaceApp, error)
 	Save(*domain.SpaceApp) error
 	FindBySpaceId(primitive.Identity) (domain.SpaceApp, error)

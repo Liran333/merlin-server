@@ -45,6 +45,7 @@ type Space struct {
 	Exception     primitive.Exception
 
 	CompPowerAllocated bool
+	NoApplicationFile  bool
 	CommitId           string
 }
 
@@ -56,6 +57,11 @@ func (m *Space) ResourceType() primitive.ObjType {
 // IsDisable checks if the space is disable.
 func (m *Space) IsDisable() bool {
 	return m.Disable
+}
+
+// IsValid checks if the space is valid.
+func (m *Space) IsNoApplicationFile() bool {
+	return m.NoApplicationFile
 }
 
 // GetLocalCmd return if the space is public.
@@ -72,6 +78,29 @@ func (m *Space) GetLocalEnvInfo() string {
 		return m.LocalEnvInfo
 	}
 	return ""
+}
+
+// SetSpaceCommitId for update space commitId.
+func (m *Space) SetSpaceCommitId(commitId string) {
+	m.CommitId = commitId
+}
+
+// SetNoApplicationFile for set NoApplicationFile and Exception.
+func (m *Space) SetNoApplicationFile(hasHtml, hasApp bool) {
+	m.NoApplicationFile = true
+	if (m.SDK == spaceprimitive.StaticSdk) && hasHtml {
+		m.NoApplicationFile = false
+	}
+	if (m.SDK == spaceprimitive.GradioSdk) && hasApp {
+		m.NoApplicationFile = false
+	}
+	if m.NoApplicationFile {
+		m.Exception = primitive.CreateException(primitive.NoApplicationFile)
+		return
+	}  
+	if !m.NoApplicationFile && m.Exception == primitive.ExceptionNoApplicationFile {
+		m.Exception = primitive.CreateException("")
+	}
 }
 
 // SpaceLabels represents labels associated with a space.

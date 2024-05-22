@@ -17,6 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
+	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
 )
 
 func initActivity(cfg *config.Config, services *allServices) error {
@@ -31,6 +32,7 @@ func initActivity(cfg *config.Config, services *allServices) error {
 		activityrepositoryadapter.ActivityAdapter(),
 		services.modelApp,
 		services.spaceApp,
+		repositoryadapter.AppRepositoryAdapter(),
 		messageadapter.MessageAdapter(&cfg.Activity.Topics),
 		resourceadapterimpl.NewResourceAdapterImpl(
 			modelrepositoryadapter.ModelAdapter(),

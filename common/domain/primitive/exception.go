@@ -12,10 +12,26 @@ import (
 
 const (
 	RelatedModelDisabled = "related_model_disabled"
+	RelatedModelNotFound = "related_model_notfound"
+	NoApplicationFile    = "no_application_file"
+	NoCompQuotaException = "no_comp_quota_exception"
 )
+
+var ExceptionMap = map[string]string{
+	// RelatedModelDisabled reason
+	RelatedModelDisabled: "the related model of space is disabled",
+	// RelatedModelNotFound reason
+	RelatedModelNotFound: "the related model of space is not found",
+	// NoApplicationFile reason
+	NoApplicationFile: "space no application file",
+	// NoCompQuota reason
+	NoCompQuotaException: "space no comp quota",
+}
 
 var (
 	ExceptionRelatedModelDisabled = exception(RelatedModelDisabled)
+	ExceptionRelatedModelNotFound = exception(RelatedModelNotFound)
+	ExceptionNoApplicationFile    = exception(NoApplicationFile)
 )
 
 // Exception is an interface that defines the exception of an object.

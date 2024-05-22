@@ -55,6 +55,14 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
+	// 更新commitId
+	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdNotifyUpdateCodePut(Interal, id, swaggerInternal.ControllerReqToNotifyUpdateCode{
+		SdkType:  "gradio",
+		CommitId: "12345",
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
 	// 创建space-app
 	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppPost(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{
 		SpaceId:  id,
@@ -129,6 +137,14 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppPause() {
 	_, r, err = ApiRest.SpaceApi.V1SpaceAppOwnerNamePausePost(AuthRest2, "test2", "testspace")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
+
+	// 更新commitId
+	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdNotifyUpdateCodePut(Interal, id, swaggerInternal.ControllerReqToNotifyUpdateCode{
+		SdkType:  "gradio",
+		CommitId: "12345",
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
 
 	// 创建space-app
 	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppPost(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{
@@ -225,6 +241,14 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppNpuPause() {
 	_, r, err = ApiRest.SpaceApi.V1SpaceAppOwnerNamePausePost(AuthRest2, "test2", "testspace")
 	assert.Equal(s.T(), http.StatusNotFound, r.StatusCode)
 	assert.NotNil(s.T(), err)
+
+	// 更新commitId
+	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdNotifyUpdateCodePut(Interal, id, swaggerInternal.ControllerReqToNotifyUpdateCode{
+		SdkType:  "gradio",
+		CommitId: "12345",
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
 
 	// 创建space-app
 	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppPost(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{

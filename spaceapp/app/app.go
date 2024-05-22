@@ -134,7 +134,9 @@ func (s *spaceappAppService) GetByName(
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = newSpaceAppNotFound(err)
+			err = newSpaceNotFound(xerrors.Errorf("not found, err: %w", err))
+		} else {
+			err = xerrors.Errorf("find space by name failed, err: %w", err)
 		}
 
 		return dto, err
@@ -142,22 +144,33 @@ func (s *spaceappAppService) GetByName(
 
 	if err = s.permission.CanRead(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = newSpaceAppNotFound(err)
+			err = newSpaceNotFound(xerrors.Errorf("no permission, err: %w", err))
+		} else {
+			err = xerrors.Errorf("no permission, err: %w", err)
 		}
 
 		return dto, err
+	}
+
+	if space.Exception.Exception() != "" {
+		return toSpaceDTO(&space), nil
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = newSpaceAppNotFound(err)
-		}
-
-		return dto, err
+	if err == nil {
+		return toSpaceAppDTO(&app), nil
 	}
 
-	return toSpaceAppDTO(&app), nil
+	if space.Hardware.IsNpu() && !space.CompPowerAllocated {
+		return toSpaceNoCompQuotaDTO(&space), nil
+	}
+
+	if commonrepo.IsErrorResourceNotExists(err) {
+		err = newSpaceAppNotFound(xerrors.Errorf("not found, err: %w", err))
+	} else {
+		err = xerrors.Errorf("find space app by id failed, err: %w", err)
+	}
+	return dto, err
 }
 
 func (s *spaceappAppService) getPrivateReadSpaceApp(
@@ -342,12 +355,14 @@ func (s *spaceappAppService) PauseSpaceApp(
 
 	if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
 		e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
-		err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+		err = allerror.New(allerror.ErrorCodeCompAccountException, e.Error(), e)
 		return err
 	}
 
 	if err := s.repo.Save(&app); err != nil {
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
+			err := allerror.New(allerror.ErrorCodeInsufficientQuota,
+				"pause space failed", xerrors.Errorf("bind space comp quota failed, err:%w",err))
 			return err
 		}
 		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
@@ -430,7 +445,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 
 	if err = s.permission.CanUpdate(user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
-			e := fmt.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
+			e := xerrors.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", e)
 		}
 
@@ -444,9 +459,15 @@ func (s *spaceappAppService) ResumeSpaceApp(
 		computility: s.computility,
 	}
 
-	if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
-		err := allerror.New(allerror.ErrorCodeSpaceAppResumeFailed, "resume space failed", err)
-		return err
+	if space.IsNoApplicationFile() {
+		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
+			err := allerror.New(allerror.ErrorCodeInsufficientQuota, "resume space failed", err)
+			return err
+		}
+		errInfo := fmt.Sprintf("space %v is no application file", space.Name.MSDName())
+		logrus.Errorf("%s, do not allow to resume", errInfo)
+		return allerror.New(allerror.ErrorCodeResourceNoApplicationFile,
+			errInfo, xerrors.New("resource no applicaction file"))
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
@@ -464,18 +485,25 @@ func (s *spaceappAppService) ResumeSpaceApp(
 	}
 
 	if err := app.ResumeService(); err != nil {
-		e := fmt.Errorf("resume spaceId:%s failed, err: %w", space.Id.Identity(), err)
+		e := xerrors.Errorf("resume spaceId:%s failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppResumeFailed, "resume space failed", e)
+		return err
+	}
+
+	if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
+		err := allerror.New(allerror.ErrorCodeInsufficientQuota,
+			"resume space failed", xerrors.Errorf("bind space comp quota failed, err:%w",err))
+
 		return err
 	}
 
 	if err := s.repo.Save(&app); err != nil {
 		if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
-			e := fmt.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
-			err = allerror.New(allerror.ErrorCodeSpaceAppPauseFailed, e.Error(), e)
+			e := xerrors.Errorf("failed to release spaceId:%s comp quota, err: %w", space.Id.Identity(), err)
+			err = allerror.New(allerror.ErrorCodeCompAccountException, e.Error(), e)
 			return err
 		}
-		e := fmt.Errorf("update resuming spaceId:%s failed, err: %w", space.Id.Identity(), err)
+		e := xerrors.Errorf("update resuming spaceId:%s failed, err: %w", space.Id.Identity(), err)
 		err = allerror.New(allerror.ErrorCodeSpaceAppResumeFailed, "update space failed", e)
 		return err
 	}
@@ -489,7 +517,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 
 func (s *spaceappAppService) reCreateApp(space spacedomain.Space) (domain.SpaceApp, error) {
 	if err := s.repo.Add(&domain.SpaceApp{
-		Status: appprimitive.AppStatusInit,
+		Status: appprimitive.AppStatusPaused,
 		SpaceAppIndex: domain.SpaceAppIndex{
 			SpaceId:  space.Id,
 			CommitId: space.CommitId,

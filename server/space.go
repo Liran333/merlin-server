@@ -50,6 +50,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		spacerepositoryadapter.ModelSpaceRelationAdapter(),
 		modelrepositoryadapter.ModelAdapter(),
 		spacerepositoryadapter.SpaceAdapter(),
+		repositoryadapter.AppRepositoryAdapter(),
 		modelapp.NewModelInternalAppService(
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),

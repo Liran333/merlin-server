@@ -5,6 +5,9 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
+
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -12,7 +15,9 @@ import (
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/domain"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
+	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
+	spaceapprepo "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
 // ModelAppService is an interface for the model application service.
@@ -31,6 +36,7 @@ func NewModelSpaceAppService(
 	repoAdapter spacerepo.ModelSpaceRepositoryAdapter,
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter,
 	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter,
+	spaceappRepoAdapter spaceapprepo.Repository,
 	modelInternalApp modelapp.ModelInternalAppService,
 ) ModelSpaceAppService {
 	return &modelSpaceAppService{
@@ -38,6 +44,7 @@ func NewModelSpaceAppService(
 		repoAdapter:      repoAdapter,
 		modelRepoAdapter: modelRepoAdapter,
 		spaceRepoAdapter: spaceRepoAdapter,
+		spaceappRepoAdapter: spaceappRepoAdapter,
 		modelInternalApp: modelInternalApp,
 	}
 }
@@ -47,6 +54,7 @@ type modelSpaceAppService struct {
 	repoAdapter      spacerepo.ModelSpaceRepositoryAdapter
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter
 	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter
+	spaceappRepoAdapter spaceapprepo.Repository
 	modelInternalApp modelapp.ModelInternalAppService
 }
 
@@ -146,6 +154,15 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 			continue
 		}
 
+		// if space app is not serving, not return
+		spaceapp, err := s.spaceappRepoAdapter.FindBySpaceId(space.Id)
+		if err != nil {
+			continue
+		}
+		if !spaceapp.Status.IsServing() {
+			continue
+		}
+
 		spaceModel := SpaceModelDTO{
 			Owner:         space.CodeRepo.Owner.Account(),
 			Name:          space.CodeRepo.Name.MSDName(),
@@ -189,9 +206,69 @@ func (s *modelSpaceAppService) GetSpaceIdsByModelId(modelId primitive.Identity) 
 	return spaces, nil
 }
 
-func (s *modelSpaceAppService) UpdateRelation(spaceId primitive.Identity, modelsIndex []*domain.ModelIndex) error {
-	modelsId := s.modelInternalApp.GetByNames(modelsIndex)
+func (s *modelSpaceAppService) checkSpaceDisable(spaceId primitive.Identity) (spacedomain.Space, error) {
+	space, err := s.spaceRepoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("not found, err: %w", err))
+		} else {
+			err = xerrors.Errorf("find space by id failed, err: %w", err)
+		}
+		logrus.Errorf("find space by id failed, space id:%s, err:%v", spaceId.Identity(), err)
+		return space, err
+	}
 
+	if space.IsDisable() {
+		errInfo := xerrors.Errorf("space %v was disable", space.Name.MSDName())
+		logrus.Errorf("%s, do not allow to remove exception", errInfo)
+		return space, allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, errInfo.Error(), errInfo)
+	}
+	return space, nil
+}
+
+func (s *modelSpaceAppService) checkModelsException(
+	spaceId primitive.Identity,
+	modelsIndex []*domain.ModelIndex,
+) ([]primitive.Identity, error){
+	var modelsId []primitive.Identity
+	space, err := s.checkSpaceDisable(spaceId)
+	if err != nil {
+		logrus.Errorf("check space failed, space id:%s, err:%v", spaceId.Identity(), err)
+		return modelsId, err
+	}
+
+	modelsId, err = s.modelInternalApp.GetByNames(modelsIndex)
+	if err != nil {
+		_, ok := allerror.IsNotFound(err)
+		if !ok {
+			logrus.Infof("space id:%s exception related_model_disabled not del", spaceId.Identity())
+			space.Exception = primitive.CreateException(primitive.RelatedModelDisabled)
+		} else {
+			logrus.Infof("space id:%s exception related_model_notfound not del", spaceId.Identity())
+			space.Exception = primitive.CreateException(primitive.RelatedModelNotFound)
+		}
+		if err := s.spaceRepoAdapter.Save(&space); err != nil {
+			return modelsId, xerrors.Errorf("save space failed, err:%w", err)
+		}
+		return modelsId, nil
+	}
+
+	if space.Exception != primitive.ExceptionRelatedModelDisabled &&
+		space.Exception != primitive.ExceptionRelatedModelNotFound {
+		return modelsId, nil
+	}
+
+	logrus.Infof("space exception related_model_exception delete success, space id:%s", spaceId.Identity())
+	space.Exception = primitive.CreateException("")
+	return modelsId, s.spaceRepoAdapter.Save(&space)
+}
+
+func (s *modelSpaceAppService) UpdateRelation(spaceId primitive.Identity, modelsIndex []*domain.ModelIndex) error {
+	modelsId, err := s.checkModelsException(spaceId, modelsIndex)
+	if err != nil {
+		logrus.Errorf("check model exception failed, space id:%s, err:%v", spaceId.Identity(), err)
+		return err
+	}
 	return s.repoAdapter.UpdateRelation(spaceId, modelsId)
 }
 

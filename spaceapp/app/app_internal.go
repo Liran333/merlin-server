@@ -75,11 +75,6 @@ type spaceappInternalAppService struct {
 
 // Create creates a new SpaceApp in the spaceappInternalAppService.
 func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
-	v := domain.SpaceApp{
-		Status:        appprimitive.AppStatusInit,
-		SpaceAppIndex: *cmd,
-	}
-
 	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -90,10 +85,10 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 		return err
 	}
 
-	space.CommitId = cmd.CommitId
-	if err := s.spaceRepo.Save(&space); err != nil {
-		e := xerrors.Errorf("failed to save latest commit id failed, spaceId:%s, err: %w", space.Id.Identity(), err)
+	if space.IsDisable() {
+		e := xerrors.Errorf("spaceId:%s failed to create space failed, space is disable", space.Id.Identity())
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
+		logrus.Errorf("spaceId：%s create space failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
 
@@ -101,16 +96,42 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 		e := xerrors.Errorf("failed to create space failed, "+
 			"spaceId:%s is npu but not allocate computility", space.Id.Identity())
 		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
+		logrus.Errorf("spaceId：%s create space failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
-	if err == nil && app.IsAppNotAllowToInit() {
-		e := fmt.Errorf("spaceId:%s, not allow to init", space.Id.Identity())
-		logrus.Errorf("create space app failed, err:%s", e)
-		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	if err == nil {
+		if app.IsAppNotAllowToInit() {
+			e := fmt.Errorf("spaceId:%s, not allow to init", space.Id.Identity())
+			logrus.Errorf("create space app failed, err:%s", e)
+			return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+		}
+
+		if err := s.repo.Remove(space.Id); err != nil {
+			logrus.Errorf("spaceId:%s remove space app db failed, err:%s", space.Id.Identity(), err)
+			return err
+		}
+
+		forceStopEvent := spacedomain.NewSpaceForceEvent(space.Id.Identity(), spacedomain.ForceTypeStop)
+		if err := s.msg.SendSpaceAppForcePauseEvent(&forceStopEvent); err != nil {
+			logrus.Errorf("spaceId:%s send force stop topic failed:%s", space.Id.Identity(), err)
+			return err
+		}
 	}
 
+	if space.Exception.Exception() != "" {
+		e := xerrors.Errorf("spaceId:%s failed to create space failed, space has exception reason :%s",
+			space.Id.Identity(), primitive.ExceptionMap[space.Exception.Exception()])
+		err = allerror.New(allerror.ErrorCodeSpaceAppCreateFailed, e.Error(), e)
+		logrus.Errorf("spaceId：%s create space failed, err:%s", cmd.SpaceId.Identity(), err)
+		return err
+	}
+
+	v := domain.SpaceApp{
+		Status:        appprimitive.AppStatusInit,
+		SpaceAppIndex: *cmd,
+	}
 	if err := s.repo.Add(&v); err != nil {
 		logrus.Errorf("spaceId:%s create space app db failed, err:%s", space.Id.Identity(), err)
 		return err
@@ -139,7 +160,8 @@ func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.Spa
 	if space.CommitId != cmd.CommitId {
 		err = allerror.New(allerror.ErrorCodeSpaceCommitConflict, "commit conflict",
 			xerrors.Errorf("spaceId:%s commit conflict", space.Id.Identity()))
-		logrus.Errorf("spaceId:%s not latest commit, err:%s", cmd.SpaceId.Identity(), err)
+		logrus.Errorf("spaceId:%s latest commitId:%s, old commitId:%s, err:%s",
+			cmd.SpaceId.Identity(), space.CommitId, cmd.CommitId, err)
 		return domain.SpaceApp{}, err
 	}
 

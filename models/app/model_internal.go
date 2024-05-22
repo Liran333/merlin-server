@@ -8,6 +8,8 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
@@ -21,7 +23,7 @@ type ModelInternalAppService interface {
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	UpdateUseInOpenmind(primitive.Identity, string) error
 	GetById(modelId primitive.Identity) (ModelDTO, error)
-	GetByNames([]*domain.ModelIndex) []primitive.Identity
+	GetByNames([]*domain.ModelIndex) ([]primitive.Identity, error)
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
 }
 
@@ -66,19 +68,27 @@ func (s *modelInternalAppService) GetById(modelId primitive.Identity) (ModelDTO,
 }
 
 // GetByNames retrieves ids of models by names.
-func (s *modelInternalAppService) GetByNames(modelsIndex []*domain.ModelIndex) []primitive.Identity {
+func (s *modelInternalAppService) GetByNames(modelsIndex []*domain.ModelIndex) ([]primitive.Identity, error) {
 	var dtos []primitive.Identity
+	var resErr error
 
 	for _, index := range modelsIndex {
 		model, err := s.modelAdapter.FindByName(index)
 		if err != nil {
+			errInfo := fmt.Errorf("related model %v was not found", index.Name.MSDName())
+			logrus.Errorf("%s, do not allow to remove exception", errInfo)
+			resErr = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, errInfo.Error(), errInfo)
 			continue
 		}
-
+		if model.IsDisable() {
+			errInfo := fmt.Errorf("related model %v was disable", model.Name.MSDName())
+			logrus.Errorf("%s, do not allow to remove exception", errInfo)
+			resErr = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, errInfo.Error(), errInfo)
+		}
 		dtos = append(dtos, model.Id)
 	}
 
-	return dtos
+	return dtos, resErr
 }
 
 // UpdateStatistics updates the statistics of a model.

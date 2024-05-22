@@ -30,8 +30,8 @@ type SpaceInternalAppService interface {
 	UpdateEnvInfo(spaceId primitive.Identity, envInfo string) error
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
 	Disable(primitive.Identity) error
-	RemoveException(spaceId primitive.Identity) error
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
+	NotifyUpdateCodes(primitive.Identity, *CmdToNotifyUpdateCode) error
 }
 
 // NewSpaceInternalAppService creates a new instance of SpaceInternalAppService
@@ -157,57 +157,6 @@ func (s *spaceInternalAppService) Disable(spaceId primitive.Identity) (err error
 	return
 }
 
-func (s *spaceInternalAppService) RemoveException(spaceId primitive.Identity) error {
-	space, err := s.repoAdapter.FindById(spaceId)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			err = newSpaceNotFound(err)
-		}
-		logrus.Errorf("find space by id failed, space id:%s, err:%v", spaceId.Identity(), err)
-		return err
-	}
-
-	if space.IsDisable() {
-		errInfo := fmt.Sprintf("space %v was disable", space.Name.MSDName())
-		logrus.Errorf("%s, do not allow to remove exception", errInfo)
-		return allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, errInfo, fmt.Errorf("resource disabled"))
-	}
-
-	modelIds, err := s.repoAdapterModelSpace.GetModelsBySpaceId(spaceId)
-	if err != nil {
-		if commonrepo.IsErrorResourceNotExists(err) {
-			return newSpaceNotFound(err)
-		}
-
-		return err
-	}
-
-	for _, id := range modelIds {
-		model, err := s.modelRepoAdapter.FindById(id)
-		if err != nil {
-			if commonrepo.IsErrorResourceNotExists(err) {
-				continue
-			}
-			logrus.Errorf("find model by id failed, id:%v, err:%v", id, err)
-			return err
-		}
-
-		if model.IsDisable() {
-			errInfo := fmt.Sprintf("related model %v was disable", model.Name.MSDName())
-			logrus.Errorf("%s, do not allow to remove exception", errInfo)
-			return allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, errInfo, fmt.Errorf("resource disabled"))
-		}
-	}
-
-	if space.Exception != primitive.ExceptionRelatedModelDisabled {
-		return nil
-	}
-
-	logrus.Infof("space exception related_model_disabled delete success, space id:%s", spaceId.Identity())
-	space.Exception = primitive.CreateException("")
-	return s.repoAdapter.Save(&space)
-}
-
 type SpaceMetaDTO1 = sdk.SpaceMetaDTO
 
 func (s *spaceInternalAppService) ResetLabels(spaceId primitive.Identity, cmd *CmdToResetLabels) error {
@@ -240,5 +189,30 @@ func (s *spaceInternalAppService) ResetLabels(spaceId primitive.Identity, cmd *C
 		err = xerrors.Errorf("save space failed, err: %w", err)
 	}
 
+	return err
+}
+
+// NotifyUpdateCodes notify the space no application file and commitId with the given space ID
+func (s *spaceInternalAppService) NotifyUpdateCodes(spaceId primitive.Identity, cmd *CmdToNotifyUpdateCode) error {
+	space, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("not found, err: %w", err))
+		} else {
+			err = xerrors.Errorf("find space by id failed, err: %w", err)
+		}
+
+		return err
+	}
+
+	space.SetSpaceCommitId(cmd.CommitId)
+	space.SetNoApplicationFile(cmd.HasHtml, cmd.HasApp)
+	err = s.repoAdapter.Save(&space)
+
+	if err != nil {
+		err = xerrors.Errorf("save space failed, err: %w", err)
+	}
+	logrus.Infof("spaceId:%s set notify commitId:%s, req:%v success",
+		spaceId, cmd.CommitId, cmd)
 	return err
 }

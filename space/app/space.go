@@ -556,11 +556,31 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 		}
 	}
 
-	v, total, err := s.repoAdapter.List(cmd, user, s.member)
+	spaceLists, total, err := s.repoAdapter.List(cmd, user, s.member)
+
+	for key, spaceList := range spaceLists {
+		if spaceList.Exception != "" {
+			spaceLists[key].Status = spaceList.Exception
+			continue
+		}
+
+		spaceId, err := primitive.NewIdentity(spaceList.Id)
+		if err != nil {
+			continue
+		}
+		app, err := s.spaceappRepository.FindBySpaceId(spaceId)
+		if err == nil {
+			spaceLists[key].Status = app.Status.AppStatus()
+			continue
+		}
+		if spaceList.IsNpu && !spaceList.CompPowerAllocated {
+			spaceLists[key].Status = primitive.NoCompQuotaException
+		}
+	}
 
 	return SpacesDTO{
 		Total:  total,
-		Spaces: v,
+		Spaces: spaceLists,
 	}, err
 }
 

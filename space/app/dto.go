@@ -293,3 +293,10 @@ type CmdToResetLabels struct {
 	Task    spaceprimitive.Task
 	License primitive.License
 }
+
+// CmdToNotifyUpdateCode is to update no application file and commitId
+type CmdToNotifyUpdateCode struct {
+	CommitId string
+	HasHtml bool
+	HasApp  bool
+}

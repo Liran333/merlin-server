@@ -27,6 +27,10 @@ type SpaceSummary struct {
 	Disable       bool               `json:"disable"`
 	DisableReason string             `json:"disable_reason"`
 	Labels        domain.SpaceLabels `json:"labels"`
+	Exception	  string			 `json:"exception"`
+	Status		  string			 `json:"status"`
+	IsNpu		  bool				 `json:"is_npu"`
+	CompPowerAllocated	bool		 `json:"comp_power_allocated"`
 }
 
 // ListOption contains options for listing spaces.

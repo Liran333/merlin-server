@@ -36,3 +36,15 @@ type sdk string
 func (r sdk) SDK() string {
 	return string(r)
 }
+
+const (
+	static = "static"
+	gradio = "gradio"
+)
+
+var (
+	// StaticSdk represents static sdk.
+	StaticSdk = sdk(static)
+	// GradioSdk represents gradio sdk.
+	GradioSdk = sdk(gradio)
+)

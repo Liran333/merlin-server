@@ -59,6 +59,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		LocalEnvInfo:       m.LocalEnvInfo,
 		DownloadCount:      m.DownloadCount,
 		CompPowerAllocated: m.CompPowerAllocated,
+		NoApplicationFile:  m.NoApplicationFile,
 		CommitId:           m.CommitId,
 	}
 
@@ -116,6 +117,8 @@ type spaceDO struct {
 
 	// comp power allocated
 	CompPowerAllocated bool `gorm:"column:comp_power_allocated"`
+	// no application file
+	NoApplicationFile bool `gorm:"column:no_application_file"`
 	// latest commit id
 	CommitId string `gorm:"column:commit_id"`
 }
@@ -157,6 +160,7 @@ func (do *spaceDO) toSpace() domain.Space {
 			Framework: do.Framework,
 		},
 		CompPowerAllocated: do.CompPowerAllocated,
+		NoApplicationFile: do.NoApplicationFile,
 		CommitId:           do.CommitId,
 	}
 }
@@ -180,5 +184,8 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 			License:   primitive.CreateLicense(do.License),
 			Framework: do.Framework,
 		},
+		IsNpu: spaceprimitive.CreateHardware(do.Hardware).IsNpu(),
+		Exception: do.Exception,
+		CompPowerAllocated: do.CompPowerAllocated,
 	}
 }

@@ -6,6 +6,7 @@ package app
 
 import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 	appprimitive "github.com/openmerlin/merlin-server/spaceapp/domain/primitive"
 )
@@ -43,6 +44,24 @@ type SpaceAppDTO struct {
 	AppURL      string `json:"app_url"`
 	AppLogURL   string `json:"-"`
 	BuildLogURL string `json:"-"`
+}
+
+func toSpaceDTO(space *spacedomain.Space) SpaceAppDTO {
+	dto := SpaceAppDTO{
+		Id:     space.Id.Integer(),
+		Status: space.Exception.Exception(),
+		Reason: primitive.ExceptionMap[space.Exception.Exception()],
+	}
+	return dto
+}
+
+func toSpaceNoCompQuotaDTO(space *spacedomain.Space) SpaceAppDTO {
+	dto := SpaceAppDTO{
+		Id:     space.Id.Integer(),
+		Status: primitive.NoCompQuotaException,
+		Reason: primitive.ExceptionMap[primitive.NoCompQuotaException],
+	}
+	return dto
 }
 
 func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {

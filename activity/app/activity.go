@@ -20,6 +20,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	modelApp "github.com/openmerlin/merlin-server/models/app"
 	spaceApp "github.com/openmerlin/merlin-server/space/app"
+	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
 // NewActivityAppService is an interface for the model application service.
@@ -36,6 +37,7 @@ type activityAppService struct {
 	repoAdapter     repository.ActivitiesRepositoryAdapter
 	modelApp        modelApp.ModelAppService
 	spaceApp        spaceApp.SpaceAppService
+	spaceappRepo    spaceappRepository.Repository
 	msgAdapter      message.ActivityMessage
 	resourceAdapter resourceadapter.ResourceAdapter
 }
@@ -47,6 +49,7 @@ func NewActivityAppService(
 	repoAdapter repository.ActivitiesRepositoryAdapter,
 	modelApp modelApp.ModelAppService,
 	spaceApp spaceApp.SpaceAppService,
+	spaceappRepo spaceappRepository.Repository,
 	msgAdapter message.ActivityMessage,
 	resourceAdapter resourceadapter.ResourceAdapter,
 ) ActivityAppService {
@@ -56,6 +59,7 @@ func NewActivityAppService(
 		repoAdapter:     repoAdapter,
 		modelApp:        modelApp,
 		spaceApp:        spaceApp,
+		spaceappRepo: 	 spaceappRepo,
 		msgAdapter:      msgAdapter,
 		resourceAdapter: resourceAdapter,
 	}
@@ -124,6 +128,21 @@ func (s *activityAppService) processSpaceActivity(user primitive.Account, codeRe
 		return ActivitySummaryDTO{}, err
 	}
 	activity.Resource.Disable = space.Disable
+	if space.Exception != "" {
+		activity.Resource.Status = space.Exception
+	}
+	spaceId, err := primitive.NewIdentity(space.Id)
+	if err != nil {
+		return ActivitySummaryDTO{}, err
+	}
+	app, err := s.spaceappRepo.FindBySpaceId(spaceId)
+	if err == nil {
+		activity.Resource.Status = app.Status.AppStatus()
+	} else {
+		if space.IsNpu && !space.CompPowerAllocated {
+			activity.Resource.Status = primitive.NoCompQuotaException
+		}
+	}
 	stat := domain.Stat{
 		LikeCount:     space.LikeCount,
 		DownloadCount: space.DownloadCount,

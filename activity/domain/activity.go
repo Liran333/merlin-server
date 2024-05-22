@@ -44,4 +44,5 @@ type Resource struct {
 	Index   primitive.Identity // Resource index
 	Owner   primitive.Account
 	Disable bool
+	Status  string
 }

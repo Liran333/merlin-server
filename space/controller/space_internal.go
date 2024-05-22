@@ -32,6 +32,7 @@ func AddRouterForSpaceInternalController(
 	r.PUT("/v1/space/:id/local_env_info", m.Write, ctl.UpdateSpaceLocalEnvInfo)
 	r.PUT("/v1/space/:id/disable", m.Write, ctl.Disable)
 	r.PUT("/v1/space/:id/label", m.Write, ctl.ResetLabel)
+	r.PUT("/v1/space/:id/notify_update_code", m.Write, ctl.NotifyUpdateCode)
 }
 
 // SpaceInternalController is a struct that holds the necessary dependencies for handling space-related operations.
@@ -78,11 +79,6 @@ func (ctl *SpaceInternalController) UpdateSpaceModels(ctx *gin.Context) {
 		commonctl.SendBadRequestParam(ctx, err)
 
 		return
-	}
-
-	err = ctl.appService.RemoveException(spaceId)
-	if err != nil {
-		commonctl.SendError(ctx, err)
 	}
 
 	var req ModeIds
@@ -227,6 +223,44 @@ func (ctl *SpaceInternalController) ResetLabel(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.ResetLabels(spaceId, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  NotifyIsNoApplicationFile space
+// @Description  NotifyIsNoApplicationFile space
+// @Tags     SpaceInternal
+// @Param    id    path  string            true  "id of space" MaxLength(20)
+// @Param    body  body  reqToNotifyUpdateCode  true  "body"
+// @Accept   json
+// @Security Internal
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/space/{id}/notify_update_code [put]
+func (ctl *SpaceInternalController) NotifyUpdateCode(ctx *gin.Context) {
+	req := reqToNotifyUpdateCode{}
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	spaceId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("invalid request body: %w", err))
+
+		return
+	}
+
+	if err = ctl.appService.NotifyUpdateCodes(spaceId, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)

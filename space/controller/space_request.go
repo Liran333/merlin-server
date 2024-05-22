@@ -495,3 +495,29 @@ func (req *reqToResetLabel) toCmd() (cmd app.CmdToResetLabels, err error) {
 
 	return
 }
+
+// reqToNotifyUpdateCode
+type reqToNotifyUpdateCode struct {
+	CommitId string `json:"commit_id"`
+	SdkType  string	`json:"sdk_type"`
+}
+
+func (req *reqToNotifyUpdateCode) toCmd() (cmd app.CmdToNotifyUpdateCode, err error) {
+	cmd.CommitId = req.CommitId
+	if req.SdkType == "" {
+		cmd.HasHtml = false
+		cmd.HasApp = false
+		return
+	}
+	if req.SdkType == spaceprimitive.StaticSdk.SDK() {
+		cmd.HasHtml = true
+		return
+	}
+	if req.SdkType == spaceprimitive.GradioSdk.SDK() {
+		cmd.HasApp = true
+		return
+	}
+	cmd.HasHtml = true
+	cmd.HasApp = true
+	return
+}
