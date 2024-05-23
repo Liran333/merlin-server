@@ -36,6 +36,8 @@ type ListOption struct {
 	// because the Name can be subpart of the real resource name
 	Name string
 
+	ExcludeFullname bool
+
 	// list the datasets of Owner
 	Owner primitive.Account
 
@@ -75,7 +77,6 @@ type DatasetRepositoryAdapter interface {
 	Save(*domain.Dataset) error
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]DatasetSummary, int, error)
 	Count(*ListOption) (int, error)
-	SearchDataset(*ListOption, primitive.Account, orgrepo.OrgMember) ([]DatasetSummary, int, error)
 	AddLike(domain.Dataset) error
 	DeleteLike(domain.Dataset) error
 }

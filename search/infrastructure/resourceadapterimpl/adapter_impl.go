@@ -64,9 +64,12 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 
 	if utils.Contains(opt.SearchType, primitive.SearchTypeDataset) {
 		cmd := &datasetrepo.ListOption{
-			Name:         opt.SearchKey,
-			PageNum:      DefaultPage,
-			CountPerPage: opt.Size,
+			Name:            opt.SearchKey,
+			PageNum:         DefaultPage,
+			CountPerPage:    opt.Size,
+			ExcludeFullname: true,
+			Count:           true,
+			Visibility:      primitive.VisibilityPublic,
 		}
 		datasets, err := adapter.SearchDataset(cmd, opt.Account)
 		if err != nil {
@@ -143,7 +146,7 @@ func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account dom
 func (adapter *searchAdapter) SearchDataset(cmd *datasetrepo.ListOption, account domain.Account) (
 	domain.SearchResultDataset, error) {
 	var result domain.SearchResultDataset
-	v, count, err := adapter.dataset.SearchDataset(cmd, account, adapter.member)
+	v, count, err := adapter.dataset.List(cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}

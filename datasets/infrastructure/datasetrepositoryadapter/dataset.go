@@ -101,7 +101,7 @@ func (adapter *datasetAdapter) List(opt *repository.ListOption, login primitive.
 			if err != nil {
 				return nil, 0, err
 			}
-			orgNames := make([]string, len(members))
+			orgNames := make([]string, 0, len(members))
 			for _, member := range members {
 				orgNames = append(orgNames, member.OrgName.Account())
 			}
@@ -160,9 +160,14 @@ func (adapter *datasetAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	db := adapter.db()
 
 	if opt.Name != "" {
-		query1, arg1 := likeFilter(fieldName, opt.Name)
-		query2, arg2 := likeFilter(fieldFullName, opt.Name)
-		db = db.Where(db.Where(query1, arg1).Or(query2, arg2))
+		_, arg := likeFilter(fieldName, opt.Name)
+
+		if !opt.ExcludeFullname {
+			query2, arg2 := likeFilter(fieldFullName, opt.Name)
+			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)).Or(query2, arg2))
+		} else {
+			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)))
+		}
 
 		if strings.Contains(readme, strings.ToLower(opt.Name)) {
 			db = db.Where(notEqualQuery(fieldName), README)
@@ -202,55 +207,6 @@ func (adapter *datasetAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	}
 
 	return db
-}
-
-func (adapter *datasetAdapter) SearchDataset(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
-	[]repository.DatasetSummary, int, error) {
-	db := adapter.db()
-	queryName, argName := likeFilter(fieldName, opt.Name)
-
-	db = db.Where(queryName, argName)
-
-	if login != nil {
-		members, err := member.GetByUser(login.Account())
-		if err != nil {
-			return nil, 0, err
-		}
-		orgNames := make([]string, len(members))
-		for _, member := range members {
-			orgNames = append(orgNames, member.OrgName.Account())
-		}
-		sql := fmt.Sprintf(`%s = ? or %s = ? or %s in (?)`, fieldVisibility, fieldOwner, fieldOwner)
-		db = db.Where(sql, primitive.VisibilityPublic, login, orgNames)
-	} else {
-		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
-	}
-
-	var total int64
-	if err := db.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if b, offset := opt.Pagination(); b {
-		if offset > 0 {
-			db = db.Limit(opt.CountPerPage).Offset(offset)
-		} else {
-			db = db.Limit(opt.CountPerPage)
-		}
-	}
-
-	var dos []datasetDO
-
-	if err := db.Find(&dos).Error; err != nil {
-		return nil, 0, err
-	}
-
-	r := make([]repository.DatasetSummary, len(dos))
-	for i, do := range dos {
-		r[i] = do.toDatasetSummary()
-	}
-
-	return r, int(total), nil
 }
 
 func order(t primitive.SortType) string {
