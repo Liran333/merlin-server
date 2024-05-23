@@ -6,6 +6,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -118,6 +119,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 			logrus.Errorf("spaceId:%s send force stop topic failed:%s", space.Id.Identity(), err)
 			return err
 		}
+		time.Sleep(time.Second)
 	}
 
 	if space.Exception.Exception() != "" {

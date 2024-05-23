@@ -105,6 +105,7 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Param    license         query  string  false  "license label" MaxLength(40)
 // @Param    framework       query  string  false  "framework " Enums(pytorch, mindspore)
 // @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
+// @Param    has_app_file    query  bool    false  "show has app file space" Enums(true, false)
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
 // @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
 // @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)

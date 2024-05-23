@@ -163,6 +163,13 @@ definitions:
       status:
         type: string
     type: object
+  controller.reqToNotifyUpdateCode:
+    properties:
+      commit_id:
+        type: string
+      sdk_type:
+        type: string
+    type: object
   controller.reqToOrgDelete:
     properties:
       org_name:
@@ -1191,6 +1198,43 @@ paths:
       security:
       - Internal: []
       summary: UpdateSpaceModels
+      tags:
+      - SpaceInternal
+  /v1/space/{id}/notify_update_code:
+    put:
+      consumes:
+      - application/json
+      description: NotifyIsNoApplicationFile space
+      parameters:
+      - description: id of space
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToNotifyUpdateCode'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: NotifyIsNoApplicationFile space
       tags:
       - SpaceInternal
   /v1/user/{name}/avatar_id:

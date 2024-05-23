@@ -202,6 +202,10 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(db.Where(query1, arg1))
 	}
 
+	if opt.HasAppFile {
+		db = db.Where(notEqualQuery(fieldNoApplicationFile), opt.HasAppFile)
+	}
+
 	return db
 }
 

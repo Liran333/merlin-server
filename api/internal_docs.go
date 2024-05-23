@@ -1600,6 +1600,68 @@ const docTemplateinternal = `{
                 }
             }
         },
+        "/v1/space/{id}/notify_update_code": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "NotifyIsNoApplicationFile space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceInternal"
+                ],
+                "summary": "NotifyIsNoApplicationFile space",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToNotifyUpdateCode"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/token/verify": {
             "post": {
                 "security": [
@@ -2034,6 +2096,17 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToNotifyUpdateCode": {
+            "type": "object",
+            "properties": {
+                "commit_id": {
+                    "type": "string"
+                },
+                "sdk_type": {
                     "type": "string"
                 }
             }

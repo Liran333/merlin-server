@@ -714,6 +714,8 @@ definitions:
     properties:
       base_image:
         type: string
+      comp_power_allocated:
+        type: boolean
       desc:
         type: string
       disable:
@@ -722,19 +724,27 @@ definitions:
         type: string
       download_count:
         type: integer
+      exception:
+        type: string
       fullname:
         type: string
       id:
         type: string
+      is_npu:
+        type: boolean
       labels:
         $ref: '#/definitions/domain.SpaceLabels'
       like_count:
         type: integer
       name:
         type: string
+      no_application_file:
+        type: boolean
       owner:
         type: string
       space_avatar_id:
+        type: string
+      status:
         type: string
       updated_at:
         type: integer
@@ -1823,6 +1833,13 @@ paths:
         - false
         in: query
         name: count
+        type: boolean
+      - description: show has app file space
+        enum:
+        - true
+        - false
+        in: query
+        name: has_app_file
         type: boolean
       - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
           recently_created'

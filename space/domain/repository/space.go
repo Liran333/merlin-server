@@ -31,6 +31,7 @@ type SpaceSummary struct {
 	Status		  string			 `json:"status"`
 	IsNpu		  bool				 `json:"is_npu"`
 	CompPowerAllocated	bool		 `json:"comp_power_allocated"`
+	NoApplicationFile   bool		 `json:"no_application_file"`
 }
 
 // ListOption contains options for listing spaces.
@@ -52,6 +53,9 @@ type ListOption struct {
 
 	// list space which have one of framework
 	Framework string
+
+	// list space has app file
+	HasAppFile bool
 
 	// list space which have at least one label for each kind of lables.
 	Labels domain.SpaceLabels

@@ -170,6 +170,8 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	space.UpdatedAt = now
 	space.CodeRepo = coderepo
 	space.CreatedAt = now
+	space.NoApplicationFile = true
+	space.Exception = primitive.ExceptionNoApplicationFile
 
 	if cmd.Hardware.IsNpu() {
 		space.CompPowerAllocated = true

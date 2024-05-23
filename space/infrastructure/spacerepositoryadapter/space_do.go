@@ -29,6 +29,7 @@ const (
 	fieldBaseImage     = "base_image"
 	fieldLikeCount     = "like_count"
 	fieldDownloadCount = "download_count"
+	fieldNoApplicationFile = "no_application_file"
 )
 
 var (
@@ -118,7 +119,7 @@ type spaceDO struct {
 	// comp power allocated
 	CompPowerAllocated bool `gorm:"column:comp_power_allocated"`
 	// no application file
-	NoApplicationFile bool `gorm:"column:no_application_file"`
+	NoApplicationFile bool `gorm:"column:no_application_file;default:t"`
 	// latest commit id
 	CommitId string `gorm:"column:commit_id"`
 }
@@ -187,5 +188,6 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		IsNpu: spaceprimitive.CreateHardware(do.Hardware).IsNpu(),
 		Exception: do.Exception,
 		CompPowerAllocated: do.CompPowerAllocated,
+		NoApplicationFile: do.NoApplicationFile,
 	}
 }

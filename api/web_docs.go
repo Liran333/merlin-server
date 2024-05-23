@@ -5082,6 +5082,9 @@ const docTemplateweb = `{
                 "base_image": {
                     "type": "string"
                 },
+                "comp_power_allocated": {
+                    "type": "boolean"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -5094,11 +5097,17 @@ const docTemplateweb = `{
                 "download_count": {
                     "type": "integer"
                 },
+                "exception": {
+                    "type": "string"
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_npu": {
+                    "type": "boolean"
                 },
                 "labels": {
                     "$ref": "#/definitions/domain.SpaceLabels"
@@ -5109,6 +5118,9 @@ const docTemplateweb = `{
                 "name": {
                     "type": "string"
                 },
+                "no_application_file": {
+                    "type": "boolean"
+                },
                 "owner": {
                     "type": "string"
                 },
@@ -5116,6 +5128,9 @@ const docTemplateweb = `{
                     "type": "integer"
                 },
                 "space_avatar_id": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -5682,6 +5697,9 @@ const docTemplateweb = `{
                 "base_image": {
                     "type": "string"
                 },
+                "comp_power_allocated": {
+                    "type": "boolean"
+                },
                 "desc": {
                     "type": "string"
                 },
@@ -5694,11 +5712,17 @@ const docTemplateweb = `{
                 "download_count": {
                     "type": "integer"
                 },
+                "exception": {
+                    "type": "string"
+                },
                 "fullname": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_npu": {
+                    "type": "boolean"
                 },
                 "labels": {
                     "$ref": "#/definitions/domain.SpaceLabels"
@@ -5709,10 +5733,16 @@ const docTemplateweb = `{
                 "name": {
                     "type": "string"
                 },
+                "no_application_file": {
+                    "type": "boolean"
+                },
                 "owner": {
                     "type": "string"
                 },
                 "space_avatar_id": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "updated_at": {

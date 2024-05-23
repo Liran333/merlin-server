@@ -213,6 +213,7 @@ type reqToListGlobalSpaces struct {
 	License   string `form:"license"`
 	Hardware  string `form:"hardware"`
 	Framework string `form:"framework"`
+	HasAppFile bool  `form:"has_app_file"`
 
 	reqToListUserSpaces
 }
@@ -248,6 +249,8 @@ func (req *reqToListGlobalSpaces) toCmd() (app.CmdToListSpaces, error) {
 		}
 		cmd.Framework = req.Framework
 	}
+
+	cmd.HasAppFile = req.HasAppFile
 
 	return cmd, nil
 }
