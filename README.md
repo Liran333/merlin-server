@@ -15,10 +15,13 @@ follow the [docs](https://docs.docker.com/engine/install/)
 follow the [docs](https://docs.docker.com/compose/install/)
 
 ## local-dev
-Before starting, [install docker compose](https://docs.docker.com/compose/install/linux/)
+Before starting： 
+1. [install docker compose](https://docs.docker.com/compose/install/linux/)
+2. [generate your github token](https://github.com/settings/tokens/new)
+
 Then you can start a local dev environment by:
 ```bash
-bash scripts/init-env.sh
+GH_USER=yourname GH_TOKEN=yourtoken bash -ex scripts/init-env.sh
 ```
 This command will launch a server listen on 127.0.0.1:8888
 
@@ -34,7 +37,7 @@ swag init --parseDependency --parseInternal --instanceName internal -o api -t Se
 
 ## run end to end test
 ```bash
-bash scripts/init-env.sh && bash scripts/openapi.sh
+GH_USER=yourname GH_TOKEN=yourtoken bash -ex scripts/init-env.sh && bash scripts/openapi.sh
 cd tests/e2e
 go test -v ./...
 ```
