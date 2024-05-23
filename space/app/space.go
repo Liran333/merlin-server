@@ -383,6 +383,7 @@ func (s *spaceAppService) Update(
 		return
 	}
 
+	oldVisibility := space.Visibility.Visibility()
 	isPrivateToPublic := space.IsPrivate() && cmd.Visibility.IsPublic()
 
 	b, err := s.codeRepoApp.Update(&space.CodeRepo, &cmd.CmdToUpdateRepo)
@@ -399,7 +400,12 @@ func (s *spaceAppService) Update(
 		return
 	}
 
-	e := domain.NewSpaceUpdatedEvent(user, &space, isPrivateToPublic)
+	e := domain.NewSpaceUpdatedEvent(domain.SpaceUpdateEventParam{
+		IsPriToPub:	 isPrivateToPublic,
+		Space:         &space,
+		User:          user,
+		OldVisibility: oldVisibility,
+	})
 	if err1 := s.msgAdapter.SendSpaceUpdatedEvent(&e); err1 != nil {
 		logrus.Errorf("failed to send space updated event, space id:%s", spaceId.Identity())
 	}

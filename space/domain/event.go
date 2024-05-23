@@ -71,6 +71,8 @@ type spaceUpdatedEvent struct {
 	SpaceName  string `json:"space_name"`
 	UpdatedBy  string `json:"updated_by"`
 	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
+	OldVisibility  string `json:"old_visibility"`
+	NewVisibility  string `json:"new_visibility"`
 }
 
 // Message serializes the spaceUpdatedEvent into a JSON byte array.
@@ -78,16 +80,25 @@ func (e *spaceUpdatedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
+type SpaceUpdateEventParam struct {
+	IsPriToPub bool
+	Space *Space
+	User primitive.Account
+	OldVisibility string
+}
+
 // NewSpaceUpdatedEvent return a spaceUpdatedEvent
-func NewSpaceUpdatedEvent(user primitive.Account, space *Space, b bool) spaceUpdatedEvent {
+func NewSpaceUpdatedEvent(updateParam SpaceUpdateEventParam) spaceUpdatedEvent {
 	return spaceUpdatedEvent{
 		Time:       utils.Now(),
-		Repo:       space.Name.MSDName(),
-		Owner:      space.Owner.Account(),
-		SpaceId:    space.Id.Identity(),
-		UpdatedBy:  user.Account(),
-		SpaceName:  space.Name.MSDName(),
-		IsPriToPub: b,
+		Repo:       updateParam.Space.Name.MSDName(),
+		Owner:      updateParam.Space.Owner.Account(),
+		SpaceId:    updateParam.Space.Id.Identity(),
+		UpdatedBy:  updateParam.User.Account(),
+		SpaceName:  updateParam.Space.Name.MSDName(),
+		IsPriToPub: updateParam.IsPriToPub,
+		OldVisibility: updateParam.OldVisibility,
+		NewVisibility: updateParam.Space.Visibility.Visibility(),
 	}
 }
 
