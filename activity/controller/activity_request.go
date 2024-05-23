@@ -11,8 +11,9 @@ import (
 
 // nolint:golint,unused
 const (
-	firstPage = 1
-	typeModel = "model"
+	firstPage   = 1
+	typeModel   = "model"
+	typeDataset = "dataset"
 )
 
 // activityInfo

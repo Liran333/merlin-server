@@ -20,10 +20,11 @@ type SearchOption struct {
 }
 
 type SearchResult struct {
-	SearchResultModel SearchResultModel `json:"model_result"`
-	SearchResultSpace SearchResultSpace `json:"space_result"`
-	SearchResultUser  SearchResultUser  `json:"user_result"`
-	SearchResultOrg   SearchResultOrg   `json:"org_result"`
+	SearchResultModel   SearchResultModel   `json:"model_result"`
+	SearchResultDataset SearchResultDataset `json:"dataset_result"`
+	SearchResultSpace   SearchResultSpace   `json:"space_result"`
+	SearchResultUser    SearchResultUser    `json:"user_result"`
+	SearchResultOrg     SearchResultOrg     `json:"org_result"`
 }
 
 type SearchResultModel struct {
@@ -32,6 +33,17 @@ type SearchResultModel struct {
 }
 
 type ModelResult struct {
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
+	Path  string `json:"path"`
+}
+
+type SearchResultDataset struct {
+	DatasetResult      []DatasetResult `json:"result"`
+	DatasetResultCount int             `json:"count"`
+}
+
+type DatasetResult struct {
 	Owner string `json:"owner"`
 	Name  string `json:"name"`
 	Path  string `json:"path"`

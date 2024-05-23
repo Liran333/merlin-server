@@ -26,10 +26,11 @@ type ActivitiesRepositoryAdapter interface {
 
 // ListOption represents options for listing activities.
 type ListOption struct {
-	Name  []string
-	Space string
-	Model string
-	Like  string
+	Name    []string
+	Space   string
+	Model   string
+	Dataset string
+	Like    string
 	// sort
 	SortType primitive.SortType
 

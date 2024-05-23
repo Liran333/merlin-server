@@ -17,6 +17,8 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
+	"github.com/openmerlin/merlin-server/datasets/infrastructure/datasetrepositoryadapter"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
@@ -42,6 +44,7 @@ func initResource(services *allServices) {
 	services.resourceApp = app.NewResourceAppService(
 		resourceadapterimpl.NewResourceAdapterImpl(
 			modelrepositoryadapter.ModelAdapter(),
+			datasetrepositoryadapter.DatasetAdapter(),
 			spacerepositoryadapter.SpaceAdapter(),
 		))
 }
@@ -63,6 +66,7 @@ func setRouterOfBranchRestful(rg *gin.RouterGroup, services *allServices) {
 			branchrepositoryadapter.BranchAdapter(),
 			resourceadapterimpl.NewResourceAdapterImpl(
 				modelrepositoryadapter.ModelAdapter(),
+				datasetrepositoryadapter.DatasetAdapter(),
 				spacerepositoryadapter.SpaceAdapter(),
 			),
 			branchclientadapter.NewBranchClientAdapter(gitea.Client()),
@@ -79,6 +83,7 @@ func setRouterOfCodeRepoPermissionInternal(rg *gin.RouterGroup, services *allSer
 		services.permissionApp,
 		resourceadapterimpl.NewResourceAdapterImpl(
 			modelrepositoryadapter.ModelAdapter(),
+			datasetrepositoryadapter.DatasetAdapter(),
 			spacerepositoryadapter.SpaceAdapter(),
 		),
 		services.userMiddleWare,
@@ -90,12 +95,17 @@ func setRouterOfCodeRepoStatisticInternal(rg *gin.RouterGroup, services *allServ
 		rg,
 		resourceadapterimpl.NewResourceAdapterImpl(
 			modelrepositoryadapter.ModelAdapter(),
+			datasetrepositoryadapter.DatasetAdapter(),
 			spacerepositoryadapter.SpaceAdapter(),
 		),
 		services.userMiddleWare,
 		modelapp.NewModelInternalAppService(
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),
+		),
+		datasetapp.NewDatasetInternalAppService(
+			datasetrepositoryadapter.DatasetLabelsAdapter(),
+			datasetrepositoryadapter.DatasetAdapter(),
 		),
 		spaceapp.NewSpaceInternalAppService(
 			spacerepositoryadapter.SpaceAdapter(),

@@ -18,6 +18,7 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
@@ -32,6 +33,7 @@ func AddRouteForActivityWebController(
 	o orgapp.OrgService,
 	u userapp.UserService,
 	d modelapp.ModelAppService,
+	ds datasetapp.DatasetAppService,
 	p spaceapp.SpaceAppService,
 	rl middleware.RateLimiter,
 	l middleware.OperationLog,
@@ -43,6 +45,7 @@ func AddRouteForActivityWebController(
 			user:           u,
 			org:            o,
 			model:          d,
+			dataset:        ds,
 			space:          p,
 		},
 	}
@@ -55,6 +58,7 @@ func AddRouteForActivityWebController(
 func (req *reqToListUserActivities) toCmd() (cmd app.CmdToListActivities, err error) {
 	cmd.Count = req.Count
 	cmd.Model = req.Model
+	cmd.Dataset = req.Dataset
 	cmd.Space = req.Space
 	cmd.Like = req.Like
 	if v := req.CountPerPage; v <= 0 || v > config.MaxCountPerPage {
@@ -84,9 +88,10 @@ type ActivityWebController struct {
 
 // reqToListUserModels
 type reqToListUserActivities struct {
-	Model string `form:"model"`
-	Space string `form:"space"`
-	Like  string `form:"like"`
+	Model   string `form:"model"`
+	Dataset string `form:"dataset"`
+	Space   string `form:"space"`
+	Like    string `form:"like"`
 	controller.CommonListRequest
 }
 
@@ -95,6 +100,7 @@ type reqToListUserActivities struct {
 // @Tags     ActivityWeb
 // @Param    space     query  string  false "filter by space" MaxLength(100)
 // @Param    model  query  string  false "filter by model" MaxLength(100)
+// @Param    dataset  query  string  false "filter by dataset" MaxLength(100)
 // @Param    like  query  string  false "filter by like" MaxLength(100)
 // @Accept   json
 // @Success  200  {object}  commonctl.ResponseData{data=app.ActivitysDTO,msg=string,code=string}
@@ -177,6 +183,8 @@ func (ctl *ActivityWebController) Add(ctx *gin.Context) {
 	if !liked {
 		if req.ResourceType == typeModel {
 			err = ctl.model.AddLike(cmd.Resource.Index)
+		} else if req.ResourceType == typeDataset {
+			err = ctl.dataset.AddLike(cmd.Resource.Index)
 		} else {
 			err = ctl.space.AddLike(cmd.Resource.Index)
 		}
@@ -233,6 +241,8 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 	if liked {
 		if req.ResourceType == typeModel {
 			err = ctl.model.DeleteLike(cmd.Resource.Index)
+		} else if req.ResourceType == typeDataset {
+			err = ctl.dataset.DeleteLike(cmd.Resource.Index)
 		} else {
 			err = ctl.space.DeleteLike(cmd.Resource.Index)
 		}

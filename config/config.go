@@ -22,6 +22,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/computility"
+	"github.com/openmerlin/merlin-server/datasets"
 	"github.com/openmerlin/merlin-server/models"
 	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
@@ -61,6 +62,7 @@ type Config struct {
 	Redis        redislib.Config      `json:"redis"`
 	Kafka        kafka.Config         `json:"kafka"`
 	Model        models.Config        `json:"model"`
+	Dataset      datasets.Config      `json:"datasets"`
 	Space        space.Config         `json:"space"`
 	Email        email.Config         `json:"email"`
 	Activity     activity.Config      `json:"activity"`
@@ -89,6 +91,8 @@ func (cfg *Config) Init() error {
 
 	cfg.Model.Init()
 
+	cfg.Dataset.Init()
+
 	cfg.Space.Init()
 
 	cfg.SpaceApp.Init()
@@ -116,6 +120,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Redis,
 		&cfg.Kafka,
 		&cfg.Model,
+		&cfg.Dataset,
 		&cfg.Space,
 		&cfg.Email,
 		&cfg.Session,

@@ -191,6 +191,23 @@ permission:
         - role: read
           operation:
           - read
+    - object_type: dataset
+      rules:
+        - role: admin
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: write
+          operation:
+          - write
+          - create
+          - read
+          - delete
+        - role: read
+          operation:
+          - read
 
 model:
   tables:
@@ -224,6 +241,24 @@ model:
     {{- end }}
     max_count_per_org: {{(ds "common").MAX_MODEL_PER_ORG }}
     max_count_per_user: {{(ds "common").MAX_MODEL_PER_USER }}
+
+datasets:
+  tables:
+    datasets: "datasets"
+  topics:
+    dataset_created: dataset_created
+    dataset_updated: dataset_updated
+    dataset_deleted: dataset_deleted
+
+  controller:
+    max_count_per_page: 100
+    tasks:
+  {{- range (ds "common").PIPELINE_TAGS}}
+    - "{{ . }}"
+  {{- end }}
+  app:
+    max_count_per_org: {{(ds "common").MAX_DATASET_PER_ORG }}
+    max_count_per_user: {{(ds "common").MAX_DATASET_PER_USER }}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}

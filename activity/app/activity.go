@@ -18,12 +18,13 @@ import (
 	commonapp "github.com/openmerlin/merlin-server/common/app"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	datasetApp "github.com/openmerlin/merlin-server/datasets/app"
 	modelApp "github.com/openmerlin/merlin-server/models/app"
 	spaceApp "github.com/openmerlin/merlin-server/space/app"
 	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
 )
 
-// NewActivityAppService is an interface for the model application service.
+// ActivityAppService is an interface for the activity application service.
 type ActivityAppService interface {
 	List(primitive.Account, []primitive.Account, *CmdToListActivities) (ActivitysDTO, error)
 	Create(*CmdToAddActivity) error
@@ -36,6 +37,7 @@ type activityAppService struct {
 	codeRepoApp     coderepoapp.CodeRepoAppService
 	repoAdapter     repository.ActivitiesRepositoryAdapter
 	modelApp        modelApp.ModelAppService
+	datasetApp      datasetApp.DatasetAppService
 	spaceApp        spaceApp.SpaceAppService
 	spaceappRepo    spaceappRepository.Repository
 	msgAdapter      message.ActivityMessage
@@ -48,6 +50,7 @@ func NewActivityAppService(
 	codeRepoApp coderepoapp.CodeRepoAppService,
 	repoAdapter repository.ActivitiesRepositoryAdapter,
 	modelApp modelApp.ModelAppService,
+	datasetApp datasetApp.DatasetAppService,
 	spaceApp spaceApp.SpaceAppService,
 	spaceappRepo spaceappRepository.Repository,
 	msgAdapter message.ActivityMessage,
@@ -58,6 +61,7 @@ func NewActivityAppService(
 		codeRepoApp:     codeRepoApp,
 		repoAdapter:     repoAdapter,
 		modelApp:        modelApp,
+		datasetApp:      datasetApp,
 		spaceApp:        spaceApp,
 		spaceappRepo: 	 spaceappRepo,
 		msgAdapter:      msgAdapter,
@@ -101,6 +105,8 @@ func (s *activityAppService) processActivity(user primitive.Account, activity do
 	switch activity.Resource.Type {
 	case primitive.ObjTypeModel:
 		return s.processModelActivity(user, codeRepo, activity)
+	case primitive.ObjTypeDataset:
+		return s.processDatasetActivity(user, codeRepo, activity)
 	case primitive.ObjTypeSpace:
 		return s.processSpaceActivity(user, codeRepo, activity)
 	default:
@@ -119,6 +125,20 @@ func (s *activityAppService) processModelActivity(user primitive.Account, codeRe
 		DownloadCount: model.DownloadCount,
 	}
 	additionInfo := fromModelDTO(model, &activity, &stat)
+	return additionInfo, nil
+}
+
+func (s *activityAppService) processDatasetActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	dataset, err := s.datasetApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	if err != nil {
+		return ActivitySummaryDTO{}, err
+	}
+	activity.Resource.Disable = dataset.Disable
+	stat := domain.Stat{
+		LikeCount:     dataset.LikeCount,
+		DownloadCount: dataset.DownloadCount,
+	}
+	additionInfo := fromDatasetDTO(dataset, &activity, &stat)
 	return additionInfo, nil
 }
 

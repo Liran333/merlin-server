@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/activity/domain/repository"
+	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
 )
@@ -41,12 +42,17 @@ type ResourceDTO struct {
 
 type AdditionalDTO struct {
 	CustomerModelDTO
+	CustomerDatasetDTO
 	CustomerSpaceDTO
 	Fullname string `json:"fullname"`
 }
 
 type CustomerModelDTO struct {
 	Labels modelapp.ModelLabelsDTO `json:"model_labels"`
+}
+
+type CustomerDatasetDTO struct {
+	Labels datasetapp.DatasetLabelsDTO `json:"dataset_labels"`
 }
 
 type CustomerSpaceDTO struct {
@@ -88,6 +94,18 @@ func fromModelDTO(model modelapp.ModelDTO, activity *domain.Activity, stat *doma
 		Labels: model.Labels,
 	},
 		Fullname: model.Fullname}
+
+	return ActivitySummaryDTO{
+		ActivityDTO: toActivityDTO(activity, additions),
+		StatDTO:     toStatDTO(stat),
+	}
+}
+
+func fromDatasetDTO(dataset datasetapp.DatasetDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
+	additions := AdditionalDTO{CustomerDatasetDTO: CustomerDatasetDTO{
+		Labels: dataset.Labels,
+	},
+		Fullname: dataset.Fullname}
 
 	return ActivitySummaryDTO{
 		ActivityDTO: toActivityDTO(activity, additions),

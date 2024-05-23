@@ -22,6 +22,7 @@ func (do *activityDO) TableName() string {
 const (
 	fieldSpace         = "space"
 	fieldModel         = "model"
+	fieldDataset       = "dataset"
 	fieldTime          = "time"
 	fieldLike          = "like"
 	fieldTypeOwner     = "owner"

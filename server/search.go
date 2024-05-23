@@ -10,6 +10,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	"github.com/openmerlin/merlin-server/datasets/infrastructure/datasetrepositoryadapter"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/search/app"
@@ -24,6 +25,7 @@ func setRouterOfSearchWeb(rg *gin.RouterGroup, cfg *config.Config, services *all
 		app.NewSearchAppService(
 			resourceadapterimpl.NewSearchRepositoryAdapter(
 				modelrepositoryadapter.ModelAdapter(),
+				datasetrepositoryadapter.DatasetAdapter(),
 				spacerepositoryadapter.SpaceAdapter(),
 				services.userRepo,
 				orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),

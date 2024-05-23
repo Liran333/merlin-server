@@ -178,6 +178,11 @@ func (adapter *activityAdapter) toQuery(names []primitive.Account, opt *reposito
 		conditionTypes = append(conditionTypes, fieldModel)
 	}
 
+	// Add dataset activity types to conditions if requested
+	if opt.Dataset == primitive.TrueCondition {
+		conditionTypes = append(conditionTypes, fieldDataset)
+	}
+
 	// Begin constructing the query
 	query := db.Where("1 = 1")
 

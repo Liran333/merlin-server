@@ -20,7 +20,7 @@ const (
 	SearchKeyMaxLength = 100
 	SearchKeyMinLength = 0
 
-	SearchTypeMaxLength = 5
+	SearchTypeMaxLength = 6
 	SearchTypeMinLength = 0
 
 	SizeMaxLength = 100
@@ -28,14 +28,15 @@ const (
 
 	TypeModelResultNum = 6
 
-	SearchTypeModel = "model"
-	SearchTypeSpace = "space"
-	SearchTypeUser  = "user"
-	SearchTypeOrg   = "org"
+	SearchTypeModel   = "model"
+	SearchTypeDataset = "dataset"
+	SearchTypeSpace   = "space"
+	SearchTypeUser    = "user"
+	SearchTypeOrg     = "org"
 )
 
 func getTypeLimit() []string {
-	return []string{SearchTypeModel, SearchTypeSpace, SearchTypeUser, SearchTypeOrg}
+	return []string{SearchTypeModel, SearchTypeDataset, SearchTypeSpace, SearchTypeUser, SearchTypeOrg}
 }
 
 func NewSearchKey(v string) (SearchKey, error) {

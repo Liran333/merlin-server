@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	datasetrepo "github.com/openmerlin/merlin-server/datasets/domain/repository"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 )
@@ -18,18 +19,21 @@ import (
 // NewResourceAdapterImpl creates a new instance of the resourceAdapterImpl.
 func NewResourceAdapterImpl(
 	model modelrepo.ModelRepositoryAdapter,
+	dataset datasetrepo.DatasetRepositoryAdapter,
 	space spacerepo.SpaceRepositoryAdapter,
 ) *resourceAdapterImpl {
 	return &resourceAdapterImpl{
-		model: model,
-		space: space,
+		model:   model,
+		dataset: dataset,
+		space:   space,
 	}
 }
 
 // resourceAdapterImpl
 type resourceAdapterImpl struct {
-	model modelrepo.ModelRepositoryAdapter
-	space spacerepo.SpaceRepositoryAdapter
+	model   modelrepo.ModelRepositoryAdapter
+	dataset datasetrepo.DatasetRepositoryAdapter
+	space   spacerepo.SpaceRepositoryAdapter
 }
 
 // GetByName retrieves a resource by name.
@@ -37,6 +41,14 @@ func (adapter *resourceAdapterImpl) GetByName(index *domain.CodeRepoIndex) (doma
 	r, err := adapter.model.FindByName(index)
 	if err == nil {
 		return &r, nil
+	}
+	if !commonrepo.IsErrorResourceNotExists(err) {
+		return nil, err
+	}
+
+	dr, err := adapter.dataset.FindByName(index)
+	if err == nil {
+		return &dr, nil
 	}
 	if !commonrepo.IsErrorResourceNotExists(err) {
 		return nil, err
@@ -63,6 +75,12 @@ func (adapter *resourceAdapterImpl) GetByType(t primitive.RepoType,
 
 	}
 
+	if t.IsDataset() {
+		r, err := adapter.dataset.FindByName(index)
+
+		return &r, err
+	}
+
 	return nil, commonrepo.NewErrorResourceNotExists(errors.New("unknown repo type"))
 }
 
@@ -71,6 +89,14 @@ func (adapter *resourceAdapterImpl) GetByIndex(index primitive.Identity) (domain
 	r, err := adapter.model.FindById(index)
 	if err == nil {
 		return &r, nil
+	}
+	if !commonrepo.IsErrorResourceNotExists(err) {
+		return nil, err
+	}
+
+	dr, err := adapter.dataset.FindById(index)
+	if err == nil {
+		return &dr, nil
 	}
 	if !commonrepo.IsErrorResourceNotExists(err) {
 		return nil, err

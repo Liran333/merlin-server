@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	repoTypeModel = "model"
-	repoTypeSpace = "space"
+	repoTypeModel   = "model"
+	repoTypeSpace   = "space"
+	repoTypeDataset = "dataset"
 )
 
 // Identity is an interface that represents an identity with both a string and integer representation.
@@ -60,6 +61,7 @@ func (r branchName) BranchName() string {
 type RepoType interface {
 	RepoType() string
 	IsModel() bool
+	IsDataset() bool
 	IsSpace() bool
 }
 
@@ -67,7 +69,7 @@ type RepoType interface {
 func NewRepoType(v string) (RepoType, error) {
 	v = strings.ToLower(strings.TrimSpace(v))
 
-	if v != repoTypeModel && v != repoTypeSpace {
+	if v != repoTypeModel && v != repoTypeSpace && v != repoTypeDataset {
 		return nil, errors.New("repo type incorrect")
 	}
 
@@ -94,4 +96,9 @@ func (r repoType) IsModel() bool {
 // IsSpace checks if the repo type is a space.
 func (r repoType) IsSpace() bool {
 	return string(r) == repoTypeSpace
+}
+
+// IsDataset checks if the repo type is a dataset.
+func (r repoType) IsDataset() bool {
+	return string(r) == repoTypeDataset
 }

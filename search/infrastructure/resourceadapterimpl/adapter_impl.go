@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	datasetrepo "github.com/openmerlin/merlin-server/datasets/domain/repository"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/search/domain"
@@ -20,23 +21,26 @@ import (
 const DefaultPage = 1
 
 type searchAdapter struct {
-	model  modelrepo.ModelRepositoryAdapter
-	space  spacerepo.SpaceRepositoryAdapter
-	user   repository.User
-	member orgrepo.OrgMember
+	model   modelrepo.ModelRepositoryAdapter
+	dataset datasetrepo.DatasetRepositoryAdapter
+	space   spacerepo.SpaceRepositoryAdapter
+	user    repository.User
+	member  orgrepo.OrgMember
 }
 
 func NewSearchRepositoryAdapter(
 	model modelrepo.ModelRepositoryAdapter,
+	dataset datasetrepo.DatasetRepositoryAdapter,
 	space spacerepo.SpaceRepositoryAdapter,
 	user repository.User,
 	member orgrepo.OrgMember,
 ) *searchAdapter {
 	return &searchAdapter{
-		model:  model,
-		space:  space,
-		user:   user,
-		member: member,
+		model:   model,
+		dataset: dataset,
+		space:   space,
+		user:    user,
+		member:  member,
 	}
 }
 
@@ -56,6 +60,19 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			return result, err
 		}
 		result.SearchResultModel = models
+	}
+
+	if utils.Contains(opt.SearchType, primitive.SearchTypeDataset) {
+		cmd := &datasetrepo.ListOption{
+			Name:         opt.SearchKey,
+			PageNum:      DefaultPage,
+			CountPerPage: opt.Size,
+		}
+		datasets, err := adapter.SearchDataset(cmd, opt.Account)
+		if err != nil {
+			return result, err
+		}
+		result.SearchResultDataset = datasets
 	}
 
 	if utils.Contains(opt.SearchType, primitive.SearchTypeSpace) {
@@ -120,6 +137,26 @@ func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account dom
 	}
 	result.ModelResult = models
 	result.ModelResultCount = count
+	return result, nil
+}
+
+func (adapter *searchAdapter) SearchDataset(cmd *datasetrepo.ListOption, account domain.Account) (
+	domain.SearchResultDataset, error) {
+	var result domain.SearchResultDataset
+	v, count, err := adapter.dataset.SearchDataset(cmd, account, adapter.member)
+	if err != nil {
+		return result, err
+	}
+	datasets := make([]domain.DatasetResult, 0)
+	for _, m := range v {
+		datasets = append(datasets, domain.DatasetResult{
+			Owner: m.Owner,
+			Name:  m.Name,
+			Path:  fmt.Sprintf("%s/%s", m.Owner, m.Name),
+		})
+	}
+	result.DatasetResult = datasets
+	result.DatasetResultCount = count
 	return result, nil
 }
 

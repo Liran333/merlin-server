@@ -15,6 +15,7 @@ import (
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
 )
@@ -25,13 +26,15 @@ func AddRouteForCodeRepoStatisticInternalController(
 	a resourceadapter.ResourceAdapter,
 	m middleware.UserMiddleWare,
 	o modelapp.ModelInternalAppService,
+	d datasetapp.DatasetInternalAppService,
 	p spaceapp.SpaceInternalAppService,
 ) {
 
 	ctl := StatisticInternalController{
-		repo:             a,
-		modelInternalApp: o,
-		spaceInternalApp: p,
+		repo:               a,
+		modelInternalApp:   o,
+		datasetInternalApp: d,
+		spaceInternalApp:   p,
 	}
 
 	r.PUT(`/v1/coderepo/:id/statistic`, m.Write, ctl.Update)
@@ -41,9 +44,10 @@ func AddRouteForCodeRepoStatisticInternalController(
 // StatisticInternalController is a struct that holds the necessary services
 // and adapters for handling statistical operations.
 type StatisticInternalController struct {
-	repo             resourceadapter.ResourceAdapter
-	modelInternalApp modelapp.ModelInternalAppService
-	spaceInternalApp spaceapp.SpaceInternalAppService
+	repo               resourceadapter.ResourceAdapter
+	modelInternalApp   modelapp.ModelInternalAppService
+	datasetInternalApp datasetapp.DatasetInternalAppService
+	spaceInternalApp   spaceapp.SpaceInternalAppService
 }
 
 // @Summary  Update
@@ -79,6 +83,10 @@ func (ctl *StatisticInternalController) Update(ctx *gin.Context) {
 		middleware.SetAction(ctx, fmt.Sprintf("Update model statistics, ID: %v", repoId))
 		err = ctl.modelInternalApp.UpdateStatistics(repoId,
 			&modelapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount})
+	case primitive.ObjTypeDataset:
+		middleware.SetAction(ctx, fmt.Sprintf("Update dataset statistics, ID: %v", repoId))
+		err = ctl.datasetInternalApp.UpdateStatistics(repoId,
+			&datasetapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount})
 	case primitive.ObjTypeSpace:
 		middleware.SetAction(ctx, fmt.Sprintf("Update space statistics, ID: %v", repoId))
 		err = ctl.spaceInternalApp.UpdateStatistics(repoId,

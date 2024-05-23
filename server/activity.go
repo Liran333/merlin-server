@@ -15,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/infrastructure/resourceadapterimpl"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
+	"github.com/openmerlin/merlin-server/datasets/infrastructure/datasetrepositoryadapter"
 	"github.com/openmerlin/merlin-server/models/infrastructure/modelrepositoryadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
@@ -31,11 +32,13 @@ func initActivity(cfg *config.Config, services *allServices) error {
 		services.codeRepoApp,
 		activityrepositoryadapter.ActivityAdapter(),
 		services.modelApp,
+		services.datasetApp,
 		services.spaceApp,
 		repositoryadapter.AppRepositoryAdapter(),
 		messageadapter.MessageAdapter(&cfg.Activity.Topics),
 		resourceadapterimpl.NewResourceAdapterImpl(
 			modelrepositoryadapter.ModelAdapter(),
+			datasetrepositoryadapter.DatasetAdapter(),
 			spacerepositoryadapter.SpaceAdapter(),
 		),
 	)
@@ -51,6 +54,7 @@ func setRouterOfActivityWeb(rg *gin.RouterGroup, services *allServices) {
 		services.orgApp,
 		services.userApp,
 		services.modelApp,
+		services.datasetApp,
 		services.spaceApp,
 		services.rateLimiterMiddleWare,
 		services.operationLog,

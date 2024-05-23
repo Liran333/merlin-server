@@ -22,6 +22,9 @@ const (
 	// ErrorCodeModelNotFound is const
 	ErrorCodeModelNotFound = "model_not_found"
 
+	// ErrorCodeDatasetNotFound is const
+	ErrorCodeDatasetNotFound = "dataset_not_found"
+
 	// ErrorCodeSpaceNotFound is const
 	ErrorCodeSpaceNotFound = "space_not_found"
 

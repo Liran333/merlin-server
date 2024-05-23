@@ -36,7 +36,7 @@ type SearchWebController struct {
 // @Description  get model and space and org and user
 // @Tags     SearchWeb
 // @Param    searchKey     query  string  true "filter by name" MaxLength(100)
-// @Param    type  query  []string  true "type of space/model/org/user" Enums(space,model,org,user)
+// @Param    type  query  []string  true "type of space/model/dataset/org/user" Enums(space,model,dataset,org,user)
 // @Param  	 size  query  int    false "page data size" Maximum(100)
 // @Accept   json
 // @Success  200  {object}  commonctl.ResponseData{data=app.SearchDTO,msg=string,code=string}

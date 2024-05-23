@@ -12,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	"github.com/openmerlin/merlin-server/config"
+	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
@@ -46,6 +47,8 @@ type allServices struct {
 	disable       orgapp.PrivilegeOrg
 	modelApp      modelapp.ModelAppService
 
+	datasetApp datasetapp.DatasetAppService
+
 	spaceApp spaceapp.SpaceAppService
 
 	spaceappApp spaceappApp.SpaceappAppService
@@ -78,6 +81,10 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 
 	// initModel depends on initCodeRepo and initOrg
 	if err = initModel(cfg, &services); err != nil {
+		return
+	}
+
+	if err = initDataset(cfg, &services); err != nil {
 		return
 	}
 
