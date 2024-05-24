@@ -245,7 +245,6 @@ func (s *modelSpaceAppService) checkModelsException(
 			space.Exception = primitive.CreateException(primitive.RelatedModelDisabled)
 		} else {
 			logrus.Infof("space id:%s exception related_model_notfound not del", spaceId.Identity())
-			space.Exception = primitive.CreateException(primitive.RelatedModelNotFound)
 		}
 		if err := s.spaceRepoAdapter.Save(&space); err != nil {
 			return modelsId, xerrors.Errorf("save space failed, err:%w", err)
@@ -253,8 +252,7 @@ func (s *modelSpaceAppService) checkModelsException(
 		return modelsId, nil
 	}
 
-	if space.Exception != primitive.ExceptionRelatedModelDisabled &&
-		space.Exception != primitive.ExceptionRelatedModelNotFound {
+	if space.Exception != primitive.ExceptionRelatedModelDisabled {
 		return modelsId, nil
 	}
 
