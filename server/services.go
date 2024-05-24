@@ -19,6 +19,7 @@ import (
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
 	spaceappApp "github.com/openmerlin/merlin-server/spaceapp/app"
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	"github.com/openmerlin/merlin-server/user/controller"
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
@@ -62,6 +63,8 @@ type allServices struct {
 	spaceSecret spaceapp.SpaceSecretService
 
 	computilityApp computilityapp.ComputilityInternalAppService
+
+	privacyClear controller.PrivacyClear
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {

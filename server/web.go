@@ -32,6 +32,8 @@ func setRouterOfWeb(prefix string, engine *gin.Engine, cfg *config.Config, servi
 	}
 
 	services.privacyCheck = privacycheck.PrivacyCheck(services.userMiddleWare, services.userApp)
+	services.privacyClear = sessionctl.WebAPIMiddleware(services.sessionApp, services.securityLog,
+		&cfg.Session.Controller)
 
 	// set routers
 	setRouterOfOrg(rg, cfg, services)

@@ -207,6 +207,10 @@ func (m *webAPIMiddleware) parseSessionId(ctx *gin.Context) (primitive.RandomId,
 	return sessionId, err
 }
 
+func (m *webAPIMiddleware) ClearCookieAfterRevokePrivacy(ctx *gin.Context) {
+	clearCookie(ctx, m.cfg.SessionDomain)
+}
+
 func clearCookie(ctx *gin.Context, domain string) {
 	expiry := time.Now().AddDate(0, 0, -1)
 	setCookieOfSessionId(ctx, "", domain, &expiry)

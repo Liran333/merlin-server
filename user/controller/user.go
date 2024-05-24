@@ -21,6 +21,10 @@ import (
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+type PrivacyClear interface {
+	ClearCookieAfterRevokePrivacy(*gin.Context)
+}
+
 // AddRouterForUserController adds routes for user-related operations to the given router group.
 func AddRouterForUserController(
 	rg *gin.RouterGroup,
@@ -32,12 +36,14 @@ func AddRouterForUserController(
 	rl middleware.RateLimiter,
 	p middleware.PrivacyCheck,
 	d orgapp.PrivilegeOrg,
+	c PrivacyClear,
 ) {
 	ctl := UserController{
 		repo:    repo,
 		s:       us,
 		m:       m,
 		disable: d,
+		clear:   c,
 	}
 
 	rg.PUT("/v1/user", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.Update)
@@ -62,6 +68,7 @@ type UserController struct {
 	s       app.UserService
 	m       middleware.UserMiddleWare
 	disable orgapp.PrivilegeOrg
+	clear   PrivacyClear
 }
 
 // @Summary  Update
@@ -371,6 +378,7 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 	if idToken, err := ctl.s.PrivacyRevoke(user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
+		ctl.clear.ClearCookieAfterRevokePrivacy(ctx)
 		commonctl.SendRespOfPut(ctx, revokePrivacyInfo{IdToken: idToken})
 	}
 }
