@@ -111,7 +111,9 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	modelData := getData(s.T(), modelRes.Data)
 	labels := getData(s.T(), modelData["labels"])
 	assert.Equal(s.T(),
-		map[string]interface{}(map[string]interface{}{"frameworks": []string{"PyTorch"}, "library_name": "", "license": "apache-2.0", "others": []string{}, "task": "document-question-answering"}),
+		map[string]interface{}(map[string]interface{}{
+			"frameworks": []string{"PyTorch"}, "library_name": "", "license": "apache-2.0", "others": []string{},
+			"task": "document-question-answering"}),
 		labels)
 
 	// 修改模型label，其中frameworks有多个
@@ -190,7 +192,8 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	labels := getData(s.T(), modelData["labels"])
 	// 非法的Frameworks与Task不会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []string{}, "library_name": "", "license": "apache-2.0", "others": []string{}, "task": ""},
+		map[string]interface{}{"frameworks": []string{}, "library_name": "", "license": "apache-2.0",
+			"others": []string{}, "task": ""},
 		labels)
 
 	// 使用部分合法的字段修改模型label
@@ -212,7 +215,8 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	labels = getData(s.T(), modelData["labels"])
 	// 只有合法的Frameworks会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []string{"MindSpore"}, "library_name": "", "license": "apache-2.0", "others": []string{}, "task": ""},
+		map[string]interface{}{"frameworks": []string{"MindSpore"}, "library_name": "", "license": "apache-2.0",
+			"others": []string{}, "task": ""},
 		labels)
 
 	// 删除模型

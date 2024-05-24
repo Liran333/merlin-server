@@ -89,21 +89,23 @@ func (s *SuiteActivityQuery) TestQueryActivityByUser() {
 	assert.Nil(s.T(), err)
 
 	//query activity by test1
-	records, r, err := ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest, &swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
-		Like:  optional.NewString("1"),
-		Space: optional.NewString("1"),
-		Model: optional.NewString("1"),
-	})
+	records, r, err := ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest,
+		&swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
+			Like:  optional.NewString("1"),
+			Space: optional.NewString("1"),
+			Model: optional.NewString("1"),
+		})
 	activities := getData(s.T(), records.Data)
 
 	assert.Equal(s.T(), int32(2), activities["total"])
 
 	//query activity by test2
-	records, r, err = ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest2, &swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
-		Like:  optional.NewString("1"),
-		Space: optional.NewString("1"),
-		Model: optional.NewString("1"),
-	})
+	records, r, err = ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest2,
+		&swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
+			Like:  optional.NewString("1"),
+			Space: optional.NewString("1"),
+			Model: optional.NewString("1"),
+		})
 	activities = getData(s.T(), records.Data)
 
 	//test2 has no access to private model even he liked it before
@@ -115,11 +117,12 @@ func (s *SuiteActivityQuery) TestQueryActivityByUser() {
 	})
 
 	//query activity by test2
-	records, r, err = ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest2, &swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
-		Like:  optional.NewString("1"),
-		Space: optional.NewString("1"),
-		Model: optional.NewString("1"),
-	})
+	records, r, err = ApiRest.ActivityRestfulApi.V1UserActivityGet(AuthRest2,
+		&swaggerRest.ActivityRestfulApiV1UserActivityGetOpts{
+			Like:  optional.NewString("1"),
+			Space: optional.NewString("1"),
+			Model: optional.NewString("1"),
+		})
 	activities = getData(s.T(), records.Data)
 
 	//test2 has no access to this private model if the owner turn it into public

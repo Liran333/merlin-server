@@ -702,18 +702,20 @@ func (s *SuiteInvite) TestCanEditOwner() {
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
-		Role: "write",
-		User: s.owner,
-	}, s.name)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2,
+		swaggerRest.ControllerOrgMemberEditRequest{
+			Role: "write",
+			User: s.owner,
+		}, s.name)
 
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2, swaggerRest.ControllerOrgMemberEditRequest{
-		Role: "admin",
-		User: s.owner,
-	}, s.name)
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberPut(AuthRest2,
+		swaggerRest.ControllerOrgMemberEditRequest{
+			Role: "admin",
+			User: s.owner,
+		}, s.name)
 
 	assert.Equalf(s.T(), http.StatusAccepted, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)

@@ -187,8 +187,9 @@ func (org *orgService) GetByAccount(acc primitive.Account) (dto userapp.UserDTO,
 	o, err := org.repo.GetOrgByName(acc)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = errOrgNotFound(fmt.Sprintf("org %s not found", acc.Account()), fmt.Errorf("org %s not found, %w",
-				acc.Account(), err))
+			err = errOrgNotFound(fmt.Sprintf("org %s not found", acc.Account()),
+				fmt.Errorf("org %s not found, %w",
+					acc.Account(), err))
 		}
 
 		return
@@ -244,7 +245,8 @@ func (org *orgService) Delete(cmd *domain.OrgDeletedCmd) error {
 
 	pl, err := org.user.GetPlatformUser(o.Owner)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailGetPlatformUser, "failed to get platform user", fmt.Errorf("failed to get platform user, %w", err))
+		return allerror.New(allerror.ErrorFailGetPlatformUser, "failed to get platform user",
+			fmt.Errorf("failed to get platform user, %w", err))
 	}
 
 	can, err := pl.CanDelete(cmd.Name)
@@ -327,14 +329,16 @@ func (org *orgService) UpdateBasicInfo(cmd *domain.OrgUpdatedBasicInfoCmd) (dto 
 	if change {
 		o, err = org.repo.SaveOrg(&o)
 		if err != nil {
-			err = allerror.New(allerror.ErrorFailedToSaveOrg, "failed to save org", fmt.Errorf("failed to save org, %w", err))
+			err = allerror.New(allerror.ErrorFailedToSaveOrg, "failed to save org",
+				fmt.Errorf("failed to save org, %w", err))
 			return
 		}
 		dto = ToDTO(&o)
 		return
 	}
 
-	err = allerror.New(allerror.ErrorNothingChanged, "nothing changed", fmt.Errorf("nothing changed when update basic info %v", cmd))
+	err = allerror.New(allerror.ErrorNothingChanged, "nothing changed",
+		fmt.Errorf("nothing changed when update basic info %v", cmd))
 	return
 }
 
@@ -484,12 +488,14 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 
 	o, err := org.repo.GetOrgByName(cmd.Org)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetOrgInfo, "failed to get org info", fmt.Errorf("failed to get org info: %w", err))
+		return allerror.New(allerror.ErrorFailedToGetOrgInfo, "failed to get org info",
+			fmt.Errorf("failed to get org info: %w", err))
 	}
 
 	memberInfo, err := org.repo.GetByAccount(cmd.User)
 	if err != nil {
-		return allerror.New(allerror.ErrorFailedToGetMemberInfo, "failed to get member info", fmt.Errorf("failed to get member info: %w", err))
+		return allerror.New(allerror.ErrorFailedToGetMemberInfo, "failed to get member info",
+			fmt.Errorf("failed to get member info: %w", err))
 	}
 
 	m := cmd.ToMember(memberInfo)
@@ -497,7 +503,8 @@ func (org *orgService) AddMember(cmd *domain.OrgAddMemberCmd) error {
 	pl, err := org.user.GetPlatformUser(cmd.Actor)
 	if err != nil {
 		return allerror.New(allerror.ErrorFailGetPlatformUser,
-			"failed to get platform user for adding member", fmt.Errorf("failed to get platform user for adding member: %w", err))
+			"failed to get platform user for adding member",
+			fmt.Errorf("failed to get platform user for adding member: %w", err))
 	}
 
 	err = pl.AddMember(&o, &m)
@@ -849,7 +856,8 @@ func (org *orgService) canInvite(cmd *domain.OrgInviteMemberCmd) error {
 func (org *orgService) HasMember(o, user primitive.Account) bool {
 	_, err := org.member.GetByOrgAndUser(o.Account(), user.Account())
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
-		logrus.Errorf("failed to get member when check existence by org:%s and user:%s, %s", o.Account(), user.Account(), err)
+		logrus.Errorf("failed to get member when check existence by org:%s and user:%s, %s",
+			o.Account(), user.Account(), err)
 		return true
 	}
 

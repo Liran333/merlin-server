@@ -863,7 +863,7 @@ func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
 		Type: t,
 	}
 
-	orgs := []userapp.UserDTO{}
+	var orgs []userapp.UserDTO
 	switch req.Type {
 	case "npu":
 		if ctl.npuGatekeeper != nil {

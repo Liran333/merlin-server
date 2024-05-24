@@ -60,18 +60,22 @@ func Init(db *gorm.DB, tables *Tables) error {
 	return nil
 }
 
+// ComputilityOrgAdapter returns the instance of the computilityOrgAdapter.
 func ComputilityOrgAdapter() *computilityOrgAdapter {
 	return computilityAdapterInstance
 }
 
+// ComputilityDetailAdapter returns the instance of the computilityDetailAdapter.
 func ComputilityDetailAdapter() *computilityDetailAdapter {
 	return computilityDetailAdapterInstance
 }
 
+// ComputilityAccountAdapter returns the instance of the computilityAccountAdapter.
 func ComputilityAccountAdapter() *computilityAccountAdapter {
 	return computilityAccountAdapterInstance
 }
 
+// ComputilityAccountRecordAdapter returns the instance of the computilityAccountRecordAdapter.
 func ComputilityAccountRecordAdapter() *computilityAccountRecordAdapter {
 	return computilityAccountRecordAdapterInstance
 }

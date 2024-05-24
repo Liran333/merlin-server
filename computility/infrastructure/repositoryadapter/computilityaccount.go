@@ -15,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/computility/domain"
 )
 
+// computilityAccountAdapter is an implementation of the ComputilityAccountRepository interface.
 type computilityAccountAdapter struct {
 	daoImpl
 }
@@ -37,7 +38,7 @@ func (adapter *computilityAccountAdapter) Delete(id primitive.Identity) error {
 	)
 }
 
-// FindByUserName finds a computility account in the repository based on the username and returns an error if any occurs.
+// FindByUserName finds a computility account in the repository based on the username.
 func (adapter *computilityAccountAdapter) FindByAccountIndex(index domain.ComputilityAccountIndex) (
 	domain.ComputilityAccount, error,
 ) {
@@ -169,6 +170,7 @@ func (adapter *computilityAccountAdapter) CancelAccount(index domain.Computility
 	return nil
 }
 
+// updateUsedQuota updates the used quota for the Computility account with the specified version.
 func (adapter *computilityAccountAdapter) updateUsedQuota(do computilityAccountDO, version int) error {
 	result := adapter.db().Model(
 		&computilityAccountDO{Id: do.Id},
@@ -187,6 +189,7 @@ func (adapter *computilityAccountAdapter) updateUsedQuota(do computilityAccountD
 	return nil
 }
 
+// updateQuotaCount updates the quota count for the Computility account with the specified version.
 func (adapter *computilityAccountAdapter) updateQuotaCount(do computilityAccountDO, version int) error {
 	result := adapter.db().Model(
 		&computilityAccountDO{Id: do.Id},

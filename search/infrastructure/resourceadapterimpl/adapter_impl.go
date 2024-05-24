@@ -18,8 +18,10 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// DefaultPage is the default page number
 const DefaultPage = 1
 
+// serchAdapter is an implementation of SearchRepositoryAdapter
 type searchAdapter struct {
 	model   modelrepo.ModelRepositoryAdapter
 	dataset datasetrepo.DatasetRepositoryAdapter
@@ -28,6 +30,7 @@ type searchAdapter struct {
 	member  orgrepo.OrgMember
 }
 
+// NewSearchRepositoryAdapter creates a new instance of SearchRepositoryAdapter
 func NewSearchRepositoryAdapter(
 	model modelrepo.ModelRepositoryAdapter,
 	dataset datasetrepo.DatasetRepositoryAdapter,
@@ -44,6 +47,7 @@ func NewSearchRepositoryAdapter(
 	}
 }
 
+// Search for models if the search type includes primitive.SearchTypeModel
 func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchResult, error) {
 	var result domain.SearchResult
 	if utils.Contains(opt.SearchType, primitive.SearchTypeModel) {
@@ -123,6 +127,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 	return result, nil
 }
 
+// SearchModel for search models
 func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (
 	domain.SearchResultModel, error) {
 	var result domain.SearchResultModel
@@ -143,6 +148,7 @@ func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account dom
 	return result, nil
 }
 
+// SearchDataset for search datasets
 func (adapter *searchAdapter) SearchDataset(cmd *datasetrepo.ListOption, account domain.Account) (
 	domain.SearchResultDataset, error) {
 	var result domain.SearchResultDataset
@@ -163,6 +169,7 @@ func (adapter *searchAdapter) SearchDataset(cmd *datasetrepo.ListOption, account
 	return result, nil
 }
 
+// SearchSpace for search spaces
 func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account domain.Account) (
 	domain.SearchResultSpace, error) {
 	var result domain.SearchResultSpace
@@ -184,6 +191,7 @@ func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account dom
 	return result, nil
 }
 
+// SearchUser provides a method to search for users
 func (adapter *searchAdapter) SearchUser(cmd *repository.ListOption) (domain.SearchResultUser, error) {
 	var result domain.SearchResultUser
 
@@ -205,6 +213,7 @@ func (adapter *searchAdapter) SearchUser(cmd *repository.ListOption) (domain.Sea
 	return result, nil
 }
 
+// SearchOrg provides a method to search for orgs
 func (adapter *searchAdapter) SearchOrg(cmd *repository.ListOption) (domain.SearchResultOrg, error) {
 	var result domain.SearchResultOrg
 

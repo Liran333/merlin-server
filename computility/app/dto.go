@@ -14,21 +14,25 @@ type CmdToUserOrgOperate struct {
 	domain.ComputilityIndex
 }
 
+// CmdToOrgDelete is a struct used for org delete.
 type CmdToOrgDelete struct {
 	OrgName primitive.Account
 }
 
+// CmdToUserQuotaUpdate is a struct used for user quota update.
 type CmdToUserQuotaUpdate struct {
 	Index      domain.ComputilityAccountRecordIndex
 	QuotaCount int
 }
 
+// CmdToSupplyRecord is a struct used for supply record.
 type CmdToSupplyRecord struct {
 	Index      domain.ComputilityAccountRecordIndex
 	QuotaCount int
 	NewSpaceId primitive.Identity
 }
 
+// AccountQuotaDetailDTO is a struct used for account quota detail.
 type AccountQuotaDetailDTO struct {
 	UserName     string `json:"user_name"`
 	UsedQuota    int    `json:"used_quota"`
@@ -37,6 +41,7 @@ type AccountQuotaDetailDTO struct {
 	QuotaBalance int    `json:"quota_balance"`
 }
 
+// toAccountQuotaDetailDTO converts a domain.ComputilityAccount object to an AccountQuotaDetailDTO.
 func toAccountQuotaDetailDTO(a *domain.ComputilityAccount) AccountQuotaDetailDTO {
 	return AccountQuotaDetailDTO{
 		UserName:     a.UserName.Account(),
@@ -47,6 +52,7 @@ func toAccountQuotaDetailDTO(a *domain.ComputilityAccount) AccountQuotaDetailDTO
 	}
 }
 
+// AccountRecordlDTO is a struct used for account record.
 type AccountRecordlDTO struct {
 	UserName    string `json:"user_name"`
 	SpaceId     string `json:"space_id"`
@@ -54,6 +60,7 @@ type AccountRecordlDTO struct {
 	ComputeType string `json:"compute_type"`
 }
 
+// toAccountRecordlDTO converts a domain.ComputilityAccountRecord object to an AccountRecordlDTO.
 func toAccountRecordlDTO(a *domain.ComputilityAccountRecord) AccountRecordlDTO {
 	return AccountRecordlDTO{
 		UserName:    a.UserName.Account(),
@@ -63,12 +70,14 @@ func toAccountRecordlDTO(a *domain.ComputilityAccountRecord) AccountRecordlDTO {
 	}
 }
 
+// QuotaRecallDTO is a struct used for quota recall.
 type QuotaRecallDTO struct {
 	UserName  string              `json:"user_name"`
 	Records   []AccountRecordlDTO `json:"records"`
 	QuotaDebt int                 `json:"quota_debt"`
 }
 
+// toQuotaRecallDTO converts a domain.ComputilityAccountRecord object to an QuotaRecallDTO.
 func toQuotaRecallDTO(user primitive.Account, a []domain.ComputilityAccountRecord, debt int) QuotaRecallDTO {
 	var records []AccountRecordlDTO
 

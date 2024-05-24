@@ -10,15 +10,17 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// ActiviyTableName represents the table name of the activity table in the database.
 var (
-	ActiviyTableName = ""
+	activiyTableName = ""
 )
 
 // TableName returns the table name of the model.
 func (do *activityDO) TableName() string {
-	return ActiviyTableName
+	return activiyTableName
 }
 
+// const field
 const (
 	fieldSpace         = "space"
 	fieldModel         = "model"
@@ -31,6 +33,7 @@ const (
 	fieldType          = "type"
 )
 
+// activityDO represents the data object (DO) for an activity in the database.
 type activityDO struct {
 	AutoID        uint   `gorm:"primaryKey;autoIncrement"`
 	Owner         string `gorm:"column:owner"`
@@ -40,6 +43,7 @@ type activityDO struct {
 	ResourceType  string `gorm:"column:resource_type"`
 }
 
+// convertToActivityDomain converts an activityDO object to a domain.Activity object.
 func convertToActivityDomain(d activityDO) (domain.Activity, error) {
 	return domain.Activity{
 		Owner: primitive.CreateAccount(d.Owner),

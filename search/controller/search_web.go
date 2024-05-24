@@ -12,6 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/search/app"
 )
 
+// AddRouteForSearchWebController add route for search web
 func AddRouteForSearchWebController(
 	r *gin.RouterGroup,
 	s app.SearchAppService,
@@ -27,6 +28,7 @@ func AddRouteForSearchWebController(
 	r.GET("/v1/search", m.Optional, rl.CheckLimit, ctl.Search)
 }
 
+// SearchWebController search web controller
 type SearchWebController struct {
 	searchApp app.SearchAppService
 	m         middleware.UserMiddleWare

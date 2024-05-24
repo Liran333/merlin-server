@@ -2,7 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 */
 
-//nolint:typecheck
+// nolint:typecheck
 package controller
 
 import (
@@ -55,6 +55,7 @@ func AddRouteForActivityWebController(
 	r.DELETE("/v1/like", m.Write, l.Write, ctl.Delete)
 }
 
+// toCmd converts a reqToListUserActivities object to an app.CmdToListActivities command.
 func (req *reqToListUserActivities) toCmd() (cmd app.CmdToListActivities, err error) {
 	cmd.Count = req.Count
 	cmd.Model = req.Model
@@ -261,6 +262,7 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 	}
 }
 
+// setAvatars sets avatars for the activities in an ActivitysDTO object.
 func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
 	as := dto.Activities
 

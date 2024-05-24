@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package domain provides domain space app and configuration for the app service.
 package domain
 
+// Config is a struct that holds the configuration for over restart time.
 const (
 	overRestartTimePeriod = 60 * 60 * 2
 	overResumeTimePeriod  = 60 * 60 * 2
@@ -13,6 +14,7 @@ const (
 // Init initializes the configuration with the given Config struct.
 var config Config
 
+// Init initializes the configuration with the given Config struct.
 func Init(cfg *Config) {
 	config = *cfg
 }

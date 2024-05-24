@@ -28,6 +28,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 	}
 }
 
+// Init initializes the Config struct with default values.
 func (cfg *Config) Init() {
 	controller.Init(&cfg.Controller)
 	domain.Init(&cfg.Domain)

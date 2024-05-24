@@ -1,7 +1,8 @@
 /*
-Copyright (c) Huawei Technologies Co., Ltd. 202. All rights reserved
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
+// Package e2e provides e2e testing
 package e2e
 
 import (

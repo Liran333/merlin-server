@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -13,6 +17,7 @@ import (
 
 type action string
 
+// const for privilege
 const (
 	// AllocNpu org who can alloc npu resource
 	AllocNpu action = "npu"
@@ -34,7 +39,7 @@ func NewAction(action string) (action, error) {
 	}
 }
 
-// OrgListOptions represents the options for listing organizations.
+// PrivilegeOrgListOptions represents the options for listing organizations.
 type PrivilegeOrgListOptions struct {
 	User primitive.Account
 	Type action
@@ -47,6 +52,7 @@ type PrivilegeOrg interface {
 	IsCanReadObj(action, primitive.ObjType) bool
 }
 
+// privilegeOrg struct
 func NewPrivilegeOrgService(
 	org OrgService,
 	cfg privilege.PrivilegeConfig,
@@ -76,11 +82,13 @@ func NewPrivilegeOrgService(
 	}
 }
 
+// privilegeOrgConfig represents the configuration for a privilege organization.
 type privilegeOrgConfig struct {
 	OrgId   string
 	OrgName primitive.Account
 }
 
+// Create a new privilegeOrgConfig object based on the provided privilege.OrgIndex configuration.
 func newPrivilegeOrg(cfg privilege.OrgIndex) (privilegeOrgConfig, error) {
 	acc, err := primitive.NewAccount(cfg.OrgName)
 	if err != nil {
@@ -94,6 +102,7 @@ func newPrivilegeOrg(cfg privilege.OrgIndex) (privilegeOrgConfig, error) {
 	}, nil
 }
 
+// privilegeOrg struct
 type privilegeOrg struct {
 	cfgs   []privilegeOrgConfig
 	org    OrgService
@@ -117,6 +126,7 @@ func (p *privilegeOrg) Contains(account primitive.Account) error {
 	return allerror.NewInvalidParam(e.Error(), e)
 }
 
+// Check if the privilegeOrgConfig contains the provided account within the specified organization.
 func (p *privilegeOrgConfig) contains(account primitive.Account, org OrgService) error {
 	o, err := org.GetByAccount(p.OrgName)
 	if err != nil {
@@ -170,6 +180,7 @@ func (p *privilegeOrg) List(l *PrivilegeOrgListOptions) ([]userapp.UserDTO, erro
 	return orgs, nil
 }
 
+// Check if the privilegeOrg allows reading the specified object for the given action.
 func (p *privilegeOrg) IsCanReadObj(action action, obj primitive.ObjType) bool {
 	var objs []primitive.ObjType
 	if action == Disable {

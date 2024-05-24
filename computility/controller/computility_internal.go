@@ -2,6 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 */
 
+// Package controller provides Computility controller
 package controller
 
 import (
@@ -12,7 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/computility/app"
 )
 
-// AddRouterForComputilityInternalController adds routes to the given router group for the ComputilityInternalController.
+// adds routes to the given router group for the ComputilityInternalController.
 func AddRouterForComputilityInternalController(
 	r *gin.RouterGroup,
 	s app.ComputilityInternalAppService,
@@ -27,7 +28,7 @@ func AddRouterForComputilityInternalController(
 	r.POST("/v1/computility/org/delete", m.Write, ctl.ComputilityOrgDelete)
 }
 
-// ComputilityInternalController is a struct that holds the necessary dependencies for handling computility-related operations.
+// ComputilityInternalController holds the necessary dependencies for handling computility-related operations.
 type ComputilityInternalController struct {
 	appService app.ComputilityInternalAppService
 }

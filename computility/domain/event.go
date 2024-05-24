@@ -24,7 +24,7 @@ func (e *computeRecallEventList) Message() ([]byte, error) {
 
 // NewcomputeRecallEvent creates a new computeRecallEventList instance with the given RecallInfoList.
 func NewcomputeRecallEvent(w *RecallInfoList) computeRecallEventList {
-	list := []computeRecallEvent{}
+	var list []computeRecallEvent
 	for _, v := range w.InfoList {
 		list = append(list, computeRecallEvent{
 			UserName:    v.UserName.Account(),

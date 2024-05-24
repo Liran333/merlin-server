@@ -58,6 +58,7 @@ func SpaceLabelsAdapter() *spaceLabelsAdapter {
 	return spaceLabelsAdapterInstance
 }
 
+// ModelSpaceRelationAdapter returns the instance of the model space relation adapter.
 func ModelSpaceRelationAdapter() *modelSpaceRelationAdapter {
 	return spaceModelInstance
 }

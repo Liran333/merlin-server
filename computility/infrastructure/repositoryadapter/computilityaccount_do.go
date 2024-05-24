@@ -13,10 +13,12 @@ var (
 	computilityAccountTableName = ""
 )
 
+// TableName returns the table name for the domain.ComputilityAccount object.
 func (do *computilityAccountDO) TableName() string {
 	return computilityAccountTableName
 }
 
+// computilityAccountDO represents the database table for storing computility account information.
 type computilityAccountDO struct {
 	Id          int64  `gorm:"primaryKey"`
 	UserName    string `gorm:"column:user_name;index:account_index,priority:1"`
@@ -28,6 +30,7 @@ type computilityAccountDO struct {
 	Version int `gorm:"column:version"`
 }
 
+// toComputilityAccountDO converts a domain.ComputilityAccount object to a computilityAccountDO object.
 func toComputilityAccountDO(d *domain.ComputilityAccount) computilityAccountDO {
 	return computilityAccountDO{
 		Id:          d.Id.Integer(),
@@ -40,6 +43,7 @@ func toComputilityAccountDO(d *domain.ComputilityAccount) computilityAccountDO {
 	}
 }
 
+// toComputilityAccount converts a computilityAccountDO object to a domain.ComputilityAccount object.
 func (do *computilityAccountDO) toComputilityAccount() domain.ComputilityAccount {
 	return domain.ComputilityAccount{
 		Id: primitive.CreateIdentity(do.Id),

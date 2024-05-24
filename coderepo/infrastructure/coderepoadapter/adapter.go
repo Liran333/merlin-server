@@ -7,6 +7,7 @@ package coderepoadapter
 
 import (
 	"fmt"
+
 	"github.com/openmerlin/go-sdk/gitea"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
@@ -24,6 +25,7 @@ type UserInfoAdapter interface {
 	GetPlatformUserInfo(primitive.Account) (string, error)
 }
 
+// codeRepoAdapter is an implementation of the CodeRepoAdapter interface.
 type codeRepoAdapter struct {
 	client      *gitea.Client
 	config      Config
@@ -116,7 +118,7 @@ func (adapter *codeRepoAdapter) FindByIndex(index primitive.Identity) (domain.Co
 		Id:    primitive.CreateIdentity(repo.ID),
 		Name:  primitive.CreateMSDName(repo.Name),
 		Owner: primitive.CreateAccount(repo.Owner.UserName),
-		//todo fix license
+		// todo fix license
 		License:    primitive.CreateLicense("unkown"),
 		Visibility: primitive.CreateVisibility(visibility),
 		CreatedBy:  primitive.CreateAccount(repo.Owner.UserName),

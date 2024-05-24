@@ -72,6 +72,7 @@ func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 	}
 }
 
+// parseIndex parses the index from the request.
 func (ctl *SpaceAppWebController) parseIndex(ctx *gin.Context) (index spacedomain.SpaceIndex, err error) {
 	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {

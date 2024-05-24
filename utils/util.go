@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// const for date
 const (
 	layout       = "2006-01-02"
 	timeLayout   = "2006-01-02 15:04:05"
@@ -108,6 +109,7 @@ func AnonymizeEmail(email string) string {
 	return email
 }
 
+// Contains returns true if target is in slice
 func Contains(slice []string, target string) bool {
 	for _, item := range slice {
 		if item == target {
@@ -117,6 +119,7 @@ func Contains(slice []string, target string) bool {
 	return false
 }
 
+// EscapePgsqlValue escape value
 func EscapePgsqlValue(value string) string {
 	value = strings.ReplaceAll(value, `\`, `\\`)
 	value = strings.ReplaceAll(value, `%`, `\%`)

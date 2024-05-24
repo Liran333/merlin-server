@@ -9,8 +9,10 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// ActivityType enum
 type ActivityType string
 
+// Activity const
 const (
 	Create ActivityType = "create"
 	Update ActivityType = "update"

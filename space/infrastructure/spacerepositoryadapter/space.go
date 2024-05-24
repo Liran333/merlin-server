@@ -92,7 +92,8 @@ func (adapter *spaceAdapter) Save(space *domain.Space) error {
 
 // List is a method of spaceAdapter that takes a ListOption pointer as input
 // and returns a slice of SpaceSummary, total count, and an error if any occurs.
-func (adapter *spaceAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) ([]repository.SpaceSummary, int, error) {
+func (adapter *spaceAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
+	[]repository.SpaceSummary, int, error) {
 	query := adapter.toQuery(opt)
 
 	if opt.Visibility != nil {

@@ -19,6 +19,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 )
 
+// setRouterOfSearchWeb sets up routes for the search web controller.
 func setRouterOfSearchWeb(rg *gin.RouterGroup, cfg *config.Config, services *allServices) {
 	controller.AddRouteForSearchWebController(
 		rg,

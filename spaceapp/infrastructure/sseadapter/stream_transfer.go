@@ -96,6 +96,8 @@ func (impl *streamTransfer) parseProtocolData(line []byte) (*Event, error) {
 			event.Data = append(event.Data, '\n')
 		}
 		event.Data = append(event.Data, parts[1]...)
+	default:
+		return nil, errors.New("invalid event")
 	}
 	return event, nil
 }

@@ -287,7 +287,8 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig primitive.Role
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to add team member when editing member role from orig %s to now %s: %w", orig.Role(), now.Role.Role(), err)
+		return fmt.Errorf("failed to add team member when editing member role from orig %s to now %s: %w",
+			orig.Role(), now.Role.Role(), err)
 	}
 
 	switch orig {
@@ -302,7 +303,8 @@ func (c *BaseAuthClient) EditMemberRole(o *org.Organization, orig primitive.Role
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to remove team member when editing member role from orig %s to now %s: %w", orig.Role(), now.Role.Role(), err)
+		return fmt.Errorf("failed to remove team member when editing member role from orig %s to now %s: %w",
+			orig.Role(), now.Role.Role(), err)
 	}
 
 	return

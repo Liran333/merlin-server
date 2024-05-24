@@ -79,6 +79,7 @@ func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
 	return err
 }
 
+// likeFilter generates a ILIKE filter query and argument for a given field and value.
 func likeFilter(field, value string) (query, arg string) {
 	query = fmt.Sprintf(`%s ilike ?`, field)
 
@@ -87,6 +88,7 @@ func likeFilter(field, value string) (query, arg string) {
 	return
 }
 
+// intersectionFilter generates an intersection filter query and argument for a given field and value.
 func intersectionFilter(field string, value []string) (query string, arg pq.StringArray) {
 	query = fmt.Sprintf(`%s @> ?`, field)
 
@@ -95,14 +97,17 @@ func intersectionFilter(field string, value []string) (query string, arg pq.Stri
 	return
 }
 
+// equalQuery generates an equality filter query for a given field.
 func equalQuery(field string) string {
 	return fmt.Sprintf(`%s = ?`, field)
 }
 
+// notEqualQuery generates a not equal filter query for a given field.
 func notEqualQuery(field string) string {
 	return fmt.Sprintf(`%s <> ?`, field)
 }
 
+// orderByDesc generates an ORDER BY clause in descending order for a given field.
 func orderByDesc(field string) string {
 	return field + " desc"
 }

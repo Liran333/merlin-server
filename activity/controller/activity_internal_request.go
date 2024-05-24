@@ -16,11 +16,13 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// const for parse
 const (
 	parseIntBase    = 10
 	parseIntBitSize = 64
 )
 
+// ConvertReqToCreateActivityToCmd converts the request to the command
 func ConvertReqToCreateActivityToCmd(req *activityapp.ReqToCreateActivity) (app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 
@@ -49,7 +51,10 @@ func ConvertReqToCreateActivityToCmd(req *activityapp.ReqToCreateActivity) (app.
 	return cmd, nil
 }
 
-func ConvertReqToDeleteActivityToCmd(user primitive.Account, req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
+// ConvertReqToDeleteActivityToCmd converts a request to delete an activity to an app.CmdToAddActivity command.
+func ConvertReqToDeleteActivityToCmd(
+	user primitive.Account, req *activityapp.ReqToDeleteActivity) (
+	app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 
 	resourceIdInt, err := strconv.ParseInt(req.ResourceId, parseIntBase, parseIntBitSize)
@@ -70,6 +75,7 @@ func ConvertReqToDeleteActivityToCmd(user primitive.Account, req *activityapp.Re
 	return cmd, nil
 }
 
+// ConvertInternalReqToDeleteActivityToCmd converts an internal request to delete an activity to an app.CmdToAddActivity command.
 func ConvertInternalReqToDeleteActivityToCmd(req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 

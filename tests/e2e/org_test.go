@@ -699,21 +699,24 @@ func (s *SuiteOrg) TestPrivilegeOrg() {
 	assert.Nil(s.T(), err)
 
 	// 未配置特权组织，无法查询到用户属于某个特权组织
-	orgData, r, err := ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "npu", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err := ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "npu",
+		&swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
-	orgs := getArrary(s.T(), orgData.Data)
+	orgs := orgData.Data
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 未配置特权组织，无法查询到用户属于某个特权组织
-	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "disable", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "disable",
+		&swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusOK, r.StatusCode, data.Msg)
 	assert.Nil(s.T(), err)
-	orgs = getArrary(s.T(), orgData.Data)
+	orgs = orgData.Data
 	assert.Equal(s.T(), 0, len(orgs))
 
 	// 无效参数
-	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "test", &swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
+	orgData, r, err = ApiRest.OrganizationApi.V1UserPrivilegeGet(AuthRest, "test",
+		&swaggerRest.OrganizationApiV1UserPrivilegeGetOpts{})
 	assert.Equalf(s.T(), http.StatusBadRequest, r.StatusCode, data.Msg)
 	assert.NotNil(s.T(), err)
 

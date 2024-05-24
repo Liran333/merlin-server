@@ -14,7 +14,7 @@ var (
 // Init initializes the activity module by performing necessary setup and migrations.
 func Init(db *gorm.DB, tables *Tables) error {
 	// must set modelTableName before migrating
-	ActiviyTableName = tables.Activity
+	activiyTableName = tables.Activity
 
 	if err := db.AutoMigrate(&activityDO{}); err != nil {
 		return err

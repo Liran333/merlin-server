@@ -9,6 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
+// ModelSpaceRepositoryAdapter provides an adapter for the model repository
 type ModelSpaceRepositoryAdapter interface {
 	GetModelsBySpaceId(spaceId primitive.Identity) ([]primitive.Identity, error)
 	GetSpacesByModelId(modelId primitive.Identity) ([]primitive.Identity, error)

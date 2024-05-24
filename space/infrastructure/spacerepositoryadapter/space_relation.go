@@ -65,7 +65,8 @@ func (adapter *modelSpaceRelationAdapter) create(spaceId primitive.Identity, mod
 }
 
 // UpdateRelation updates models related to a space
-func (adapter *modelSpaceRelationAdapter) UpdateRelation(spaceId primitive.Identity, modelIds []primitive.Identity) error {
+func (adapter *modelSpaceRelationAdapter) UpdateRelation(
+	spaceId primitive.Identity, modelIds []primitive.Identity) error {
 	return adapter.db().Transaction(func(tx *gorm.DB) error {
 		if err := adapter.deleteBySpaceId(spaceId); err != nil {
 			return fmt.Errorf("failed to delete model space relations by space id: %w", err)

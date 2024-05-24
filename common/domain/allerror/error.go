@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	// ErrorCodeInvalidParam is const
 	errorCodeNoPermission = "no_permission"
 
 	// ErrorCodeUserNotFound is const
@@ -121,6 +122,7 @@ const (
 	// ErrorCodeOrgExistResource is const
 	ErrorCodeOrgExistResource = "org_resource_exist"
 
+	// ErrorCodeInvalidParam is const
 	errorCodeInvalidParam = "invalid_param"
 
 	// ErrorEmailError is const
@@ -153,25 +155,25 @@ const (
 	// ErrorCodeDisAgreedPrivacy is const
 	ErrorCodeDisAgreedPrivacy = "disagreed_privacy"
 
-	// ErrorCodeExpired
+	// ErrorCodeExpired is const
 	ErrorCodeExpired = "expired"
 
-	// privilege org id mismatch
+	// ErrorCodePrivilegeOrgIdMismatch is const
 	ErrorCodePrivilegeOrgIdMismatch = "privilege_org_id_mismatch"
 
-	// not in a privilege org
+	// ErrorCodeNotInPrivilegeOrg is const
 	ErrorCodeNotInPrivilegeOrg = "not_in_privilege_org"
 
-	// user has insufficient quota balance
+	// ErrorCodeInsufficientQuota user has insufficient quota balance
 	ErrorCodeInsufficientQuota = "insufficient_quota"
 
-	// user is not currently using any quota
+	// ErrorCodeNoUsedQuota user is not currently using any quota
 	ErrorCodeNoUsedQuota = "no_used_quota"
 
-	// user has no npu permission
+	// ErrorCodeNoNpuPermission user has no npu permission
 	ErrorCodeNoNpuPermission = "no_npu_permission"
 
-	// find computility account error
+	// ErrorCodeComputilityAccountFindError find computility account error
 	ErrorCodeComputilityAccountFindError = "computility_account_find_error"
 
 	// ErrorBaseCase is const
@@ -180,181 +182,181 @@ const (
 	// ErrorMsgPublishFailed
 	ErrorMsgPublishFailed = "msg_publish_failed"
 
-	// dulicate creating
+	// ErrorDuplicateCreating dulicate creating
 	ErrorDuplicateCreating = "duplicate_creating"
 
-	// failed to get owner info
+	// ErrorFailedGetOwnerInfo failed to get owner info
 	ErrorFailedGetOwnerInfo = "failed_to_get_owner_info"
 
-	// failed to get platform user
+	// ErrorFailGetPlatformUser failed to get platform user
 	ErrorFailGetPlatformUser = "failed_to_get_platform_user"
 
-	// failed to create org
+	// ErrorFailedCreateOrg failed to create org
 	ErrorFailedCreateOrg = "failed_to_create_org"
 
-	// failed to create to org
+	// ErrorFailedCreateToOrg failed to create to org
 	ErrorFailedCreateToOrg = "failed_to_create_to_org"
 
-	// failed to save org member
+	// ErrorFailSaveOrgMember failed to save org member
 	ErrorFailSaveOrgMember = "failed_to_save_org_member"
 
-	// system error
+	// ErrorSystemError system error
 	ErrorSystemError = "system_error"
 
-	// when list member requests, org_name/requester can't be all empty
+	// ErrorOrgNameRequesterAllEmpty is const
 	ErrorOrgNameRequesterAllEmpty = "org_name_requester_all_empty"
 
-	// only one of the org_name/invitee/inviter can be used
+	// ErrorOverOrgnameInviteeInviter is const
 	ErrorOverOrgnameInviteeInviter = "over_orgname_invitee_inviter"
 
-	// when list member invitation, org_name/invitee/inviter can't be all empty
+	// ErrorMemberInvitationParamAllEmpty is const
 	ErrorMemberInvitationParamAllEmpty = "member_invitation_param_all_empty"
 
-	// failed to delete user in db
+	// ErrorFailedToDeleteUser failed to delete user in db
 	ErrorFailedToDeleteUser = "failed_to_delete_user"
 
-	// failed to get user info
+	// ErrorFailedToGetUserInfo failed to get user info
 	ErrorFailedToGetUserInfo = "failed_to_get_user_info"
 
-	// failed to revoke privacy
+	// ErrorFailedToRevokePrivacy failed to revoke privacy
 	ErrorFailedToRevokePrivacy = "failed_to_revoke_privacy"
 
-	// failed to agree privacy
+	// ErrorFailedToAgreePrivacy failed to agree privacy
 	ErrorFailedToAgreePrivacy = "failed_to_agree_privacy"
 
-	// name %s is already been taken
+	// ErrorNameAlreadyBeenTaken name %s is already been taken
 	ErrorNameAlreadyBeenTaken = "name_is_already_been_taken"
 
-	// %s can't delete the org
+	// ErrorAccountCannotDeleteTheOrg account %s can't delete the org
 	ErrorAccountCannotDeleteTheOrg = "account_can_not_delete_the_org"
 
-	// failed to get org when get org by user, %w
+	// ErrorFailedToGetOrg failed to get org when get org by user, %w
 	ErrorFailedToGetOrg = "failed_to_get_org"
 
-	// missing name when creating token
+	// ErrorMissingName missing name when creating token
 	ErrorMissingName = "missing_name"
 
-	// missing account when creating token
+	// ErrorMissingAccount missing account when creating token
 	ErrorMissingAccount = "missing_account"
 
-	// failed to remove member
+	// ErrorFailedToRemoveMember failed to remove member
 	ErrorFailedToRemoveMember = "failed_to_remove_member"
 
-	// the user is already a member of the org
+	// ErrorUserAlreadyInOrg the user is already a member of the org
 	ErrorUserAlreadyInOrg = "the_user_is_already_a_member_of_the_org"
 
-	// org not allow request member
+	// ErrorOrgNotAllowRequestMember org not allow request member
 	ErrorOrgNotAllowRequestMember = "org_not_allow_request_member"
 
-	// invalid actor name
+	// ErrorInvalidActorName invalid actor name
 	ErrorInvalidActorName = "invalid_actor_name"
 
-	// org fullname is empty
+	// ErrorOrgFullnameIsEmpty org fullname is empty
 	ErrorOrgFullnameIsEmpty = "org_fullname_is_empty"
 
-	// invalid account
+	// ErrorInvalidAccount invalid account
 	ErrorInvalidAccount = "invalid_account"
 
-	// invalid org
+	// ErrorInvalidOrg invalid org
 	ErrorInvalidOrg = "invalid_org"
 
-	// invalid actor
+	// ErrorInvalidActor invalid actor
 	ErrorInvalidActor = "invalid_actor"
 
-	// invalid user
+	// ErrorInvalidUser invalid user
 	ErrorInvalidUser = "invalid_user"
 
-	// invalid requester
+	// ErrorInvalidRequester invalid requester
 	ErrorInvalidRequester = "invalid_requester"
 
-	// fullname can't be empty
+	// ErrorFullnameCanNotBeEmpty fullname can't be empty
 	ErrorFullnameCanNotBeEmpty = "fullname_can_not_be_empty"
 
-	// failed to update user info
+	// ErrorFailedToUpdateUserInfo failed to update user info
 	ErrorFailedToUpdateUserInfo = "failed_to_update_user_info"
 
-	// failed to update git user info
+	// ErrorFailedToUPdateGitUserInfo ailed to update git user info
 	ErrorFailedToUPdateGitUserInfo = "failed_to_update_git_userinfo"
 
-	// username invalid
+	// ErrorUsernameInvalid username invalid
 	ErrorUsernameInvalid = "username_invalid"
 
-	// failed to get platform user info
+	// ErrorFailedToGetPlatformUserInfo is const
 	ErrorFailedToGetPlatformUserInfo = "failed_to_get_platform_user_info"
 
-	// failed to delete user in git server
+	// ErrorFailedToDeleteUserInGitServer is const
 	ErrorFailedToDeleteUserInGitServer = "failed_to_delete_user_in_git_server"
 
-	// user already requested to be delete
+	// ErrorUserAlreadyRequestedToBeDelete is const
 	ErrorUserAlreadyRequestedToBeDelete = "user_already_requested_to_be_delete"
 
-	// failed to create token
+	// ErrorFailedToCreateToken failed to create token
 	ErrorFailedToCreateToken = "failed_to_create_token"
 
-	// failed to ecrypt token
+	// ErrorFailedToEcryptToken failed to ecrypt token
 	ErrorFailedToEcryptToken = "failed_to_ecrypt_token"
 
-	// input param is empty
+	// ErrorInputParamIsEmpty input param is empty
 	ErrorInputParamIsEmpty = "input_param_is_empty"
 
-	// delete token param is empty
+	// ErrorDeleteTokenParamIsEmpty delete token param is empty
 	ErrorDeleteTokenParamIsEmpty = "delete_token_param_is_empty"
 
-	// failed to save org
+	// ErrorFailedToSaveOrg failed to save org
 	ErrorFailedToSaveOrg = "failed_to_save_org"
 
-	// nothing changed
+	// ErrorNothingChanged nothing changed
 	ErrorNothingChanged = "nothing_changed"
 
-	// failed to get org info
+	// ErrorFailedToGetOrgInfo failed to get org info
 	ErrorFailedToGetOrgInfo = "failed_to_get_org_info"
 
-	// failed to get member info
+	// ErrorFailedToGetMemberInfo failed to get member info
 	ErrorFailedToGetMemberInfo = "failed_to_get_member_info"
 
-	// failed to save member for adding member
+	// ErrorFailedToSaveMemberForAddingMember is const
 	ErrorFailedToSaveMemberForAddingMember = "failed_to_save_member_for_adding_member"
 
-	// the only owner can not be removed
+	// ErrorOnlyOwnerCanNotBeRemoved the only owner can not be removed
 	ErrorOnlyOwnerCanNotBeRemoved = "the_only_owner_can_not_be_removed"
 
-	// failed to validate cmd
+	// ErrorFailedToValidateCmd failed to validate cmd
 	ErrorFailedToValidateCmd = "failed_to_validate_cmd"
 
-	// failed to delete git member
+	// ErrorFailedToDeleteGitMember failed to delete git member
 	ErrorFailedToDeleteGitMember = "failed_to_delete_git_member"
 
-	// failed to delete member
+	// ErrorFailedToDeleteMember failed to delete member
 	ErrorFailedToDeleteMember = "failed_to_delete_member"
 
-	// failed to change owner of org
+	// ErrorFailedToChangeOwnerOfOrg failed to change owner of org
 	ErrorFailedToChangeOwnerOfOrg = "failed_to_change_owner_of_org"
 
-	// failed to get members by org name: %s, %s
+	// ErrorFailedToGetMembersByOrgName failed to get members by org name: %s, %s
 	ErrorFailedToGetMembersByOrgName = "failed_to_get_members_by_org_name"
 
-	// user %s is already a member of the org %s
+	// ErrorUserAccountIsAlreadyAMemberOfOrgAccount is const
 	ErrorUserAccountIsAlreadyAMemberOfOrgAccount = "user_account_is_already_a_member_of_the_org_account"
 
-	// failed to add member:%s to org:%s
+	// ErrorFailedToAddMemberToOrg failed to add member:%s to org:%s
 	ErrorFailedToAddMemberToOrg = "failed_to_add_member"
 
-	// invalid status %s
+	// ErrorInvalidStatus invalid status %s
 	ErrorInvalidStatus = "invalid_status"
 
-	// user name %s is already taken
+	// ErrorUsernameIsAlreadyTaken user name %s is already taken
 	ErrorUsernameIsAlreadyTaken = "user_name_is_already_taken"
 
-	// failed to create platform user: %s
+	// ErrorFailedToCreatePlatformUser failed to create platform user: %s
 	ErrorFailedToCreatePlatformUser = "failed_to_create_platform_user"
 
-	// failed to save user in db: %s
+	// ErrorFailToSaveUserInDb failed to save user in db: %s
 	ErrorFailToSaveUserInDb = "failed_to_save_user"
 
-	// failed to save org in db: %s
+	// ErrorCodeConcurrentUpdating failed to save org in db: %s
 	ErrorCodeConcurrentUpdating = "concurrent_updating"
 
-	// failed to retrive activities: %s
+	// ErrorFailToRetrieveActivityData failed to retrive activities: %s
 	ErrorFailToRetrieveActivityData = "failed_to_retrieve_activity"
 )
 
@@ -386,14 +388,17 @@ func (e errorImpl) ErrorCode() string {
 	return e.code
 }
 
+// InnerError returns the inner error.
 type InnerError interface {
 	InnerError() error
 }
 
+// InnerErr returns the inner error.
 func (e errorImpl) InnerError() error {
 	return e.innerErr
 }
 
+// InnerErr returns the inner error.
 func InnerErr(err error) error {
 	var v InnerError
 	if ok := errors.As(err, &v); ok {
@@ -518,6 +523,7 @@ func NewOverLimit(code string, msg string, err error) limitRateError {
 	return limitRateError{errorImpl: New(code, msg, err)}
 }
 
+// IsOverLimit checks if the given error is a over limit error.
 func NewExpired(msg string, err error) errorImpl {
 	return New(ErrorCodeExpired, msg, err)
 }

@@ -25,6 +25,7 @@ const (
 	readme = "readme"
 )
 
+// modelAdapter holds the necessary dependencies for handling model-related operations.
 type modelAdapter struct {
 	daoImpl
 }
@@ -92,7 +93,8 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 }
 
 // List retrieves a list of models based on the provided options.
-func (adapter *modelAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) ([]repository.ModelSummary, int, error) {
+func (adapter *modelAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
+	[]repository.ModelSummary, int, error) {
 	query := adapter.toQuery(opt)
 
 	if opt.Visibility != nil {
@@ -156,6 +158,7 @@ func (adapter *modelAdapter) Count(opt *repository.ListOption) (int, error) {
 	return int(total), err
 }
 
+// toQuery converts the provided ListOption into a GORM query.
 func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	db := adapter.db()
 
@@ -203,6 +206,57 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 	return db
 }
 
+// SearchModel searches for model summaries based on the provided list options, login account, and org member.
+func (adapter *modelAdapter) SearchModel(opt *repository.ListOption, login primitive.Account,
+	member orgrepo.OrgMember) ([]repository.ModelSummary, int, error) {
+	db := adapter.db()
+	queryName, argName := likeFilter(fieldName, opt.Name)
+
+	db = db.Where(queryName, argName)
+
+	if login != nil {
+		members, err := member.GetByUser(login.Account())
+		if err != nil {
+			return nil, 0, err
+		}
+		orgNames := make([]string, len(members))
+		for _, member := range members {
+			orgNames = append(orgNames, member.OrgName.Account())
+		}
+		sql := fmt.Sprintf(`%s = ? or %s = ? or %s in (?)`, fieldVisibility, fieldOwner, fieldOwner)
+		db = db.Where(sql, primitive.VisibilityPublic, login, orgNames)
+	} else {
+		db = db.Where(equalQuery(fieldVisibility), primitive.VisibilityPublic)
+	}
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if b, offset := opt.Pagination(); b {
+		if offset > 0 {
+			db = db.Limit(opt.CountPerPage).Offset(offset)
+		} else {
+			db = db.Limit(opt.CountPerPage)
+		}
+	}
+
+	var dos []modelDO
+
+	if err := db.Find(&dos).Error; err != nil {
+		return nil, 0, err
+	}
+
+	r := make([]repository.ModelSummary, len(dos))
+	for i, do := range dos {
+		r[i] = do.toModelSummary()
+	}
+
+	return r, int(total), nil
+}
+
+// order generates an ORDER BY clause based on the provided sort type.
 func order(t primitive.SortType) string {
 	if t == nil {
 		return ""

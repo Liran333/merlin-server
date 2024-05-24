@@ -20,6 +20,7 @@ type Repository interface {
 	DeleteBySpaceId(primitive.Identity) error
 }
 
+// SpaceAppBuildLogAdapter is an interface that defines methods for managing space app build logs.
 type SpaceAppBuildLogAdapter interface {
 	Save(*domain.SpaceAppBuildLog) error
 }

@@ -95,11 +95,11 @@ func (ctl *ActivityRestfulController) List(ctx *gin.Context) {
 	}
 }
 
+// setAvatars populates the avatar information for the activities in the provided ActivitysDTO.
 func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
 	ac := dto.Activities
 
 	// get avatars
-
 	v := map[string]bool{}
 	for i := range ac {
 		v[ac[i].Resource.Owner] = true
@@ -119,7 +119,6 @@ func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivitysDTO) (activit
 	}
 
 	// set avatars
-
 	am := map[string]string{}
 	for i := range avatars {
 		item := &avatars[i]

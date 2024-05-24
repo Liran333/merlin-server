@@ -2,6 +2,8 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 */
 
+// The controller package provides functionality for handling requests and
+// processing business logic related to user organizations.
 package controller
 
 import (

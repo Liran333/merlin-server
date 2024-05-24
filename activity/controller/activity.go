@@ -15,6 +15,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
+// ActivityController is the controller for the activity app.
 type ActivityController struct {
 	user           userapp.UserService
 	appService     app.ActivityAppService

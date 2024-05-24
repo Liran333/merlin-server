@@ -13,23 +13,27 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// const for http
 const (
 	statusCodeUpLimit   = 200
 	statusCodeDownLimit = 299
 	defaultBackoff      = 10 * time.Millisecond
 )
 
+// HttpClient is a http client
 type HttpClient struct {
 	client     http.Client
 	maxRetries int
 }
 
+// NewHttpClient returns a new http client
 func newClient(timeout int) http.Client {
 	return http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
 }
 
+// NewHttpClient returns a new http client
 func NewHttpClient(n, timeout int) HttpClient {
 	return HttpClient{
 		maxRetries: n,
@@ -37,6 +41,7 @@ func NewHttpClient(n, timeout int) HttpClient {
 	}
 }
 
+// SendAndHandle sends request and handle response
 func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, io.Reader) error) error {
 	resp, err := hc.do(req)
 	if err != nil || resp == nil {
@@ -65,6 +70,7 @@ func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, 
 	return nil
 }
 
+// do sends request
 func (hc *HttpClient) do(req *http.Request) (resp *http.Response, err error) {
 	if resp, err = hc.client.Do(req); err == nil {
 		return

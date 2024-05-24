@@ -22,6 +22,7 @@ type CodeRepo struct {
 	Visibility primitive.Visibility
 }
 
+// ResourceType returns the resource type of the code repository.
 func (r *CodeRepo) ResourceType() primitive.ObjType {
 	return primitive.ObjTypeCodeRepo
 }

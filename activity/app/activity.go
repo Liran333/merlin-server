@@ -32,6 +32,7 @@ type ActivityAppService interface {
 	HasLike(primitive.Account, primitive.Identity) (bool, error)
 }
 
+// activityAppService implements the ActivityAppService interface.
 type activityAppService struct {
 	permission      commonapp.ResourcePermissionAppService
 	codeRepoApp     coderepoapp.CodeRepoAppService
@@ -63,7 +64,7 @@ func NewActivityAppService(
 		modelApp:        modelApp,
 		datasetApp:      datasetApp,
 		spaceApp:        spaceApp,
-		spaceappRepo: 	 spaceappRepo,
+		spaceappRepo:    spaceappRepo,
 		msgAdapter:      msgAdapter,
 		resourceAdapter: resourceAdapter,
 	}
@@ -93,6 +94,7 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 	}, nil
 }
 
+// processActivity is a method of the activityAppService that processes an activity.
 func (s *activityAppService) processActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
@@ -114,6 +116,7 @@ func (s *activityAppService) processActivity(user primitive.Account, activity do
 	}
 }
 
+// processModelActivity is a method of the activityAppService that processes a model activity.
 func (s *activityAppService) processModelActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
 	model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
@@ -128,6 +131,7 @@ func (s *activityAppService) processModelActivity(user primitive.Account, codeRe
 	return additionInfo, nil
 }
 
+// processDatasetActivity is a method of the activityAppService that processes a dataset activity.
 func (s *activityAppService) processDatasetActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
 	dataset, err := s.datasetApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
@@ -142,6 +146,7 @@ func (s *activityAppService) processDatasetActivity(user primitive.Account, code
 	return additionInfo, nil
 }
 
+// processSpaceActivity is a method of the activityAppService that processes a space activity.
 func (s *activityAppService) processSpaceActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
 	space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {

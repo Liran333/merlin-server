@@ -43,6 +43,7 @@ func AppRepositoryAdapter() *appRepositoryAdapter {
 	return appRepositoryAdapterInstance
 }
 
+// BuildLogAdapter is an instance of the BuildLogAdapter.
 func BuildLogAdapter() *buildLogAdapterImpl {
 	return buildLogAdapterInstance
 }

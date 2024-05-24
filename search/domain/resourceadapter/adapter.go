@@ -7,6 +7,7 @@ package resourceadapter
 
 import "github.com/openmerlin/merlin-server/search/domain"
 
+// ResourceAdapter is an interface for resource adapter
 type ResourceAdapter interface {
 	Search(opt *domain.SearchOption) (domain.SearchResult, error)
 }

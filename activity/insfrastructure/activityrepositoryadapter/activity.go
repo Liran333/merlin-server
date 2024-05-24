@@ -17,10 +17,12 @@ import (
 	"github.com/openmerlin/merlin-server/utils"
 )
 
+// activityAdapter is an implementation of the ActivityRepository interface.
 type activityAdapter struct {
 	daoImpl
 }
 
+// DeleteAll deletes all activities from the database.
 func (adapter *activityAdapter) DeleteAll(activity *domain.Activity) error {
 	db := adapter.daoImpl.db() // Get the gorm.DB instance for the specific table.
 	if db == nil {
@@ -30,7 +32,8 @@ func (adapter *activityAdapter) DeleteAll(activity *domain.Activity) error {
 	resourceIndex := activity.Resource.Index.Integer()
 	resourceType := string(activity.Resource.Type)
 
-	if err := db.Where(fieldResourceIndex+" = ? AND "+fieldResourceType+" = ?", resourceIndex, resourceType).Delete(&activityDO{}).Error; err != nil {
+	if err := db.Where(fieldResourceIndex+" = ? AND "+fieldResourceType+" = ?",
+		resourceIndex, resourceType).Delete(&activityDO{}).Error; err != nil {
 		return err
 	}
 
@@ -139,7 +142,7 @@ func (adapter *activityAdapter) List(names []primitive.Account, opt *repository.
 	if v := order(opt.SortType); v != "" {
 		query = query.Order(v)
 	} else {
-		//default order
+		// default order
 		query = query.Order(orderByDesc(fieldTime))
 	}
 

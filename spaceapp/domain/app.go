@@ -146,6 +146,7 @@ func (app *SpaceApp) SetResumeFailed(status appprimitive.AppStatus, reason strin
 	return nil
 }
 
+// SpaceAppBuildLog space app build log
 type SpaceAppBuildLog struct {
 	AppId int64
 	Logs  string

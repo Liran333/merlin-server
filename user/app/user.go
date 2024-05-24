@@ -201,7 +201,8 @@ func (s userService) GetPlatformUserInfo(account domain.Account) (string, error)
 	usernew, err := s.repo.GetByAccount(account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeUserNotFound, "", xerrors.Errorf("failed to get platform user info: %w", err))
+			err = allerror.NewNotFound(allerror.ErrorCodeUserNotFound, "",
+				xerrors.Errorf("failed to get platform user info: %w", err))
 		} else {
 			err = xerrors.Errorf("failed to get platform user info: %w", err)
 		}
@@ -263,7 +264,8 @@ func (s userService) Delete(account domain.Account) (err error) {
 	// delete user
 	err = s.repo.DeleteUser(&u)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToDeleteUser, "", xerrors.Errorf("failed to delete user in db, %w", err))
+		err = allerror.New(allerror.ErrorFailedToDeleteUser, "",
+			xerrors.Errorf("failed to delete user in db, %w", err))
 		return
 	}
 
@@ -526,7 +528,8 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 	_, err = s.token.GetByName(cmd.Account, cmd.Name)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, "", xerrors.Errorf("token not found: %w", err))
+			err = allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, "",
+				xerrors.Errorf("token not found: %w", err))
 		} else {
 			err = xerrors.Errorf("failed to get token: %w", err)
 		}
@@ -536,7 +539,8 @@ func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.Ba
 
 	err = client.DeleteToken(cmd)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToDeleteToken, "", xerrors.Errorf("failed to delete token: %w", err))
+		err = allerror.New(allerror.ErrorFailedToDeleteToken, "",
+			xerrors.Errorf("failed to delete token: %w", err))
 		return
 	}
 
@@ -561,7 +565,8 @@ func (s userService) ListTokens(u domain.Account) (tokens []TokenDTO, err error)
 
 	ts, err := s.token.GetByAccount(u)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToGetUserInfo, "", xerrors.Errorf("failed to get user info: %w", err))
+		err = allerror.New(allerror.ErrorFailedToGetUserInfo, "",
+			xerrors.Errorf("failed to get user info: %w", err))
 		return
 	}
 
@@ -617,7 +622,8 @@ func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (Tok
 	token, err := s.token.GetByName(acc, name)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeTokenNotFound, "", xerrors.Errorf("token not found: %w", err))
+			err = allerror.New(allerror.ErrorCodeTokenNotFound, "",
+				xerrors.Errorf("token not found: %w", err))
 		} else {
 			err = xerrors.Errorf("failed to get token: %w", err)
 		}
@@ -644,13 +650,15 @@ func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) error {
 func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	userId, err := s.getUserIdOfLogin(cmd.User)
 	if err != nil {
-		return allerror.New(allerror.ErrorCodeUserNotFound, "", xerrors.Errorf("user %s not found: %w", cmd.User.Account(), err))
+		return allerror.New(allerror.ErrorCodeUserNotFound, "",
+			xerrors.Errorf("user %s not found: %w", cmd.User.Account(), err))
 	}
 
 	u, err := s.repo.GetByAccount(cmd.User)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.New(allerror.ErrorCodeUserNotFound, "", xerrors.Errorf("user %s not found: %w", cmd.User.Account(), err))
+			err = allerror.New(allerror.ErrorCodeUserNotFound, "",
+				xerrors.Errorf("user %s not found: %w", cmd.User.Account(), err))
 		} else {
 			err = xerrors.Errorf("failed to get user: %w", err)
 		}
@@ -669,7 +677,8 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 
 	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, userId)
 	if err != nil && !allerror.IsUserDuplicateBind(err) {
-		return allerror.New(allerror.ErrorCodeEmailVerifyFailed, "", xerrors.Errorf("failed to verify email: %w", err))
+		return allerror.New(allerror.ErrorCodeEmailVerifyFailed, "",
+			xerrors.Errorf("failed to verify email: %w", err))
 	}
 
 	u.Email = cmd.Email
@@ -686,7 +695,8 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 		// create new user if user doesnot exist
 		user, err := s.git.Create(userCmd)
 		if err != nil {
-			return allerror.New(allerror.ErrorVerifyEmailFailed, "", xerrors.Errorf("failed to create platform user: %w", err))
+			return allerror.New(allerror.ErrorVerifyEmailFailed, "",
+				xerrors.Errorf("failed to create platform user: %w", err))
 		}
 
 		u.PlatformId = user.PlatformId
@@ -694,7 +704,8 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	} else {
 		err = s.git.Update(userCmd)
 		if err != nil {
-			return allerror.New(allerror.ErrorVerifyEmailFailed, "", xerrors.Errorf("failed to update platform user: %w", err))
+			return allerror.New(allerror.ErrorVerifyEmailFailed, "",
+				xerrors.Errorf("failed to update platform user: %w", err))
 		}
 	}
 	// we must create git user before save
@@ -731,7 +742,8 @@ func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, er
 func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 	sessions, err := s.session.FindByUser(user)
 	if err != nil {
-		return "", allerror.New(allerror.ErrorCodeUserNotFound, "", xerrors.Errorf("failed to get user session: %w", err))
+		return "", allerror.New(allerror.ErrorCodeUserNotFound, "",
+			xerrors.Errorf("failed to get user session: %w", err))
 	}
 
 	if len(sessions) == 0 {
@@ -741,11 +753,13 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 
 	ss := sessions[0]
 	if ss.UserId == "" || ss.IdToken == "" {
-		return "", allerror.New(allerror.ErrorCodeSessionNotFound, "", xerrors.Errorf("session info not found"))
+		return "", allerror.New(allerror.ErrorCodeSessionNotFound, "",
+			xerrors.Errorf("session info not found"))
 	}
 
 	if err = s.oidc.PrivacyRevoke(ss.UserId); err != nil {
-		return "", allerror.New(allerror.ErrorFailedToRevokePrivacy, "", xerrors.Errorf("failed to revoke privacy: %w", err))
+		return "", allerror.New(allerror.ErrorFailedToRevokePrivacy, "",
+			xerrors.Errorf("failed to revoke privacy: %w", err))
 	}
 
 	userInfo, err := s.repo.GetByAccount(user)
@@ -760,13 +774,15 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 
 	userInfo.RevokePrivacy()
 	if _, err = s.repo.SaveUser(&userInfo); err != nil {
-		return "", allerror.New(allerror.ErrorFailedToRevokePrivacy, "", xerrors.Errorf("failed to save user: %w", err))
+		return "", allerror.New(allerror.ErrorFailedToRevokePrivacy, "",
+			xerrors.Errorf("failed to save user: %w", err))
 	}
 
 	action, err := ss.IdToken, s.sessionClear.ClearAllSession(user)
 	if err != nil {
 		action = ""
-		err = allerror.New(allerror.ErrorFailedToRevokePrivacy, "", xerrors.Errorf("failed to clear session: %w", err))
+		err = allerror.New(allerror.ErrorFailedToRevokePrivacy, "",
+			xerrors.Errorf("failed to clear session: %w", err))
 	}
 
 	return action, err
@@ -787,7 +803,8 @@ func (s userService) AgreePrivacy(user primitive.Account) error {
 
 	_, err = s.repo.SaveUser(&userInfo)
 	if err != nil {
-		err = allerror.New(allerror.ErrorFailedToAgreePrivacy, "", xerrors.Errorf("failed to save user: %w", err))
+		err = allerror.New(allerror.ErrorFailedToAgreePrivacy, "",
+			xerrors.Errorf("failed to save user: %w", err))
 	}
 
 	return err

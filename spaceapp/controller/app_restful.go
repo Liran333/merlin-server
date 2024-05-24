@@ -12,7 +12,7 @@ import (
 	"github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
-// AddRouterForSpaceappWebController adds a router for the SpaceAppWebController to the given gin.RouterGroup.
+// AddRouterForSpaceappRestfulController adds a router for the SpaceAppWebController to the given gin.RouterGroup.
 func AddRouterForSpaceappRestfulController(
 	r *gin.RouterGroup,
 	s app.SpaceappAppService,
@@ -33,7 +33,7 @@ func AddRouterForSpaceappRestfulController(
 
 }
 
-// SpaceAppRestfulController is a struct that represents the restful controller for the space app.
+// SpaceRestfulController is a struct that represents the restful controller for the space app.
 type SpaceRestfulController struct {
 	SpaceAppController
 }

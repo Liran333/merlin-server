@@ -66,13 +66,15 @@ func (c *privacyCheck) CheckName(ctx *gin.Context) {
 func (c *privacyCheck) check(ctx *gin.Context, user primitive.Account) {
 	isAgree, err := c.userApp.IsAgreePrivacy(user)
 	if err != nil {
-		commonctl.SendError(ctx, allerror.New(allerror.ErrorFailedToGetUserInfo, "failed to get user info when checking privacy agreement", err))
+		commonctl.SendError(ctx, allerror.New(allerror.ErrorFailedToGetUserInfo,
+			"failed to get user info when checking privacy agreement", err))
 
 		ctx.Abort()
 	}
 
 	if !isAgree {
-		err = allerror.New(allerror.ErrorCodeDisAgreedPrivacy, "disagreed privacy", fmt.Errorf("disagreed privacy"))
+		err = allerror.New(allerror.ErrorCodeDisAgreedPrivacy,
+			"disagreed privacy", fmt.Errorf("disagreed privacy"))
 		commonctl.SendError(ctx, err)
 
 		ctx.Abort()

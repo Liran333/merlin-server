@@ -155,7 +155,8 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 	assert.Equal(s.T(), "testspace", space["name"])
 
 	// 查询test2名下的所有space
-	list, r, err := ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest2, "test2", &swaggerRest.SpaceRestfulApiV1SpaceGetOpts{})
+	list, r, err := ApiRest.SpaceRestfulApi.V1SpaceGet(AuthRest2, "test2",
+		&swaggerRest.SpaceRestfulApiV1SpaceGetOpts{})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -241,9 +242,10 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建模型返回400
-	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(Interal, id, swaggerInternal.ControllerRepoStatistics{
-		DownloadCount: 15,
-	})
+	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(Interal, id,
+		swaggerInternal.ControllerRepoStatistics{
+			DownloadCount: 15,
+		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 

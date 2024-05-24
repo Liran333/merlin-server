@@ -10,12 +10,14 @@ import (
 	"github.com/openmerlin/merlin-server/search/domain"
 )
 
+// CmdToSearch is the command to search
 type CmdToSearch struct {
 	SearchKey  primitive.SearchKey
 	SearchType primitive.SearchType
 	Size       primitive.Size
 }
 
+// SearchDTO is the data transfer object for search
 type SearchDTO struct {
 	ResultSet domain.SearchResult `json:"result_set"`
 }
