@@ -10,10 +10,9 @@ import (
 	"math"
 	"strings"
 
+	"github.com/openmerlin/merlin-sdk/space"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
-
-	"github.com/openmerlin/merlin-sdk/space"
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -502,7 +501,7 @@ func (req *reqToResetLabel) toCmd() (cmd app.CmdToResetLabels, err error) {
 // reqToNotifyUpdateCode
 type reqToNotifyUpdateCode struct {
 	CommitId string `json:"commit_id"`
-	SdkType  string	`json:"sdk_type"`
+	SdkType  string `json:"sdk_type"`
 }
 
 func (req *reqToNotifyUpdateCode) toCmd() (cmd app.CmdToNotifyUpdateCode, err error) {

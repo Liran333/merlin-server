@@ -8,9 +8,9 @@ package controller
 import (
 	"strconv"
 
+	"github.com/openmerlin/merlin-sdk/activityapp"
 	"golang.org/x/xerrors"
 
-	"github.com/openmerlin/merlin-sdk/activityapp"
 	"github.com/openmerlin/merlin-server/activity/app"
 	"github.com/openmerlin/merlin-server/activity/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"

@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"testing"
 
-	swaggerInternal "e2e/client_internal"
-	swaggerRest "e2e/client_rest"
 	"github.com/antihax/optional"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swaggerInternal "e2e/client_internal"
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteActivityInternal used for testing

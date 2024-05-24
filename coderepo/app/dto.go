@@ -7,6 +7,7 @@ package app
 
 import (
 	sdk "github.com/openmerlin/merlin-sdk/coderepo"
+
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
