@@ -140,9 +140,9 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 		return
 	}
 
-	e := domain.NewDatasetDeletedEvent(user, datasetId)
-	if err1 := s.msgAdapter.SendDatasetDeletedEvent(&e); err1 != nil {
-		logrus.Errorf("failed to send dataset deleted event, dataset id:%s", datasetId.Identity())
+	e := domain.NewDatasetDeletedEvent(user, dataset)
+	if err := s.msgAdapter.SendDatasetDeletedEvent(&e); err != nil {
+		logrus.Errorf("failed to send dataset deleted event, dataset id:%s, error:%s", datasetId.Identity(), err)
 	}
 
 	return

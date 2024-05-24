@@ -14,10 +14,11 @@ import (
 
 // datasetCreatedEvent
 type datasetCreatedEvent struct {
-	Time      int64  `json:"time"`
-	Owner     string `json:"owner"`
-	DatasetId string `json:"dataset_id"`
-	CreatedBy string `json:"created_by"`
+	Time        int64  `json:"time"`
+	Owner       string `json:"owner"`
+	DatasetId   string `json:"dataset_id"`
+	DatasetName string `json:"dataset_name"`
+	CreatedBy   string `json:"created_by"`
 }
 
 func (e *datasetCreatedEvent) Message() ([]byte, error) {
@@ -27,17 +28,21 @@ func (e *datasetCreatedEvent) Message() ([]byte, error) {
 // NewDatasetCreatedEvent return a datasetCreatedEvent
 func NewDatasetCreatedEvent(d *Dataset) datasetCreatedEvent {
 	return datasetCreatedEvent{
-		Time:      utils.Now(),
-		Owner:     d.Owner.Account(),
-		DatasetId: d.Id.Identity(),
-		CreatedBy: d.CreatedBy.Account(),
+		Time:        utils.Now(),
+		Owner:       d.Owner.Account(),
+		DatasetId:   d.Id.Identity(),
+		DatasetName: d.Name.MSDName(),
+		CreatedBy:   d.CreatedBy.Account(),
 	}
 }
 
 // datasesDeletedEvent
 type datasetDeletedEvent struct {
-	DatasetId string `json:"dataset_id"`
-	DeletedBy string `json:"deleted_by"`
+	Time        int64  `json:"time"`
+	Owner       string `json:"owner"`
+	DatasetId   string `json:"dataset_id"`
+	DatasetName string `json:"dataset_name"`
+	DeletedBy   string `json:"deleted_by"`
 }
 
 func (e *datasetDeletedEvent) Message() ([]byte, error) {
@@ -45,21 +50,25 @@ func (e *datasetDeletedEvent) Message() ([]byte, error) {
 }
 
 // NewDatasetDeletedEvent return a datasetDeletedEvent
-func NewDatasetDeletedEvent(user primitive.Account, datasetId primitive.Identity) datasetDeletedEvent {
+func NewDatasetDeletedEvent(user primitive.Account, d Dataset) datasetDeletedEvent {
 	return datasetDeletedEvent{
-		DatasetId: datasetId.Identity(),
-		DeletedBy: user.Account(),
+		Time:        utils.Now(),
+		Owner:       d.Owner.Account(),
+		DatasetId:   d.Id.Identity(),
+		DatasetName: d.Name.MSDName(),
+		DeletedBy:   user.Account(),
 	}
 }
 
 // datasetUpdatedEvent
 type datasetUpdatedEvent struct {
-	Time       int64  `json:"time"`
-	Repo       string `json:"repo"`
-	Owner      string `json:"owner"`
-	DatasetId  string `json:"dataset_id"`
-	UpdatedBy  string `json:"updated_by"`
-	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
+	Time        int64  `json:"time"`
+	Repo        string `json:"repo"`
+	Owner       string `json:"owner"`
+	DatasetId   string `json:"dataset_id"`
+	DatasetName string `json:"dataset_name"`
+	UpdatedBy   string `json:"updated_by"`
+	IsPriToPub  bool   `json:"is_pri_to_pub"` // private to public
 }
 
 func (e *datasetUpdatedEvent) Message() ([]byte, error) {
@@ -69,11 +78,12 @@ func (e *datasetUpdatedEvent) Message() ([]byte, error) {
 // NewDatasetUpdatedEvent return a datasetUpdatedEvent
 func NewDatasetUpdatedEvent(d *Dataset, user primitive.Account, b bool) datasetUpdatedEvent {
 	return datasetUpdatedEvent{
-		Time:       utils.Now(),
-		Repo:       d.Name.MSDName(),
-		Owner:      d.Owner.Account(),
-		DatasetId:  d.Id.Identity(),
-		UpdatedBy:  user.Account(),
-		IsPriToPub: b,
+		Time:        utils.Now(),
+		Repo:        d.Name.MSDName(),
+		Owner:       d.Owner.Account(),
+		DatasetId:   d.Id.Identity(),
+		DatasetName: d.Name.MSDName(),
+		UpdatedBy:   user.Account(),
+		IsPriToPub:  b,
 	}
 }
