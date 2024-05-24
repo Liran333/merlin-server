@@ -73,8 +73,9 @@ type SpaceAppService interface {
 	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
-	Recommend(primitive.Account) []SpaceDTO
-	Boutique(primitive.Account) []SpaceDTO
+	Recommend(primitive.Account) []repository.SpaceSummary
+	Boutique(primitive.Account) []repository.SpaceSummary
+	setSpacesStatus(spacesDTO []repository.SpaceSummary) []repository.SpaceSummary
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -403,7 +404,7 @@ func (s *spaceAppService) Update(
 	}
 
 	e := domain.NewSpaceUpdatedEvent(domain.SpaceUpdateEventParam{
-		IsPriToPub:	 isPrivateToPublic,
+		IsPriToPub:    isPrivateToPublic,
 		Space:         &space,
 		User:          user,
 		OldVisibility: oldVisibility,
@@ -566,25 +567,7 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 
 	spaceLists, total, err := s.repoAdapter.List(cmd, user, s.member)
 
-	for key, spaceList := range spaceLists {
-		if spaceList.Exception != "" {
-			spaceLists[key].Status = spaceList.Exception
-			continue
-		}
-
-		spaceId, err := primitive.NewIdentity(spaceList.Id)
-		if err != nil {
-			continue
-		}
-		app, err := s.spaceappRepository.FindBySpaceId(spaceId)
-		if err == nil {
-			spaceLists[key].Status = app.Status.AppStatus()
-			continue
-		}
-		if spaceList.IsNpu && !spaceList.CompPowerAllocated {
-			spaceLists[key].Status = primitive.NoCompQuotaException
-		}
-	}
+	spaceLists = s.setSpacesStatus(spaceLists)
 
 	return SpacesDTO{
 		Total:  total,
@@ -661,12 +644,12 @@ func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
 	return nil
 }
 
-func (s *spaceAppService) Recommend(user primitive.Account) []SpaceDTO {
-	var spacesDTO []SpaceDTO
+func (s *spaceAppService) Recommend(user primitive.Account) []repository.SpaceSummary {
+	var spacesSummary []repository.SpaceSummary
 
 	if len(config.RecommendSpaces) == 0 {
 		logrus.Errorf("missing recommend spaces config")
-		return spacesDTO
+		return spacesSummary
 	}
 
 	indexs := make([]domain.SpaceIndex, 0, len(config.RecommendSpaces))
@@ -686,18 +669,21 @@ func (s *spaceAppService) Recommend(user primitive.Account) []SpaceDTO {
 			continue
 		}
 
-		spacesDTO = append(spacesDTO, dto)
+		spaceSummary := toSpaceSummary(&dto)
+		spacesSummary = append(spacesSummary, spaceSummary)
 	}
 
-	return spacesDTO
+	s.setSpacesStatus(spacesSummary)
+
+	return spacesSummary
 }
 
-func (s *spaceAppService) Boutique(user primitive.Account) []SpaceDTO {
-	var spacesDTO []SpaceDTO
+func (s *spaceAppService) Boutique(user primitive.Account) []repository.SpaceSummary {
+	var spacesSummary []repository.SpaceSummary
 
 	if len(config.BoutiqueSpaces) == 0 {
 		logrus.Errorf("missing boutique spaces config")
-		return spacesDTO
+		return spacesSummary
 	}
 
 	indexs := make([]domain.SpaceIndex, 0, len(config.BoutiqueSpaces))
@@ -717,8 +703,35 @@ func (s *spaceAppService) Boutique(user primitive.Account) []SpaceDTO {
 			continue
 		}
 
-		spacesDTO = append(spacesDTO, dto)
+		spaceSummary := toSpaceSummary(&dto)
+		spacesSummary = append(spacesSummary, spaceSummary)
 	}
 
-	return spacesDTO
+	s.setSpacesStatus(spacesSummary)
+
+	return spacesSummary
+}
+
+func (s *spaceAppService) setSpacesStatus(spacesSummary []repository.SpaceSummary) []repository.SpaceSummary {
+	for key, spaceSummary := range spacesSummary {
+		if spaceSummary.Exception != "" {
+			spacesSummary[key].Status = spaceSummary.Exception
+			continue
+		}
+
+		spaceId, err := primitive.NewIdentity(spaceSummary.Id)
+		if err != nil {
+			continue
+		}
+		app, err := s.spaceappRepository.FindBySpaceId(spaceId)
+		if err == nil {
+			spacesSummary[key].Status = app.Status.AppStatus()
+			continue
+		}
+		if spaceSummary.IsNpu && !spaceSummary.CompPowerAllocated {
+			spacesSummary[key].Status = primitive.NoCompQuotaException
+		}
+	}
+
+	return spacesSummary
 }

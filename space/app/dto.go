@@ -131,6 +131,7 @@ type SpaceDTO struct {
 
 	IsNpu              bool `json:"is_npu"`
 	CompPowerAllocated bool `json:"comp_power_allocated"`
+	NoApplicationFile  bool `json:"no_application_file"`
 }
 
 // SpaceLabelsDTO is a struct used to represent labels of a space.
@@ -173,6 +174,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 
 		IsNpu:              space.Hardware.IsNpu(),
 		CompPowerAllocated: space.CompPowerAllocated,
+		NoApplicationFile:  space.NoApplicationFile,
 	}
 
 	if space.Desc != nil {
@@ -184,6 +186,32 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 	}
 
 	return dto
+}
+
+func toSpaceSummary(spaceDTO *SpaceDTO) repository.SpaceSummary {
+	return repository.SpaceSummary{
+		Id:            spaceDTO.Id,
+		Name:          spaceDTO.Name,
+		Desc:          spaceDTO.Desc,
+		Owner:         spaceDTO.Owner,
+		Fullname:      spaceDTO.Fullname,
+		BaseImage:     spaceDTO.BaseImage,
+		AvatarId:      spaceDTO.AvatarId,
+		UpdatedAt:     spaceDTO.UpdatedAt,
+		LikeCount:     spaceDTO.LikeCount,
+		DownloadCount: spaceDTO.DownloadCount,
+		Disable:       spaceDTO.Disable,
+		DisableReason: spaceDTO.DisableReason,
+		Labels: domain.SpaceLabels{
+			Task:      spaceprimitive.CreateTask(spaceDTO.Labels.Task),
+			License:   primitive.CreateLicense(spaceDTO.Labels.License),
+			Framework: spaceDTO.Labels.Framework,
+		},
+		IsNpu:              spaceDTO.IsNpu,
+		Exception:          spaceDTO.Exception,
+		CompPowerAllocated: spaceDTO.CompPowerAllocated,
+		NoApplicationFile:  spaceDTO.NoApplicationFile,
+	}
 }
 
 // SpacesDTO represents the data transfer object for spaces.
@@ -297,6 +325,6 @@ type CmdToResetLabels struct {
 // CmdToNotifyUpdateCode is to update no application file and commitId
 type CmdToNotifyUpdateCode struct {
 	CommitId string
-	HasHtml bool
-	HasApp  bool
+	HasHtml  bool
+	HasApp   bool
 }

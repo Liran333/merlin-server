@@ -208,11 +208,11 @@ func (req *reqToListUserSpaces) toCmd() (cmd app.CmdToListSpaces, err error) {
 
 // reqToListGlobalSpaces
 type reqToListGlobalSpaces struct {
-	Task      string `form:"task"`
-	License   string `form:"license"`
-	Hardware  string `form:"hardware"`
-	Framework string `form:"framework"`
-	HasAppFile bool  `form:"has_app_file"`
+	Task       string `form:"task"`
+	License    string `form:"license"`
+	Hardware   string `form:"hardware"`
+	Framework  string `form:"framework"`
+	HasAppFile bool   `form:"has_app_file"`
 
 	reqToListUserSpaces
 }
@@ -472,7 +472,7 @@ func (req *localEnvInfo) toCmd() string {
 
 type spaceRecommendInfo struct {
 	OwnerType int `json:"owner_type"`
-	*app.SpaceDTO
+	*repository.SpaceSummary
 }
 
 type spacesRecommendInfo struct {

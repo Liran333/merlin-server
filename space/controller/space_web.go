@@ -190,11 +190,11 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesDTO := ctl.appService.Recommend(user)
+	spacesSummary := ctl.appService.Recommend(user)
 
-	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
+	sps := make([]spaceRecommendInfo, 0, len(spacesSummary))
 
-	for _, v := range spacesDTO {
+	for _, v := range spacesSummary {
 		userInfo, err := ctl.user.GetOrgOrUser(nil, primitive.CreateAccount(v.Owner))
 		if err != nil {
 			commonctl.SendError(ctx, err)
@@ -202,8 +202,8 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 
 		s := v
 		sp := spaceRecommendInfo{
-			OwnerType: userInfo.Type,
-			SpaceDTO:  &s,
+			OwnerType:    userInfo.Type,
+			SpaceSummary: &s,
 		}
 
 		sps = append(sps, sp)
@@ -225,14 +225,14 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesDTO := ctl.appService.Boutique(user)
+	spacesSummary := ctl.appService.Boutique(user)
 
-	sps := make([]spaceRecommendInfo, 0, len(spacesDTO))
+	sps := make([]spaceRecommendInfo, 0, len(spacesSummary))
 
-	for _, v := range spacesDTO {
+	for _, v := range spacesSummary {
 		s := v
 		sp := spaceRecommendInfo{
-			SpaceDTO: &s,
+			SpaceSummary: &s,
 		}
 
 		sps = append(sps, sp)
