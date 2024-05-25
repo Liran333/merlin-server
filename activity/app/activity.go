@@ -21,7 +21,7 @@ import (
 	datasetApp "github.com/openmerlin/merlin-server/datasets/app"
 	modelApp "github.com/openmerlin/merlin-server/models/app"
 	spaceApp "github.com/openmerlin/merlin-server/space/app"
-	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
+	spaceAdditionalApp "github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
 // ActivityAppService is an interface for the activity application service.
@@ -34,15 +34,15 @@ type ActivityAppService interface {
 
 // activityAppService implements the ActivityAppService interface.
 type activityAppService struct {
-	permission      commonapp.ResourcePermissionAppService
-	codeRepoApp     coderepoapp.CodeRepoAppService
-	repoAdapter     repository.ActivitiesRepositoryAdapter
-	modelApp        modelApp.ModelAppService
-	datasetApp      datasetApp.DatasetAppService
-	spaceApp        spaceApp.SpaceAppService
-	spaceappRepo    spaceappRepository.Repository
-	msgAdapter      message.ActivityMessage
-	resourceAdapter resourceadapter.ResourceAdapter
+	permission         commonapp.ResourcePermissionAppService
+	codeRepoApp        coderepoapp.CodeRepoAppService
+	repoAdapter        repository.ActivitiesRepositoryAdapter
+	modelApp           modelApp.ModelAppService
+	datasetApp         datasetApp.DatasetAppService
+	spaceApp           spaceApp.SpaceAppService
+	spaceAdditionalApp spaceAdditionalApp.SpaceappAppService
+	msgAdapter         message.ActivityMessage
+	resourceAdapter    resourceadapter.ResourceAdapter
 }
 
 // NewActivityAppService creates a new instance of the Activity application service.
@@ -53,20 +53,20 @@ func NewActivityAppService(
 	modelApp modelApp.ModelAppService,
 	datasetApp datasetApp.DatasetAppService,
 	spaceApp spaceApp.SpaceAppService,
-	spaceappRepo spaceappRepository.Repository,
+	spaceAdditionalApp spaceAdditionalApp.SpaceappAppService,
 	msgAdapter message.ActivityMessage,
 	resourceAdapter resourceadapter.ResourceAdapter,
 ) ActivityAppService {
 	return &activityAppService{
-		permission:      permission,
-		codeRepoApp:     codeRepoApp,
-		repoAdapter:     repoAdapter,
-		modelApp:        modelApp,
-		datasetApp:      datasetApp,
-		spaceApp:        spaceApp,
-		spaceappRepo:    spaceappRepo,
-		msgAdapter:      msgAdapter,
-		resourceAdapter: resourceAdapter,
+		permission:         permission,
+		codeRepoApp:        codeRepoApp,
+		repoAdapter:        repoAdapter,
+		modelApp:           modelApp,
+		datasetApp:         datasetApp,
+		spaceApp:           spaceApp,
+		spaceAdditionalApp: spaceAdditionalApp,
+		msgAdapter:         msgAdapter,
+		resourceAdapter:    resourceAdapter,
 	}
 }
 
@@ -152,27 +152,16 @@ func (s *activityAppService) processSpaceActivity(user primitive.Account, codeRe
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
-	activity.Resource.Disable = space.Disable
-	if space.Exception != "" {
-		activity.Resource.Status = space.Exception
-	}
-	spaceId, err := primitive.NewIdentity(space.Id)
+	spaceapp, err := s.spaceAdditionalApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
-	app, err := s.spaceappRepo.FindBySpaceId(spaceId)
-	if err == nil {
-		activity.Resource.Status = app.Status.AppStatus()
-	} else {
-		if space.IsNpu && !space.CompPowerAllocated {
-			activity.Resource.Status = primitive.NoCompQuotaException
-		}
-	}
+	activity.Resource.Disable = space.Disable
 	stat := domain.Stat{
 		LikeCount:     space.LikeCount,
 		DownloadCount: space.DownloadCount,
 	}
-	additionInfo := fromSpaceDTO(space, &activity, &stat)
+	additionInfo := fromSpaceDTO(space, spaceapp, &activity, &stat)
 	return additionInfo, nil
 }
 

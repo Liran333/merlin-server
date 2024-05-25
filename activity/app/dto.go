@@ -6,6 +6,7 @@ import (
 	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	spaceapp "github.com/openmerlin/merlin-server/space/app"
+	spaceAdditionalApp "github.com/openmerlin/merlin-server/spaceapp/app"
 )
 
 // ActivitysDTO represents the DTO (Data Transfer Object) structure for activities.
@@ -65,6 +66,8 @@ type CustomerDatasetDTO struct {
 
 // CustomerSpaceDTO represents the DTO structure for customer spaces.
 type CustomerSpaceDTO struct {
+	IsNpu    bool   `json:"is_npu"`
+	Status   string `json:"status"`
 	AvatarId string `json:"space_avatar_id"`
 }
 
@@ -131,9 +134,11 @@ func fromDatasetDTO(dataset datasetapp.DatasetDTO, activity *domain.Activity, st
 }
 
 // fromSpaceDTO converts a spaceapp.SpaceDTO, domain.Activity, and domain.Stat objects to an ActivitySummaryDTO object.
-func fromSpaceDTO(space spaceapp.SpaceDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
+func fromSpaceDTO(space spaceapp.SpaceDTO, spaceapp spaceAdditionalApp.SpaceAppDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
 	additions := AdditionalDTO{CustomerSpaceDTO: CustomerSpaceDTO{
 		AvatarId: space.AvatarId,
+		IsNpu:    space.IsNpu,
+		Status:   spaceapp.Status,
 	},
 		Fullname: space.Fullname,
 	}
