@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -55,7 +55,7 @@ func (ctl *DatasetController) Create(ctx *gin.Context) {
 
 	req := reqToCreateDataset{}
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
@@ -64,7 +64,7 @@ func (ctl *DatasetController) Create(ctx *gin.Context) {
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to convert req to cmd, %w", err))
 
 		return
 	}
@@ -72,8 +72,7 @@ func (ctl *DatasetController) Create(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if v, err := ctl.appService.Create(user, &cmd); err != nil {
-		logrus.Errorf("create dataset failed, err:%v", err)
-		commonctl.SendError(ctx, err)
+		commonctl.SendError(ctx, xerrors.Errorf("create dataset failed, err:%w", err))
 	} else {
 		commonctl.SendRespOfPost(ctx, v)
 	}
@@ -94,7 +93,7 @@ func (ctl *DatasetController) Delete(ctx *gin.Context) {
 
 	datasetId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
@@ -124,21 +123,21 @@ func (ctl *DatasetController) Update(ctx *gin.Context) {
 
 	req := reqToUpdateDataset{}
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to convert req to cmd, %w", err))
 
 		return
 	}
 
 	datasetId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
@@ -160,14 +159,14 @@ func (ctl *DatasetController) Update(ctx *gin.Context) {
 func (ctl *DatasetController) parseIndex(ctx *gin.Context) (index domain.DatasetIndex, err error) {
 	index.Owner, err = primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
 
 	index.Name, err = primitive.NewMSDName(ctx.Param("name"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 	}
 
 	return

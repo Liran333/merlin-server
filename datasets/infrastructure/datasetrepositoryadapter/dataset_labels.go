@@ -11,6 +11,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/datasets/domain"
+	"golang.org/x/xerrors"
 )
 
 type datasetLabelsAdapter struct {
@@ -28,12 +29,12 @@ func (adapter *datasetLabelsAdapter) Save(datasetId primitive.Identity, labels *
 	).Updates(&do)
 
 	if v.Error != nil {
-		return v.Error
+		return xerrors.Errorf("failed to update db, %w", v.Error)
 	}
 
 	if v.RowsAffected == 0 {
 		return commonrepo.NewErrorResourceNotExists(
-			errors.New("not found"),
+			xerrors.Errorf("%w", errors.New("not found")),
 		)
 	}
 

@@ -7,6 +7,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
@@ -47,14 +48,14 @@ func (ctl *DatasetInternalController) ResetLabel(ctx *gin.Context) {
 	req := reqToResetDatasetLabel{}
 
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
 
 	datasetId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
@@ -79,7 +80,7 @@ func (ctl *DatasetInternalController) ResetLabel(ctx *gin.Context) {
 func (ctl *DatasetInternalController) GetById(ctx *gin.Context) {
 	datasetId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
@@ -104,14 +105,14 @@ func (ctl *DatasetInternalController) GetById(ctx *gin.Context) {
 func (ctl *DatasetInternalController) Update(ctx *gin.Context) {
 	datasetId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
 
 	var datasetStatistics datasetStatistics
 	if err := ctx.BindJSON(&datasetStatistics); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}

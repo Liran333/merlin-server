@@ -6,14 +6,13 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
-	"fmt"
-
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/datasets/domain"
 	"github.com/openmerlin/merlin-server/datasets/domain/repository"
 	"github.com/openmerlin/merlin-server/utils"
+	"golang.org/x/xerrors"
 )
 
 // DatasetsInternalAppService is an interface for the internal dataset application service.
@@ -45,7 +44,7 @@ func (s *datasetInternalAppService) ResetLabels(datasetId primitive.Identity, cm
 	err := s.repoAdapter.Save(datasetId, cmd)
 
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", fmt.Errorf("%s not found, %w", datasetId, err))
+		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, %w", datasetId, err))
 	}
 
 	return err
@@ -56,7 +55,7 @@ func (s *datasetInternalAppService) GetById(datasetId primitive.Identity) (Datas
 	dataset, err := s.datasetAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", fmt.Errorf("%s not found, %w", datasetId, err))
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, %w", datasetId, err))
 		}
 		return DatasetDTO{}, err
 	}
@@ -85,9 +84,9 @@ func (s *datasetInternalAppService) UpdateStatistics(datasetId primitive.Identit
 	dataset, err := s.datasetAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", fmt.Errorf("%s not found, err: %w", datasetId.Identity(), err))
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, err: %w", datasetId.Identity(), err))
 		}
-		return err
+		return xerrors.Errorf("failed to update statistics, %w", err)
 	}
 
 	dataset.DownloadCount = cmd.DownloadCount

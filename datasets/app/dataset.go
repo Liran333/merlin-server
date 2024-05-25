@@ -71,17 +71,17 @@ type datasetAppService struct {
 // Create creates a new dataset.
 func (s *datasetAppService) Create(user primitive.Account, cmd *CmdToCreateDataset) (string, error) {
 	if err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeDataset); err != nil {
-		logrus.Errorf("permission check failed, err:%v", err)
-		return "", err
+
+		return "", xerrors.Errorf("permission check failed, err:%w", err)
 	}
 
 	if err := s.datasetsCountCheck(cmd.Owner); err != nil {
-		return "", err
+		return "", xerrors.Errorf("failed to check dataset count, err:%w", err)
 	}
 
 	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
 	if err != nil {
-		return "", err
+		return "", xerrors.Errorf("failed to create dataset code repo, err:%w", err)
 	}
 
 	now := utils.Now()
@@ -93,7 +93,7 @@ func (s *datasetAppService) Create(user primitive.Account, cmd *CmdToCreateDatas
 		UpdatedAt: now,
 	}
 	if err = s.repoAdapter.Add(&dataset); err != nil {
-		return "", err
+		return "", xerrors.Errorf("failed to add dataset info, err:%w", err)
 	}
 
 	e := domain.NewDatasetCreatedEvent(&dataset)
@@ -111,6 +111,8 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
+		} else {
+			err = xerrors.Errorf("find dataset by id failed, err:%w", err)
 		}
 
 		return
@@ -123,20 +125,23 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 
 	notFound, err := commonapp.CanDeleteOrNotFound(user, &dataset, s.permission)
 	if err != nil {
+		err = xerrors.Errorf("can not delete dataset, err:%w", err)
 		return
 	}
 	if notFound {
 		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
-			fmt.Errorf("%s not found", datasetId.Identity()))
+			xerrors.Errorf("%s not found", datasetId.Identity()))
 
 		return
 	}
 
 	if err = s.codeRepoApp.Delete(dataset.RepoIndex()); err != nil {
+		err = xerrors.Errorf("failed to delete dataset code repo, err:%w", err)
 		return
 	}
 
 	if err = s.repoAdapter.Delete(dataset.Id); err != nil {
+		err = xerrors.Errorf("failed to delete dataset info, err:%w", err)
 		return
 	}
 
@@ -155,7 +160,9 @@ func (s *datasetAppService) Update(
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", err)
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("failed to find dataset by id, %w", err))
+		} else {
+			err = xerrors.Errorf("failed to find dataset by id, %w", err)
 		}
 
 		return
@@ -168,18 +175,19 @@ func (s *datasetAppService) Update(
 
 	notFound, err := commonapp.CanUpdateOrNotFound(user, &dataset, s.permission)
 	if err != nil {
+		err = xerrors.Errorf("failed to find dataset by id, %w", err)
 		return
 	}
 	if notFound {
 		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
-			fmt.Errorf("%s not found", datasetId.Identity()))
+			xerrors.Errorf("%s not found", datasetId.Identity()))
 
 		return
 	}
 
 	if dataset.IsDisable() {
 		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, "resource was disabled, cant be modified.",
-			fmt.Errorf("cant change resource to public"))
+			xerrors.Errorf("cant change resource to public"))
 		return
 	}
 
@@ -187,6 +195,7 @@ func (s *datasetAppService) Update(
 
 	b, err := s.codeRepoApp.Update(&dataset.CodeRepo, &cmd.CmdToUpdateRepo)
 	if err != nil {
+		err = xerrors.Errorf("failed to update code repo, %w", err)
 		return
 	}
 
@@ -196,6 +205,7 @@ func (s *datasetAppService) Update(
 	}
 
 	if err = s.repoAdapter.Save(&dataset); err != nil {
+		err = xerrors.Errorf("failed to save dataset info, %w", err)
 		return
 	}
 
@@ -214,7 +224,10 @@ func (s *datasetAppService) Disable(
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", err)
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+				xerrors.Errorf("failed to find dataset by id %d, %w", datasetId, err))
+		} else {
+			err = xerrors.Errorf("failed to find dataset by id %d, %w", datasetId, err)
 		}
 
 		return
@@ -227,12 +240,13 @@ func (s *datasetAppService) Disable(
 
 	err = s.canDisable(user)
 	if err != nil {
+		err = xerrors.Errorf("cant disable dataset:%d, %w", datasetId, err)
 		return
 	}
 
 	if dataset.IsDisable() {
-		logrus.Errorf("dataset %s already been disabled", dataset.Name.MSDName())
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled", fmt.Errorf("already been disabled"))
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled",
+			xerrors.Errorf("dataset %s already been disabled", dataset.Name.MSDName()))
 		return
 	}
 
@@ -241,12 +255,14 @@ func (s *datasetAppService) Disable(
 	}
 	_, err = s.codeRepoApp.Update(&dataset.CodeRepo, &cmdRepo)
 	if err != nil {
+		err = xerrors.Errorf("failed to update dataset code repo:%d, %w", datasetId, err)
 		return
 	}
 
 	cmd.toDataset(&dataset)
 
 	if err = s.repoAdapter.Save(&dataset); err != nil {
+		err = xerrors.Errorf("failed to save dataset:%d, %w", datasetId, err)
 		return
 	}
 
@@ -274,7 +290,10 @@ func (s *datasetAppService) GetByName(user primitive.Account, index *domain.Data
 	dataset, err := s.repoAdapter.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", err)
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+				xerrors.Errorf("failed to find dataset by name:%s, %w", index.Name.MSDName(), err))
+		} else {
+			err = xerrors.Errorf("failed to find dataset by name:%s, %w", index.Name.MSDName(), err)
 		}
 
 		return dto, err
@@ -282,7 +301,8 @@ func (s *datasetAppService) GetByName(user primitive.Account, index *domain.Data
 
 	if err := s.permission.CanRead(user, &dataset); err != nil {
 		if allerror.IsNoPermission(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", err)
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+				xerrors.Errorf("not have permission to get dataset:%s, %w", index.Name.MSDName(), err))
 		}
 
 		return dto, err
@@ -349,7 +369,7 @@ func (s *datasetAppService) AddLike(datasetId primitive.Identity) error {
 	// Retrieve the code repository information.
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
-		return err
+		return xerrors.Errorf("failed to find dataset by id:%d, %w", datasetId, err)
 	}
 
 	// Only proceed if the repository is public.
@@ -360,7 +380,7 @@ func (s *datasetAppService) AddLike(datasetId primitive.Identity) error {
 	}
 
 	if err := s.repoAdapter.AddLike(dataset); err != nil {
-		return err
+		return xerrors.Errorf("failed to add dataset(%d) like:, %w", datasetId, err)
 	}
 	return nil
 }
@@ -369,7 +389,7 @@ func (s *datasetAppService) DeleteLike(datasetId primitive.Identity) error {
 	// Retrieve the code repository information.
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
-		return err
+		return xerrors.Errorf("failed to find dataset by id:%d, %w", datasetId, err)
 	}
 
 	// Only proceed if the repository is public.
@@ -379,7 +399,7 @@ func (s *datasetAppService) DeleteLike(datasetId primitive.Identity) error {
 	}
 
 	if err := s.repoAdapter.DeleteLike(dataset); err != nil {
-		return err
+		return xerrors.Errorf("failed to delete dataset(%d) like:, %w", datasetId, err)
 	}
 	return nil
 }

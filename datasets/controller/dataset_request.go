@@ -17,6 +17,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/datasets/app"
 	"github.com/openmerlin/merlin-server/datasets/domain/repository"
+	"golang.org/x/xerrors"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -40,33 +41,33 @@ func (req *reqToCreateDataset) action() string {
 
 func (req *reqToCreateDataset) toCmd() (cmd app.CmdToCreateDataset, err error) {
 	if cmd.Name, err = primitive.NewMSDName(req.Name); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if cmd.Desc, err = primitive.NewMSDDesc(req.Desc); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if cmd.Owner, err = primitive.NewAccount(req.Owner); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if cmd.License, err = primitive.NewLicense(req.License); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if cmd.Visibility, err = primitive.NewVisibility(req.Visibility); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if cmd.Fullname, err = primitive.NewMSDFullname(req.Fullname); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	// always init readme
 	cmd.InitReadme = true
 
-	return
+	return cmd, nil
 }
 
 // reqToUpdateDataset
@@ -87,23 +88,23 @@ func (p *reqToUpdateDataset) action() (str string) {
 func (p *reqToUpdateDataset) toCmd() (cmd app.CmdToUpdateDataset, err error) {
 	if p.Desc != nil {
 		if cmd.Desc, err = primitive.NewMSDDesc(*p.Desc); err != nil {
-			return
+			return cmd, xerrors.Errorf("%w", err)
 		}
 	}
 
 	if p.Fullname != nil {
 		if cmd.Fullname, err = primitive.NewMSDFullname(*p.Fullname); err != nil {
-			return
+			return cmd, xerrors.Errorf("%w", err)
 		}
 	}
 
 	if p.Visibility != nil {
 		if cmd.Visibility, err = primitive.NewVisibility(*p.Visibility); err != nil {
-			return
+			return cmd, xerrors.Errorf("%w", err)
 		}
 	}
 
-	return
+	return cmd, nil
 }
 
 // reqToDisableDataset
@@ -121,10 +122,10 @@ func (p *reqToDisableDataset) toCmd() (cmd app.CmdToDisableDataset, err error) {
 	cmd.Disable = true
 
 	if cmd.DisableReason, err = primitive.NewDisableReason(p.Reason); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
-	return
+	return cmd, nil
 }
 
 // reqToListUserDatasets
@@ -141,7 +142,7 @@ func (req *reqToListUserDatasets) toCmd() (cmd app.CmdToListDatasets, err error)
 		req.SortBy = primitive.SortByGlobal
 	}
 	if cmd.SortType, err = primitive.NewSortType(req.SortBy); err != nil {
-		return
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if v := req.CountPerPage; v <= 0 || v > config.MaxCountPerPage {
@@ -154,14 +155,12 @@ func (req *reqToListUserDatasets) toCmd() (cmd app.CmdToListDatasets, err error)
 		cmd.PageNum = firstPage
 	} else {
 		if v > (math.MaxInt / cmd.CountPerPage) {
-			err = errors.New("invalid page num")
-
-			return
+			return cmd, xerrors.Errorf("%w", errors.New("invalid page num"))
 		}
 		cmd.PageNum = v
 	}
 
-	return
+	return cmd, nil
 }
 
 // reqToListGlobalDatasets
@@ -178,7 +177,7 @@ type reqToListGlobalDatasets struct {
 func (req *reqToListGlobalDatasets) toCmd() (app.CmdToListDatasets, error) {
 	cmd, err := req.reqToListUserDatasets.toCmd()
 	if err != nil {
-		return cmd, err
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	// TODO check each label if it is valid
@@ -186,7 +185,7 @@ func (req *reqToListGlobalDatasets) toCmd() (app.CmdToListDatasets, error) {
 
 	if req.License != "" {
 		if cmd.License, err = primitive.NewLicense(req.License); err != nil {
-			return cmd, err
+			return cmd, xerrors.Errorf("%w", err)
 		}
 	}
 
@@ -218,12 +217,12 @@ type restfulReqToListDatasets struct {
 func (req *restfulReqToListDatasets) toCmd() (app.CmdToListDatasets, error) {
 	cmd, err := req.reqToListGlobalDatasets.toCmd()
 	if err != nil {
-		return cmd, err
+		return cmd, xerrors.Errorf("%w", err)
 	}
 
 	if req.Owner != "" {
 		if cmd.Owner, err = primitive.NewAccount(req.Owner); err != nil {
-			return cmd, err
+			return cmd, xerrors.Errorf("%w", err)
 		}
 	}
 

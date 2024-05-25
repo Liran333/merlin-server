@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/xerrors"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
@@ -71,7 +72,7 @@ func (ctl *DatasetWebController) Get(ctx *gin.Context) {
 
 	dto, err := ctl.appService.GetByName(user, &index)
 	if err != nil {
-		commonctl.SendError(ctx, err)
+		commonctl.SendError(ctx, xerrors.Errorf("failed to get dataset, %w", err))
 
 		return
 	}
@@ -82,7 +83,7 @@ func (ctl *DatasetWebController) Get(ctx *gin.Context) {
 	if user != nil {
 		liked, err = ctl.activity.HasLike(user, datasetId)
 		if err != nil {
-			commonctl.SendError(ctx, err)
+			commonctl.SendError(ctx, xerrors.Errorf("%w", err))
 			return
 		}
 	}
@@ -116,21 +117,21 @@ func (ctl *DatasetWebController) Get(ctx *gin.Context) {
 func (ctl *DatasetWebController) List(ctx *gin.Context) {
 	var req reqToListUserDatasets
 	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to convert req to cmd, %w", err))
 
 		return
 	}
 
 	cmd.Owner, err = primitive.NewAccount(ctx.Param("owner"))
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("%w", err))
 
 		return
 	}
@@ -178,14 +179,14 @@ func (ctl *DatasetWebController) List(ctx *gin.Context) {
 func (ctl *DatasetWebController) ListGlobal(ctx *gin.Context) {
 	var req reqToListGlobalDatasets
 	if err := ctx.BindQuery(&req); err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to convert req to cmd, %w", err))
 
 		return
 	}
@@ -221,7 +222,7 @@ func (ctl *DatasetWebController) setUserInfo(dto *app.DatasetsDTO) (datasetsInfo
 		accounts[i] = primitive.CreateAccount(k)
 		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
 		if err != nil {
-			return datasetsInfo{}, err
+			return datasetsInfo{}, xerrors.Errorf("failed to get user info, %w", err)
 		}
 		v[k] = userInfo
 		i++
@@ -260,14 +261,14 @@ func (ctl *DatasetWebController) disable(ctx *gin.Context) {
 
 	req := reqToDisableDataset{}
 	if err := ctx.BindJSON(&req); err != nil {
-		commonctl.SendBadRequestBody(ctx, err)
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
 
 		return
 	}
 
 	cmd, err := req.toCmd()
 	if err != nil {
-		commonctl.SendBadRequestParam(ctx, err)
+		commonctl.SendBadRequestParam(ctx, xerrors.Errorf("failed to convert req to cmd, %w", err))
 
 		return
 	}

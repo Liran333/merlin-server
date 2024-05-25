@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq"
+	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/repository"
@@ -39,10 +40,14 @@ func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 	err := dao.db().Where(filter).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
+		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("not found")))
 	}
 
-	return err
+	if err != nil {
+		return xerrors.Errorf("failed to get dataset record, %w", err)
+	}
+
+	return nil
 }
 
 // GetLowerDatasetName retrieves a single lower dataset name from the database based on the provided filter
@@ -51,10 +56,14 @@ func (dao *daoImpl) GetLowerDatasetName(filter *datasetDO, result interface{}) e
 	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?", strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
+		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("not found")))
 	}
 
-	return err
+	if err != nil {
+		return xerrors.Errorf("failed to get lower dataset name, %w", err)
+	}
+
+	return nil
 }
 
 // GetByPrimaryKey retrieves a single record from the database based on the primary key of the row parameter.
@@ -62,10 +71,14 @@ func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
 	err := dao.db().First(row).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
+		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("not found")))
 	}
 
-	return err
+	if err != nil {
+		return xerrors.Errorf("failed to get dataset by primary key, %w", err)
+	}
+
+	return nil
 }
 
 // DeleteByPrimaryKey deletes a single record from the database based on the primary key of the row parameter.
@@ -73,10 +86,14 @@ func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
 	err := dao.db().Delete(row).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return repository.NewErrorResourceNotExists(errors.New("not found"))
+		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("not found")))
 	}
 
-	return err
+	if err != nil {
+		return xerrors.Errorf("failed to delete dataset by primary key, %w", err)
+	}
+
+	return nil
 }
 
 func likeFilter(field, value string) (query, arg string) {
@@ -119,7 +136,7 @@ func (dao *daoImpl) IncrementLikeCount(id int64, version int) error {
 	// Check if any rows were updated
 	if result.RowsAffected == 0 {
 		return commonrepo.NewErrorConcurrentUpdating(
-			errors.New("concurrent updating"),
+			xerrors.Errorf("%w", errors.New("concurrent updating")),
 		)
 	}
 	return nil
@@ -136,7 +153,7 @@ func (dao *daoImpl) DescendLikeCount(id int64, version int) error {
 
 	// Check if any rows were updated
 	if result.RowsAffected == 0 {
-		return repository.NewErrorResourceNotExists(errors.New("resource not found"))
+		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("resource not found")))
 	}
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -35,7 +36,11 @@ func (adapter *datasetAdapter) Add(dataset *domain.Dataset) error {
 
 	v := adapter.db().Create(&do)
 
-	return v.Error
+	if v.Error != nil {
+		return xerrors.Errorf("failed to add dataset to db, %w", v.Error)
+	}
+
+	return nil
 }
 
 // FindByName finds a dataset by its name.
@@ -43,7 +48,7 @@ func (adapter *datasetAdapter) FindByName(index *domain.DatasetIndex) (domain.Da
 	do := datasetDO{Owner: index.Owner.Account(), Name: index.Name.MSDName()}
 
 	if err := adapter.GetLowerDatasetName(&do, &do); err != nil {
-		return domain.Dataset{}, err
+		return domain.Dataset{}, xerrors.Errorf("failed to find dataset by name, %w", err)
 	}
 
 	return do.toDataset(), nil
@@ -54,7 +59,7 @@ func (adapter *datasetAdapter) FindById(datasetId primitive.Identity) (domain.Da
 	do := datasetDO{Id: datasetId.Integer()}
 
 	if err := adapter.GetByPrimaryKey(&do); err != nil {
-		return domain.Dataset{}, err
+		return domain.Dataset{}, xerrors.Errorf("failed to find dataset by id, %w", err)
 	}
 
 	return do.toDataset(), nil
@@ -79,12 +84,12 @@ func (adapter *datasetAdapter) Save(dataset *domain.Dataset) error {
 	).Select(`*`).Omit(fieldTask, fieldSize, fieldLanguage, fieldDomain).Updates(&do)
 
 	if v.Error != nil {
-		return v.Error
+		return xerrors.Errorf("failed to save dataset to db, %w", v.Error)
 	}
 
 	if v.RowsAffected == 0 {
 		return commonrepo.NewErrorConcurrentUpdating(
-			errors.New("concurrent updating"),
+			xerrors.Errorf("%w", errors.New("concurrent updating")),
 		)
 	}
 
@@ -99,7 +104,7 @@ func (adapter *datasetAdapter) List(opt *repository.ListOption, login primitive.
 		if login != nil {
 			members, err := member.GetByUser(login.Account())
 			if err != nil {
-				return nil, 0, err
+				return nil, 0, xerrors.Errorf("failed to get user, %w", err)
 			}
 			orgNames := make([]string, 0, len(members))
 			for _, member := range members {
@@ -116,7 +121,7 @@ func (adapter *datasetAdapter) List(opt *repository.ListOption, login primitive.
 	var total int64
 	if opt.Count {
 		if err := query.Count(&total).Error; err != nil {
-			return nil, 0, err
+			return nil, 0, xerrors.Errorf("failed to query dataset count, %w", err)
 		}
 	}
 
@@ -152,8 +157,11 @@ func (adapter *datasetAdapter) List(opt *repository.ListOption, login primitive.
 func (adapter *datasetAdapter) Count(opt *repository.ListOption) (int, error) {
 	var total int64
 	err := adapter.toQuery(opt).Count(&total).Error
+	if err != nil {
+		return int(total), xerrors.Errorf("failed to count dataset, %w", err)
+	}
 
-	return int(total), err
+	return int(total), nil
 }
 
 func (adapter *datasetAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
