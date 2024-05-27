@@ -143,6 +143,9 @@ const (
 	// ErrorVerifyEmailFailed is const
 	ErrorVerifyEmailFailed = "verify_email_failed"
 
+	// ErrorVerifyEmailGitError is const
+	ErrorVerifyEmailGitError = "verify_email_git_error"
+
 	// ErrorCodeEmailDuplicateBind is const
 	ErrorCodeEmailDuplicateBind = "email_duplicate_bind"
 

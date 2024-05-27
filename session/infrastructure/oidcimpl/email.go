@@ -11,10 +11,11 @@ import (
 	"net/http"
 	"strings"
 
+	libutils "github.com/opensourceways/server-common-lib/utils"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
-	libutils "github.com/opensourceways/server-common-lib/utils"
 )
 
 const (
@@ -92,7 +93,6 @@ func (impl *user) SendBindEmail(email, capt string) (err error) {
 
 	err = impl.sendEmail(token, bindEmail, email, capt)
 	if err != nil {
-		err = xerrors.Errorf("send bind email error: %w", err)
 		return
 	}
 
@@ -112,13 +112,16 @@ type normalEmailRes struct {
 
 func errorReturn(err error) error {
 	errinfo := err.Error()
+	if strings.Contains(errinfo, infoCodeInvalid) {
+		return allerror.New(allerror.ErrorEmailCodeInvalid, "email verify code invalid", err)
+	}
+
 	if strings.Contains(errinfo, infoCodeError) {
 		return allerror.New(allerror.ErrorEmailCodeError, "email verify code error", err)
 	}
 
-	if strings.Contains(errinfo, infoEmailDuplicateBind1) ||
-		strings.Contains(errinfo, infoEmailDuplicateBind2) {
-		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "email duplicate bind", err)
+	if strings.Contains(errinfo, infoEmailDuplicateSend) {
+		return allerror.New(allerror.ErrorCodeEmailDuplicateSend, "verify code duplicate send", err)
 	}
 
 	if strings.Contains(errinfo, infoUserDuplicateBind1) ||
@@ -126,12 +129,9 @@ func errorReturn(err error) error {
 		return allerror.New(allerror.ErrorCodeUserDuplicateBind, "user duplicate bind", err)
 	}
 
-	if strings.Contains(errinfo, infoEmailDuplicateSend) {
-		return allerror.New(allerror.ErrorCodeEmailDuplicateSend, "verify code duplicate send", err)
-	}
-
-	if strings.Contains(errinfo, infoCodeInvalid) {
-		return allerror.New(allerror.ErrorEmailCodeInvalid, "email verify code invalid", err)
+	if strings.Contains(errinfo, infoEmailDuplicateBind1) ||
+		strings.Contains(errinfo, infoEmailDuplicateBind2) {
+		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, "email duplicate bind", err)
 	}
 
 	return allerror.New(allerror.ErrorEmailError, "email bind error", err)
@@ -146,13 +146,15 @@ func (impl *user) sendEmail(token, channel, email, capt string) (err error) {
 
 	body, err := libutils.JsonMarshal(&send)
 	if err != nil {
-		err = xerrors.Errorf("send email error: %w", errorReturn(err))
+		err = xerrors.Errorf("marshal error: %w", err)
+
 		return
 	}
 
 	req, err := http.NewRequest(http.MethodPost, impl.sendEmailURL, bytes.NewBuffer(body))
 	if err != nil {
-		err = xerrors.Errorf("send email error: %w", errorReturn(err))
+		err = xerrors.Errorf("new request error: %w", err)
+
 		return
 	}
 
@@ -162,7 +164,12 @@ func (impl *user) sendEmail(token, channel, email, capt string) (err error) {
 	err = sendHttpRequest(req, &res)
 
 	if res.Status != http.StatusOK {
-		err = xerrors.Errorf("send email error: %w", errorReturn(err))
+		logrus.Errorf("authing email bind err: %v", err)
+
+		err = errorReturn(err)
+		logrus.Errorf("error code after parsing authing email bind err: %v", err)
+
+		return
 	}
 
 	return
@@ -201,7 +208,12 @@ func (impl *user) verifyBindEmail(token, email, passCode, userid string) (err er
 	err = sendHttpRequest(req, &res)
 
 	if res.Code != http.StatusOK {
-		err = xerrors.Errorf("verify bind email error: %w", errorReturn(err))
+		logrus.Errorf("authing email bind err: %v", err)
+
+		err = errorReturn(err)
+		logrus.Errorf("error code after parsing authing email bind err: %v", err)
+
+		return
 	}
 
 	return
@@ -212,14 +224,10 @@ func (impl *user) VerifyBindEmail(email, passCode, userid string) (err error) {
 	token, err := impl.getManagerToken()
 	if err != nil {
 		err = xerrors.Errorf("get manager token error: %w", err)
-		return
+		return allerror.New(allerror.ErrorCodeEmailVerifyFailed, err.Error(), err)
 	}
 
 	err = impl.verifyBindEmail(token, email, passCode, userid)
-	if err != nil {
-		err = xerrors.Errorf("verify bind email error: %w", err)
-		return
-	}
 
 	return
 }

@@ -672,13 +672,12 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 
 	if u.Email.Email() != "" {
 		e := xerrors.Errorf("user already bind another email address")
-		return allerror.New(allerror.ErrorCodeEmailDuplicateBind, e.Error(), e)
+		return allerror.New(allerror.ErrorCodeUserDuplicateBind, e.Error(), e)
 	}
 
 	err = s.oidc.VerifyBindEmail(cmd.Email.Email(), cmd.PassCode, userId)
 	if err != nil && !allerror.IsUserDuplicateBind(err) {
-		return allerror.New(allerror.ErrorCodeEmailVerifyFailed, "",
-			xerrors.Errorf("failed to verify email: %w", err))
+		return err
 	}
 
 	u.Email = cmd.Email
@@ -695,7 +694,7 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 		// create new user if user doesnot exist
 		user, err := s.git.Create(userCmd)
 		if err != nil {
-			return allerror.New(allerror.ErrorVerifyEmailFailed, "",
+			return allerror.New(allerror.ErrorVerifyEmailGitError, "",
 				xerrors.Errorf("failed to create platform user: %w", err))
 		}
 
@@ -704,15 +703,18 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	} else {
 		err = s.git.Update(userCmd)
 		if err != nil {
-			return allerror.New(allerror.ErrorVerifyEmailFailed, "",
+			return allerror.New(allerror.ErrorVerifyEmailGitError, "",
 				xerrors.Errorf("failed to update platform user: %w", err))
 		}
 	}
 	// we must create git user before save
 	// bcs we need save platform id&pwd
 	_, err = s.repo.SaveUser(&u)
+	if err != nil {
+		return xerrors.Errorf("failed to save user: %s", err)
+	}
 
-	return xerrors.Errorf("failed to save user: %w", err)
+	return nil
 }
 
 // getUserIdOfLogin get user id of login
