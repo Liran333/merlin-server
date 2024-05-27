@@ -53,7 +53,8 @@ func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 // GetLowerDatasetName retrieves a single lower dataset name from the database based on the provided filter
 // and stores it in the result parameter.
 func (dao *daoImpl) GetLowerDatasetName(filter *datasetDO, result interface{}) error {
-	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?", strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
+	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?",
+		strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(xerrors.Errorf("%w", errors.New("not found")))

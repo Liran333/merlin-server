@@ -15,7 +15,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-// DatasetsInternalAppService is an interface for the internal dataset application service.
+// DatasetInternalAppService is an interface for the internal dataset application service.
 type DatasetInternalAppService interface {
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	GetById(datasetId primitive.Identity) (DatasetDTO, error)
@@ -44,7 +44,8 @@ func (s *datasetInternalAppService) ResetLabels(datasetId primitive.Identity, cm
 	err := s.repoAdapter.Save(datasetId, cmd)
 
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, %w", datasetId, err))
+		err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+			xerrors.Errorf("%s not found, %w", datasetId, err))
 	}
 
 	return err
@@ -55,7 +56,8 @@ func (s *datasetInternalAppService) GetById(datasetId primitive.Identity) (Datas
 	dataset, err := s.datasetAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, %w", datasetId, err))
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+				xerrors.Errorf("%s not found, %w", datasetId, err))
 		}
 		return DatasetDTO{}, err
 	}
@@ -84,7 +86,8 @@ func (s *datasetInternalAppService) UpdateStatistics(datasetId primitive.Identit
 	dataset, err := s.datasetAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("%s not found, err: %w", datasetId.Identity(), err))
+			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
+				xerrors.Errorf("%s not found, err: %w", datasetId.Identity(), err))
 		}
 		return xerrors.Errorf("failed to update statistics, %w", err)
 	}

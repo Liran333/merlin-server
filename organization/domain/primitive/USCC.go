@@ -12,6 +12,7 @@ import (
 
 var usccRegexp *regexp.Regexp
 
+// Init initializes the USCC package with the provided configuration.
 func Init(cfg Config) (err error) {
 	usccRegexp, err = regexp.Compile(cfg.USCCRegexp)
 

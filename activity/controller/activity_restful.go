@@ -17,7 +17,7 @@ import (
 	userapp "github.com/openmerlin/merlin-server/user/app"
 )
 
-// AddRouteForActivityWebController adds a router for the ActivityRestfulController with the given middleware.
+// AddRouteForActivityRestfulController adds a router for the ActivityRestfulController with the given middleware.
 func AddRouteForActivityRestfulController(
 	r *gin.RouterGroup,
 	s app.ActivityAppService,

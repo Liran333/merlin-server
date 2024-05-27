@@ -48,7 +48,8 @@ func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 // GetLowerModelName retrieves a single lower model name from the database based on the provided filter
 // and stores it in the result parameter.
 func (dao *daoImpl) GetLowerModelName(filter *modelDO, result interface{}) error {
-	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?", strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
+	err := dao.db().Where("LOWER(name) = ? AND LOWER(owner) = ?",
+		strings.ToLower(filter.Name), strings.ToLower(filter.Owner)).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(errors.New("not found"))

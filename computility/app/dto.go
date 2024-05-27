@@ -9,7 +9,7 @@ import (
 	"github.com/openmerlin/merlin-server/computility/domain"
 )
 
-// CmdToUserJoin is a struct used for user join computility.
+// CmdToUserOrgOperate is a struct used for user join computility.
 type CmdToUserOrgOperate struct {
 	domain.ComputilityIndex
 }

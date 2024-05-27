@@ -99,7 +99,7 @@ type CmdToPauseSpaceApp struct {
 	IsForce bool
 }
 
-// CmdToNotifyUpdateStatus is a command to notify that status has update.
+// CmdToNotifyFailedStatus is a command to notify that status has update.
 type CmdToNotifyFailedStatus struct {
 	domain.SpaceAppIndex
 

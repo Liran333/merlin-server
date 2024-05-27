@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repository
 
 import (
@@ -6,6 +10,7 @@ import (
 	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
 )
 
+// FindOption represents the options for finding an organization certificate.
 type FindOption struct {
 	Phone                   primitive.Phone
 	OrgName                 primitive.Account
@@ -13,6 +18,7 @@ type FindOption struct {
 	UnifiedSocialCreditCode orgprimitive.USCC
 }
 
+// Certificate represents the repository for organization certificates.
 type Certificate interface {
 	Save(domain.OrgCertificate) error
 	Find(FindOption) (domain.OrgCertificate, error)

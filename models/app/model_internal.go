@@ -48,7 +48,8 @@ func (s *modelInternalAppService) ResetLabels(modelId primitive.Identity, cmd *C
 	err := s.repoAdapter.Save(modelId, cmd)
 
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
-		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, %w", modelId, err))
+		err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+			fmt.Errorf("%s not found, %w", modelId, err))
 	}
 
 	return err
@@ -59,7 +60,8 @@ func (s *modelInternalAppService) GetById(modelId primitive.Identity) (ModelDTO,
 	model, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, %w", modelId, err))
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+				fmt.Errorf("%s not found, %w", modelId, err))
 		}
 		return ModelDTO{}, err
 	}
@@ -96,7 +98,8 @@ func (s *modelInternalAppService) UpdateStatistics(modelId primitive.Identity, c
 	model, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, err: %w", modelId.Identity(), err))
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+				fmt.Errorf("%s not found, err: %w", modelId.Identity(), err))
 		}
 		return err
 	}
@@ -112,7 +115,8 @@ func (s *modelInternalAppService) UpdateUseInOpenmind(modelId primitive.Identity
 	model, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, %w", modelId, err))
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+				fmt.Errorf("%s not found, %w", modelId, err))
 		}
 		return err
 	}
@@ -122,11 +126,13 @@ func (s *modelInternalAppService) UpdateUseInOpenmind(modelId primitive.Identity
 
 	if err := s.modelAdapter.Save(&model); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", fmt.Errorf("%s not found, %w", modelId, err))
+			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
+				fmt.Errorf("%s not found, %w", modelId, err))
 		}
 
 		if commonrepo.IsErrorConcurrentUpdating(err) {
-			err = allerror.New(allerror.ErrorCodeConcurrentUpdating, "concurrent updating", fmt.Errorf("failed to update use_in_openmind, %w", err))
+			err = allerror.New(allerror.ErrorCodeConcurrentUpdating, "concurrent updating",
+				fmt.Errorf("failed to update use_in_openmind, %w", err))
 		}
 
 		return err

@@ -1,3 +1,8 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
+// Package emailimpl provides the implementation of the email interface.
 package emailimpl
 
 import (
@@ -8,10 +13,12 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain/primitive"
 )
 
+// Email is an interface for sending organization certificates.
 type Email interface {
 	Send(receiver []string, subject, content string) error
 }
 
+// NewEmailImpl creates a new instance of the email implementation.
 func NewEmailImpl(e Email, receiver []string) email.Email {
 	return &emailImpl{
 		instance: e,
@@ -24,6 +31,7 @@ type emailImpl struct {
 	receiver []string
 }
 
+// Send sends an organization certificate.
 func (impl emailImpl) Send(cert domain.OrgCertificate, image primitive.Image) error {
 	body := impl.buildEmailBody(cert, image)
 

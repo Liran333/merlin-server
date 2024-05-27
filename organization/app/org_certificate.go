@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -9,12 +13,14 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 )
 
+// OrgCertificateService is the interface definition for organization certificate service.
 type OrgCertificateService interface {
 	Certificate(*OrgCertificateCmd) error
 	GetCertification(orgName, actor primitive.Account) (OrgCertificateDTO, error)
 	DuplicateCheck(cmd OrgCertificateDuplicateCheckCmd) (bool, error)
 }
 
+// NewOrgCertificateService creates a new instance of the organization certificate service.
 func NewOrgCertificateService(
 	perm *permService,
 	email email.Email,
@@ -33,6 +39,7 @@ type orgCertificateService struct {
 	certificate repository.Certificate
 }
 
+// Certificate is a method of the orgCertificateService that handles the certificate operation.
 func (org *orgCertificateService) Certificate(cmd *OrgCertificateCmd) error {
 	err := org.perm.Check(cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
 	if err != nil {
@@ -63,6 +70,8 @@ func (org *orgCertificateService) Certificate(cmd *OrgCertificateCmd) error {
 	return org.email.Send(cmd.OrgCertificate, cmd.ImageOfCertificate)
 }
 
+// GetCertification is a method of the orgCertificateService
+// that retrieves the certificate information for an organization.
 func (org *orgCertificateService) GetCertification(orgName, actor primitive.Account) (OrgCertificateDTO, error) {
 	cert, err := org.certificate.Find(repository.FindOption{OrgName: orgName})
 	if err != nil {
@@ -89,6 +98,8 @@ func (org *orgCertificateService) GetCertification(orgName, actor primitive.Acco
 	return dto, nil
 }
 
+// DuplicateCheck is a method of the orgCertificateService
+// that performs a duplicate check for organization certificates.
 func (org *orgCertificateService) DuplicateCheck(cmd OrgCertificateDuplicateCheckCmd) (bool, error) {
 	_, err := org.certificate.DuplicateCheck(cmd)
 	if err != nil {

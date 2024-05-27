@@ -97,7 +97,8 @@ func (adapter *datasetAdapter) Save(dataset *domain.Dataset) error {
 }
 
 // List retrieves a list of dataset based on the provided options.
-func (adapter *datasetAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) ([]repository.DatasetSummary, int, error) {
+func (adapter *datasetAdapter) List(opt *repository.ListOption,
+	login primitive.Account, member orgrepo.OrgMember) ([]repository.DatasetSummary, int, error) {
 	query := adapter.toQuery(opt)
 
 	if opt.Visibility != nil {

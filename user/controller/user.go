@@ -21,6 +21,7 @@ import (
 	userrepo "github.com/openmerlin/merlin-server/user/domain/repository"
 )
 
+// PrivacyClear is an interface for the privacy clearing operation.
 type PrivacyClear interface {
 	ClearCookieAfterRevokePrivacy(*gin.Context)
 }

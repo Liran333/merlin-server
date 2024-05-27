@@ -88,8 +88,10 @@ type CmdToDeleteBranch struct {
 // CmdToCheckRepoExists is an alias type for the domain.CodeRepoIndex.
 type CmdToCheckRepoExists = domain.CodeRepoIndex
 
+// CodeRepoInfo is an alias type for the sdk.CodeRepo.
 type CodeRepoInfo = sdk.CodeRepo
 
+// ToCodeRepoInfo converts a domain.Resource to a CodeRepoInfo.
 func ToCodeRepoInfo(v domain.Resource) CodeRepoInfo {
 	return CodeRepoInfo{
 		Id:         v.RepoIndex().Id.Identity(),

@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"testing"
 
-	swaggerRest "e2e/client_rest"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	swaggerRest "e2e/client_rest"
 )
 
 // SuiteSearchQuery used for testing

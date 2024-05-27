@@ -232,7 +232,8 @@ func (s *modelAppService) Disable(
 
 	if model.IsDisable() {
 		logrus.Errorf("model %s already been disabled", model.Name.MSDName())
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled", fmt.Errorf("already been disabled"))
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled,
+			"already been disabled", fmt.Errorf("already been disabled"))
 		return
 	}
 

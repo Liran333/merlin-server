@@ -555,6 +555,7 @@ type OrgCertificate struct {
 	UnifiedSocialCreditCode orgprimitive.USCC
 }
 
+// SetProcessingStatus set processing status
 func (org *OrgCertificate) SetProcessingStatus() {
 	org.Status = orgprimitive.NewProcessingStatus()
 }

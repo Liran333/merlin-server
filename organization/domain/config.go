@@ -39,12 +39,15 @@ func (cfg *Config) SetDefault() {
 	}
 }
 
+// ConfigItems returns a slice of interface{} containing pointers to
+// the configuration items in the Config struct.
 func (cfg *Config) ConfigItems() []interface{} {
 	return []interface{}{
 		&cfg.Primitive,
 	}
 }
 
+// Init initializes the application using the configuration settings provided in the Config struct.
 func (cfg *Config) Init() error {
 	return primitive.Init(cfg.Primitive)
 }

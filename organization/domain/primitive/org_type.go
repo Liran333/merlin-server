@@ -21,6 +21,7 @@ type CertificateOrgType interface {
 	CertificateOrgType() string
 }
 
+// ValidateOrgType validates the org type
 func ValidateOrgType(v string) bool {
 	return v == typeEnterprise || v == typeSchool || v == typeResearch ||
 		v == typePublicInstitution || v == typeFoundation || v == typeOthers

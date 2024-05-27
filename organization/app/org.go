@@ -846,7 +846,8 @@ func (org *orgService) canInvite(cmd *domain.OrgInviteMemberCmd) error {
 	logrus.Infof("invite count: %d max: %d", c, org.config.MaxInviteCount)
 
 	if c >= org.config.MaxInviteCount {
-		return allerror.NewCountExceeded("exceed max invite count", xerrors.Errorf("invite count(now:%d max:%d) exceed", c, org.config.MaxInviteCount))
+		return allerror.NewCountExceeded("exceed max invite count",
+			xerrors.Errorf("invite count(now:%d max:%d) exceed", c, org.config.MaxInviteCount))
 	}
 
 	return nil

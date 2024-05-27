@@ -75,7 +75,8 @@ func ConvertReqToDeleteActivityToCmd(
 	return cmd, nil
 }
 
-// ConvertInternalReqToDeleteActivityToCmd converts an internal request to delete an activity to an app.CmdToAddActivity command.
+// ConvertInternalReqToDeleteActivityToCmd converts an internal request
+// to delete an activity to an app.CmdToAddActivity command.
 func ConvertInternalReqToDeleteActivityToCmd(req *activityapp.ReqToDeleteActivity) (app.CmdToAddActivity, error) {
 	var cmd app.CmdToAddActivity
 

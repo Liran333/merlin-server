@@ -47,7 +47,7 @@ const (
 	// ErrorCodeTokenNotFound is const
 	ErrorCodeTokenNotFound = "token_not_found"
 
-	// ErrorCodeFailedToDeleteToken is const
+	// ErrorFailedToDeleteToken is const
 	ErrorFailedToDeleteToken = "failed_to_delete_token"
 
 	// ErrorCodeRepoNotFound is const
@@ -182,7 +182,7 @@ const (
 	// ErrorBaseCase is const
 	ErrorBaseCase = "internal_error"
 
-	// ErrorMsgPublishFailed
+	// ErrorMsgPublishFailed is const
 	ErrorMsgPublishFailed = "msg_publish_failed"
 
 	// ErrorDuplicateCreating dulicate creating
@@ -526,7 +526,7 @@ func NewOverLimit(code string, msg string, err error) limitRateError {
 	return limitRateError{errorImpl: New(code, msg, err)}
 }
 
-// IsOverLimit checks if the given error is a over limit error.
+// NewExpired checks if the given error is a over limit error.
 func NewExpired(msg string, err error) errorImpl {
 	return New(ErrorCodeExpired, msg, err)
 }

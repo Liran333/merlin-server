@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package domain
 
 import (
@@ -17,6 +21,7 @@ type likeCreatedEvent struct {
 	CreatedBy string `json:"created_by"`
 }
 
+// Message returns the message representation of the likeCreatedEvent.
 func (e *likeCreatedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }

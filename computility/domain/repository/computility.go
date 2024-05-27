@@ -43,6 +43,8 @@ type ComputilityAccountRepositoryAdapter interface {
 	CancelAccount(domain.ComputilityAccountIndex) error
 }
 
+// ComputilityAccountRecordRepositoryAdapter is an interface for
+// interacting with computility account record repositories.
 type ComputilityAccountRecordRepositoryAdapter interface {
 	Add(*domain.ComputilityAccountRecord) error
 	Save(*domain.ComputilityAccountRecord) error

@@ -15,7 +15,8 @@ import (
 	"github.com/openmerlin/merlin-server/computility/domain"
 )
 
-// AddRouterForComputilityWebController adds routes to the given router group for the AddRouterForComputilityWebController.
+// AddRouterForComputilityWebController adds routes to
+// the given router group for the AddRouterForComputilityWebController.
 func AddRouterForComputilityWebController(
 	r *gin.RouterGroup,
 	s app.ComputilityAppService,
@@ -30,7 +31,8 @@ func AddRouterForComputilityWebController(
 	r.GET("/v1/computility/account/:type", l.Write, m.Read, ctl.GetComputilityAccountDetail)
 }
 
-// ComputilityWebAppService is a struct that holds the necessary dependencies for handling computility-related operations.
+// ComputilityWebController is a struct that holds the necessary dependencies for
+// handling computility-related operations.
 type ComputilityWebController struct {
 	appService     app.ComputilityAppService
 	userMiddleWare middleware.UserMiddleWare

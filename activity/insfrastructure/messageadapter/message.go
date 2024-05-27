@@ -22,7 +22,7 @@ type messageAdapter struct {
 	topics Topics
 }
 
-// SendLikeCreatedEvent
+// SendLikeCreatedEvent sends a LikeCreatedEvent message using the messageAdapter.
 func (p *messageAdapter) SendLikeCreatedEvent(e message.EventMessage) error {
 	err := send(p.topics.LikeCreate, e)
 	if err != nil {
@@ -31,7 +31,7 @@ func (p *messageAdapter) SendLikeCreatedEvent(e message.EventMessage) error {
 	return nil
 }
 
-// SendLikeDeletedEvent
+// SendLikeDeletedEvent sends a LikeDeletedEvent message using the messageAdapter.
 func (p *messageAdapter) SendLikeDeletedEvent(e message.EventMessage) error {
 	return send(p.topics.LikeDelete, e)
 }

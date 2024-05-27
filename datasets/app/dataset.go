@@ -245,7 +245,8 @@ func (s *datasetAppService) Disable(
 	}
 
 	if dataset.IsDisable() {
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled",
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled,
+			"already been disabled",
 			xerrors.Errorf("dataset %s already been disabled", dataset.Name.MSDName()))
 		return
 	}

@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package app
 
 import (
@@ -107,7 +111,8 @@ func toActivityDTO(activity *domain.Activity, additions AdditionalDTO) ActivityD
 	}
 }
 
-// fromModelDTO converts a modelapp.ModelDTO, domain.Activity, and domain.Stat objects to an ActivitySummaryDTO object.
+// fromModelDTO converts a modelapp.ModelDTO, domain.Activity,
+// and domain.Stat objects to an ActivitySummaryDTO object.
 func fromModelDTO(model modelapp.ModelDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
 	additions := AdditionalDTO{CustomerModelDTO: CustomerModelDTO{
 		Labels: model.Labels,
@@ -120,7 +125,8 @@ func fromModelDTO(model modelapp.ModelDTO, activity *domain.Activity, stat *doma
 	}
 }
 
-// fromDatasetDTO converts a datasetapp.DatasetDTO, domain.Activity, and domain.Stat objects to an ActivitySummaryDTO object.
+// fromDatasetDTO converts a datasetapp.DatasetDTO, domain.Activity,
+// and domain.Stat objects to an ActivitySummaryDTO object.
 func fromDatasetDTO(dataset datasetapp.DatasetDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
 	additions := AdditionalDTO{CustomerDatasetDTO: CustomerDatasetDTO{
 		Labels: dataset.Labels,
@@ -133,8 +139,10 @@ func fromDatasetDTO(dataset datasetapp.DatasetDTO, activity *domain.Activity, st
 	}
 }
 
-// fromSpaceDTO converts a spaceapp.SpaceDTO, domain.Activity, and domain.Stat objects to an ActivitySummaryDTO object.
-func fromSpaceDTO(space spaceapp.SpaceDTO, spaceapp spaceAdditionalApp.SpaceAppDTO, activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
+// fromSpaceDTO converts a spaceapp.SpaceDTO, domain.Activity,
+// and domain.Stat objects to an ActivitySummaryDTO object.
+func fromSpaceDTO(space spaceapp.SpaceDTO, spaceapp spaceAdditionalApp.SpaceAppDTO,
+	activity *domain.Activity, stat *domain.Stat) ActivitySummaryDTO {
 	additions := AdditionalDTO{CustomerSpaceDTO: CustomerSpaceDTO{
 		AvatarId: space.AvatarId,
 		IsNpu:    space.IsNpu,

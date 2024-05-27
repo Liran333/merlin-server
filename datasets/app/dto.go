@@ -129,13 +129,16 @@ type DatasetsDTO struct {
 	Datasets []repository.DatasetSummary `json:"datasets"`
 }
 
-// CmdToListDatasets is a type alias for repository.ListOption, representing a command to list datasets.
+// CmdToListDatasets is a type alias for repository.ListOption,
+// representing a command to list datasets.
 type CmdToListDatasets = repository.ListOption
 
-// CmdToResetLabels is a type alias for domain.DatasetsLabels, representing a command to reset dataset labels.
+// CmdToResetLabels is a type alias for domain.DatasetsLabels,
+// representing a command to reset dataset labels.
 type CmdToResetLabels = domain.DatasetLabels
 
-// CmdToUpdateStatistics is a type alias for domain.DatasetsLabels, representing a command to update datasets statistics.
+// CmdToUpdateStatistics is a type alias for domain.DatasetsLabels,
+// representing a command to update datasets statistics.
 type CmdToUpdateStatistics struct {
 	DownloadCount int `json:"download_count"`
 }

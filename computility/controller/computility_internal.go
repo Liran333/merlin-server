@@ -13,7 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/computility/app"
 )
 
-// adds routes to the given router group for the ComputilityInternalController.
+// AddRouterForComputilityInternalController routes to the given router group for the ComputilityInternalController.
 func AddRouterForComputilityInternalController(
 	r *gin.RouterGroup,
 	s app.ComputilityInternalAppService,

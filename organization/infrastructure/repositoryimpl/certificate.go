@@ -1,3 +1,7 @@
+/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
+*/
+
 package repositoryimpl
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-server/organization/domain/repository"
 )
 
+// NewCertificateImpl creates a new certificate repository implementation.
 func NewCertificateImpl(db postgresql.Impl, enc crypto.Encrypter) (*certificateRepoImpl, error) {
 	certificateTableName = db.TableName()
 	err := db.DB().AutoMigrate(&CertificateDO{})
@@ -21,6 +26,7 @@ type certificateRepoImpl struct {
 	e crypto.Encrypter
 }
 
+// Save saves an organization certificate.
 func (impl *certificateRepoImpl) Save(cert domain.OrgCertificate) error {
 	do, err := toCertificateDo(cert, impl.e)
 	if err != nil {
@@ -30,6 +36,7 @@ func (impl *certificateRepoImpl) Save(cert domain.OrgCertificate) error {
 	return impl.DB().Save(&do).Error
 }
 
+// Find finds an organization certificate.
 func (impl *certificateRepoImpl) Find(option repository.FindOption) (domain.OrgCertificate, error) {
 	do := CertificateDO{}
 	if option.OrgName != nil {
@@ -51,6 +58,7 @@ func (impl *certificateRepoImpl) Find(option repository.FindOption) (domain.OrgC
 	return do.toCertificate(impl.e)
 }
 
+// DuplicateCheck checks if the certificate already exists.
 func (impl *certificateRepoImpl) DuplicateCheck(option repository.FindOption) (domain.OrgCertificate, error) {
 	var do CertificateDO
 
@@ -82,6 +90,7 @@ func (impl *certificateRepoImpl) DuplicateCheck(option repository.FindOption) (d
 	return do.toCertificate(impl.e)
 }
 
+// DeleteByOrgName deletes the organization certificate.
 func (impl *certificateRepoImpl) DeleteByOrgName(orgName primitive.Account) error {
 	return impl.DB().Where(impl.EqualQuery(fieldOrg), orgName.Account()).Delete(&CertificateDO{}).Error
 }

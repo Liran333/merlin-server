@@ -26,6 +26,7 @@ type activityInternalAppService struct {
 	repoAdapter repository.ActivityInternalAdapter
 }
 
+// DeleteAll delete all activities.
 func (s *activityInternalAppService) DeleteAll(cmd *CmdToAddActivity) error {
 	err := s.repoAdapter.DeleteAll(cmd)
 

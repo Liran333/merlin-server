@@ -97,7 +97,7 @@ func (m *Space) SetNoApplicationFile(hasHtml, hasApp bool) {
 	if m.NoApplicationFile {
 		m.Exception = primitive.CreateException(primitive.NoApplicationFile)
 		return
-	}  
+	}
 	if !m.NoApplicationFile && m.Exception == primitive.ExceptionNoApplicationFile {
 		m.Exception = primitive.CreateException("")
 	}
@@ -113,6 +113,7 @@ type SpaceLabels struct {
 // SpaceIndex represents an index for spaces in the code repository.
 type SpaceIndex = coderepo.CodeRepoIndex
 
+// SpaceVariable represents a variable associated with a space.
 type SpaceVariable struct {
 	Id      primitive.Identity
 	SpaceId primitive.Identity
@@ -138,6 +139,7 @@ func (variable *SpaceVariable) GetVariablePath() string {
 	return variablePath + variable.SpaceId.Identity()
 }
 
+// SpaceSecret represents a secret associated with a space.
 type SpaceSecret struct {
 	Id      primitive.Identity
 	SpaceId primitive.Identity
@@ -163,6 +165,7 @@ func (secret *SpaceSecret) GetSecretPath() string {
 	return secretePath + secret.SpaceId.Identity()
 }
 
+// GetComputeType returns the compute type of the Space.
 func (s *Space) GetComputeType() primitive.ComputilityType {
 	if s.Hardware.IsNpu() {
 		return primitive.CreateComputilityType(computilityTypeNpu)
@@ -173,6 +176,7 @@ func (s *Space) GetComputeType() primitive.ComputilityType {
 	return nil
 }
 
+// GetQuotaCount returns the quota count of the Space.
 func (s *Space) GetQuotaCount() int {
 	if s.Hardware.IsNpu() {
 		return 1
@@ -183,6 +187,7 @@ func (s *Space) GetQuotaCount() int {
 	return 0
 }
 
+// IsValidHardwareType checks if the provided hardware type string is a valid hardware type.
 func IsValidHardwareType(h string) bool {
 	return strings.ToLower(h) == computilityTypeNpu || strings.ToLower(h) == computilityTypeCpu
 }

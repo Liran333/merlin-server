@@ -177,6 +177,7 @@ type OrgCertificateCmd struct {
 	ImageOfCertificate orgprimitive.Image
 }
 
+// OrgCertificateDuplicateCheckCmd represent repository.FindOption
 type OrgCertificateDuplicateCheckCmd = repository.FindOption
 
 // OrgCertificateDTO represent certificate information
@@ -189,6 +190,7 @@ type OrgCertificateDTO struct {
 	Phone                   string `json:"phone"`
 }
 
+// Masked mask sensitive information
 func (d *OrgCertificateDTO) Masked() {
 	d.UnifiedSocialCreditCode = ""
 	d.Phone = ""

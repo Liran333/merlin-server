@@ -244,7 +244,8 @@ func (req *reqToListGlobalSpaces) toCmd() (app.CmdToListSpaces, error) {
 
 	if req.Framework != "" {
 		if !spaceprimitive.IsValidFramework(req.Framework) {
-			return cmd, xerrors.Errorf("invalid framework: %s, shoulde be %s or %s", req.Framework, spaceprimitive.PyTorch, spaceprimitive.MindSpore)
+			return cmd, xerrors.Errorf("invalid framework: %s, shoulde be %s or %s",
+				req.Framework, spaceprimitive.PyTorch, spaceprimitive.MindSpore)
 		}
 		cmd.Framework = req.Framework
 	}

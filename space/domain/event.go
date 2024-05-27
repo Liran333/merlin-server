@@ -64,15 +64,15 @@ func NewSpaceDeletedEvent(user primitive.Account, space *Space) spaceDeletedEven
 
 // spaceUpdatedEvent
 type spaceUpdatedEvent struct {
-	Time       int64  `json:"time"`
-	Repo       string `json:"repo"`
-	Owner      string `json:"owner"`
-	SpaceId    string `json:"space_id"`
-	SpaceName  string `json:"space_name"`
-	UpdatedBy  string `json:"updated_by"`
-	IsPriToPub bool   `json:"is_pri_to_pub"` // private to public
-	OldVisibility  string `json:"old_visibility"`
-	NewVisibility  string `json:"new_visibility"`
+	Time          int64  `json:"time"`
+	Repo          string `json:"repo"`
+	Owner         string `json:"owner"`
+	SpaceId       string `json:"space_id"`
+	SpaceName     string `json:"space_name"`
+	UpdatedBy     string `json:"updated_by"`
+	IsPriToPub    bool   `json:"is_pri_to_pub"` // private to public
+	OldVisibility string `json:"old_visibility"`
+	NewVisibility string `json:"new_visibility"`
 }
 
 // Message serializes the spaceUpdatedEvent into a JSON byte array.
@@ -80,23 +80,24 @@ func (e *spaceUpdatedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
+// SpaceUpdateEventParam is the parameter for NewSpaceUpdatedEvent
 type SpaceUpdateEventParam struct {
-	IsPriToPub bool
-	Space *Space
-	User primitive.Account
+	IsPriToPub    bool
+	Space         *Space
+	User          primitive.Account
 	OldVisibility string
 }
 
 // NewSpaceUpdatedEvent return a spaceUpdatedEvent
 func NewSpaceUpdatedEvent(updateParam SpaceUpdateEventParam) spaceUpdatedEvent {
 	return spaceUpdatedEvent{
-		Time:       utils.Now(),
-		Repo:       updateParam.Space.Name.MSDName(),
-		Owner:      updateParam.Space.Owner.Account(),
-		SpaceId:    updateParam.Space.Id.Identity(),
-		UpdatedBy:  updateParam.User.Account(),
-		SpaceName:  updateParam.Space.Name.MSDName(),
-		IsPriToPub: updateParam.IsPriToPub,
+		Time:          utils.Now(),
+		Repo:          updateParam.Space.Name.MSDName(),
+		Owner:         updateParam.Space.Owner.Account(),
+		SpaceId:       updateParam.Space.Id.Identity(),
+		UpdatedBy:     updateParam.User.Account(),
+		SpaceName:     updateParam.Space.Name.MSDName(),
+		IsPriToPub:    updateParam.IsPriToPub,
 		OldVisibility: updateParam.OldVisibility,
 		NewVisibility: updateParam.Space.Visibility.Visibility(),
 	}
@@ -113,7 +114,7 @@ func (e *spaceEnvChangedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-// NewSpaceDeletedEvent creates a new spaceDeletedEvent instance with the given Space.
+// NewSpaceEnvChangedEvent creates a new spaceDeletedEvent instance with the given Space.
 func NewSpaceEnvChangedEvent(user primitive.Account, space *Space) spaceEnvChangedEvent {
 	return spaceEnvChangedEvent{
 		SpaceId:   space.Id.Identity(),
@@ -147,7 +148,9 @@ func NewSpaceDisableEvent(user primitive.Account, space *Space) spaceDisableEven
 }
 
 const (
-	ForceTypeStop  = "stop"
+	// ForceTypeStop represents the force type "stop".
+	ForceTypeStop = "stop"
+	// ForceTypePause represents the force type "pause".
 	ForceTypePause = "pause"
 )
 

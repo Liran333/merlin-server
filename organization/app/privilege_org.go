@@ -52,7 +52,8 @@ type PrivilegeOrg interface {
 	IsCanReadObj(action, primitive.ObjType) bool
 }
 
-// privilegeOrg struct
+// NewPrivilegeOrgService creates a new instance of PrivilegeOrg using
+// the provided dependencies and configuration.
 func NewPrivilegeOrgService(
 	org OrgService,
 	cfg privilege.PrivilegeConfig,

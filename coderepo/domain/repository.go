@@ -61,12 +61,12 @@ func (m *CodeRepo) OwnedByPerson() bool {
 	return m.Owner == m.CreatedBy
 }
 
-// Visibility returns the visibility of the code repository.
+// ResourceVisibility returns the visibility of the code repository.
 func (m *CodeRepo) ResourceVisibility() primitive.Visibility {
 	return m.Visibility
 }
 
-// License returns the license of the code repository.
+// ResourceLicense returns the license of the code repository.
 func (m *CodeRepo) ResourceLicense() primitive.License {
 	return m.License
 }

@@ -57,7 +57,8 @@ func AddRouteForSpaceWebController(
 	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
 }
 
-// SpaceWebController is a struct that holds the necessary dependencies for handling space-related operations in web controller.
+// SpaceWebController is a struct that holds the necessary dependencies for
+// handling space-related operations in web controller.
 type SpaceWebController struct {
 	SpaceController
 	modelSpaceService app.ModelSpaceAppService

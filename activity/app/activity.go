@@ -71,7 +71,8 @@ func NewActivityAppService(
 }
 
 // List retrieves a list of activities with statistics for models and spaces.
-func (s *activityAppService) List(user primitive.Account, names []primitive.Account, cmd *CmdToListActivities) (ActivitysDTO, error) {
+func (s *activityAppService) List(user primitive.Account,
+	names []primitive.Account, cmd *CmdToListActivities) (ActivitysDTO, error) {
 	activities, _, err := s.repoAdapter.List(names, cmd)
 	if err != nil {
 		e := xerrors.Errorf("failed to list activities: %w", err)
@@ -95,7 +96,8 @@ func (s *activityAppService) List(user primitive.Account, names []primitive.Acco
 }
 
 // processActivity is a method of the activityAppService that processes an activity.
-func (s *activityAppService) processActivity(user primitive.Account, activity domain.Activity) (ActivitySummaryDTO, error) {
+func (s *activityAppService) processActivity(user primitive.Account,
+	activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
 		return ActivitySummaryDTO{}, xerrors.Errorf("failed to get code repository by ID: %w", err)
@@ -117,8 +119,10 @@ func (s *activityAppService) processActivity(user primitive.Account, activity do
 }
 
 // processModelActivity is a method of the activityAppService that processes a model activity.
-func (s *activityAppService) processModelActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	model, err := s.modelApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+func (s *activityAppService) processModelActivity(user primitive.Account,
+	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	model, err := s.modelApp.GetByName(user,
+		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
@@ -132,8 +136,10 @@ func (s *activityAppService) processModelActivity(user primitive.Account, codeRe
 }
 
 // processDatasetActivity is a method of the activityAppService that processes a dataset activity.
-func (s *activityAppService) processDatasetActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	dataset, err := s.datasetApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+func (s *activityAppService) processDatasetActivity(user primitive.Account,
+	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	dataset, err := s.datasetApp.GetByName(user,
+		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
@@ -147,8 +153,10 @@ func (s *activityAppService) processDatasetActivity(user primitive.Account, code
 }
 
 // processSpaceActivity is a method of the activityAppService that processes a space activity.
-func (s *activityAppService) processSpaceActivity(user primitive.Account, codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	space, err := s.spaceApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+func (s *activityAppService) processSpaceActivity(user primitive.Account,
+	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
+	space, err := s.spaceApp.GetByName(user,
+		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}

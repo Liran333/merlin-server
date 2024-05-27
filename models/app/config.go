@@ -19,6 +19,7 @@ type Config struct {
 	RecommendModels []RecommendIndex `json:"recommend_models"`
 }
 
+// RecommendIndex is a struct that holds the configuration for max count per owner.
 type RecommendIndex struct {
 	Owner    string `json:"owner" required:"true"`
 	Reponame string `json:"reponame" required:"true"`

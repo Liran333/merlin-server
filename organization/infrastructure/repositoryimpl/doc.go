@@ -63,6 +63,7 @@ type Approve struct {
 	Version  int    `gorm:"column:version"`
 }
 
+// CertificateDO represents a certificate in the database.
 type CertificateDO struct {
 	postgresql.CommonModel
 
@@ -76,6 +77,7 @@ type CertificateDO struct {
 	Identity           string `gorm:"identity"`
 }
 
+// TableName returns the table name for the CertificateDO struct.
 func (do CertificateDO) TableName() string {
 	return certificateTableName
 }
