@@ -44,7 +44,7 @@ type SpaceApp struct {
 // SetInvalid set app status is init failed.
 func (app *SpaceApp) SetInvalid(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsInit() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -57,7 +57,7 @@ func (app *SpaceApp) SetInvalid(status appprimitive.AppStatus, reason string) er
 // StartBuilding starts the building process for the space app and sets the build log URL.
 func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 	if !app.Status.IsInit() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -70,7 +70,7 @@ func (app *SpaceApp) StartBuilding(logURL primitive.URL) error {
 // SetBuildFailed set app status is build failed.
 func (app *SpaceApp) SetBuildFailed(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsBuilding() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -83,7 +83,7 @@ func (app *SpaceApp) SetBuildFailed(status appprimitive.AppStatus, reason string
 // SetStarting sets the starting status of the space app based on the success parameter.
 func (app *SpaceApp) SetStarting() error {
 	if !app.Status.IsBuilding() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -95,7 +95,7 @@ func (app *SpaceApp) SetStarting() error {
 // SetStartFailed set app status is start failed.
 func (app *SpaceApp) SetStartFailed(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsStarting() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -116,14 +116,14 @@ func (app *SpaceApp) StartServing(appURL appprimitive.AppURL, logURL primitive.U
 		return nil
 	}
 
-	e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+	e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 }
 
 // SetRestartFailed set app status is restart failed.
 func (app *SpaceApp) SetRestartFailed(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsRestarting() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 
@@ -136,7 +136,7 @@ func (app *SpaceApp) SetRestartFailed(status appprimitive.AppStatus, reason stri
 // SetResumeFailed set app status is restart failed.
 func (app *SpaceApp) SetResumeFailed(status appprimitive.AppStatus, reason string) error {
 	if !app.Status.IsResuming() {
-		e := fmt.Errorf("old status not %s, can not set", app.Status.AppStatus())
+		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
 		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 	}
 

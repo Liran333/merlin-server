@@ -559,6 +559,181 @@
                 }
             }
         },
+        "/v1/dataset/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "get dataset info by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetInternal"
+                ],
+                "summary": "GetById",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of dataset",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.DatasetDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update dataset info by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetInternal"
+                ],
+                "summary": "Update dataset info",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of dataset",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating dataset info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.datasetStatistics"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/dataset/{id}/label": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "reset label of datasets",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetInternal"
+                ],
+                "summary": "ResetLabel",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of dataset",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToResetDatasetLabel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/relation/{id}/space": {
             "get": {
                 "security": [
@@ -1895,6 +2070,79 @@
                 }
             }
         },
+        "app.DatasetDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.DatasetLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "app.DatasetLabelsDTO": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "language": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "app.ModelDTO": {
             "type": "object",
             "properties": {
@@ -2031,6 +2279,14 @@
                 }
             }
         },
+        "controller.datasetStatistics": {
+            "type": "object",
+            "properties": {
+                "download_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "controller.modelStatistics": {
             "type": "object",
             "properties": {
@@ -2105,6 +2361,35 @@
             "properties": {
                 "org_name": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.reqToResetDatasetLabel": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "language": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

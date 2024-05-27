@@ -37,6 +37,63 @@ definitions:
       branch_name:
         type: string
     type: object
+  app.DatasetDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.DatasetLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
+  app.DatasetLabelsDTO:
+    properties:
+      domain:
+        items:
+          type: string
+        type: array
+      language:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      size:
+        type: string
+      task:
+        items:
+          type: string
+        type: array
+    type: object
+  app.DatasetsDTO:
+    properties:
+      datasets:
+        items:
+          $ref: '#/definitions/repository.DatasetSummary'
+        type: array
+      total:
+        type: integer
+    type: object
   app.MemberDTO:
     properties:
       created_at:
@@ -306,10 +363,14 @@ definitions:
     properties:
       avatar_id:
         type: string
+      dataset_labels:
+        $ref: '#/definitions/app.DatasetLabelsDTO'
       download_count:
         type: integer
       fullname:
         type: string
+      is_npu:
+        type: boolean
       like_count:
         type: integer
       model_labels:
@@ -323,6 +384,8 @@ definitions:
       resource:
         $ref: '#/definitions/app.ResourceDTO'
       space_avatar_id:
+        type: string
+      status:
         type: string
       time:
         type: integer
@@ -398,6 +461,21 @@ definitions:
     required:
     - user
     type: object
+  controller.reqToCreateDataset:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      license:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      visibility:
+        type: string
+    type: object
   controller.reqToCreateModel:
     properties:
       desc:
@@ -457,6 +535,15 @@ definitions:
   controller.reqToDisableSpace:
     properties:
       reason:
+        type: string
+    type: object
+  controller.reqToUpdateDataset:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      visibility:
         type: string
     type: object
   controller.reqToUpdateModel:
@@ -559,6 +646,8 @@ definitions:
         type: string
       name:
         type: string
+      no_application_file:
+        type: boolean
       owner:
         type: string
       owner_type:
@@ -678,6 +767,45 @@ definitions:
         type: integer
       website:
         type: string
+    type: object
+  repository.DatasetSummary:
+    properties:
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      domain:
+        items:
+          type: string
+        type: array
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      language:
+        items:
+          type: string
+        type: array
+      license:
+        type: string
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      size:
+        type: string
+      task:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: integer
     type: object
   repository.ModelSummary:
     properties:
@@ -886,6 +1014,214 @@ paths:
       summary: DeleteBranch
       tags:
       - BranchRestful
+  /v1/dataset:
+    get:
+      consumes:
+      - application/json
+      description: list global public datasets
+      parameters:
+      - description: name of dataset
+        in: query
+        maxLength: 100
+        name: name
+        type: string
+      - description: task labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: task
+        type: string
+      - description: size label
+        in: query
+        maxLength: 40
+        name: size
+        type: string
+      - description: language labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: language
+        type: string
+      - description: domain labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: domain
+        type: string
+      - description: owner of dataset
+        in: query
+        maxLength: 40
+        name: owner
+        required: true
+        type: string
+      - description: license label
+        in: query
+        maxLength: 40
+        name: license
+        type: string
+      - description: whether to calculate the total
+        enum:
+        - true
+        - false
+        in: query
+        name: count
+        type: boolean
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        enum:
+        - most_likes
+        - alphabetical
+        - most_downloads
+        - recently_updated
+        - recently_created
+        in: query
+        name: sort_by
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.DatasetsDTO'
+                msg:
+                  type: string
+              type: object
+      summary: List
+      tags:
+      - DatasetRestful
+    post:
+      consumes:
+      - application/json
+      description: create dataset
+      parameters:
+      - description: body of creating dataset
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateDataset'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - Dataset
+  /v1/dataset/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete dataset
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete
+      tags:
+      - Dataset
+    put:
+      consumes:
+      - application/json
+      description: update dataset
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body of updating dataset
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateDataset'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - Dataset
+  /v1/dataset/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get dataset
+      parameters:
+      - description: owner of dataset
+        in: path
+        maxLength: 40
+        name: owner
+        required: true
+        type: string
+      - description: name of dataset
+        in: path
+        maxLength: 100
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.DatasetDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Get
+      tags:
+      - DatasetRestful
   /v1/invite:
     delete:
       consumes:
