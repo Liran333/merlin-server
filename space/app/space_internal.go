@@ -106,7 +106,10 @@ func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, c
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", fmt.Errorf("%s not found, err: %w", spaceId.Identity(), err))
+			err = allerror.NewNotFound(
+				allerror.ErrorCodeSpaceNotFound,
+				"not found",
+				fmt.Errorf("%s not found, err: %w", spaceId.Identity(), err))
 		}
 
 		return err

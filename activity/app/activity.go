@@ -160,7 +160,8 @@ func (s *activityAppService) processSpaceActivity(user primitive.Account,
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
-	spaceapp, err := s.spaceAdditionalApp.GetByName(user, &coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
+	spaceapp, err := s.spaceAdditionalApp.GetByName(user,
+		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}

@@ -31,7 +31,8 @@ type CmdToCreateSpace struct {
 
 func (cmd *CmdToCreateSpace) toSpace() domain.Space {
 	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() == "" {
-		cmd.AvatarId = primitive.CreateAvatarId(config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))]) // #nosec G404
+		configAvatarId := config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))]	// #nosec G404
+		cmd.AvatarId = primitive.CreateAvatarId(configAvatarId)
 	}
 
 	label := domain.SpaceLabels{

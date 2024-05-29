@@ -441,7 +441,10 @@ func (s *spaceAppService) Disable(
 
 	if space.IsDisable() {
 		logrus.Errorf("space %s already been disabled", space.Name.MSDName())
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceAlreadyDisabled, "already been disabled", fmt.Errorf("already been disabled"))
+		err = allerror.NewResourceDisabled(
+			allerror.ErrorCodeResourceAlreadyDisabled,
+			"already been disabled",
+			fmt.Errorf("already been disabled"))
 		return
 	}
 

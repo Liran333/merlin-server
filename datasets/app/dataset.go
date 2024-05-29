@@ -160,7 +160,10 @@ func (s *datasetAppService) Update(
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
-			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found", xerrors.Errorf("failed to find dataset by id, %w", err))
+			err = allerror.NewNotFound(
+				allerror.ErrorCodeDatasetNotFound,
+				"not found",
+				xerrors.Errorf("failed to find dataset by id, %w", err))
 		} else {
 			err = xerrors.Errorf("failed to find dataset by id, %w", err)
 		}
