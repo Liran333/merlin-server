@@ -163,7 +163,7 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 
 	err = s.computilityApp.UserQuotaConsume(compCmd)
 	if err != nil {
-		logrus.Errorf("space create error | call api for quota consume failed: %s", err)
+		logrus.Errorf("space create error | call api for quota consume failed | user:%s ,err: %s", user, err)
 
 		return "", err
 	}
@@ -179,11 +179,12 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	}
 
 	if err = s.repoAdapter.Add(&space); err != nil {
-		logrus.Errorf("space create failed | realese user:%s quota ", user)
+		err = xerrors.Errorf("space create failed | release user:%s quota | err: %w", user, err)
+		logrus.Error(err)
 
 		ierr := s.computilityApp.UserQuotaRelease(compCmd)
 		if ierr != nil {
-			return "", xerrors.Errorf("realese user:%s quota failed after add space failed: %w", user, ierr)
+			return "", xerrors.Errorf("release user:%s quota failed after add space failed: %w", user, ierr)
 		}
 
 		if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
@@ -205,18 +206,18 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		QuotaCount: count,
 		NewSpaceId: space.Id,
 	}); err != nil {
-		logrus.Errorf("add space id supplyment failed, %s", err)
+		logrus.Errorf("add space id supplyment failed | user: %s, err: %s", user, err)
 
 		_, err = s.Delete(user, space.Id)
 		if err != nil {
-			logrus.Errorf("delete space after add space id supplyment failed, %s", err)
+			logrus.Errorf("delete space after add space id supplyment failed | user: %s, err: %s", user, err)
 
 			return "", xerrors.Errorf("add space id supplyment failed: %w", err)
 		}
 
 		err = s.computilityApp.UserQuotaRelease(compCmd)
 		if err != nil {
-			logrus.Errorf("release quota after add space id supplyment failed, %s", err)
+			logrus.Errorf("release quota after add space id supplyment failed | user: %s, err: %s", user, err)
 
 			return "", xerrors.Errorf("add space id supplyment failed: %w", err)
 		}
@@ -226,7 +227,8 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 
 	e := domain.NewSpaceCreatedEvent(&space)
 	if err1 := s.msgAdapter.SendSpaceCreatedEvent(&e); err1 != nil {
-		logrus.Errorf("failed to send space created event, space id: %s err: %s", space.Id.Identity(), err1)
+		err1 = xerrors.Errorf("failed to send space created event, space id: %s err: %s", space.Id.Identity(), err1)
+		logrus.Error(err1)
 	}
 
 	return space.Id.Identity(), nil
@@ -282,7 +284,7 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 	}
 
 	if space.Hardware.IsNpu() && space.CompPowerAllocated {
-		logrus.Infof("release quota after npu space:%s delete", spaceId.Identity())
+		logrus.Infof("release quota after user:%s npu space:%s delete", user, spaceId.Identity())
 
 		c := computilityapp.CmdToUserQuotaUpdate{
 			Index: computilitydomain.ComputilityAccountRecordIndex{
