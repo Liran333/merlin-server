@@ -34,6 +34,16 @@ swag init --parseDependency --parseInternal --instanceName web -o api -t Organiz
 
 swag init --parseDependency --parseInternal --instanceName internal -o api -t SessionInternal,UserInternal,SpaceInternal,ModelInternal,Permission,SpaceApp,ActivityInternal,ComputilityInternal,CodeRepoInternal
 ```
+update copyright comment 
+```
+copyright_comment="/*
+Copyright (c) Huawei Technologies Co., Ltd. 2023-2024. All rights reserved
+*/"
+for file in $ROOTDIR/api/*.go
+do
+    echo -e "$copyright_comment\n\n$(cat $file)" > $file
+done
+```
 
 ## run end to end test
 ```bash

@@ -157,7 +157,41 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 func (s *datasetAppService) Update(
 	user primitive.Account, datasetId primitive.Identity, cmd *CmdToUpdateDataset,
 ) (action string, err error) {
-	dataset, err := s.repoAdapter.FindById(datasetId)
+	dataset, action, err := s.getDataset(user, datasetId)
+	if err != nil {
+		return
+	}
+
+	isPrivateToPublic := dataset.IsPrivate() && cmd.Visibility.IsPublic()
+
+	b, err := s.codeRepoApp.Update(&dataset.CodeRepo, &cmd.CmdToUpdateRepo)
+	if err != nil {
+		err = xerrors.Errorf("failed to update code repo, %w", err)
+		return
+	}
+
+	b1 := cmd.toDataset(&dataset)
+	if !b && !b1 {
+		return
+	}
+
+	if err = s.repoAdapter.Save(&dataset); err != nil {
+		err = xerrors.Errorf("failed to save dataset info, %w", err)
+		return
+	}
+
+	e := domain.NewDatasetUpdatedEvent(&dataset, user, isPrivateToPublic)
+	if err1 := s.msgAdapter.SendDatasetUpdatedEvent(&e); err1 != nil {
+		logrus.Errorf("failed to send dataset updated event, dataset id:%s", datasetId.Identity())
+	}
+
+	return
+}
+
+func (s *datasetAppService) getDataset(
+	user primitive.Account,
+	datasetId primitive.Identity) (dataset domain.Dataset, action string, err error) {
+	dataset, err = s.repoAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(
@@ -189,34 +223,11 @@ func (s *datasetAppService) Update(
 	}
 
 	if dataset.IsDisable() {
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, "resource was disabled, cant be modified.",
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled,
+			"resource was disabled, cant be modified.",
 			xerrors.Errorf("cant change resource to public"))
 		return
 	}
-
-	isPrivateToPublic := dataset.IsPrivate() && cmd.Visibility.IsPublic()
-
-	b, err := s.codeRepoApp.Update(&dataset.CodeRepo, &cmd.CmdToUpdateRepo)
-	if err != nil {
-		err = xerrors.Errorf("failed to update code repo, %w", err)
-		return
-	}
-
-	b1 := cmd.toDataset(&dataset)
-	if !b && !b1 {
-		return
-	}
-
-	if err = s.repoAdapter.Save(&dataset); err != nil {
-		err = xerrors.Errorf("failed to save dataset info, %w", err)
-		return
-	}
-
-	e := domain.NewDatasetUpdatedEvent(&dataset, user, isPrivateToPublic)
-	if err1 := s.msgAdapter.SendDatasetUpdatedEvent(&e); err1 != nil {
-		logrus.Errorf("failed to send dataset updated event, dataset id:%s", datasetId.Identity())
-	}
-
 	return
 }
 

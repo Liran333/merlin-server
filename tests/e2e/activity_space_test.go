@@ -19,7 +19,7 @@ import (
 // SuiteActivitySpace used for testing activity space
 type SuiteActivitySpace struct {
 	suite.Suite
-	publicSpaceId  string
+	publicSpaceId string
 }
 
 // SetupSuite used for testing
@@ -68,10 +68,11 @@ func (s *SuiteActivitySpace) TestQueryActivityByUser() {
 		return
 	}
 	// 更新commitId
-	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdNotifyUpdateCodePut(Interal, s.publicSpaceId, swaggerInternal.ControllerReqToNotifyUpdateCode{
-		SdkType:  "gradio",
-		CommitId: "12345",
-	})
+	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdNotifyUpdateCodePut(Interal, s.publicSpaceId,
+		swaggerInternal.ControllerReqToNotifyUpdateCode{
+			SdkType:  "gradio",
+			CommitId: "12345",
+		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
@@ -107,8 +108,6 @@ func (s *SuiteActivitySpace) TearDownSuite() {
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
-	// del space app
-
 }
 
 func TestActivitySpace(t *testing.T) {
