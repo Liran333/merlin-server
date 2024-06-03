@@ -59,7 +59,7 @@ func (m *Space) IsDisable() bool {
 	return m.Disable
 }
 
-// IsValid checks if the space is valid.
+// IsNoApplicationFile checks if the space is valid.
 func (m *Space) IsNoApplicationFile() bool {
 	return m.NoApplicationFile
 }

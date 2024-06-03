@@ -24,6 +24,7 @@ type SuiteSpace struct {
 	Name1          string
 	Name2          string
 	Name3          string
+	Name4          string
 	CPU            string
 	NPU            string
 	BaseImageMSCPU string
@@ -789,6 +790,88 @@ func (s *SuiteSpace) TestSpaceMaxCount() {
 	assert.Nil(s.T(), err)
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id4)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestListRecommendSpace used for testing
+// 测试获取推荐space
+func (s *SuiteSpace) TestListRecommendSpace() {
+	// 创建space
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       s.Desc,
+		Fullname:   s.Fullname,
+		Hardware:   s.NPU,
+		License:    s.License,
+		Name:       s.Name,
+		Owner:      s.Owner,
+		Sdk:        s.Sdk,
+		Visibility: s.Visibility,
+		BaseImage:  s.BaseImageMSNPU,
+	})
+
+	id := data.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	spaceRes, r, err := ApiWeb.SpaceWebApi.V1SpaceRecommendGet(AuthRest)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	spaces := spaceRes.Data.Spaces
+
+	assert.Equal(s.T(), 1, len(spaces))
+	assert.Equal(s.T(), s.Desc, spaces[0].Desc)
+	assert.Equal(s.T(), s.Fullname, spaces[0].Fullname)
+	assert.Equal(s.T(), s.License, getString(s.T(), spaces[0].Labels.License))
+	assert.Equal(s.T(), s.Name, spaces[0].Name)
+	assert.Equal(s.T(), s.Owner, spaces[0].Owner)
+	assert.Equal(s.T(), s.BaseImageMSNPU, spaces[0].BaseImage)
+
+	// 删除space
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestListBoutiqueSpace used for testing
+// 测试获取精品space
+func (s *SuiteSpace) TestListBoutiqueSpace() {
+	// 创建space
+	space, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       s.Desc,
+		Fullname:   s.Fullname,
+		Hardware:   s.NPU,
+		License:    s.License,
+		Name:       s.Name,
+		Owner:      s.Owner,
+		Sdk:        s.Sdk,
+		Visibility: s.Visibility,
+		BaseImage:  s.BaseImageMSNPU,
+	})
+
+	id := space.Data
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	spaceRes, r, err := ApiWeb.SpaceWebApi.V1SpaceBoutiqueGet(AuthRest)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	spaces := spaceRes.Data.Spaces
+
+	assert.Equal(s.T(), 1, len(spaces))
+	assert.Equal(s.T(), s.Desc, spaces[0].Desc)
+	assert.Equal(s.T(), s.Fullname, spaces[0].Fullname)
+	assert.Equal(s.T(), s.License, getString(s.T(), spaces[0].Labels.License))
+	assert.Equal(s.T(), s.Name, spaces[0].Name)
+	assert.Equal(s.T(), s.Owner, spaces[0].Owner)
+	assert.Equal(s.T(), s.BaseImageMSNPU, spaces[0].BaseImage)
+
+	// 删除space
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

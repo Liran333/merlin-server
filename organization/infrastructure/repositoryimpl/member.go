@@ -93,6 +93,8 @@ func (impl *memberRepoImpl) GetByOrg(cmd *domain.OrgListMemberCmd) (
 
 	query := impl.DB()
 
+	query = query.Joins(`JOIN "user" ON "member".user_name = "user".name AND "user".is_agree_privacy = ?`, true)
+
 	query = query.Where(impl.EqualQuery(fieldOrg), cmd.Org)
 
 	if cmd.User != nil {

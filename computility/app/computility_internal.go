@@ -192,7 +192,7 @@ func (s *computilityInternalAppService) OrgDelete(cmd CmdToOrgDelete) (
 		return nil, err
 	}
 
-	rList := []QuotaRecallDTO{}
+	rList := make([]QuotaRecallDTO, 0)
 	for _, v := range r {
 		s, err := s.userRemoveOperate(&domain.ComputilityIndex{
 			OrgName:  v.OrgName,

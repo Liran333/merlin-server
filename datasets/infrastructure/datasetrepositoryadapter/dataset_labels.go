@@ -8,10 +8,11 @@ package datasetrepositoryadapter
 import (
 	"errors"
 
+	"golang.org/x/xerrors"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/datasets/domain"
-	"golang.org/x/xerrors"
 )
 
 type datasetLabelsAdapter struct {

@@ -121,16 +121,16 @@ SPACE_AVATAR_IDS:
   - "https://gitee.com/3"
 
 RECOMMEND_SPACES:
-  - owner: Coopermassaki
-    reponame: fighting
+  - owner: test1
+    reponame: testspace
 
 RECOMMEND_MODELS:
-  - owner: Coopermassaki
-    reponame: fuyong-test
+  - owner: test1
+    reponame: testmodel
 
 BOUTIQUE_SPACES:
-  - owner: Coopermassaki
-    reponame: fighting
+  - owner: test1
+    reponame: testspace
 
 SKIP_AVATAR_IDS:
   - "https://files.authing.co/authing-console/default-user-avatar.png"
