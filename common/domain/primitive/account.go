@@ -8,6 +8,9 @@ package primitive
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
+	"golang.org/x/xerrors"
 )
 
 // Account is an interface that represents an account.
@@ -69,6 +72,10 @@ func NewTokenName(v string) (TokenName, error) {
 
 	if !tokenConfig.regexp.MatchString(v) {
 		return nil, errors.New("token name can only contain alphabet, integer, _ and -")
+	}
+
+	if _, err := strconv.ParseInt(v, 0, 64); err == nil {
+		return nil, xerrors.Errorf("token name %s can not only contain integer", v)
 	}
 
 	return dpTokenName(v), nil
