@@ -228,6 +228,10 @@ model:
   {{- range (ds "common").FRAMEWORKS}}
     - "{{ . }}"
   {{- end }}
+    hardwares:
+  {{- range (ds "common").HARDWARES}}
+    - "{{ . }}"
+  {{- end }}
     library_name:
   {{- range (ds "common").LIBRARY_NAME}}
     - "{{ . }}"

@@ -41,5 +41,16 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 		}
 	}
 
+	cmd.Hardwares = sets.New[string]()
+	for _, hardware := range req.Hardwares {
+		if config.hardwares.Has(hardware) {
+			cmd.Hardwares.Insert(hardware)
+		}
+	}
+
+	if len(req.Languages) > 0 {
+		cmd.Languages = sets.New[string](req.Languages...)
+	}
+
 	return cmd
 }

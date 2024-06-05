@@ -73,6 +73,11 @@ LICENSES:
   - 'cc-by-4.0'
   - 'other'
 
+HARDWARES:
+  - 'CPU'
+  - 'GPU'
+  - 'NPU'
+
 PIPELINE_TAGS:
   - 'audio-classification'
   - 'automatic-speech-recognition'
@@ -107,7 +112,7 @@ FRAMEWORKS:
   - 'MindSpore'
   - 'PyTorch'
 LIBRARY_NAME:
-  - 'openMind'
+  - 'openmind'
 
 ACCEPTABLE_AVATAR_DOMAINS:
   - "https://gitee.com"

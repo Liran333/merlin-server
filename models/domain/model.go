@@ -48,6 +48,8 @@ type ModelLabels struct {
 	LibraryName string           // library label
 	Others      sets.Set[string] // other labels
 	Frameworks  sets.Set[string] // framework labels
+	Hardwares   sets.Set[string] // hardware label
+	Languages   sets.Set[string] // language labels
 }
 
 // ModelIndex represents the index for models in the code repository.

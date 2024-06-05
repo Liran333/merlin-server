@@ -28,6 +28,8 @@ const (
 	fieldCreatedAt     = "created_at"
 	fieldVisibility    = "visibility"
 	fieldFrameworks    = "frameworks"
+	fieldHardwares     = "hardwares"
+	fileLanguages      = "languages"
 	fieldLikeCount     = "like_count"
 	filedLibraryName   = "library_name"
 	fieldDownloadCount = "download_count"
@@ -79,6 +81,13 @@ func toLabelsDO(labels *domain.ModelLabels) modelDO {
 		do.Frameworks = labels.Frameworks.UnsortedList()
 	}
 
+	if labels.Hardwares != nil {
+		do.Hardwares = labels.Hardwares.UnsortedList()
+	}
+
+	if labels.Languages != nil {
+		do.Languages = labels.Languages.UnsortedList()
+	}
 	return do
 }
 
@@ -104,6 +113,8 @@ type modelDO struct {
 	LibraryName string         `gorm:"column:library_name"`
 	Others      pq.StringArray `gorm:"column:others;type:text[];default:'{}';index:others,type:gin"`
 	Frameworks  pq.StringArray `gorm:"column:frameworks;type:text[];default:'{}';index:frameworks,type:gin"`
+	Hardwares   pq.StringArray `gorm:"column:hardwares;type:text[];default:'{}';index:hardwares,type:gin"`
+	Languages   pq.StringArray `gorm:"column:languages;type:text[];default:'{}';index:languages,type:gin"`
 
 	// for openmind
 	UseInOpenmind string `gorm:"column:use_in_openmind"`
@@ -140,6 +151,8 @@ func (do *modelDO) toModel() domain.Model {
 			LibraryName: do.LibraryName,
 			Others:      sets.New[string](do.Others...),
 			Frameworks:  sets.New[string](do.Frameworks...),
+			Languages:   sets.New[string](do.Languages...),
+			Hardwares:   sets.New[string](do.Hardwares...),
 		},
 	}
 }

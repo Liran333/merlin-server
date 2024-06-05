@@ -84,6 +84,8 @@ type ModelLabelsDTO struct {
 	License     string   `json:"license"`
 	Frameworks  []string `json:"frameworks"`
 	LibraryName string   `json:"library_name"`
+	Hardwares   []string `json:"hardwares"`
+	Languages   []string `json:"languages"`
 }
 
 func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
@@ -95,6 +97,8 @@ func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
 		License:     model.License.License(),
 		Frameworks:  labels.Frameworks.UnsortedList(),
 		LibraryName: labels.LibraryName,
+		Hardwares:   labels.Hardwares.UnsortedList(),
+		Languages:   labels.Languages.UnsortedList(),
 	}
 }
 
