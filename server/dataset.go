@@ -28,7 +28,7 @@ func initDataset(cfg *config.Config, services *allServices) error {
 		messageadapter.MessageAdapter(&cfg.Dataset.Topics),
 		services.codeRepoApp,
 		datasetrepositoryadapter.DatasetAdapter(),
-		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member)),
 		services.disable,
 		services.userApp,
 	)

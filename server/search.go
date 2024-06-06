@@ -29,7 +29,7 @@ func setRouterOfSearchWeb(rg *gin.RouterGroup, cfg *config.Config, services *all
 				datasetrepositoryadapter.DatasetAdapter(),
 				spacerepositoryadapter.SpaceAdapter(),
 				services.userRepo,
-				orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+				orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member)),
 			),
 		),
 		services.operationLog,

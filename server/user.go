@@ -28,12 +28,12 @@ import (
 func initUser(cfg *config.Config, services *allServices) {
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
-	token := userrepoimpl.NewTokenRepo(postgresql.DAO(cfg.User.Tables.Token))
+	token := userrepoimpl.NewTokenRepo(postgresql.DAO(cfg.User.Domain.Tables.Token))
 
-	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User),
-		crypto.NewEncryption(cfg.User.Key))
+	services.userRepo = userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Domain.Tables.User),
+		crypto.NewEncryption(cfg.User.Domain.Key))
 
-	member := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
+	member := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member))
 
 	session := sessionapp.NewSessionClearAppService(
 		loginrepositoryadapter.LoginAdapter(),
@@ -48,7 +48,7 @@ func initUser(cfg *config.Config, services *allServices) {
 		loginrepositoryadapter.LoginAdapter(),
 		oidcimpl.NewAuthingUser(),
 		session,
-		&cfg.User,
+		&cfg.User.Domain,
 	)
 }
 

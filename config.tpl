@@ -1,19 +1,22 @@
 organization:
-  invite_expiry: {{(ds "data").INVITE_EXPIRY }}
-  default_role: {{(ds "data").DEFAULT_ROLE }}
-  tables:
-    invite: "invite"
-    member: "member"
-    certificate: "certificate"
-  certificate_email:
-      - xxxx@xxxx.com
-  primitive:
-      uscc_regexp: (^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$)|(^[A-Za-z0-9]{8}-[A-Za-z0-9]$)|(^[A-Za-z0-9]{9}$)
-  topics:
-    org_user_joined: org_user_joined
-    org_user_removed: org_user_removed
-    org_deleted: org_deleted
-  max_invite_count: {{(ds "common").MAX_INVITE }}
+  controller:
+    max_avatar_file_size: {{ (ds "common").MAX_AVATAR_FILE_SIZE }}
+  domain:
+    invite_expiry: {{(ds "data").INVITE_EXPIRY }}
+    default_role: {{(ds "data").DEFAULT_ROLE }}
+    tables:
+      invite: "invite"
+      member: "member"
+      certificate: "certificate"
+    certificate_email:
+        - xxxx@xxxx.com
+    primitive:
+        uscc_regexp: (^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$)|(^[A-Za-z0-9]{8}-[A-Za-z0-9]$)|(^[A-Za-z0-9]{9}$)
+    topics:
+      org_user_joined: org_user_joined
+      org_user_removed: org_user_removed
+      org_deleted: org_deleted
+    max_invite_count: {{(ds "common").MAX_INVITE }}
 
 computility:
   tables:
@@ -280,11 +283,21 @@ activity:
     like_delete: like_delete
 
 user:
-  tables:
-    user: user
-    token: token
-  key: {{(ds "secret").data.USER_ENC_KEY }}
-  max_token_per_user: {{ (ds "common").MAX_TOKEN }}
+  domain:
+    tables:
+      user: user
+      token: token
+    key: {{(ds "secret").data.USER_ENC_KEY }}
+    max_token_per_user: {{ (ds "common").MAX_TOKEN }}
+    obs_bucket:  {{ (ds "data").USER_OBS_BUCKET }}
+    cdn_endpoint: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
+  controller:
+    max_avatar_file_size: {{ (ds "common").MAX_AVATAR_FILE_SIZE }}
+    
+obs:
+  endpoint: {{(ds "secret").data.OBS_ENDPOINT }}
+  access_key: {{(ds "secret").data.OBS_ACCESS_KEY }}
+  secret_key: {{(ds "secret").data.OBS_SECRET_KEY }}
 
 coderepo:
   primitive:

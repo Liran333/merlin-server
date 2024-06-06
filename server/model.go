@@ -28,7 +28,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 		messageadapter.MessageAdapter(&cfg.Model.Topics),
 		services.codeRepoApp,
 		modelrepositoryadapter.ModelAdapter(),
-		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member)),
 		services.disable,
 		services.userApp,
 	)

@@ -19,19 +19,20 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/computility"
 	"github.com/openmerlin/merlin-server/datasets"
 	"github.com/openmerlin/merlin-server/models"
-	orgdomain "github.com/openmerlin/merlin-server/organization/domain"
+	"github.com/openmerlin/merlin-server/organization"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
 	"github.com/openmerlin/merlin-server/organization/domain/privilege"
 	"github.com/openmerlin/merlin-server/other"
 	"github.com/openmerlin/merlin-server/session"
 	"github.com/openmerlin/merlin-server/space"
 	spaceapp "github.com/openmerlin/merlin-server/spaceapp"
-	userdomain "github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/user"
 	"github.com/openmerlin/merlin-server/utils"
 )
 
@@ -56,8 +57,9 @@ type Config struct {
 	NeedTokenForEachAPI bool `json:"need_token_for_each_api"`
 
 	Git          gitea.Config         `json:"gitea"`
-	Org          orgdomain.Config     `json:"organization"`
-	User         userdomain.Config    `json:"user"`
+	Obs          obs.Config           `json:"obs"`
+	Org          organization.Config  `json:"organization"`
+	User         user.Config          `json:"user"`
 	Vault        securestorage.Config `json:"vault"`
 	Redis        redislib.Config      `json:"redis"`
 	Kafka        kafka.Config         `json:"kafka"`
@@ -85,9 +87,13 @@ func (cfg *Config) Init() error {
 		return err
 	}
 
-	if err := cfg.Org.Init(); err != nil {
+	if err := cfg.Org.Domain.Init(); err != nil {
 		return err
 	}
+
+	cfg.Org.Init()
+
+	cfg.User.Init()
 
 	cfg.Model.Init()
 

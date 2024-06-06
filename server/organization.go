@@ -26,32 +26,32 @@ import (
 
 // initOrg depends on initUser
 func initOrg(cfg *config.Config, services *allServices) error {
-	org := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key))
+	org := userrepoimpl.NewUserRepo(postgresql.DAO(cfg.User.Domain.Tables.User), crypto.NewEncryption(cfg.User.Domain.Key))
 
-	orgMember := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
+	orgMember := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member))
 
-	invitation := orgrepoimpl.NewInviteRepo(postgresql.DAO(cfg.Org.Tables.Invite))
+	invitation := orgrepoimpl.NewInviteRepo(postgresql.DAO(cfg.Org.Domain.Tables.Invite))
 
 	permission := app.NewPermService(&cfg.Permission, orgMember)
 
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
 	certRepo, err := orgrepoimpl.NewCertificateImpl(
-		postgresql.DAO(cfg.Org.Tables.Certificate),
-		crypto.NewEncryption(cfg.User.Key),
+		postgresql.DAO(cfg.Org.Domain.Tables.Certificate),
+		crypto.NewEncryption(cfg.User.Domain.Key),
 	)
 	if err != nil {
 		return err
 	}
 
 	services.orgCertificateApp = app.NewOrgCertificateService(
-		permission, emailimpl.NewEmailImpl(email.GetEmailInst(), cfg.Org.CertificateEmail), certRepo,
+		permission, emailimpl.NewEmailImpl(email.GetEmailInst(), cfg.Org.Domain.CertificateEmail), certRepo,
 	)
 
 	services.orgApp = app.NewOrgService(
 		services.userApp, org, orgMember,
-		invitation, permission, &cfg.Org, git,
-		messageadapter.MessageAdapter(&cfg.Org.Topics), certRepo,
+		invitation, permission, &cfg.Org.Domain, git,
+		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo,
 	)
 
 	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu, app.AllocNpu)

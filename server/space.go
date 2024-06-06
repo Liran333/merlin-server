@@ -38,7 +38,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		securestoragadapter.SecureStorageAdapter(securestorage.GetClient(), cfg.Vault.BasePath),
 		spacerepositoryadapter.SpaceAdapter(),
 		services.npuGatekeeper,
-		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member)),
+		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member)),
 		services.disable,
 		services.computilityApp,
 		services.spaceappApp,

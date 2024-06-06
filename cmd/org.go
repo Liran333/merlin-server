@@ -37,19 +37,19 @@ var orgAppService orgapp.OrgService
 
 func initorg() {
 	invite := orgrepoimpl.NewInviteRepo(
-		postgresql.DAO(cfg.Org.Tables.Invite),
+		postgresql.DAO(cfg.Org.Domain.Tables.Invite),
 	)
 
 	member := orgrepoimpl.NewMemberRepo(
-		postgresql.DAO(cfg.Org.Tables.Member),
+		postgresql.DAO(cfg.Org.Domain.Tables.Member),
 	)
 	p := orgapp.NewPermService(&cfg.Permission, member)
 
 	user := userrepoimpl.NewUserRepo(
-		postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key),
+		postgresql.DAO(cfg.User.Domain.Tables.User), crypto.NewEncryption(cfg.User.Domain.Key),
 	)
 	t := userrepoimpl.NewTokenRepo(
-		postgresql.DAO(cfg.User.Tables.Token),
+		postgresql.DAO(cfg.User.Domain.Tables.Token),
 	)
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 
@@ -59,15 +59,15 @@ func initorg() {
 	)
 
 	certRepo, _ := orgrepoimpl.NewCertificateImpl(
-		postgresql.DAO(cfg.Org.Tables.Certificate),
-		crypto.NewEncryption(cfg.User.Key),
+		postgresql.DAO(cfg.Org.Domain.Tables.Certificate),
+		crypto.NewEncryption(cfg.User.Domain.Key),
 	)
 
 	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
-		oidcimpl.NewAuthingUser(), session, &cfg.User)
+		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain)
 
-	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org, git,
-		messageadapter.MessageAdapter(&cfg.Org.Topics), certRepo,
+	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org.Domain, git,
+		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo,
 	)
 }
 

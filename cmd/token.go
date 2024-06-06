@@ -36,14 +36,14 @@ var userrepo repository.User
 
 func inittoken() {
 	userrepo = userrepoimpl.NewUserRepo(
-		postgresql.DAO(cfg.User.Tables.User), crypto.NewEncryption(cfg.User.Key),
+		postgresql.DAO(cfg.User.Domain.Tables.User), crypto.NewEncryption(cfg.User.Domain.Key),
 	)
 
-	member := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Tables.Member))
+	member := orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member))
 
 	git := usergit.NewUserGit(giteauser.GetClient(gitea.Client()))
 	t := userrepoimpl.NewTokenRepo(
-		postgresql.DAO(cfg.User.Tables.Token),
+		postgresql.DAO(cfg.User.Domain.Tables.Token),
 	)
 
 	session := sessionapp.NewSessionClearAppService(
@@ -52,7 +52,7 @@ func inittoken() {
 	)
 
 	userAppService = userapp.NewUserService(
-		userrepo, member, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session, &cfg.User)
+		userrepo, member, git, t, loginrepositoryadapter.LoginAdapter(), oidcimpl.NewAuthingUser(), session, &cfg.User.Domain)
 }
 
 var tokenCmd = &cobra.Command{
