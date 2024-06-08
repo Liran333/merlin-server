@@ -8,6 +8,7 @@ package repositoryadapter
 import (
 	"errors"
 
+	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 )
@@ -18,7 +19,7 @@ type buildLogAdapterImpl struct {
 
 func (adapter *buildLogAdapterImpl) Save(log *domain.SpaceAppBuildLog) error {
 	v := adapter.dao.DB().Model(
-		&spaceappDO{Id: log.AppId},
+		&spaceappDO{Id: log.AppId.Integer()},
 	).Select(
 		fieldAllBuildLog,
 	).Updates(&spaceappDO{AllBuildLog: log.Logs})
@@ -34,4 +35,17 @@ func (adapter *buildLogAdapterImpl) Save(log *domain.SpaceAppBuildLog) error {
 	}
 
 	return nil
+}
+
+func (adapter *buildLogAdapterImpl) Find(appId primitive.Identity) (
+	log domain.SpaceAppBuildLog, err error,
+) {
+	do := spaceappDO{Id: appId.Integer()}
+
+	if err = adapter.dao.GetByPrimaryKey(&do); err == nil {
+		log.Logs = do.AllBuildLog
+		log.AppId = appId
+	}
+
+	return
 }

@@ -22,7 +22,7 @@ type SpaceAppIndex struct {
 
 // SpaceApp represents a space app.
 type SpaceApp struct {
-	Id int64
+	Id primitive.Identity
 
 	SpaceAppIndex
 
@@ -32,26 +32,11 @@ type SpaceApp struct {
 	ResumedAt   int64
 	RestartedAt int64
 
-	AppURL    appprimitive.AppURL
-	AppLogURL primitive.URL
-
-	AllBuildLog string
+	AppURL      appprimitive.AppURL
+	AppLogURL   primitive.URL
 	BuildLogURL primitive.URL
 
 	Version int
-}
-
-// SetInvalid set app status is init failed.
-func (app *SpaceApp) SetInvalid(status appprimitive.AppStatus, reason string) error {
-	if !app.Status.IsInit() {
-		e := fmt.Errorf("old status is %s, can not set", app.Status.AppStatus())
-		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
-	}
-
-	app.Status = status
-	app.Reason = reason
-
-	return nil
 }
 
 // StartBuilding starts the building process for the space app and sets the build log URL.
@@ -146,12 +131,6 @@ func (app *SpaceApp) SetResumeFailed(status appprimitive.AppStatus, reason strin
 	return nil
 }
 
-// SpaceAppBuildLog space app build log
-type SpaceAppBuildLog struct {
-	AppId int64
-	Logs  string
-}
-
 // RestartService restart the service for space app with oldRestartTime
 func (app *SpaceApp) RestartService() error {
 	now := utils.Now()
@@ -240,4 +219,10 @@ func (app *SpaceApp) GetFailedReason() string {
 		return ""
 	}
 	return app.Reason
+}
+
+// SpaceAppBuildLog is the value object of log
+type SpaceAppBuildLog struct {
+	AppId primitive.Identity
+	Logs  string
 }

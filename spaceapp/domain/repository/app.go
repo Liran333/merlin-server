@@ -16,11 +16,13 @@ type Repository interface {
 	Remove(primitive.Identity) error
 	Find(*domain.SpaceAppIndex) (domain.SpaceApp, error)
 	Save(*domain.SpaceApp) error
+	SaveWithBuildLog(*domain.SpaceApp, *domain.SpaceAppBuildLog) error
 	FindBySpaceId(primitive.Identity) (domain.SpaceApp, error)
 	DeleteBySpaceId(primitive.Identity) error
 }
 
 // SpaceAppBuildLogAdapter is an interface that defines methods for managing space app build logs.
 type SpaceAppBuildLogAdapter interface {
+	Find(primitive.Identity) (domain.SpaceAppBuildLog, error)
 	Save(*domain.SpaceAppBuildLog) error
 }

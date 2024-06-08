@@ -21,12 +21,11 @@ type CmdToNotifyBuildIsStarted struct {
 	LogURL primitive.URL
 }
 
-// CmdToNotifyBuildIsDone is a command to notify that the build has finished.
-type CmdToNotifyBuildIsDone struct {
+// CmdToNotifyStarting is a command to notify that the build has finished.
+type CmdToNotifyStarting struct {
 	domain.SpaceAppIndex
 
-	Logs    string
-	Success bool
+	Logs string
 }
 
 // CmdToNotifyServiceIsStarted is a command to notify that the service has started.
@@ -66,7 +65,7 @@ func toSpaceNoCompQuotaDTO(space *spacedomain.Space) SpaceAppDTO {
 
 func toSpaceAppDTO(app *domain.SpaceApp) SpaceAppDTO {
 	dto := SpaceAppDTO{
-		Id:     app.Id,
+		Id:     app.Id.Integer(),
 		Status: app.Status.AppStatus(),
 		Reason: app.GetFailedReason(),
 	}
@@ -105,4 +104,11 @@ type CmdToNotifyFailedStatus struct {
 
 	Reason string
 	Status appprimitive.AppStatus
+
+	Logs string
+}
+
+// BuildLogsDTO
+type BuildLogsDTO struct {
+	Logs string `json:"logs"`
 }

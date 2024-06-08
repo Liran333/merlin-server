@@ -109,13 +109,13 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppBuilding(ctx *gin.Context) 
 // @Summary  NotifySpaceAppStarting
 // @Description  notify space app build is starting
 // @Tags     SpaceApp
-// @Param    body  body  reqToCreateSpaceApp  true  "body"
+// @Param    body  body  reqToNotifyStarting  true  "body"
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
 // @Router   /v1/space-app/starting [put]
 func (ctl *SpaceAppInternalController) NotifySpaceAppStarting(ctx *gin.Context) {
-	req := reqToCreateSpaceApp{}
+	req := reqToNotifyStarting{}
 
 	if err := ctx.BindJSON(&req); err != nil {
 		commonctl.SendBadRequestBody(ctx, err)
@@ -130,7 +130,7 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppStarting(ctx *gin.Context) 
 		return
 	}
 
-	if err := ctl.appService.NotifyIsStarting(&cmd); err != nil {
+	if err := ctl.appService.NotifyStarting(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -193,10 +193,6 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppFailedStatus(ctx *gin.Conte
 	}
 
 	switch cmd.Status {
-	case appprimitive.AppStatusInvalid:
-		if err := ctl.appService.NotifyIsInvalid(&cmd); err != nil {
-			commonctl.SendError(ctx, err)
-		}
 	case appprimitive.AppStatusBuildFailed:
 		if err := ctl.appService.NotifyIsBuildFailed(&cmd); err != nil {
 			commonctl.SendError(ctx, err)

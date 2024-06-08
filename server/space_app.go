@@ -39,6 +39,7 @@ func initSpaceApp(cfg *config.Config, services *allServices) error {
 		services.computilityApp,
 		spacerepositoryadapter.ModelSpaceRelationAdapter(),
 		modelrepositoryadapter.ModelAdapter(),
+		repositoryadapter.BuildLogAdapter(),
 	)
 
 	return nil

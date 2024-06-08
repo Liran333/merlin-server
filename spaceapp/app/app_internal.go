@@ -34,10 +34,9 @@ func newSpaceAppNotFound(err error) error {
 type SpaceappInternalAppService interface {
 	Create(cmd *CmdToCreateApp) error
 
-	NotifyIsInvalid(cmd *CmdToNotifyFailedStatus) error
 	NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error
 	NotifyIsBuildFailed(cmd *CmdToNotifyFailedStatus) error
-	NotifyIsStarting(cmd *CmdToCreateApp) error
+	NotifyStarting(cmd *CmdToNotifyStarting) error
 	NotifyIsStartFailed(cmd *CmdToNotifyFailedStatus) error
 	NotifyIsServing(cmd *CmdToNotifyServiceIsStarted) error
 	NotifyIsRestartFailed(cmd *CmdToNotifyFailedStatus) error
@@ -178,25 +177,6 @@ func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.Spa
 	return v, nil
 }
 
-// NotifyIsInvalid notifies change SpaceApp status.
-func (s *spaceappInternalAppService) NotifyIsInvalid(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
-	if err != nil {
-		return err
-	}
-	if err := v.SetInvalid(cmd.Status, cmd.Reason); err != nil {
-		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
-			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
-		return err
-	}
-	if err := s.repo.Save(&v); err != nil {
-		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
-		return err
-	}
-	logrus.Infof("spaceId:%s notify invalid successful", cmd.SpaceId.Identity())
-	return nil
-}
-
 // NotifyIsBuilding notifies that the build process of a SpaceApp has started.
 func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error {
 	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
@@ -222,22 +202,28 @@ func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedS
 	if err != nil {
 		return err
 	}
+
 	if err := v.SetBuildFailed(cmd.Status, cmd.Reason); err != nil {
 		logrus.Errorf("spaceId:%s set space app %s failed, err:%s",
 			cmd.SpaceId.Identity(), cmd.Status.AppStatus(), err)
 		return err
 	}
-	if err := s.repo.Save(&v); err != nil {
-		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+
+	if err := s.repo.SaveWithBuildLog(&v, &domain.SpaceAppBuildLog{
+		Logs:  cmd.Logs,
+	}); err != nil {
+		logrus.Errorf("spaceId:%s save with build log db failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
-	logrus.Infof("spaceId:%s notify build failed successful", cmd.SpaceId.Identity())
+
+	logrus.Infof("spaceId:%s notify build failed successful, save build logs:%d",
+		cmd.SpaceId.Identity(), len(cmd.Logs))
 	return nil
 }
 
-// NotifyIsStarting notifies that the build process of a SpaceApp has finished.
-func (s *spaceappInternalAppService) NotifyIsStarting(cmd *CmdToCreateApp) error {
-	v, err := s.getSpaceApp(*cmd)
+// NotifyStarting notifies that the build process of a SpaceApp has finished.
+func (s *spaceappInternalAppService) NotifyStarting(cmd *CmdToNotifyStarting) error {
+	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -247,11 +233,15 @@ func (s *spaceappInternalAppService) NotifyIsStarting(cmd *CmdToCreateApp) error
 		return err
 	}
 
-	if err := s.repo.Save(&v); err != nil {
-		logrus.Errorf("spaceId:%s save db failed", cmd.SpaceId.Identity())
+	if err := s.repo.SaveWithBuildLog(&v, &domain.SpaceAppBuildLog{
+		Logs:  cmd.Logs,
+	}); err != nil {
+		logrus.Errorf("spaceId:%s save with build log db failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
 	}
-	logrus.Infof("spaceId:%s notify starting successful", cmd.SpaceId.Identity())
+
+	logrus.Infof("spaceId:%s notify starting successful, save build logs:%d",
+		cmd.SpaceId.Identity(), len(cmd.Logs))
 	return nil
 }
 

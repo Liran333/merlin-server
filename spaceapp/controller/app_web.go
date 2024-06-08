@@ -42,6 +42,7 @@ func AddRouterForSpaceappWebController(
 	r.GET("/v1/space-app/:owner/:name/buildlog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeBuildLog)
 	r.GET("/v1/space-app/:owner/:name/spacelog/realtime", m.Read, l.CheckLimit, ctl.GetRealTimeSpaceLog)
 	r.GET("/v1/space-app/:owner/:name/read", t.CheckSession, l.CheckLimit, ctl.CanRead)
+	r.GET("/v1/space-app/:owner/:name/buildlog/complete", m.Read, l.CheckLimit, ctl.GetBuildLogs)
 }
 
 // SpaceAppWebController is a struct that represents the web controller for the space app.
@@ -66,6 +67,28 @@ func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
 	if dto, err := ctl.appService.GetByName(user, &index); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, &dto)
+	}
+}
+
+// @Summary  GetBuildLogs
+// @Description  get space app complete buid logs
+// @Tags     SpaceAppWeb
+// @Param    id  path  string  true  "space app id"
+// @Accept   json
+// @Success  200  {object}  app.BuildLogsDTO
+// @Router   /v1/space-app/{owner}/{name}/buildlog/complete [get]
+func (ctl *SpaceAppWebController) GetBuildLogs(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUser(ctx)
+
+	if dto, err := ctl.appService.GetBuildLogs(user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, &dto)

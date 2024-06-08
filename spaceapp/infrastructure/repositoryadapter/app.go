@@ -22,6 +22,7 @@ type dao interface {
 	NotEqualQuery(field string) string
 	IsRecordExists(err error) bool
 	GetRecord(filter, result interface{}) error
+	GetByPrimaryKey(row interface{}) error
 	DeleteByPrimaryKey(row interface{}) error
 }
 
@@ -85,7 +86,7 @@ func (adapter *appRepositoryAdapter) Save(m *domain.SpaceApp) error {
 	do.Version += 1
 
 	v := adapter.dao.DB().Model(
-		&spaceappDO{Id: m.Id},
+		&spaceappDO{Id: m.Id.Integer()},
 	).Where(
 		adapter.dao.EqualQuery(fieldVersion), m.Version,
 	).Select(`*`).Omit(fieldAllBuildLog).Updates(&do)
@@ -102,6 +103,32 @@ func (adapter *appRepositoryAdapter) Save(m *domain.SpaceApp) error {
 
 	return nil
 }
+
+// SaveWithBuildLog saves a space application and build log in the repository.
+func (adapter *appRepositoryAdapter) SaveWithBuildLog(m *domain.SpaceApp, log *domain.SpaceAppBuildLog) error {
+	do := toSpaceAppDO(m)
+	do.Version += 1
+	do.AllBuildLog = log.Logs
+
+	v := adapter.dao.DB().Model(
+		&spaceappDO{Id: m.Id.Integer()},
+	).Where(
+		adapter.dao.EqualQuery(fieldVersion), m.Version,
+	).Select(`*`).Updates(&do)
+
+	if v.Error != nil {
+		return v.Error
+	}
+
+	if v.RowsAffected == 0 {
+		return commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
+	}
+
+	return nil
+}
+
 
 // DeleteBySpaceId delete space app by the space ID.
 func (adapter *appRepositoryAdapter) DeleteBySpaceId(spaceId primitive.Identity) error {

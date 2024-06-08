@@ -84,9 +84,10 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppRestart() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{
-		SpaceId:  id,
-		CommitId: "12345",
+	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToNotifyStarting{
+		SpaceId:     id,
+		CommitId:    "12345",
+		AllBuildLog: "vertex:  [internal] load build definition from Dockerfile\n",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -167,9 +168,10 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppPause() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{
-		SpaceId:  id,
-		CommitId: "12345",
+	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToNotifyStarting{
+		SpaceId:     id,
+		CommitId:    "12345",
+		AllBuildLog: "vertex:  [internal] load build definition from Dockerfile\n",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -271,9 +273,10 @@ func (s *SuiteSpaceAppRestful) TestSpaceAppNpuPause() {
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToCreateSpaceApp{
-		SpaceId:  id,
-		CommitId: "12345",
+	_, r, err = ApiInteral.SpaceAppApi.V1SpaceAppStartingPut(Interal, swaggerInternal.ControllerReqToNotifyStarting{
+		SpaceId:     id,
+		CommitId:    "12345",
+		AllBuildLog: "vertex:  [internal] load build definition from Dockerfile\n",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)

@@ -30,6 +30,7 @@ import (
 type SpaceappAppService interface {
 	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
 	GetBuildLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
+	GetBuildLogs(primitive.Account, *spacedomain.SpaceIndex) (BuildLogsDTO, error)
 	GetSpaceLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
 	GetRequestDataStream(*domain.SeverSentStream) error
 	RestartSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
@@ -56,6 +57,7 @@ func NewSpaceappAppService(
 	computility computilityapp.ComputilityInternalAppService,
 	repoAdapterModelSpace spacerepo.ModelSpaceRepositoryAdapter,
 	modelRepoAdapter modelrepo.ModelRepositoryAdapter,
+	buildLogAdapter repository.SpaceAppBuildLogAdapter,
 ) *spaceappAppService {
 	return &spaceappAppService{
 		msg:                   msg,
@@ -66,6 +68,7 @@ func NewSpaceappAppService(
 		computility:           computility,
 		repoAdapterModelSpace: repoAdapterModelSpace,
 		modelRepoAdapter:      modelRepoAdapter,
+		buildLogAdapter: 	   buildLogAdapter,
 	}
 }
 
@@ -79,6 +82,7 @@ type spaceappAppService struct {
 	computility           computilityapp.ComputilityInternalAppService
 	repoAdapterModelSpace spacerepo.ModelSpaceRepositoryAdapter
 	modelRepoAdapter      modelrepo.ModelRepositoryAdapter
+	buildLogAdapter 	  repository.SpaceAppBuildLogAdapter
 }
 
 func (s *spaceappAppService) canHandleNotDisable(space *spacedomain.Space) error {
@@ -175,9 +179,7 @@ func (s *spaceappAppService) GetByName(
 
 func (s *spaceappAppService) getPrivateReadSpaceApp(
 	user primitive.Account, index *spacedomain.SpaceIndex,
-) (SpaceAppDTO, error) {
-	var dto SpaceAppDTO
-
+) (domain.SpaceApp, error) {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -186,7 +188,7 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 			err = xerrors.Errorf("failed to get space, err:%w", err)
 		}
 
-		return dto, err
+		return domain.SpaceApp{}, err
 	}
 
 	if err = s.permission.CanReadPrivate(user, &space); err != nil {
@@ -196,7 +198,7 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 			err = xerrors.Errorf("no permission to get space, err:%w", err)
 		}
 
-		return dto, err
+		return domain.SpaceApp{}, err
 	}
 
 	app, err := s.repo.FindBySpaceId(space.Id)
@@ -207,9 +209,9 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 			err = xerrors.Errorf("failed to get space app, err:%w", err)
 		}
 
-		return dto, err
+		return domain.SpaceApp{}, err
 	}
-	return toSpaceAppDTO(&app), nil
+	return app, nil
 }
 
 // GetBuildLog for get build log
@@ -221,11 +223,11 @@ func (s *spaceappAppService) GetBuildLog(
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
 
-	if app.BuildLogURL == "" {
+	if app.BuildLogURL.URL() == "" {
 		return "", xerrors.New("space app is not building")
 	}
 
-	return app.BuildLogURL, nil
+	return app.BuildLogURL.URL(), nil
 }
 
 // GetSpaceLog for get serving log
@@ -237,11 +239,11 @@ func (s *spaceappAppService) GetSpaceLog(
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
 
-	if app.AppLogURL == "" {
+	if app.AppLogURL.URL() == "" {
 		return "", xerrors.New("space app is not serving")
 	}
 
-	return app.AppLogURL, nil
+	return app.AppLogURL.URL(), nil
 }
 
 // GetRequestDataStream
@@ -540,4 +542,30 @@ func (s *spaceappAppService) GetSpaceIdByName(index *spacedomain.SpaceIndex) (sp
 	}
 
 	return space, nil
+}
+
+// GetBuildLogs
+func (s *spaceappAppService) GetBuildLogs(user primitive.Account, index *spacedomain.SpaceIndex) (
+	dto BuildLogsDTO, err error,
+) {
+	app, err := s.getPrivateReadSpaceApp(user, index)
+	if err != nil {
+		err = xerrors.Errorf("failed to get space app, err:%w", err)
+		return
+	}
+
+	log, err := s.buildLogAdapter.Find(app.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space app, err:%w", err)
+		}
+
+		return
+	}
+
+	dto.Logs = log.Logs
+
+	return
 }

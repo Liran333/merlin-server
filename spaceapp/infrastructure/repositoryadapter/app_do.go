@@ -30,13 +30,14 @@ func toSpaceAppDO(m *domain.SpaceApp) spaceappDO {
 		SpaceId:     m.SpaceId.Integer(),
 		Version:     m.Version,
 		CommitId:    m.CommitId,
-		AllBuildLog: m.AllBuildLog,
 		Reason:      m.Reason,
 		RestartedAt: m.RestartedAt,
 		ResumedAt:   m.ResumedAt,
 	}
 
-	do.Id = m.Id
+	if m.Id != nil {
+		do.Id = m.Id.Integer()
+	}
 
 	if m.AppURL != nil {
 		do.AppURL = m.AppURL.AppURL()
@@ -68,7 +69,7 @@ type spaceappDO struct {
 	AppURL    string `gorm:"column:app_url"`
 	AppLogURL string `gorm:"column:app_log_url"`
 
-	AllBuildLog string `gorm:"column:all_build_log"`
+	AllBuildLog string `gorm:"column:all_build_log;type:text;"`
 	BuildLogURL string `gorm:"column:build_log_url"`
 
 	Version int `gorm:"column:version"`
@@ -81,7 +82,7 @@ func (do *spaceappDO) TableName() string {
 
 func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 	v := domain.SpaceApp{
-		Id: do.Id,
+		Id: primitive.CreateIdentity(do.Id),
 		SpaceAppIndex: domain.SpaceAppIndex{
 			SpaceId:  primitive.CreateIdentity(do.SpaceId),
 			CommitId: do.CommitId,
@@ -91,7 +92,6 @@ func (do *spaceappDO) toSpaceApp() domain.SpaceApp {
 		RestartedAt: do.RestartedAt,
 		ResumedAt:   do.ResumedAt,
 		Version:     do.Version,
-		AllBuildLog: do.AllBuildLog,
 	}
 
 	if do.AppURL != "" {

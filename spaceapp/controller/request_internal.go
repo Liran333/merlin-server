@@ -45,6 +45,23 @@ func (req *reqToUpdateBuildInfo) toCmd() (cmd app.CmdToNotifyBuildIsStarted, err
 	return
 }
 
+// reqToNotifyStarting
+type reqToNotifyStarting struct {
+	reqToCreateSpaceApp
+
+	AllBuildLog string `json:"all_build_log"`
+}
+
+func (req *reqToNotifyStarting) toCmd() (cmd app.CmdToNotifyStarting, err error) {
+	if cmd.SpaceAppIndex, err = req.reqToCreateSpaceApp.toCmd(); err != nil {
+		return
+	}
+
+	cmd.Logs = req.AllBuildLog
+
+	return
+}
+
 // reqToUpdateServiceInfo
 type reqToUpdateServiceInfo struct {
 	reqToUpdateBuildInfo
@@ -84,6 +101,8 @@ type reqToFailedStatus struct {
 
 	Status string `json:"status"`
 	Reason string `json:"reason"`
+
+	AllBuildLog string `json:"all_build_log"`
 }
 
 func (req *reqToFailedStatus) toCmd() (cmd app.CmdToNotifyFailedStatus, err error) {
@@ -94,6 +113,10 @@ func (req *reqToFailedStatus) toCmd() (cmd app.CmdToNotifyFailedStatus, err erro
 	cmd.Reason = req.Reason
 
 	cmd.Status, err = appprimitive.NewAppStatus(req.Status)
+
+	if cmd.Status == appprimitive.AppStatusBuildFailed {
+		cmd.Logs = req.AllBuildLog
+	}
 
 	return
 }
