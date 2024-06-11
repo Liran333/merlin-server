@@ -223,6 +223,9 @@ func (s *spaceappAppService) GetBuildLog(
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
 
+	if app.BuildLogURL == nil {
+		return "", xerrors.New("space app is not building")
+	}
 	if app.BuildLogURL.URL() == "" {
 		return "", xerrors.New("space app is not building")
 	}
@@ -239,6 +242,9 @@ func (s *spaceappAppService) GetSpaceLog(
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
 
+	if app.AppLogURL == nil {
+		return "", xerrors.New("space app is not serving")
+	}
 	if app.AppLogURL.URL() == "" {
 		return "", xerrors.New("space app is not serving")
 	}
