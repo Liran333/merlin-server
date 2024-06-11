@@ -55,6 +55,7 @@ type User struct {
 	UpdatedAt       int64
 	Desc            primitive.AccountDesc
 	AvatarId        primitive.AvatarId
+	AvatarUrl       primitive.URL
 	Type            UserType
 	DefaultRole     primitive.Role
 	AllowRequest    bool
@@ -79,6 +80,10 @@ func (u *User) AgreePrivacy() {
 // indicating that the user has revoked their agreement to the privacy terms.
 func (u *User) RevokePrivacy() {
 	u.IsAgreePrivacy = false
+}
+
+func (u *User) UpdateAvatar(url string) {
+	u.AvatarUrl = primitive.CreateURL(url)
 }
 
 // UserInfo represents additional information about a user.

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package e2e
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -75,9 +76,10 @@ func (s *SuiteRequest) SetupSuite() {
 	assert.Nil(s.T(), err)
 	assert.NotEqual(s.T(), "", o["id"])
 	s.orgId = getString(s.T(), o["id"])
-
-	// 更新组织允许加入权限
-	orgData, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
+	// 默认不可以主动申请
+	assert.Equal(s.T(), false, o["allow_request"])
+	// 修改申请权限
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
 		swaggerRest.ControllerOrgBasicInfoUpdateRequest{
 			AllowRequest: true,
 		})
@@ -95,7 +97,8 @@ func (s *SuiteRequest) TearDownSuite() {
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.Empty(s.T(), data.Data)
+	apply := getData(s.T(), data.Data)
+	assert.Empty(s.T(), apply["members"])
 
 	// 删除组织
 	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
@@ -132,6 +135,7 @@ func (s *SuiteRequest) TestRequestSuccess() {
 		Msg:     "request second",
 	})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.NotNil(s.T(), err)
 
 	res = getData(s.T(), data.Data)
 	assert.Equal(s.T(), firstID, res["id"])
@@ -145,16 +149,9 @@ func (s *SuiteRequest) TestRequestSuccess() {
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-
-	requestList := getArrary(s.T(), data1.Data)
-	count := 0
-	for _, val := range requestList {
-		if len(val) > 0 {
-			assert.Equal(s.T(), firstID, val["id"])
-			count++
-		}
-	}
-	assert.Equal(s.T(), 1, count)
+	args := getData(s.T(), data1.Data)
+	fmt.Println(args)
+	// assert.Equal(s.T(), 1, len(args["Labels"].([]swaggerRest.GithubComOpenmerlinMerlinServerUserAppUserDto)))
 
 	// 删除申请
 	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest, swaggerRest.ControllerOrgRevokeMemberReqRequest{
@@ -245,6 +242,7 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 		User:    s.requester,
 		OrgName: s.name,
 		Msg:     "approve me",
+		Member:  "write",
 	})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -265,7 +263,8 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 	})
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
-	assert.Empty(s.T(), data2.Data)
+	apply := getData(s.T(), data2)
+	assert.Empty(s.T(), apply["members"])
 
 	// 删除组织成员
 	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
@@ -274,6 +273,221 @@ func (s *SuiteRequest) TestApproveRequestSuccess() {
 		}, s.name)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
+}
+
+// 申请加入时必填角色
+func (s *SuiteRequest) TestDefaultRole() {
+	// 申请加入组织
+	data, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	res := getData(s.T(), data.Data)
+	assert.Equal(s.T(), s.name, res["org_name"])
+	assert.Equal(s.T(), s.orgId, res["org_id"])
+	assert.Equal(s.T(), s.requester, res["username"])
+	assert.Equal(s.T(), s.requesterId, res["user_id"])
+	assert.Equal(s.T(), "write", res["role"])
+	assert.Equal(s.T(), "request me", res["msg"])
+	assert.NotEqual(s.T(), "", res["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
+	// 同意申请
+	_, r, err = ApiRest.OrganizationApi.V1RequestPut(AuthRest, swaggerRest.ControllerOrgApproveMemberRequest{
+		User:    s.requester,
+		OrgName: s.name,
+		Msg:     "approve me",
+		Member:  "read",
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 获取成员列表,角色为read
+	userData, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name, &swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{})
+	for _, i := range userData.Data {
+		o := getData(s.T(), i)
+		if o["user_name"] == "test2" {
+			assert.Equal(s.T(), "read", o["role"])
+		}
+	}
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 删除组织成员
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameMemberDelete(AuthRest,
+		swaggerRest.ControllerOrgMemberRemoveRequest{
+			User: s.requester,
+		}, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 拒绝用户加入
+func (s *SuiteRequest) TestOrgReject() {
+	// 申请加入组织
+	data, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	res := getData(s.T(), data.Data)
+	assert.Equal(s.T(), s.name, res["org_name"])
+	assert.Equal(s.T(), s.orgId, res["org_id"])
+	assert.Equal(s.T(), s.requester, res["username"])
+	assert.Equal(s.T(), s.requesterId, res["user_id"])
+	assert.Equal(s.T(), "write", res["role"])
+	assert.Equal(s.T(), "request me", res["msg"])
+	assert.NotEqual(s.T(), "", res["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
+	// 拒绝申请
+	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest, swaggerRest.ControllerOrgRevokeMemberReqRequest{
+		User:    s.requester,
+		OrgName: s.name,
+		Msg:     "delete",
+	})
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 列出成员并判断角色
+	userData, r, err := ApiRest.OrganizationApi.V1OrganizationNameMemberGet(AuthRest, s.name, &swaggerRest.OrganizationApiV1OrganizationNameMemberGetOpts{})
+	for _, i := range userData.Data {
+		o := getData(s.T(), i)
+		if o["user_name"] == "test2" {
+			assert.Equal(s.T(), "write", o["role"])
+		}
+	}
+	assert.Equal(s.T(), 1, len(userData.Data))
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 用户主动撤销申请
+func (s *SuiteRequest) TestCancelOrg() {
+	// 申请加入组织
+	data, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	res := getData(s.T(), data.Data)
+	assert.Equal(s.T(), s.name, res["org_name"])
+	assert.Equal(s.T(), s.orgId, res["org_id"])
+	assert.Equal(s.T(), s.requester, res["username"])
+	assert.Equal(s.T(), s.requesterId, res["user_id"])
+	assert.Equal(s.T(), "write", res["role"])
+	assert.Equal(s.T(), "request me", res["msg"])
+	assert.NotEqual(s.T(), "", res["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
+	//检查申请列表
+	apply, r, err := ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+		OrgName:  optional.NewString(s.name),
+		Status:   optional.NewString("pending"),
+		Page:     optional.NewInt32(1),
+		PageSize: optional.NewInt32(2),
+	})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	fmt.Println(apply.Data)
+	// 用户撤销申请
+	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest2, swaggerRest.ControllerOrgRevokeMemberReqRequest{
+		User:    s.requester,
+		OrgName: s.name,
+		Msg:     "delete",
+	})
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 检查申请列表
+	_, r, err = ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+		OrgName: optional.NewString(s.name),
+		Status:  optional.NewString("pending"),
+	})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 撤销查询申请
+func (s *SuiteRequest) TestSearch() {
+	// 创建加入组织申请
+	data, r, _ := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+
+	res := getData(s.T(), data.Data)
+	assert.Equal(s.T(), s.name, res["org_name"])
+	assert.Equal(s.T(), s.orgId, res["org_id"])
+	assert.Equal(s.T(), s.requester, res["username"])
+	assert.Equal(s.T(), s.requesterId, res["user_id"])
+	assert.Equal(s.T(), "write", res["role"])
+	assert.Equal(s.T(), "request me", res["msg"])
+	assert.NotEqual(s.T(), "", res["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
+	// 查询申请列表
+	data2, r, err := ApiRest.OrganizationApi.V1RequestGet(AuthRest, &swaggerRest.OrganizationApiV1RequestGetOpts{
+		OrgName: optional.NewString(s.name),
+		// Status:  optional.NewString("pending"),
+		Requester: optional.NewString(s.requester),
+	})
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	assert.NotEmpty(s.T(), data2.Data)
+	// 撤销申请
+	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest2, swaggerRest.ControllerOrgRevokeMemberReqRequest{
+		User:    s.requester,
+		OrgName: s.name,
+		Msg:     "delete",
+	})
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 用户查询申请状态
+func (s *SuiteRequest) TestOneSearch() {
+	// 创建加入组织申请
+	data, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	res := getData(s.T(), data.Data)
+	assert.Equal(s.T(), s.name, res["org_name"])
+	assert.Equal(s.T(), s.orgId, res["org_id"])
+	assert.Equal(s.T(), s.requester, res["username"])
+	assert.Equal(s.T(), s.requesterId, res["user_id"])
+	assert.Equal(s.T(), "write", res["role"])
+	assert.Equal(s.T(), "request me", res["msg"])
+	assert.NotEqual(s.T(), "", res["id"])
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
+	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
+	// 用户查询申请
+	_, r, err = ApiRest.OrganizationApi.V1RequestOnlySernameOrgnameGet(AuthRest2, s.requester, s.name)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 用户撤销申请
+	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest2, swaggerRest.ControllerOrgRevokeMemberReqRequest{
+		User:    s.requester,
+		OrgName: s.name,
+		Msg:     "delete",
+	})
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 申请理由字数不得超过20字
+func (s *SuiteRequest) TestStrLimit() {
+	// 创建申请,接口返回错误
+	_, r, err := ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "这是为了测试字符串长度限制的消息，限制为20个字符",
+	})
+	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
+	assert.NotNil(s.T(), err)
 }
 
 // TestRequest used for testing

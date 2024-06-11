@@ -1191,6 +1191,18 @@ const docTemplaterest = `{
                         "description": "filter by roles",
                         "name": "roles",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page num which starts from 1",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "count per page",
+                        "name": "count_per_page",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1208,10 +1220,7 @@ const docTemplaterest = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
-                                            }
+                                            "$ref": "#/definitions/app.UserPaginationDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -1895,10 +1904,7 @@ const docTemplaterest = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/app.MemberRequestDTO"
-                                            }
+                                            "$ref": "#/definitions/app.MemberPagnationDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -2042,6 +2048,67 @@ const docTemplaterest = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/request/only/{sername}/{orgname}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Search one member Record",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "GetOnlyRequest",
+                "parameters": [
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "orgname",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/domain.MemberRequest"
+                                            }
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -3618,9 +3685,26 @@ const docTemplaterest = `{
                 }
             }
         },
+        "app.MemberPagnationDTO": {
+            "type": "object",
+            "properties": {
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/app.MemberRequestDTO"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "app.MemberRequestDTO": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "by": {
                     "type": "string"
                 },
@@ -3710,6 +3794,18 @@ const docTemplaterest = `{
             "type": "object",
             "properties": {
                 "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardwares": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "languages": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3846,6 +3942,20 @@ const docTemplaterest = `{
                 }
             }
         },
+        "app.UserPaginationDTO": {
+            "type": "object",
+            "properties": {
+                "Labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "controller.OrgAcceptMemberRequest": {
             "type": "object",
             "required": [
@@ -3863,9 +3973,13 @@ const docTemplaterest = `{
         "controller.OrgApproveMemberRequest": {
             "type": "object",
             "required": [
+                "member",
                 "org_name"
             ],
             "properties": {
+                "member": {
+                    "type": "string"
+                },
                 "msg": {
                     "type": "string"
                 },
@@ -4480,6 +4594,49 @@ const docTemplaterest = `{
                 }
             }
         },
+        "domain.ApproveStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "ApproveStatusPending",
+                "ApproveStatusApproved",
+                "ApproveStatusRejected"
+            ]
+        },
+        "domain.MemberRequest": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {},
+                "member": {},
+                "msg": {
+                    "type": "string"
+                },
+                "org_id": {},
+                "org_name": {},
+                "role": {},
+                "status": {
+                    "$ref": "#/definitions/domain.ApproveStatus"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "user_id": {},
+                "user_name": {},
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
         "domain.SpaceLabels": {
             "type": "object",
             "properties": {
@@ -4505,6 +4662,9 @@ const docTemplaterest = `{
                     "type": "boolean"
                 },
                 "avatar_id": {
+                    "type": "string"
+                },
+                "avatar_url": {
                     "type": "string"
                 },
                 "created_at": {
@@ -4561,6 +4721,9 @@ const docTemplaterest = `{
                     "type": "boolean"
                 },
                 "avatar_id": {
+                    "type": "string"
+                },
+                "avatar_url": {
                     "type": "string"
                 },
                 "created_at": {

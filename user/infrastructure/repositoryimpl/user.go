@@ -16,6 +16,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -30,12 +31,13 @@ func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 		return nil
 	}
 
-	return &userRepoImpl{Impl: db, e: enc}
+	return &userRepoImpl{Impl: db, e: enc, obs: obs.Client()}
 }
 
 type userRepoImpl struct {
 	postgresql.Impl
-	e crypto.Encrypter
+	e   crypto.Encrypter
+	obs obs.ObsService
 }
 
 // AddOrg adds a new organization to the repository and returns it.
@@ -166,6 +168,42 @@ func (impl *userRepoImpl) GetOrgList(opt *repository.ListOrgOption) (os []org.Or
 	}
 
 	return
+}
+
+func (impl *userRepoImpl) GetOrgPageList(opt *repository.ListPageOrgOption) ([]org.Organization, int, error) {
+	query := impl.DB()
+	if len(opt.OrgIDs) > 0 {
+		query = query.Where(impl.InFilter(fieldID), opt.OrgIDs)
+	}
+	if opt.Owner != nil {
+		query = query.Where(impl.EqualQuery(fieldOwner), opt.Owner.Account())
+	}
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	offset := 0
+	if opt.PageNum > 0 && opt.PageSize > 0 {
+		offset = (opt.PageNum - 1) * opt.PageSize
+	}
+	if offset > 0 {
+		query = query.Limit(opt.PageSize).Offset(offset)
+	} else {
+		query = query.Limit(opt.PageSize)
+	}
+	var dos []UserDO
+	err := query.Find(&dos).Error
+	if err != nil || len(dos) == 0 {
+		return nil, 0, err
+	}
+	r := make([]org.Organization, len(dos))
+	for i := range dos {
+		r[i], err = dos[i].toOrg(impl.e)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+	return r, int(total), nil
 }
 
 // GetOrgCountByOwner retrieves the count of organizations owned by the given account.

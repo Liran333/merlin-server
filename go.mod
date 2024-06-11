@@ -10,6 +10,7 @@ require (
 	github.com/h2non/filetype v1.1.3
 	github.com/hashicorp/vault/api v1.9.2
 	github.com/hashicorp/vault/api/auth/userpass v0.1.0
+	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.24.3+incompatible
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/lib/pq v1.10.9
 	github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458

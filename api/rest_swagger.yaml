@@ -117,8 +117,19 @@ definitions:
       user_name:
         type: string
     type: object
+  app.MemberPagnationDTO:
+    properties:
+      members:
+        items:
+          $ref: '#/definitions/app.MemberRequestDTO'
+        type: array
+      total:
+        type: integer
+    type: object
   app.MemberRequestDTO:
     properties:
+      avatar_id:
+        type: string
       by:
         type: string
       created_at:
@@ -178,6 +189,14 @@ definitions:
   app.ModelLabelsDTO:
     properties:
       frameworks:
+        items:
+          type: string
+        type: array
+      hardwares:
+        items:
+          type: string
+        type: array
+      languages:
         items:
           type: string
         type: array
@@ -266,6 +285,15 @@ definitions:
       updated_at:
         type: integer
     type: object
+  app.UserPaginationDTO:
+    properties:
+      Labels:
+        items:
+          $ref: '#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO'
+        type: array
+      total:
+        type: integer
+    type: object
   controller.OrgAcceptMemberRequest:
     properties:
       msg:
@@ -277,6 +305,8 @@ definitions:
     type: object
   controller.OrgApproveMemberRequest:
     properties:
+      member:
+        type: string
       msg:
         type: string
       org_name:
@@ -284,6 +314,7 @@ definitions:
       user:
         type: string
     required:
+    - member
     - org_name
     type: object
   controller.OrgInviteMemberRequest:
@@ -682,6 +713,38 @@ definitions:
       revoke_delete:
         type: boolean
     type: object
+  domain.ApproveStatus:
+    enum:
+    - pending
+    - approved
+    - rejected
+    type: string
+    x-enum-varnames:
+    - ApproveStatusPending
+    - ApproveStatusApproved
+    - ApproveStatusRejected
+  domain.MemberRequest:
+    properties:
+      by:
+        type: string
+      created_at:
+        type: integer
+      id: {}
+      member: {}
+      msg:
+        type: string
+      org_id: {}
+      org_name: {}
+      role: {}
+      status:
+        $ref: '#/definitions/domain.ApproveStatus'
+      updated_at:
+        type: integer
+      user_id: {}
+      user_name: {}
+      version:
+        type: integer
+    type: object
   domain.SpaceLabels:
     properties:
       framework:
@@ -699,6 +762,8 @@ definitions:
       allow_request:
         type: boolean
       avatar_id:
+        type: string
+      avatar_url:
         type: string
       created_at:
         type: integer
@@ -736,6 +801,8 @@ definitions:
       allow_request:
         type: boolean
       avatar_id:
+        type: string
+      avatar_url:
         type: string
       created_at:
         type: integer
@@ -1611,6 +1678,14 @@ paths:
           type: string
         name: roles
         type: array
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
       responses:
         "200":
           description: OK
@@ -1621,9 +1696,7 @@ paths:
                 code:
                   type: string
                 data:
-                  items:
-                    $ref: '#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO'
-                  type: array
+                  $ref: '#/definitions/app.UserPaginationDTO'
                 msg:
                   type: string
               type: object
@@ -2058,9 +2131,7 @@ paths:
                 code:
                   type: string
                 data:
-                  items:
-                    $ref: '#/definitions/app.MemberRequestDTO'
-                  type: array
+                  $ref: '#/definitions/app.MemberPagnationDTO'
                 msg:
                   type: string
               type: object
@@ -2127,6 +2198,43 @@ paths:
       security:
       - Bearer: []
       summary: ApproveRequest
+      tags:
+      - Organization
+  /v1/request/only/{sername}/{orgname}:
+    get:
+      description: Search one member Record
+      parameters:
+      - description: username
+        in: path
+        maxLength: 40
+        name: username
+        required: true
+        type: string
+      - description: orgname
+        in: path
+        maxLength: 40
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/domain.MemberRequest'
+                  type: array
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: GetOnlyRequest
       tags:
       - Organization
   /v1/space:

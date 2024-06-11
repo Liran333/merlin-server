@@ -46,6 +46,14 @@ type ListOrgOption struct {
 	Owner  primitive.Account
 }
 
+type ListPageOrgOption struct {
+	OrgIDs   []int64
+	Owner    primitive.Account
+	PageNum  int
+	Count    bool
+	PageSize int
+}
+
 // User is an interface for user-related operations.
 type User interface {
 	AddUser(*domain.User) (domain.User, error)
@@ -63,6 +71,7 @@ type User interface {
 	GetOrgByName(primitive.Account) (org.Organization, error)
 	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
 	GetOrgList(*ListOrgOption) ([]org.Organization, error)
+	GetOrgPageList(*ListPageOrgOption) ([]org.Organization, int, error)
 	GetOrgCountByOwner(primitive.Account) (int64, error)
 
 	ListAccount(*ListOption) ([]domain.User, int, error)

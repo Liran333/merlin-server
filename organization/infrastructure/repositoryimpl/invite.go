@@ -202,6 +202,61 @@ func (impl *inviteRepoImpl) ListRequests(cmd *domain.OrgMemberReqListCmd) (rs []
 	return
 }
 
+func (impl *inviteRepoImpl) GetOneApply(userName string, orgName string) (res []domain.MemberRequest, err error) {
+	var v []Approve
+	query := impl.DB().Where(impl.EqualQuery(fieldType), domain.InviteTypeRequest)
+	query = query.Where(impl.EqualQuery(fieldOrg), orgName)
+	query = query.Where(impl.EqualQuery(fieldInvitee), userName)
+	err = query.Find(&v).Error
+	if err != nil || len(v) == 0 {
+		return nil, err
+	}
+	res = make([]domain.MemberRequest, len(v))
+	for i := range v {
+		res[i] = toMemberRequest(&v[i])
+	}
+	return res, nil
+}
+
+func (impl *inviteRepoImpl) ListPagnation(cmd *domain.OrgMemberReqListCmd) ([]domain.MemberRequest, int, error) {
+	var v []Approve
+	query := impl.DB().Where(impl.EqualQuery(fieldType), domain.InviteTypeRequest)
+	if cmd.Org != nil {
+		query = query.Where(impl.EqualQuery(fieldOrg), cmd.Org.Account())
+	}
+
+	if cmd.Requester != nil {
+		query = query.Where(impl.EqualQuery(fieldInvitee), cmd.Requester.Account())
+	}
+
+	if cmd.Status != "" {
+		query = query.Where(impl.EqualQuery(fieldStatus), cmd.Status)
+	}
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	offset := 0
+	if cmd.PageNum > 0 && cmd.PageSize > 0 {
+		offset = (cmd.PageNum - 1) * cmd.PageSize
+	}
+	if offset > 0 {
+		query = query.Limit(cmd.PageSize).Offset(offset)
+	} else {
+		query = query.Limit(cmd.PageSize)
+	}
+	err := query.Find(&v).Error
+	if err != nil || len(v) == 0 {
+		return nil, 0, err
+	}
+
+	res := make([]domain.MemberRequest, len(v))
+	for i := range v {
+		res[i] = toMemberRequest(&v[i])
+	}
+	return res, int(total), nil
+}
+
 // saveAndKeepOneApprove save a new member request or invite, keep only one record.
 func (impl *inviteRepoImpl) saveAndKeepOneApprove(ap *Approve) error {
 	if ap == nil {

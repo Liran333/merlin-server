@@ -7,6 +7,7 @@ package app
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -43,7 +44,7 @@ type OrgService interface {
 	CheckName(primitive.Account) bool
 	GetByOwner(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
 	GetByUser(primitive.Account, primitive.Account) ([]userapp.UserDTO, error)
-	List(*OrgListOptions) ([]userapp.UserDTO, error)
+	List(*OrgListOptions) ([]userapp.UserDTO, int, error)
 	HasMember(primitive.Account, primitive.Account) bool
 	InviteMember(*domain.OrgInviteMemberCmd) (ApproveDTO, error)
 	RequestMember(*domain.OrgRequestMemberCmd) (MemberRequestDTO, error)
@@ -51,7 +52,8 @@ type OrgService interface {
 	ApproveRequest(*domain.OrgApproveRequestMemberCmd) (MemberRequestDTO, error)
 	AcceptInvite(*domain.OrgAcceptInviteCmd) (ApproveDTO, error)
 	RevokeInvite(*domain.OrgRemoveInviteCmd) (ApproveDTO, error)
-	ListMemberReq(*domain.OrgMemberReqListCmd) ([]MemberRequestDTO, error)
+	GetOnlyApply(string, string) ([]domain.MemberRequest, error)
+	ListMemberReq(*domain.OrgMemberReqListCmd) ([]MemberRequestDTO, int, error)
 	ListInvitationByInvitee(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
 	ListInvitationByInviter(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
 	ListInvitationByOrg(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
@@ -349,7 +351,7 @@ func (org *orgService) GetByOwner(actor, acc primitive.Account) (orgs []userapp.
 		return
 	}
 
-	orgs, err = org.List(&OrgListOptions{
+	orgs, _, err = org.List(&OrgListOptions{
 		Owner: acc,
 	})
 	if err != nil {
@@ -393,10 +395,10 @@ func (org *orgService) GetByUser(actor, acc primitive.Account) (orgs []userapp.U
 }
 
 // List retrieves a list of organizations based on the provided options.
-func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err error) {
+func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, total int, err error) {
 	if l == nil {
 		e := fmt.Errorf("list options is nil")
-		return nil, allerror.New(allerror.ErrorSystemError, e.Error(), e)
+		return nil, 0, allerror.New(allerror.ErrorSystemError, e.Error(), e)
 	}
 	orgs = []userapp.UserDTO{}
 
@@ -408,11 +410,13 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 		}
 	}
 
-	listOption := &userrepo.ListOrgOption{
-		OrgIDs: orgIDs,
-		Owner:  l.Owner,
+	listOption := &userrepo.ListPageOrgOption{
+		OrgIDs:   orgIDs,
+		Owner:    l.Owner,
+		PageNum:  l.Page,
+		PageSize: l.PageSize,
 	}
-	os, err := org.repo.GetOrgList(listOption)
+	os, total, err := org.repo.GetOrgPageList(listOption)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -426,7 +430,7 @@ func (org *orgService) List(l *OrgListOptions) (orgs []userapp.UserDTO, err erro
 		orgs[i] = ToDTO(&os[i])
 	}
 
-	return
+	return orgs, int(total), nil
 }
 
 func (org *orgService) getOrgIDsByUserAndRoles(user primitive.Account,
@@ -915,6 +919,12 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 		return
 	}
 
+	if utf8.RuneCountInString(cmd.Msg) > 20 {
+		e := fmt.Errorf("character length exceeds limit")
+		err = allerror.New(allerror.ErrorOrgNotAllowRequestMember, e.Error(), e)
+		return
+	}
+
 	request := cmd.ToMemberRequest(o.DefaultRole)
 	request.OrgId = o.Id
 	request.UserId = requester.Id
@@ -1078,6 +1088,8 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 	request.By = cmd.Actor.Account()
 	request.Status = domain.ApproveStatusApproved
 	request.Msg = cmd.Msg
+	request.Member = cmd.Member
+	role, _ := primitive.NewRole(cmd.Member.Account())
 
 	_, err = org.invite.SaveRequest(&request)
 	if err != nil {
@@ -1091,7 +1103,7 @@ func (org *orgService) ApproveRequest(cmd *domain.OrgApproveRequestMemberCmd) (d
 		User:   cmd.Requester,
 		UserId: request.UserId,
 		Type:   domain.InviteTypeRequest,
-		Role:   request.Role,
+		Role:   role,
 	})
 	if err != nil {
 		return
@@ -1149,8 +1161,16 @@ func (org *orgService) CancelReqMember(cmd *domain.OrgCancelRequestMemberCmd) (d
 	return
 }
 
+func (org *orgService) GetOnlyApply(userName string, orgName string) ([]domain.MemberRequest, error) {
+	res, err := org.invite.GetOneApply(userName, orgName)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // ListMemberReq lists the member requests for an organization.
-func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []MemberRequestDTO, err error) {
+func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []MemberRequestDTO, total int, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for list member request")
 		err = allerror.NewInvalidParam(e.Error(), e)
@@ -1182,7 +1202,7 @@ func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []Me
 		return
 	}
 
-	reqs, err := org.invite.ListRequests(cmd)
+	reqs, total, err := org.invite.ListPagnation(cmd)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil

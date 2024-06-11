@@ -15,6 +15,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/organization/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -69,6 +70,7 @@ func AddRouterForOrgController(
 	rg.PUT("/v1/request", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.ApproveRequest)
 	rg.GET("/v1/request", m.Read, rl.CheckLimit, ctl.ListRequests)
+	rg.GET("/v1/request/only/:username/:orgname", m.Read, rl.CheckLimit, ctl.GetOnlyRequest)
 	rg.DELETE("/v1/request", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RemoveRequest)
 
@@ -222,9 +224,11 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 // @Param    owner     query  string  false  "filter by owner" MaxLength(40)
 // @Param    username  query  string  false  "filter by username" MaxLength(40)
 // @Param    roles     query  []string  false  "filter by roles" Enums(read, write,admin)
+// @Param    page_num  query  int     false    "page num which starts from 1" Mininum(1)
+// @Param    count_per_page  query  int     false  "count per page" MaxCountPerPage(100)
 // @Accept   json
 // @Security Bearer
-// @Success  200  {object}  commonctl.ResponseData{data=[]userapp.UserDTO,msg=string,code=string}
+// @Success  200  {object}  commonctl.ResponseData{data=userapp.UserPaginationDTO,msg=string,code=string}
 // @Failure  400  {object}  commonctl.ResponseData{data=error,msg=string,code=string}
 // @Router   /v1/organization [get]
 func (ctl *OrgController) List(ctx *gin.Context) {
@@ -238,26 +242,31 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 
 	me := ctl.m.GetUser(ctx)
 
-	owner, user, roles, err := req.toCmd()
+	cmd, err := req.toCmd()
 	if err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
 
 		return
 	}
 
-	if user == nil {
-		user = me
+	if cmd.User == nil {
+		cmd.User = me
 	}
 
 	listOption := &orgapp.OrgListOptions{
-		Owner:  owner,
-		Member: user,
-		Roles:  roles,
+		Owner:    cmd.Owner,
+		Member:   cmd.User,
+		Roles:    cmd.Roles,
+		Page:     cmd.PageNUm,
+		PageSize: cmd.CountPerPage,
 	}
-	if os, err := ctl.org.List(listOption); err != nil {
+	if os, total, err := ctl.org.List(listOption); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, os)
+		var res userapp.UserPaginationDTO
+		res.Total = total
+		res.Labels = os
+		commonctl.SendRespOfGet(ctx, res)
 	}
 }
 
@@ -633,7 +642,7 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 // @Param    body  body  OrgReqMemberRequest  true  "body of the member request"
 // @Accept   json
 // @Security Bearer
-// @Success  201 {object}  commonctl.ResponseData{data=app.MemberRequestDTO,msg=string,code=string}
+// @Success  201 {object}  commonctl.ResponseData{data=orgapp.MemberRequestDTO,msg=string,code=string}
 // @Router   /v1/request [post]
 func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 	middleware.SetAction(ctx, "request to be a member")
@@ -717,7 +726,7 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 // @Param    page       query  int     false  "page index" Mininum(1)
 // @Accept   json
 // @Security Bearer
-// @Success  200 {object}  commonctl.ResponseData{data=[]app.MemberRequestDTO,msg=string,code=string}
+// @Success  200 {object}  commonctl.ResponseData{data=app.MemberPagnationDTO,msg=string,code=string}
 // @Router   /v1/request [get]
 func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
@@ -740,10 +749,41 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 		return
 	}
 
-	if dtos, err := ctl.org.ListMemberReq(&cmd); err != nil {
+	if dtos, total, err := ctl.org.ListMemberReq(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		commonctl.SendRespOfGet(ctx, dtos)
+		var res app.MemberPagnationDTO
+		res.Total = total
+		res.Members = dtos
+		commonctl.SendRespOfGet(ctx, res)
+	}
+}
+
+// @Summary GetOnlyRequest
+// @Description Search one member Record
+// @Tags Organization
+// @Param username path string true "username" MaxLength(40)
+// @param orgname path string true "orgname" MaxLength(40)
+// @Security Bearer
+// @Success  200 {object}  commonctl.ResponseData{data=[]domain.MemberRequest,msg=string,code=string}
+// @Router   /v1/request/only/{sername}/{orgname} [get]
+func (ctl *OrgController) GetOnlyRequest(ctx *gin.Context) {
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+	userName := ctx.Param("username")
+	orgName := ctx.Param("orgname")
+	if userName == "" || orgName == "" {
+		e := fmt.Errorf("missing parameters")
+		err := allerror.NewNoPermission(e.Error(), e)
+		commonctl.SendBadRequestBody(ctx, err)
+	}
+	res, err := ctl.org.GetOnlyApply(userName, orgName)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfGet(ctx, res)
 	}
 }
 

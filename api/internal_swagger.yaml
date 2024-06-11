@@ -122,6 +122,14 @@ definitions:
         items:
           type: string
         type: array
+      hardwares:
+        items:
+          type: string
+        type: array
+      languages:
+        items:
+          type: string
+        type: array
       library_name:
         type: string
       license:
@@ -207,6 +215,8 @@ definitions:
     type: object
   controller.reqToFailedStatus:
     properties:
+      all_build_log:
+        type: string
       commit_id:
         type: string
       reason:
@@ -214,6 +224,15 @@ definitions:
       space_id:
         type: string
       status:
+        type: string
+    type: object
+  controller.reqToNotifyStarting:
+    properties:
+      all_build_log:
+        type: string
+      commit_id:
+        type: string
+      space_id:
         type: string
     type: object
   controller.reqToNotifyUpdateCode:
@@ -292,6 +311,14 @@ definitions:
   github_com_openmerlin_merlin-server_models_controller.reqToResetLabel:
     properties:
       frameworks:
+        items:
+          type: string
+        type: array
+      hardwares:
+        items:
+          type: string
+        type: array
+      languages:
         items:
           type: string
         type: array
@@ -1146,7 +1173,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/controller.reqToCreateSpaceApp'
+          $ref: '#/definitions/controller.reqToNotifyStarting'
       responses:
         "202":
           description: Accepted

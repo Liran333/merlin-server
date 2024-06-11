@@ -1393,7 +1393,7 @@ const docTemplateinternal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.reqToCreateSpaceApp"
+                            "$ref": "#/definitions/controller.reqToNotifyStarting"
                         }
                     }
                 ],
@@ -2214,6 +2214,18 @@ const docTemplateinternal = `{
                         "type": "string"
                     }
                 },
+                "hardwares": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "library_name": {
                     "type": "string"
                 },
@@ -2346,6 +2358,9 @@ const docTemplateinternal = `{
         "controller.reqToFailedStatus": {
             "type": "object",
             "properties": {
+                "all_build_log": {
+                    "type": "string"
+                },
                 "commit_id": {
                     "type": "string"
                 },
@@ -2356,6 +2371,20 @@ const docTemplateinternal = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToNotifyStarting": {
+            "type": "object",
+            "properties": {
+                "all_build_log": {
+                    "type": "string"
+                },
+                "commit_id": {
+                    "type": "string"
+                },
+                "space_id": {
                     "type": "string"
                 }
             }
@@ -2477,6 +2506,18 @@ const docTemplateinternal = `{
             "type": "object",
             "properties": {
                 "frameworks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardwares": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "languages": {
                     "type": "array",
                     "items": {
                         "type": "string"

@@ -97,8 +97,14 @@ type MemberRequestDTO struct {
 	Status    string `json:"status"`
 	By        string `json:"by"`
 	Msg       string `json:"msg"`
+	AvatarId  string `json:"avatar_id"`
 	CreatedAt int64  `json:"created_at"`
 	UpdatedAt int64  `json:"updated_at"`
+}
+
+type MemberPagnationDTO struct {
+	Total   int                `json:"total"`
+	Members []MemberRequestDTO `json:"members"`
 }
 
 // ToMemberRequestDTO converts a domain.MemberRequest object to a MemberRequestDTO object.

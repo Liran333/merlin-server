@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"io"
+
 	sdk "github.com/openmerlin/merlin-sdk/user"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -26,12 +28,18 @@ type UserInfoDTO struct {
 	IsDisableAdmin bool `json:"is_disable_admin"`
 }
 
+type UserPaginationDTO struct {
+	Total  int       `json:"total"`
+	Labels []UserDTO `json:"Labels"`
+}
+
 // UserDTO represents the data transfer object for a user.
 type UserDTO struct {
 	Id              string  `json:"id"`
 	Name            string  `json:"account"`
 	Fullname        string  `json:"fullname"`
 	AvatarId        string  `json:"avatar_id"`
+	AvatarUrl       string  `json:"avatar_url"`
 	Email           *string `json:"email,omitempty"`
 	Phone           *string `json:"phone,omitempty"`
 	Description     string  `json:"description"`
@@ -62,6 +70,10 @@ func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	dto.Name = u.Account.Account()
 	if u.AvatarId != nil {
 		dto.AvatarId = u.AvatarId.AvatarId()
+	}
+
+	if u.AvatarUrl != nil {
+		dto.AvatarUrl = u.AvatarUrl.URL()
 	}
 
 	if u.Desc != nil {
@@ -196,4 +208,12 @@ type CmdToVerifyBindEmail struct {
 	User     primitive.Account
 	Email    primitive.Email
 	PassCode string
+}
+
+// CmdToVerifyBindEmail represents the command to verify a bind email.
+type CmdToUploadAvatar struct {
+	User     primitive.Account
+	Image    io.Reader
+	FileName string
+	OrgName  primitive.Account
 }

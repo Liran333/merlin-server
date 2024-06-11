@@ -39,6 +39,18 @@ type OrgCreatedCmd struct {
 	Owner       primitive.Account         `json:"owner"`
 }
 
+type OrgPaginationCmd struct {
+	Name         primitive.Account         `json:"name"`
+	FullName     primitive.AccountFullname `json:"fullname"`
+	Description  primitive.AccountDesc     `json:"description"`
+	Website      primitive.Website         `json:"website"`
+	AvatarId     primitive.AvatarId        `json:"avatar_id"`
+	Owner        primitive.Account         `json:"owner"`
+	Count        bool
+	PageNum      int
+	CountPerPage int
+}
+
 // OrgDeletedCmd represents the command for deleting an organization.
 type OrgDeletedCmd struct {
 	Actor primitive.Account
@@ -204,6 +216,7 @@ type MemberRequest struct {
 	CreatedAt int64              `json:"created_at"`
 	UpdatedAt int64              `json:"updated_at"`
 	Version   int
+	Member    primitive.Account `json:"member"`
 }
 
 // Approve represents an approval for a member to join an organization.
@@ -332,6 +345,7 @@ type OrgAddMemberCmd struct {
 	Type   InviteType
 	Role   primitive.Role
 	Msg    string
+	Member primitive.Account
 }
 
 // Validate checks if the command is valid.
@@ -388,6 +402,7 @@ type OrgCancelRequestMemberCmd struct {
 	Requester primitive.Account
 	Org       primitive.Account
 	Msg       string
+	Member    primitive.Account
 }
 
 // Validate checks if the command is valid.
@@ -420,8 +435,9 @@ type OrgAcceptInviteCmd = OrgRemoveInviteCmd
 func (cmd OrgApproveRequestMemberCmd) ToListReqCmd() *OrgMemberReqListCmd {
 	return &OrgMemberReqListCmd{
 		OrgNormalCmd: OrgNormalCmd{
-			Actor: cmd.Actor,
-			Org:   cmd.Org,
+			Actor:  cmd.Actor,
+			Org:    cmd.Org,
+			Member: cmd.Member,
 		},
 		Requester: cmd.Requester,
 		Status:    ApproveStatusPending,
@@ -445,8 +461,9 @@ func (cmd OrgNormalCmd) Validate() error {
 
 // OrgNormalCmd represents a normal command with actor and org fields.
 type OrgNormalCmd struct {
-	Actor primitive.Account
-	Org   primitive.Account
+	Actor  primitive.Account
+	Org    primitive.Account
+	Member primitive.Account
 }
 
 // OrgInvitationListCmd represents a command to list invitations in an organization.
@@ -462,6 +479,8 @@ type OrgMemberReqListCmd struct {
 	OrgNormalCmd
 	Requester primitive.Account
 	Status    ApproveStatus
+	PageNum   int
+	PageSize  int
 }
 
 // Validate checks if the command is valid.

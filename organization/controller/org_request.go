@@ -23,7 +23,7 @@ type orgBasicInfoUpdateRequest struct {
 	Website      *string `json:"website"`
 	AvatarId     string  `json:"avatar_id"`
 	Description  string  `json:"description"`
-	AllowRequest *bool   `json:"allow_request,omitempty"`
+	AllowRequest *bool   `json:"allow_request"`
 	DefaultRole  string  `json:"default_role"`
 }
 
@@ -66,7 +66,6 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 
 		empty = false
 	}
-
 	if req.AllowRequest != nil {
 		cmd.AllowRequest = req.AllowRequest
 		empty = false
@@ -83,23 +82,33 @@ type orgListRequest struct {
 	Owner    string   `form:"owner"`
 	Username string   `form:"username"`
 	Roles    []string `form:"roles"`
+	controller.CommonListRequest
 }
 
-func (req *orgListRequest) toCmd() (owner, user primitive.Account, roles []primitive.Role, err error) {
+type CmdToListOrgs struct {
+	Owner        primitive.Account
+	User         primitive.Account
+	Roles        []primitive.Role
+	Count        bool
+	PageNUm      int
+	CountPerPage int
+}
+
+func (req *orgListRequest) toCmd() (cmd CmdToListOrgs, err error) {
 	if req.Owner != "" {
-		if owner, err = primitive.NewAccount(req.Owner); err != nil {
+		if cmd.Owner, err = primitive.NewAccount(req.Owner); err != nil {
 			return
 		}
 	}
 
 	if req.Username != "" {
-		if user, err = primitive.NewAccount(req.Username); err != nil {
+		if cmd.User, err = primitive.NewAccount(req.Username); err != nil {
 			return
 		}
 	}
 
 	if len(req.Roles) > 0 {
-		roles = make([]primitive.Role, 0, len(req.Roles))
+		roles := make([]primitive.Role, 0, len(req.Roles))
 		var r primitive.Role
 
 		for _, val := range req.Roles {
@@ -109,6 +118,23 @@ func (req *orgListRequest) toCmd() (owner, user primitive.Account, roles []primi
 				roles = append(roles, r)
 			}
 		}
+		cmd.Roles = roles
+	}
+
+	if req.Count {
+		cmd.Count = req.Count
+	}
+
+	if v := req.PageNum; v <= 0 {
+		cmd.PageNUm = 1
+	} else {
+		cmd.PageNUm = v
+	}
+
+	if v := req.CountPerPage; v <= 0 || v > 100 {
+		cmd.CountPerPage = 100
+	} else {
+		cmd.CountPerPage = v
 	}
 
 	return
@@ -231,9 +257,9 @@ func (req *OrgListMemberReqRequest) toCmd(user primitive.Account) (cmd domain.Or
 	}
 
 	cmd.Status = domain.ApproveStatus(req.Status)
-
+	cmd.PageNum = req.PageNum
+	cmd.PageSize = req.CountPerPage
 	return
-
 }
 
 // OrgMemberEditRequest is a struct for handling organization member editing requests.
@@ -324,6 +350,7 @@ type OrgApproveMemberRequest struct {
 	User    string `json:"user"`
 	Msg     string `json:"msg"`
 	OrgName string `json:"org_name" binding:"required"`
+	Member  string `json:"member" binding:"required"`
 }
 
 func (req *OrgApproveMemberRequest) action() string {
@@ -341,9 +368,12 @@ func (req *OrgApproveMemberRequest) toCmd(user primitive.Account) (
 		return
 	}
 
+	if cmd.Member, err = primitive.NewAccount(req.Member); err != nil {
+		return
+	}
+
 	cmd.Actor = user
 	cmd.Msg = req.Msg
-
 	return
 }
 
@@ -446,6 +476,7 @@ func (req *reqToCheckName) toAccount() (primitive.Account, error) {
 type orgListMemberRequest struct {
 	Username string `form:"username"`
 	Role     string `form:"role"`
+	controller.CommonListRequest
 }
 
 func (req *orgListMemberRequest) toCmd(org primitive.Account) (cmd domain.OrgListMemberCmd, err error) {
