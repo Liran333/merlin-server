@@ -314,11 +314,11 @@ var reqListCmd = &cobra.Command{
 		req.Requester = user
 		req.Status = domain.ApproveStatus(viper.GetString("req.list.status"))
 
-		reqs, _, err := orgAppService.ListMemberReq(req)
+		reqs, err := orgAppService.ListMemberReq(req)
 		if err != nil {
 			logrus.Fatalf("list requests failed :%s", err.Error())
 		} else {
-			for _, o := range reqs {
+			for _, o := range reqs.Members {
 				fmt.Printf("\nOrg: %s\n", o.OrgName)
 				fmt.Printf("Role: %s\n", o.Role)
 				fmt.Printf("Fullname: %s\n", o.Fullname)

@@ -1,8 +1,8 @@
 /*
-Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
+Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 */
 
-// Package postgresql provides functionality for interacting with PostgreSQL databases.
+// Package obs Provide OBS related operations.
 package obs
 
 import (

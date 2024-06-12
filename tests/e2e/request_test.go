@@ -465,10 +465,11 @@ func (s *SuiteRequest) TestOneSearch() {
 	assert.NotEqual(s.T(), "", res["id"])
 	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["created_at"]))
 	assert.NotEqual(s.T(), 0, getInt64(s.T(), res["updated_at"]))
-	// 用户查询申请
-	_, r, err = ApiRest.OrganizationApi.V1RequestOnlySernameOrgnameGet(AuthRest2, s.requester, s.name)
+	// 用户查询申请,只返回最新数据
+	dataRes, r, err := ApiRest.OrganizationApi.V1RequestOnlyUsernameOrgnameGet(AuthRest2, s.requester, s.name)
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), 1, len(dataRes.Data))
 	// 用户撤销申请
 	r, err = ApiRest.OrganizationApi.V1RequestDelete(AuthRest2, swaggerRest.ControllerOrgRevokeMemberReqRequest{
 		User:    s.requester,

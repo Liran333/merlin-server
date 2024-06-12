@@ -2,7 +2,7 @@
 Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 */
 
-// Package postgresql provides functionality for interacting with PostgreSQL databases.
+// obs related configuration.
 package obs
 
 type Config struct {

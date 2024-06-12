@@ -207,14 +207,12 @@ func (impl *inviteRepoImpl) GetOneApply(userName string, orgName string) (res []
 	query := impl.DB().Where(impl.EqualQuery(fieldType), domain.InviteTypeRequest)
 	query = query.Where(impl.EqualQuery(fieldOrg), orgName)
 	query = query.Where(impl.EqualQuery(fieldInvitee), userName)
-	err = query.Find(&v).Error
+	err = query.Order("created_at ASC").Find(&v).Error
 	if err != nil || len(v) == 0 {
 		return nil, err
 	}
-	res = make([]domain.MemberRequest, len(v))
-	for i := range v {
-		res[i] = toMemberRequest(&v[i])
-	}
+	res = make([]domain.MemberRequest, 1)
+	res[0] = toMemberRequest(&v[len(v)-1])
 	return res, nil
 }
 

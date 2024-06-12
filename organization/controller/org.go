@@ -15,7 +15,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/controller/middleware"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
-	"github.com/openmerlin/merlin-server/organization/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	userapp "github.com/openmerlin/merlin-server/user/app"
@@ -749,13 +748,10 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 		return
 	}
 
-	if dtos, total, err := ctl.org.ListMemberReq(&cmd); err != nil {
+	if dtos, err := ctl.org.ListMemberReq(&cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
-		var res app.MemberPagnationDTO
-		res.Total = total
-		res.Members = dtos
-		commonctl.SendRespOfGet(ctx, res)
+		commonctl.SendRespOfGet(ctx, dtos)
 	}
 }
 
@@ -766,7 +762,7 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 // @param orgname path string true "orgname" MaxLength(40)
 // @Security Bearer
 // @Success  200 {object}  commonctl.ResponseData{data=[]domain.MemberRequest,msg=string,code=string}
-// @Router   /v1/request/only/{sername}/{orgname} [get]
+// @Router   /v1/request/only/{username}/{orgname} [get]
 func (ctl *OrgController) GetOnlyRequest(ctx *gin.Context) {
 	user := ctl.m.GetUserAndExitIfFailed(ctx)
 	if user == nil {

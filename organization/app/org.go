@@ -53,7 +53,7 @@ type OrgService interface {
 	AcceptInvite(*domain.OrgAcceptInviteCmd) (ApproveDTO, error)
 	RevokeInvite(*domain.OrgRemoveInviteCmd) (ApproveDTO, error)
 	GetOnlyApply(string, string) ([]domain.MemberRequest, error)
-	ListMemberReq(*domain.OrgMemberReqListCmd) ([]MemberRequestDTO, int, error)
+	ListMemberReq(*domain.OrgMemberReqListCmd) (MemberPagnationDTO, error)
 	ListInvitationByInvitee(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
 	ListInvitationByInviter(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
 	ListInvitationByOrg(primitive.Account, primitive.Account, domain.ApproveStatus) ([]ApproveDTO, error)
@@ -919,7 +919,7 @@ func (org *orgService) RequestMember(cmd *domain.OrgRequestMemberCmd) (dto Membe
 		return
 	}
 
-	if utf8.RuneCountInString(cmd.Msg) > 20 {
+	if utf8.RuneCountInString(cmd.Msg) > int(org.config.MaxStrSize) {
 		e := fmt.Errorf("character length exceeds limit")
 		err = allerror.New(allerror.ErrorOrgNotAllowRequestMember, e.Error(), e)
 		return
@@ -1170,7 +1170,7 @@ func (org *orgService) GetOnlyApply(userName string, orgName string) ([]domain.M
 }
 
 // ListMemberReq lists the member requests for an organization.
-func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []MemberRequestDTO, total int, err error) {
+func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos MemberPagnationDTO, err error) {
 	if cmd == nil {
 		e := fmt.Errorf("invalid param for list member request")
 		err = allerror.NewInvalidParam(e.Error(), e)
@@ -1210,12 +1210,12 @@ func (org *orgService) ListMemberReq(cmd *domain.OrgMemberReqListCmd) (dtos []Me
 
 		return
 	}
-
-	dtos = make([]MemberRequestDTO, len(reqs))
+	result := make([]MemberRequestDTO, len(reqs))
 	for i := range reqs {
-		dtos[i] = ToMemberRequestDTO(&reqs[i], org.user)
+		result[i] = ToMemberRequestDTO(&reqs[i], org.user)
 	}
-
+	dtos.Total = total
+	dtos.Members = result
 	return
 }
 

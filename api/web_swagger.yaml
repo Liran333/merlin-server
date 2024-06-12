@@ -2909,7 +2909,7 @@ paths:
       summary: ApproveRequest
       tags:
       - Organization
-  /v1/request/only/{sername}/{orgname}:
+  /v1/request/only/{username}/{orgname}:
     get:
       description: Search one member Record
       parameters:

@@ -2052,7 +2052,7 @@ const docTemplaterest = `{
                 }
             }
         },
-        "/v1/request/only/{sername}/{orgname}": {
+        "/v1/request/only/{username}/{orgname}": {
             "get": {
                 "security": [
                     {

@@ -20,6 +20,7 @@ type Config struct {
 	Topics           messageadapter.Topics `json:"topics"`
 	Primitive        primitive.Config      `json:"primitive"`
 	CertificateEmail []string              `json:"certificate_email"`
+	MaxStrSize       int64                 `json:"max_str_size"`
 }
 
 type tables struct {
@@ -36,6 +37,9 @@ func (cfg *Config) SetDefault() {
 
 	if cfg.MaxInviteCount <= 0 {
 		cfg.MaxInviteCount = 100
+	}
+	if cfg.MaxStrSize <= 0 {
+		cfg.MaxStrSize = 20
 	}
 }
 
