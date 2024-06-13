@@ -7,6 +7,7 @@ package coderepoadapter
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/openmerlin/go-sdk/gitea"
 
@@ -124,3 +125,10 @@ func (adapter *codeRepoAdapter) FindByIndex(index primitive.Identity) (domain.Co
 		CreatedBy:  primitive.CreateAccount(repo.Owner.UserName),
 	}, err
 }
+
+// IsNotFound check whether a code repository is not found
+func (adapter *codeRepoAdapter) IsNotFound(index primitive.Identity) bool {
+	_, resp, _ := adapter.client.GetRepoByID(index.Integer())
+	return resp.StatusCode == http.StatusNotFound
+}
+

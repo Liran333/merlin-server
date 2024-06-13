@@ -135,9 +135,11 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 		return
 	}
 
-	if err = s.codeRepoApp.Delete(dataset.RepoIndex()); err != nil {
-		err = xerrors.Errorf("failed to delete dataset code repo, err:%w", err)
-		return
+	if !s.codeRepoApp.IsNotFound(dataset.Id) {
+		if err = s.codeRepoApp.Delete(dataset.RepoIndex()); err != nil {
+			err = xerrors.Errorf("failed to delete dataset code repo, err:%w", err)
+			return
+		}
 	}
 
 	if err = s.repoAdapter.Delete(dataset.Id); err != nil {

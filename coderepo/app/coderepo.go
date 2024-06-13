@@ -20,6 +20,7 @@ type CodeRepoAppService interface {
 	Delete(commondomain.CodeRepoIndex) error
 	Update(*domain.CodeRepo, *CmdToUpdateRepo) (bool, error)
 	GetById(primitive.Identity) (domain.CodeRepo, error)
+	IsNotFound(primitive.Identity) bool
 }
 
 // NewCodeRepoAppService creates a new instance of CodeRepoAppService.
@@ -68,4 +69,9 @@ func (s *codeRepoAppService) Update(repo *domain.CodeRepo, cmd *CmdToUpdateRepo)
 	}
 
 	return true, s.repoAdapter.Save(&index, repo)
+}
+
+// IsNotFound check whether a code repository is not found
+func (s *codeRepoAppService) IsNotFound(index primitive.Identity) bool {
+	return s.repoAdapter.IsNotFound(index)
 }

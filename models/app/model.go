@@ -131,9 +131,10 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 
 		return
 	}
-
-	if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
-		return
+	if !s.codeRepoApp.IsNotFound(model.Id) {
+		if err = s.codeRepoApp.Delete(model.RepoIndex()); err != nil {
+			return
+		}
 	}
 
 	if err = s.repoAdapter.Delete(model.Id); err != nil {

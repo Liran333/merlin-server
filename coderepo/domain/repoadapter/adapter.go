@@ -16,4 +16,5 @@ type RepoAdapter interface {
 	Delete(*domain.CodeRepoIndex) error
 	Save(*domain.CodeRepoIndex, *domain.CodeRepo) error
 	FindByIndex(primitive.Identity) (domain.CodeRepo, error)
+	IsNotFound(primitive.Identity) bool
 }

@@ -259,11 +259,11 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 
 		return
 	}
-
-	if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
-		return
+	if !s.codeRepoApp.IsNotFound(space.Id) {
+		if err = s.codeRepoApp.Delete(space.RepoIndex()); err != nil {
+			return
+		}
 	}
-
 	// del space app
 	if err = s.spaceappRepository.DeleteBySpaceId(space.Id); err != nil {
 		return
