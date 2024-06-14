@@ -116,6 +116,7 @@ func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, c
 	}
 
 	space.DownloadCount = cmd.DownloadCount
+	space.VisitCount = cmd.VisitCount
 	space.UpdatedAt = utils.Now()
 
 	return s.repoAdapter.Save(&space)

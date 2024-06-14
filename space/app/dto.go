@@ -126,6 +126,7 @@ type SpaceDTO struct {
 	LocalEnvInfo  string         `json:"local_env_info"`
 	Visibility    string         `json:"visibility"`
 	DownloadCount int            `json:"download_count"`
+	VisitCount    int            `json:"visit_count"`
 	Disable       bool           `json:"disable"`
 	DisableReason string         `json:"disable_reason"`
 	Exception     string         `json:"exception"`
@@ -167,6 +168,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		AvatarId:      space.AvatarId.AvatarId(),
 		Visibility:    space.Visibility.Visibility(),
 		DownloadCount: space.DownloadCount,
+		VisitCount:    space.VisitCount,
 		LocalCMD:      space.GetLocalCmd(),
 		LocalEnvInfo:  space.GetLocalEnvInfo(),
 		Disable:       space.Disable,
@@ -201,6 +203,7 @@ func toSpaceSummary(spaceDTO *SpaceDTO) repository.SpaceSummary {
 		UpdatedAt:     spaceDTO.UpdatedAt,
 		LikeCount:     spaceDTO.LikeCount,
 		DownloadCount: spaceDTO.DownloadCount,
+		VisitCount:    spaceDTO.VisitCount,
 		Disable:       spaceDTO.Disable,
 		DisableReason: spaceDTO.DisableReason,
 		Labels: domain.SpaceLabels{
@@ -246,6 +249,7 @@ type SpaceModelDTO struct {
 	UpdatedAt     int64  `json:"updated_at"`
 	LikeCount     int    `json:"like_count"`
 	DownloadCount int    `json:"download_count"`
+	VisitCount    int    `json:"visit_count"`
 }
 
 // SpaceIdModelDTO
@@ -315,6 +319,7 @@ func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret
 // CmdToUpdateStatistics is to update download count
 type CmdToUpdateStatistics struct {
 	DownloadCount int `json:"download_count"`
+	VisitCount    int `json:"visit_count"`
 }
 
 // CmdToResetLabels is a type alias for domain.SpaceLabels, representing a command to reset space labels.

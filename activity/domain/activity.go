@@ -38,6 +38,7 @@ type ActivitySummary struct {
 type Stat struct {
 	LikeCount     int `json:"like_count"`
 	DownloadCount int `json:"download_count"`
+	VisitCount    int `json:"visit_count"`
 }
 
 // Resource struct represents the resource object targeted by user activities.

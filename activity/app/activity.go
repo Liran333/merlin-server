@@ -169,6 +169,7 @@ func (s *activityAppService) processSpaceActivity(user primitive.Account,
 	stat := domain.Stat{
 		LikeCount:     space.LikeCount,
 		DownloadCount: space.DownloadCount,
+		VisitCount: space.VisitCount,
 	}
 	additionInfo := fromSpaceDTO(space, spaceapp, &activity, &stat)
 	return additionInfo, nil

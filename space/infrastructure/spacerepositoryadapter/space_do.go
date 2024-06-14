@@ -29,6 +29,7 @@ const (
 	fieldBaseImage     = "base_image"
 	fieldLikeCount     = "like_count"
 	fieldDownloadCount = "download_count"
+	filedVisitCount        = "visit_count"
 	fieldNoApplicationFile = "no_application_file"
 )
 
@@ -59,6 +60,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		LocalCmd:           m.LocalCmd,
 		LocalEnvInfo:       m.LocalEnvInfo,
 		DownloadCount:      m.DownloadCount,
+		VisitCount:         m.VisitCount,
 		CompPowerAllocated: m.CompPowerAllocated,
 		NoApplicationFile:  m.NoApplicationFile,
 		CommitId:           m.CommitId,
@@ -107,6 +109,7 @@ type spaceDO struct {
 	Version       int    `gorm:"column:version"`
 	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
 	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
+	VisitCount    int    `gorm:"column:visit_count;not null;default:0"`
 	BaseImage     string `gorm:"column:base_image"`
 	// local cmd
 	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
@@ -155,6 +158,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		LikeCount:     do.LikeCount,
 		LocalEnvInfo:  do.LocalEnvInfo,
 		DownloadCount: do.DownloadCount,
+		VisitCount:    do.VisitCount,
 		Labels: domain.SpaceLabels{
 			Task:      spaceprimitive.CreateTask(do.Task),
 			License:   primitive.CreateLicense(do.License),
@@ -178,6 +182,7 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		UpdatedAt:     do.UpdatedAt,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,
+		VisitCount:    do.VisitCount,
 		Disable:       do.Disable,
 		DisableReason: do.DisableReason,
 		Labels: domain.SpaceLabels{

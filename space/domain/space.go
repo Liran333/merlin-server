@@ -39,6 +39,7 @@ type Space struct {
 	UpdatedAt     int64
 	LikeCount     int
 	DownloadCount int
+	VisitCount    int
 
 	Disable       bool
 	DisableReason primitive.DisableReason

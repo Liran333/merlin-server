@@ -90,7 +90,8 @@ func (ctl *StatisticInternalController) Update(ctx *gin.Context) {
 	case primitive.ObjTypeSpace:
 		middleware.SetAction(ctx, fmt.Sprintf("Update space statistics, ID: %v", repoId))
 		err = ctl.spaceInternalApp.UpdateStatistics(repoId,
-			&spaceapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount})
+			&spaceapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount,
+				VisitCount: stats.VisitCount})
 	default:
 		commonctl.SendError(ctx, fmt.Errorf("unsupported resource type"))
 		return

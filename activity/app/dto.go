@@ -40,6 +40,7 @@ type ActivityDTO struct {
 type StatDTO struct {
 	LikeCount     int `json:"like_count"`
 	DownloadCount int `json:"download_count"`
+	VisitCount    int `json:"visit_count"`
 }
 
 // ResourceDTO represents the DTO structure for a resource.
@@ -86,6 +87,7 @@ func toStatDTO(stat *domain.Stat) StatDTO {
 	return StatDTO{
 		LikeCount:     stat.LikeCount,
 		DownloadCount: stat.DownloadCount,
+		VisitCount:    stat.VisitCount,
 	}
 }
 

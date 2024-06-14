@@ -245,6 +245,7 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(Interal, id,
 		swaggerInternal.ControllerRepoStatistics{
 			DownloadCount: 15,
+			VisitCount: 20,
 		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -255,6 +256,7 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 
 	model := getData(s.T(), data1.Data)
 	assert.Equal(s.T(), int32(15), model["download_count"])
+	assert.Equal(s.T(), int32(20), model["visit_count"])
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 

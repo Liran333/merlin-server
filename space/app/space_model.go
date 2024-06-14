@@ -169,6 +169,7 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 			UpdatedAt:     space.UpdatedAt,
 			LikeCount:     space.LikeCount,
 			DownloadCount: space.DownloadCount,
+			VisitCount:    space.VisitCount,
 		}
 		spaces = append(spaces, spaceModel)
 	}
