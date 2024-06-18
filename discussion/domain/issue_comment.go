@@ -1,8 +1,10 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	discussionprimitive "github.com/openmerlin/merlin-server/discussion/domain/primitive"
 )
@@ -42,8 +44,14 @@ func (c *IssueComment) IsCommentOwner(user primitive.Account) bool {
 	return c.Author == user
 }
 
-func (c *IssueComment) UpdateContent(content discussionprimitive.CommentContent) {
+func (c *IssueComment) UpdateContent(user primitive.Account, content discussionprimitive.CommentContent) error {
+	if !c.IsCommentOwner(user) {
+		return allerror.NewNoPermission("no permission", errors.New("not comment owner"))
+	}
+
 	c.Content = content
+
+	return nil
 }
 
 type Emoji struct {

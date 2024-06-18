@@ -1,9 +1,10 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
-	"github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	discussionprimitive "github.com/openmerlin/merlin-server/discussion/domain/primitive"
 )
@@ -13,17 +14,20 @@ const (
 	operationClose  = "close"
 )
 
-type Index = domain.CodeRepoIndex
-
 type Issue struct {
 	Id           int64
-	Index        Index
 	Title        discussionprimitive.IssueTitle
 	Author       primitive.Account
 	Status       discussionprimitive.IssueStatus
 	Operation    []Operation
+	Resource     Resource
 	CommentCount int64
 	CreatedAt    time.Time
+}
+
+type Resource struct {
+	Id   primitive.Identity
+	Type primitive.ObjType
 }
 
 type Operation struct {
@@ -32,16 +36,28 @@ type Operation struct {
 	CreatedAt time.Time
 }
 
-func NewIssue(index Index, author primitive.Account, title discussionprimitive.IssueTitle) Issue {
+func NewIssue(
+	resource Resource,
+	author primitive.Account,
+	title discussionprimitive.IssueTitle,
+) Issue {
 	return Issue{
-		Index:  index,
-		Title:  title,
-		Author: author,
-		Status: discussionprimitive.IssueStatusOpen,
+		Title:    title,
+		Author:   author,
+		Status:   discussionprimitive.IssueStatusOpen,
+		Resource: resource,
 	}
 }
 
-func (i *Issue) Close(user primitive.Account) {
+func (i *Issue) Close(user primitive.Account) error {
+	if !i.Status.IsOpen() {
+		return allerror.New(
+			allerror.ErrorCodeIssueClosed,
+			"failed to close issue",
+			errors.New("issue is closed"),
+		)
+	}
+
 	i.Status = discussionprimitive.IssueStatusClosed
 
 	i.Operation = append(i.Operation, Operation{
@@ -49,9 +65,19 @@ func (i *Issue) Close(user primitive.Account) {
 		Action:    operationClose,
 		CreatedAt: time.Now(),
 	})
+
+	return nil
 }
 
-func (i *Issue) Reopen(user primitive.Account) {
+func (i *Issue) Reopen(user primitive.Account) error {
+	if i.Status.IsOpen() {
+		return allerror.New(
+			allerror.ErrorCodeIssueIsOpen,
+			"failed to reopen issue",
+			errors.New("issue is open"),
+		)
+	}
+
 	i.Status = discussionprimitive.IssueStatusOpen
 
 	i.Operation = append(i.Operation, Operation{
@@ -59,6 +85,8 @@ func (i *Issue) Reopen(user primitive.Account) {
 		Action:    operationReopen,
 		CreatedAt: time.Now(),
 	})
+
+	return nil
 }
 
 func (i *Issue) IsStatusChanged(status discussionprimitive.IssueStatus) bool {

@@ -361,6 +361,16 @@ const (
 
 	// ErrorFailToRetrieveActivityData failed to retrive activities: %s
 	ErrorFailToRetrieveActivityData = "failed_to_retrieve_activity"
+
+	ErrorCodeFailToCreateIssue = "failed_to_create_issue"
+	ErrorCodeFailToUpdateIssue = "failed_to_update_issue"
+	ErrorCodeIssueNotFound     = "issue_not_found"
+	ErrorCodeIssueClosed       = "issue_closed"
+	ErrorCodeIssueIsOpen       = "issue_is_open"
+
+	ErrorCodeFailToCreateComment = "failed_to_create_comment"
+	ErrorCodeFailToUpdateComment = "failed_to_update_comment"
+	ErrorCodeCommentNotFound     = "comment_not_found"
 )
 
 // errorImpl
