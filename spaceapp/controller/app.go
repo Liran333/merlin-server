@@ -70,7 +70,7 @@ func (ctl *SpaceAppController) Restart(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if err := ctl.appService.RestartSpaceApp(user, &index); err != nil {
+	if err := ctl.appService.RestartSpaceApp(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
@@ -97,7 +97,7 @@ func (ctl *SpaceAppController) Pause(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.PauseSpaceApp(user, &index); err != nil {
+	if err := ctl.appService.PauseSpaceApp(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
@@ -124,7 +124,7 @@ func (ctl *SpaceAppController) Resume(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.ResumeSpaceApp(user, &index); err != nil {
+	if err := ctl.appService.ResumeSpaceApp(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")

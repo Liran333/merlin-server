@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"errors"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -15,9 +16,9 @@ import (
 
 // OrgCertificateService is the interface definition for organization certificate service.
 type OrgCertificateService interface {
-	Certificate(*OrgCertificateCmd) error
-	GetCertification(orgName, actor primitive.Account) (OrgCertificateDTO, error)
-	DuplicateCheck(cmd OrgCertificateDuplicateCheckCmd) (bool, error)
+	Certificate(context.Context, *OrgCertificateCmd) error
+	GetCertification(ctx context.Context, orgName, actor primitive.Account) (OrgCertificateDTO, error)
+	DuplicateCheck(ctx context.Context, cmd OrgCertificateDuplicateCheckCmd) (bool, error)
 }
 
 // NewOrgCertificateService creates a new instance of the organization certificate service.
@@ -40,8 +41,8 @@ type orgCertificateService struct {
 }
 
 // Certificate is a method of the orgCertificateService that handles the certificate operation.
-func (org *orgCertificateService) Certificate(cmd *OrgCertificateCmd) error {
-	err := org.perm.Check(cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
+func (org *orgCertificateService) Certificate(ctx context.Context, cmd *OrgCertificateCmd) error {
+	err := org.perm.Check(ctx, cmd.Actor, cmd.OrgName, primitive.ObjTypeOrg, primitive.ActionWrite)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func (org *orgCertificateService) Certificate(cmd *OrgCertificateCmd) error {
 		UnifiedSocialCreditCode: cmd.UnifiedSocialCreditCode,
 	}
 
-	_, err = org.certificate.DuplicateCheck(option)
+	_, err = org.certificate.DuplicateCheck(ctx, option)
 	if err == nil {
 		return errors.New("duplicate information")
 	}
@@ -72,8 +73,9 @@ func (org *orgCertificateService) Certificate(cmd *OrgCertificateCmd) error {
 
 // GetCertification is a method of the orgCertificateService
 // that retrieves the certificate information for an organization.
-func (org *orgCertificateService) GetCertification(orgName, actor primitive.Account) (OrgCertificateDTO, error) {
-	cert, err := org.certificate.Find(repository.FindOption{OrgName: orgName})
+func (org *orgCertificateService) GetCertification(
+	ctx context.Context, orgName, actor primitive.Account) (OrgCertificateDTO, error) {
+	cert, err := org.certificate.Find(ctx, repository.FindOption{OrgName: orgName})
 	if err != nil {
 		if commonrepository.IsErrorResourceNotExists(err) {
 			err = nil
@@ -84,7 +86,7 @@ func (org *orgCertificateService) GetCertification(orgName, actor primitive.Acco
 
 	isAdmin := false
 	if actor != nil {
-		err = org.perm.Check(actor, orgName, primitive.ObjTypeOrg, primitive.ActionWrite)
+		err = org.perm.Check(ctx, actor, orgName, primitive.ObjTypeOrg, primitive.ActionWrite)
 		if err == nil {
 			isAdmin = true
 		}
@@ -100,8 +102,9 @@ func (org *orgCertificateService) GetCertification(orgName, actor primitive.Acco
 
 // DuplicateCheck is a method of the orgCertificateService
 // that performs a duplicate check for organization certificates.
-func (org *orgCertificateService) DuplicateCheck(cmd OrgCertificateDuplicateCheckCmd) (bool, error) {
-	_, err := org.certificate.DuplicateCheck(cmd)
+func (org *orgCertificateService) DuplicateCheck(
+	ctx context.Context, cmd OrgCertificateDuplicateCheckCmd) (bool, error) {
+	_, err := org.certificate.DuplicateCheck(ctx, cmd)
 	if err != nil {
 		if commonrepository.IsErrorResourceNotExists(err) {
 			return true, nil

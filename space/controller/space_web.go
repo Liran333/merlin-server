@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 
 	activityapp "github.com/openmerlin/merlin-server/activity/app"
@@ -80,7 +82,7 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	dto, err := ctl.appService.GetByName(user, &index)
+	dto, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -103,7 +105,7 @@ func (ctl *SpaceWebController) Get(ctx *gin.Context) {
 		SpaceDTO: &dto,
 	}
 
-	if userInfo, err := ctl.user.GetOrgOrUser(user, index.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), user, index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		detail.OwnerAvatarId = userInfo.AvatarId
@@ -159,7 +161,7 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 
 		user := ctl.userMiddleWare.GetUser(ctx)
 
-		dto, err := ctl.appService.List(user, &cmd)
+		dto, err := ctl.appService.List(ctx.Request.Context(), user, &cmd)
 		if err != nil {
 			commonctl.SendError(ctx, err)
 
@@ -171,7 +173,7 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 			SpacesDTO: &dto,
 		}
 
-		if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
+		if userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), user, cmd.Owner); err != nil {
 			commonctl.SendError(ctx, err)
 		} else {
 			result.AvatarId = userInfo.AvatarId
@@ -191,12 +193,12 @@ func (ctl *SpaceWebController) List(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesSummary := ctl.appService.Recommend(user)
+	spacesSummary := ctl.appService.Recommend(ctx.Request.Context(), user)
 
 	sps := make([]spaceRecommendInfo, 0, len(spacesSummary))
 
 	for _, v := range spacesSummary {
-		userInfo, err := ctl.user.GetOrgOrUser(nil, primitive.CreateAccount(v.Owner))
+		userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), nil, primitive.CreateAccount(v.Owner))
 		if err != nil {
 			commonctl.SendError(ctx, err)
 		}
@@ -226,7 +228,7 @@ func (ctl *SpaceWebController) ListRecommends(ctx *gin.Context) {
 func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spacesSummary := ctl.appService.Boutique(user)
+	spacesSummary := ctl.appService.Boutique(ctx.Request.Context(), user)
 
 	sps := make([]spaceRecommendInfo, 0, len(spacesSummary))
 
@@ -277,21 +279,21 @@ func (ctl *SpaceWebController) ListGlobal(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	result, err := ctl.appService.List(user, &cmd)
+	result, err := ctl.appService.List(ctx.Request.Context(), user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	if v, err := ctl.setAvatars(&result); err != nil {
+	if v, err := ctl.setAvatars(ctx, &result); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
 	}
 }
 
-func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error) {
+func (ctl *SpaceWebController) setAvatars(ctx context.Context, dto *app.SpacesDTO) (spacesInfo, error) {
 	ms := dto.Spaces
 
 	// get avatars
@@ -305,7 +307,7 @@ func (ctl *SpaceWebController) setAvatars(dto *app.SpacesDTO) (spacesInfo, error
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
-		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		userInfo, err := ctl.user.GetOrgOrUser(ctx, nil, accounts[i])
 		if err != nil {
 			return spacesInfo{}, err
 		}
@@ -350,7 +352,7 @@ func (ctl *SpaceWebController) GetModelsBySpaceId(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	models, err := ctl.modelSpaceService.GetModelsBySpaceId(user, spaceId)
+	models, err := ctl.modelSpaceService.GetModelsBySpaceId(ctx.Request.Context(), user, spaceId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -358,7 +360,7 @@ func (ctl *SpaceWebController) GetModelsBySpaceId(ctx *gin.Context) {
 	}
 
 	for _, model := range models {
-		if avatar, err := ctl.user.GetUserAvatarId(primitive.CreateAccount(model.Owner)); err != nil {
+		if avatar, err := ctl.user.GetUserAvatarId(ctx.Request.Context(), primitive.CreateAccount(model.Owner)); err != nil {
 			model.AvatarId = ""
 		} else {
 			model.AvatarId = avatar.AvatarId

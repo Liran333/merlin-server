@@ -122,6 +122,10 @@ services:
         condition: service_healthy
       gitea:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
+      jaeger:
+        condition: service_started
     command:
       - --config-file
       - /home/modelfoundry/config.yml
@@ -143,7 +147,23 @@ services:
     networks:
       network:
         ipv4_address: 10.5.0.7
-
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.100.0
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml
+    ports:
+      - 4317:4317
+    networks:
+      network:
+        ipv4_address: 10.5.0.8
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - 16686:16686
+    networks:
+      network:
+        ipv4_address: 10.5.0.9
 networks:
   network:
     driver: bridge

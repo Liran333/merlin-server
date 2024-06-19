@@ -14,6 +14,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 var (
@@ -45,6 +46,10 @@ func Init(cfg *Config, removeCfg bool) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	if err := dbInstance.Use(tracing.NewPlugin()); err != nil {
+		panic(err)
 	}
 
 	if removeCfg && cfg.Dbcert != "" {

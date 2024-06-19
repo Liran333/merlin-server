@@ -57,7 +57,7 @@ func (ctl *PermissionInternalController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.ps.CanUpdate(user, r); err != nil {
+	if err := ctl.ps.CanUpdate(ctx.Request.Context(), user, r); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
@@ -79,7 +79,7 @@ func (ctl *PermissionInternalController) Read(ctx *gin.Context) {
 		return
 	}
 
-	notFound, err := commonapp.CanReadOrNotFound(user, r, ctl.ps)
+	notFound, err := commonapp.CanReadOrNotFound(ctx.Request.Context(), user, r, ctl.ps)
 	if notFound {
 		commonctl.SendError(ctx, err)
 		return

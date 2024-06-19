@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"context"
 	"errors"
 
 	"gorm.io/gorm/clause"
@@ -76,11 +77,12 @@ func (impl *memberRepoImpl) Save(o *domain.OrgMember) (new domain.OrgMember, err
 }
 
 // Delete deletes an org member from the database by its primary key.
-func (impl *memberRepoImpl) Delete(o *domain.OrgMember) (err error) {
+func (impl *memberRepoImpl) Delete(ctx context.Context, o *domain.OrgMember) (err error) {
 	tmpDo := &Member{}
 	tmpDo.ID = o.Id.Integer()
 
 	return impl.DeleteByPrimaryKey(
+		ctx,
 		tmpDo,
 	)
 }
@@ -126,7 +128,7 @@ func (impl *memberRepoImpl) DeleteByOrg(name primitive.Account) (
 }
 
 // GetByOrgAndUser retrieves a member by organization and user names.
-func (impl *memberRepoImpl) GetByOrgAndUser(org, user string) (
+func (impl *memberRepoImpl) GetByOrgAndUser(ctx context.Context, org, user string) (
 	member domain.OrgMember, err error,
 ) {
 	var v Member
@@ -134,7 +136,7 @@ func (impl *memberRepoImpl) GetByOrgAndUser(org, user string) (
 	v.Orgname = org
 	v.Username = user
 
-	if err = impl.GetRecord(&v, &v); err != nil {
+	if err = impl.GetRecord(ctx, &v, &v); err != nil {
 		return
 	}
 

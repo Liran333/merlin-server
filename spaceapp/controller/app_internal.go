@@ -68,7 +68,7 @@ func (ctl *SpaceAppInternalController) Create(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.Create(&cmd); err != nil {
+	if err := ctl.appService.Create(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")
@@ -99,7 +99,7 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppBuilding(ctx *gin.Context) 
 		return
 	}
 
-	if err := ctl.appService.NotifyIsBuilding(&cmd); err != nil {
+	if err := ctl.appService.NotifyIsBuilding(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -130,7 +130,7 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppStarting(ctx *gin.Context) 
 		return
 	}
 
-	if err := ctl.appService.NotifyStarting(&cmd); err != nil {
+	if err := ctl.appService.NotifyStarting(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -161,7 +161,7 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppServing(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.appService.NotifyIsServing(&cmd); err != nil {
+	if err := ctl.appService.NotifyIsServing(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -194,19 +194,19 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppFailedStatus(ctx *gin.Conte
 
 	switch cmd.Status {
 	case appprimitive.AppStatusBuildFailed:
-		if err := ctl.appService.NotifyIsBuildFailed(&cmd); err != nil {
+		if err := ctl.appService.NotifyIsBuildFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	case appprimitive.AppStatusStartFailed:
-		if err := ctl.appService.NotifyIsStartFailed(&cmd); err != nil {
+		if err := ctl.appService.NotifyIsStartFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	case appprimitive.AppStatusRestartFailed:
-		if err := ctl.appService.NotifyIsRestartFailed(&cmd); err != nil {
+		if err := ctl.appService.NotifyIsRestartFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	case appprimitive.AppStatusResumeFailed:
-		if err := ctl.appService.NotifyIsResumeFailed(&cmd); err != nil {
+		if err := ctl.appService.NotifyIsResumeFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	default:
@@ -241,11 +241,11 @@ func (ctl *SpaceAppInternalController) Pause(ctx *gin.Context) {
 		return
 	}
 	if cmd.IsForce {
-		if err := ctl.appService.ForcePauseSpaceApp(cmd.SpaceId); err != nil {
+		if err := ctl.appService.ForcePauseSpaceApp(ctx.Request.Context(), cmd.SpaceId); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	} else {
-		if err := ctl.appService.PauseSpaceApp(cmd.SpaceId); err != nil {
+		if err := ctl.appService.PauseSpaceApp(ctx.Request.Context(), cmd.SpaceId); err != nil {
 			commonctl.SendError(ctx, err)
 		}
 	}

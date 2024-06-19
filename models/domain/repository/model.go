@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repository
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
@@ -73,7 +75,7 @@ type ModelRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Model, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
-	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
+	List(context.Context, *ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
 	AddLike(domain.Model) error
 	DeleteLike(domain.Model) error

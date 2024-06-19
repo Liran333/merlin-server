@@ -70,7 +70,7 @@ func (ctl *DatasetWebController) Get(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	dto, err := ctl.appService.GetByName(user, &index)
+	dto, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, xerrors.Errorf("failed to get dataset, %w", err))
 
@@ -93,7 +93,7 @@ func (ctl *DatasetWebController) Get(ctx *gin.Context) {
 		DatasetDTO: &dto,
 	}
 
-	if avatar, err := ctl.user.GetUserAvatarId(index.Owner); err != nil {
+	if avatar, err := ctl.user.GetUserAvatarId(ctx.Request.Context(), index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		detail.AvatarId = avatar.AvatarId
@@ -138,7 +138,7 @@ func (ctl *DatasetWebController) List(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	dto, err := ctl.appService.List(user, &cmd)
+	dto, err := ctl.appService.List(ctx.Request.Context(), user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -150,7 +150,7 @@ func (ctl *DatasetWebController) List(ctx *gin.Context) {
 		DatasetsDTO: &dto,
 	}
 
-	if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), user, cmd.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		result.AvatarId = userInfo.AvatarId
@@ -193,21 +193,21 @@ func (ctl *DatasetWebController) ListGlobal(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	result, err := ctl.appService.List(user, &cmd)
+	result, err := ctl.appService.List(ctx.Request.Context(), user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	if v, err := ctl.setUserInfo(&result); err != nil {
+	if v, err := ctl.setUserInfo(ctx, &result); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
 	}
 }
 
-func (ctl *DatasetWebController) setUserInfo(dto *app.DatasetsDTO) (datasetsInfo, error) {
+func (ctl *DatasetWebController) setUserInfo(ctx *gin.Context, dto *app.DatasetsDTO) (datasetsInfo, error) {
 	ms := dto.Datasets
 
 	// get avatars
@@ -220,7 +220,7 @@ func (ctl *DatasetWebController) setUserInfo(dto *app.DatasetsDTO) (datasetsInfo
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
-		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), nil, accounts[i])
 		if err != nil {
 			return datasetsInfo{}, xerrors.Errorf("failed to get user info, %w", err)
 		}
@@ -281,6 +281,7 @@ func (ctl *DatasetWebController) disable(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Disable(
+		ctx.Request.Context(),
 		ctl.userMiddleWare.GetUser(ctx),
 		datasetId,
 		&cmd,

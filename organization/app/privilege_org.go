@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -47,8 +48,8 @@ type PrivilegeOrgListOptions struct {
 
 // PrivilegeOrg interface
 type PrivilegeOrg interface {
-	Contains(primitive.Account) error
-	List(*PrivilegeOrgListOptions) ([]userapp.UserDTO, error)
+	Contains(context.Context, primitive.Account) error
+	List(context.Context, *PrivilegeOrgListOptions) ([]userapp.UserDTO, error)
 	IsCanReadObj(action, primitive.ObjType) bool
 }
 
@@ -111,14 +112,14 @@ type privilegeOrg struct {
 }
 
 // Contains returns an error if the account is not in the privilege org.
-func (p *privilegeOrg) Contains(account primitive.Account) error {
+func (p *privilegeOrg) Contains(ctx context.Context, account primitive.Account) error {
 	if account == nil {
 		e := fmt.Errorf("account is nil, cannot check privilege org")
 		return allerror.NewInvalidParam(e.Error(), e)
 	}
 
 	for _, cfg := range p.cfgs {
-		if err := cfg.contains(account, p.org); err == nil {
+		if err := cfg.contains(ctx, account, p.org); err == nil {
 			return nil
 		}
 	}
@@ -128,8 +129,8 @@ func (p *privilegeOrg) Contains(account primitive.Account) error {
 }
 
 // Check if the privilegeOrgConfig contains the provided account within the specified organization.
-func (p *privilegeOrgConfig) contains(account primitive.Account, org OrgService) error {
-	o, err := org.GetByAccount(p.OrgName)
+func (p *privilegeOrgConfig) contains(ctx context.Context, account primitive.Account, org OrgService) error {
+	o, err := org.GetByAccount(ctx, p.OrgName)
 	if err != nil {
 		logrus.Errorf("failed to get org: %s, %s", p.OrgName, err)
 		return err
@@ -140,7 +141,7 @@ func (p *privilegeOrgConfig) contains(account primitive.Account, org OrgService)
 		return allerror.New(allerror.ErrorCodePrivilegeOrgIdMismatch, e.Error(), e)
 	}
 
-	has := org.HasMember(primitive.CreateAccount(o.Name), account)
+	has := org.HasMember(ctx, primitive.CreateAccount(o.Name), account)
 	if !has {
 		e := fmt.Errorf("user: %s not in a privilegeorg", account.Account())
 		return allerror.New(allerror.ErrorCodeNotInPrivilegeOrg, e.Error(), e)
@@ -150,7 +151,7 @@ func (p *privilegeOrgConfig) contains(account primitive.Account, org OrgService)
 }
 
 // List returns the list of users in the privilege org.
-func (p *privilegeOrg) List(l *PrivilegeOrgListOptions) ([]userapp.UserDTO, error) {
+func (p *privilegeOrg) List(ctx context.Context, l *PrivilegeOrgListOptions) ([]userapp.UserDTO, error) {
 	if l == nil {
 		e := fmt.Errorf("list options is nil")
 		return nil, allerror.NewInvalidParam(e.Error(), e)
@@ -162,14 +163,14 @@ func (p *privilegeOrg) List(l *PrivilegeOrgListOptions) ([]userapp.UserDTO, erro
 
 	orgs := make([]userapp.UserDTO, 0)
 	for _, cfg := range p.cfgs {
-		o, err := p.org.GetByAccount(cfg.OrgName)
+		o, err := p.org.GetByAccount(ctx, cfg.OrgName)
 		if err != nil {
 			logrus.Errorf("failed to get org: %s, %s", cfg.OrgName, err)
 			return nil, err
 		}
 
 		if l.User != nil {
-			has := p.org.HasMember(primitive.CreateAccount(o.Name), l.User)
+			has := p.org.HasMember(ctx, primitive.CreateAccount(o.Name), l.User)
 			if !has {
 				continue
 			}

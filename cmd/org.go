@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
@@ -34,6 +36,7 @@ import (
 )
 
 var orgAppService orgapp.OrgService
+var ctx context.Context
 
 func initorg() {
 	invite := orgrepoimpl.NewInviteRepo(
@@ -67,8 +70,10 @@ func initorg() {
 		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain)
 
 	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org.Domain, git,
-		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo,
+		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo, opentelemetry.NewTracer(&cfg.Trace),
 	)
+
+	ctx = context.Background()
 }
 
 var orgCmd = &cobra.Command{
@@ -113,7 +118,7 @@ var orgAddCmd = &cobra.Command{
 			logrus.Fatalf("invalid owner :%s", err.Error())
 		}
 
-		_, err = orgAppService.Create(&domain.OrgCreatedCmd{
+		_, err = orgAppService.Create(ctx, &domain.OrgCreatedCmd{
 			Name:        orgName,
 			AvatarId:    ava,
 			FullName:    fullname,
@@ -150,7 +155,7 @@ var memberAddCmd = &cobra.Command{
 		req.Actor = primitive.CreateAccount(actor)
 		req.Org = orgName
 		req.Requester = userName
-		_, err = orgAppService.ApproveRequest(req)
+		_, err = orgAppService.ApproveRequest(ctx, req)
 		if err != nil {
 			logrus.Fatalf("add member failed :%s", err.Error())
 		} else {
@@ -178,7 +183,7 @@ var memberAcceptCmd = &cobra.Command{
 		req.Org = orgName
 		req.Msg = msg
 		req.Account = primitive.CreateAccount(actor)
-		_, err = orgAppService.AcceptInvite(req)
+		_, err = orgAppService.AcceptInvite(ctx, req)
 		if err != nil {
 			logrus.Fatalf("accept approve failed :%s", err.Error())
 		} else {
@@ -200,7 +205,7 @@ var orgCheckCmd = &cobra.Command{
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
 
-		ok := orgAppService.CheckName(name)
+		ok := orgAppService.CheckName(ctx, name)
 		if !ok {
 			logrus.Fatalf("check name failed")
 		} else {
@@ -222,7 +227,7 @@ var memberListCmd = &cobra.Command{
 			logrus.Fatalf("invalid org name :%s", err.Error())
 		}
 
-		members, err := orgAppService.ListMember(&domain.OrgListMemberCmd{Org: orgName})
+		members, err := orgAppService.ListMember(ctx, &domain.OrgListMemberCmd{Org: orgName})
 		if err != nil {
 			logrus.Fatalf("list member failed :%s", err.Error())
 		} else {
@@ -258,7 +263,7 @@ var inviteSendCmd = &cobra.Command{
 			logrus.Fatalf("invalid user role :%s", err.Error())
 		}
 
-		_, err = orgAppService.InviteMember(&domain.OrgInviteMemberCmd{
+		_, err = orgAppService.InviteMember(ctx, &domain.OrgInviteMemberCmd{
 			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Role:    role,
@@ -288,7 +293,7 @@ var requestCmd = &cobra.Command{
 		req.Actor = primitive.CreateAccount(actor)
 		req.Org = orgName
 		req.Msg = viper.GetString("req.add.msg")
-		_, err = orgAppService.RequestMember(req)
+		_, err = orgAppService.RequestMember(ctx, req)
 		if err != nil {
 			logrus.Fatalf("add member request failed :%s", err.Error())
 		} else {
@@ -314,7 +319,7 @@ var reqListCmd = &cobra.Command{
 		req.Requester = user
 		req.Status = domain.ApproveStatus(viper.GetString("req.list.status"))
 
-		reqs, err := orgAppService.ListMemberReq(req)
+		reqs, err := orgAppService.ListMemberReq(ctx, req)
 		if err != nil {
 			logrus.Fatalf("list requests failed :%s", err.Error())
 		} else {
@@ -358,7 +363,7 @@ var inviteListCmd = &cobra.Command{
 		req.Status = domain.ApproveStatus(viper.GetString("invite.list.status"))
 		req.Inviter = inviter
 
-		invites, err = orgAppService.ListInvitationByOrg(req.Actor, orgName, req.Status)
+		invites, err = orgAppService.ListInvitationByOrg(ctx, req.Actor, orgName, req.Status)
 
 		if err != nil {
 			logrus.Fatalf("list invites failed :%s", err.Error())
@@ -400,7 +405,7 @@ var removeInviteCmd = &cobra.Command{
 			userName = primitive.CreateAccount(actor)
 		}
 
-		_, err = orgAppService.RevokeInvite(&domain.OrgRemoveInviteCmd{
+		_, err = orgAppService.RevokeInvite(ctx, &domain.OrgRemoveInviteCmd{
 			Actor:   primitive.CreateAccount(actor),
 			Org:     orgName,
 			Account: userName,
@@ -438,7 +443,7 @@ var removeReqCmd = &cobra.Command{
 			Msg:       viper.GetString("req.del.msg"),
 		}
 
-		_, err = orgAppService.CancelReqMember(&req)
+		_, err = orgAppService.CancelReqMember(ctx, &req)
 		if err != nil {
 			logrus.Fatalf("revoke member request failed :%s", err.Error())
 		} else {
@@ -468,7 +473,7 @@ var memberEditCmd = &cobra.Command{
 			logrus.Fatalf("invalid user role :%s", err.Error())
 		}
 
-		_, err = orgAppService.EditMember(&domain.OrgEditMemberCmd{
+		_, err = orgAppService.EditMember(ctx, &domain.OrgEditMemberCmd{
 			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Org:     orgName,
@@ -499,7 +504,7 @@ var memberRemoveCmd = &cobra.Command{
 			logrus.Fatalf("invalid user name :%s", err.Error())
 		}
 
-		err = orgAppService.RemoveMember(&domain.OrgRemoveMemberCmd{
+		err = orgAppService.RemoveMember(ctx, &domain.OrgRemoveMemberCmd{
 			Actor:   primitive.CreateAccount(actor),
 			Account: userName,
 			Org:     orgName,
@@ -525,7 +530,7 @@ var orgGetCmd = &cobra.Command{
 		u, _ := primitive.NewAccount(viper.GetString("org.get.user"))
 
 		if acc != nil {
-			u, err := orgAppService.GetByAccount(acc)
+			u, err := orgAppService.GetByAccount(ctx, acc)
 			if err != nil {
 				logrus.Fatalf("get org failed :%s", err.Error())
 			} else {
@@ -541,7 +546,7 @@ var orgGetCmd = &cobra.Command{
 				fmt.Printf("Allow request: %t\n", *u.AllowRequest)
 			}
 		} else if owner != nil {
-			orgs, err := orgAppService.GetByOwner(primitive.CreateAccount(actor), owner)
+			orgs, err := orgAppService.GetByOwner(ctx, primitive.CreateAccount(actor), owner)
 			if err != nil {
 				logrus.Fatalf("get org by owner failed :%s", err.Error())
 			} else {
@@ -557,7 +562,7 @@ var orgGetCmd = &cobra.Command{
 				}
 			}
 		} else if u != nil {
-			orgs, err := orgAppService.GetByUser(primitive.CreateAccount(actor), u)
+			orgs, err := orgAppService.GetByUser(ctx, primitive.CreateAccount(actor), u)
 			if err != nil {
 				logrus.Fatalf("get org by user failed :%s", err.Error())
 			} else {
@@ -589,7 +594,7 @@ var orgDelCmd = &cobra.Command{
 			logrus.Fatalf("del org failed :%s", err.Error())
 		}
 
-		err = orgAppService.Delete(&domain.OrgDeletedCmd{
+		err = orgAppService.Delete(ctx, &domain.OrgDeletedCmd{
 			Actor: primitive.CreateAccount(actor),
 			Name:  acc,
 		})
@@ -647,7 +652,7 @@ var orgEditCmd = &cobra.Command{
 
 		updateCmd.Actor = primitive.CreateAccount(actor)
 		updateCmd.OrgName = acc
-		_, err = orgAppService.UpdateBasicInfo(&updateCmd)
+		_, err = orgAppService.UpdateBasicInfo(ctx, &updateCmd)
 		if err != nil {
 			logrus.Fatalf("edit org failed :%s", err.Error())
 		} else {

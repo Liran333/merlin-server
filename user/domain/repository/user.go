@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repository
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -56,26 +58,26 @@ type ListPageOrgOption struct {
 
 // User is an interface for user-related operations.
 type User interface {
-	AddUser(*domain.User) (domain.User, error)
-	SaveUser(*domain.User) (domain.User, error)
-	DeleteUser(*domain.User) error
-	GetByAccount(domain.Account) (domain.User, error)
-	GetUserAvatarId(domain.Account) (primitive.AvatarId, error)
-	GetUsersAvatarId([]string) ([]domain.User, error)
-	GetUserFullname(domain.Account) (string, error)
+	AddUser(context.Context, *domain.User) (domain.User, error)
+	SaveUser(context.Context, *domain.User) (domain.User, error)
+	DeleteUser(context.Context, *domain.User) error
+	GetByAccount(context.Context, domain.Account) (domain.User, error)
+	GetUserAvatarId(context.Context, domain.Account) (primitive.AvatarId, error)
+	GetUsersAvatarId(context.Context, []string) ([]domain.User, error)
+	GetUserFullname(context.Context, domain.Account) (string, error)
 
-	AddOrg(*org.Organization) (org.Organization, error)
-	SaveOrg(*org.Organization) (org.Organization, error)
-	DeleteOrg(*org.Organization) error
-	CheckName(primitive.Account) bool
-	GetOrgByName(primitive.Account) (org.Organization, error)
-	GetOrgByOwner(primitive.Account) ([]org.Organization, error)
-	GetOrgList(*ListOrgOption) ([]org.Organization, error)
-	GetOrgPageList(*ListPageOrgOption) ([]org.Organization, int, error)
-	GetOrgCountByOwner(primitive.Account) (int64, error)
+	AddOrg(context.Context, *org.Organization) (org.Organization, error)
+	SaveOrg(context.Context, *org.Organization) (org.Organization, error)
+	DeleteOrg(context.Context, *org.Organization) error
+	CheckName(context.Context, primitive.Account) bool
+	GetOrgByName(context.Context, primitive.Account) (org.Organization, error)
+	GetOrgByOwner(context.Context, primitive.Account) ([]org.Organization, error)
+	GetOrgList(context.Context, *ListOrgOption) ([]org.Organization, error)
+	GetOrgPageList(context.Context, *ListPageOrgOption) ([]org.Organization, int, error)
+	GetOrgCountByOwner(context.Context, primitive.Account) (int64, error)
 
-	ListAccount(*ListOption) ([]domain.User, int, error)
+	ListAccount(context.Context, *ListOption) ([]domain.User, int, error)
 
-	SearchUser(*ListOption) ([]domain.User, int, error)
-	SearchOrg(*ListOption) ([]org.Organization, int, error)
+	SearchUser(context.Context, *ListOption) ([]domain.User, int, error)
+	SearchOrg(context.Context, *ListOption) ([]org.Organization, int, error)
 }

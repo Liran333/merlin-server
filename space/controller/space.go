@@ -76,7 +76,7 @@ func (ctl *SpaceController) Create(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if v, err := ctl.appService.Create(user, &cmd); err != nil {
+	if v, err := ctl.appService.Create(ctx, user, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, v)
@@ -103,7 +103,7 @@ func (ctl *SpaceController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	action, err := ctl.appService.Delete(user, spaceId)
+	action, err := ctl.appService.Delete(ctx.Request.Context(), user, spaceId)
 
 	middleware.SetAction(ctx, action)
 
@@ -148,6 +148,7 @@ func (ctl *SpaceController) Update(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Update(
+		ctx.Request.Context(),
 		ctl.userMiddleWare.GetUser(ctx),
 		spaceId, &cmd,
 	)
@@ -211,6 +212,7 @@ func (ctl *SpaceController) Disable(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Disable(
+		ctx.Request.Context(),
 		ctl.userMiddleWare.GetUser(ctx),
 		spaceId, &cmd,
 	)

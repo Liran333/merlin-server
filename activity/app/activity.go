@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
@@ -26,7 +28,7 @@ import (
 
 // ActivityAppService is an interface for the activity application service.
 type ActivityAppService interface {
-	List(primitive.Account, []primitive.Account, *CmdToListActivities) (ActivitysDTO, error)
+	List(context.Context, primitive.Account, []primitive.Account, *CmdToListActivities) (ActivitysDTO, error)
 	Create(*CmdToAddActivity) error
 	Delete(*CmdToAddActivity) error
 	HasLike(primitive.Account, primitive.Identity) (bool, error)
@@ -71,7 +73,7 @@ func NewActivityAppService(
 }
 
 // List retrieves a list of activities with statistics for models and spaces.
-func (s *activityAppService) List(user primitive.Account,
+func (s *activityAppService) List(ctx context.Context, user primitive.Account,
 	names []primitive.Account, cmd *CmdToListActivities) (ActivitysDTO, error) {
 	activities, _, err := s.repoAdapter.List(names, cmd)
 	if err != nil {
@@ -82,7 +84,7 @@ func (s *activityAppService) List(user primitive.Account,
 
 	var filteredActivities []ActivitySummaryDTO
 	for _, activity := range activities {
-		activitySummary, errProcess := s.processActivity(user, activity)
+		activitySummary, errProcess := s.processActivity(ctx, user, activity)
 		if errProcess != nil {
 			continue
 		}
@@ -96,7 +98,7 @@ func (s *activityAppService) List(user primitive.Account,
 }
 
 // processActivity is a method of the activityAppService that processes an activity.
-func (s *activityAppService) processActivity(user primitive.Account,
+func (s *activityAppService) processActivity(ctx context.Context, user primitive.Account,
 	activity domain.Activity) (ActivitySummaryDTO, error) {
 	codeRepo, err := s.codeRepoApp.GetById(activity.Resource.Index)
 	if err != nil {
@@ -108,20 +110,20 @@ func (s *activityAppService) processActivity(user primitive.Account,
 
 	switch activity.Resource.Type {
 	case primitive.ObjTypeModel:
-		return s.processModelActivity(user, codeRepo, activity)
+		return s.processModelActivity(ctx, user, codeRepo, activity)
 	case primitive.ObjTypeDataset:
-		return s.processDatasetActivity(user, codeRepo, activity)
+		return s.processDatasetActivity(ctx, user, codeRepo, activity)
 	case primitive.ObjTypeSpace:
-		return s.processSpaceActivity(user, codeRepo, activity)
+		return s.processSpaceActivity(ctx, user, codeRepo, activity)
 	default:
 		return ActivitySummaryDTO{}, xerrors.Errorf("unknown resource type")
 	}
 }
 
 // processModelActivity is a method of the activityAppService that processes a model activity.
-func (s *activityAppService) processModelActivity(user primitive.Account,
+func (s *activityAppService) processModelActivity(ctx context.Context, user primitive.Account,
 	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	model, err := s.modelApp.GetByName(user,
+	model, err := s.modelApp.GetByName(ctx, user,
 		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
@@ -136,9 +138,9 @@ func (s *activityAppService) processModelActivity(user primitive.Account,
 }
 
 // processDatasetActivity is a method of the activityAppService that processes a dataset activity.
-func (s *activityAppService) processDatasetActivity(user primitive.Account,
+func (s *activityAppService) processDatasetActivity(ctx context.Context, user primitive.Account,
 	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	dataset, err := s.datasetApp.GetByName(user,
+	dataset, err := s.datasetApp.GetByName(ctx, user,
 		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
@@ -153,14 +155,14 @@ func (s *activityAppService) processDatasetActivity(user primitive.Account,
 }
 
 // processSpaceActivity is a method of the activityAppService that processes a space activity.
-func (s *activityAppService) processSpaceActivity(user primitive.Account,
+func (s *activityAppService) processSpaceActivity(ctx context.Context, user primitive.Account,
 	codeRepo coderepo.CodeRepo, activity domain.Activity) (ActivitySummaryDTO, error) {
-	space, err := s.spaceApp.GetByName(user,
+	space, err := s.spaceApp.GetByName(ctx, user,
 		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
 	}
-	spaceapp, err := s.spaceAdditionalApp.GetByName(user,
+	spaceapp, err := s.spaceAdditionalApp.GetByName(ctx, user,
 		&coderepo.CodeRepoIndex{Name: codeRepo.Name, Owner: codeRepo.Owner})
 	if err != nil {
 		return ActivitySummaryDTO{}, err
@@ -169,7 +171,7 @@ func (s *activityAppService) processSpaceActivity(user primitive.Account,
 	stat := domain.Stat{
 		LikeCount:     space.LikeCount,
 		DownloadCount: space.DownloadCount,
-		VisitCount: space.VisitCount,
+		VisitCount:    space.VisitCount,
 	}
 	additionInfo := fromSpaceDTO(space, spaceapp, &activity, &stat)
 	return additionInfo, nil

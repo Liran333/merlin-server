@@ -71,7 +71,7 @@ func (ctl *DatasetController) Create(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if v, err := ctl.appService.Create(user, &cmd); err != nil {
+	if v, err := ctl.appService.Create(ctx.Request.Context(), user, &cmd); err != nil {
 		commonctl.SendError(ctx, xerrors.Errorf("create dataset failed, err:%w", err))
 	} else {
 		commonctl.SendRespOfPost(ctx, v)
@@ -98,7 +98,7 @@ func (ctl *DatasetController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	action, err := ctl.appService.Delete(user, datasetId)
+	action, err := ctl.appService.Delete(ctx.Request.Context(), user, datasetId)
 
 	middleware.SetAction(ctx, action)
 
@@ -143,6 +143,7 @@ func (ctl *DatasetController) Update(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Update(
+		ctx.Request.Context(),
 		ctl.userMiddleWare.GetUser(ctx),
 		datasetId, &cmd,
 	)

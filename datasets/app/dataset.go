@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -27,12 +28,12 @@ import (
 
 // DatasetAppService is an interface for the dataset application service.
 type DatasetAppService interface {
-	Create(primitive.Account, *CmdToCreateDataset) (string, error)
-	Delete(primitive.Account, primitive.Identity) (string, error)
-	Update(primitive.Account, primitive.Identity, *CmdToUpdateDataset) (string, error)
-	Disable(primitive.Account, primitive.Identity, *CmdToDisableDataset) (string, error)
-	GetByName(primitive.Account, *domain.DatasetIndex) (DatasetDTO, error)
-	List(primitive.Account, *CmdToListDatasets) (DatasetsDTO, error)
+	Create(context.Context, primitive.Account, *CmdToCreateDataset) (string, error)
+	Delete(context.Context, primitive.Account, primitive.Identity) (string, error)
+	Update(context.Context, primitive.Account, primitive.Identity, *CmdToUpdateDataset) (string, error)
+	Disable(context.Context, primitive.Account, primitive.Identity, *CmdToDisableDataset) (string, error)
+	GetByName(context.Context, primitive.Account, *domain.DatasetIndex) (DatasetDTO, error)
+	List(context.Context, primitive.Account, *CmdToListDatasets) (DatasetsDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
 }
@@ -69,17 +70,18 @@ type datasetAppService struct {
 }
 
 // Create creates a new dataset.
-func (s *datasetAppService) Create(user primitive.Account, cmd *CmdToCreateDataset) (string, error) {
-	if err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeDataset); err != nil {
+func (s *datasetAppService) Create(
+	ctx context.Context, user primitive.Account, cmd *CmdToCreateDataset) (string, error) {
+	if err := s.permission.CanCreate(ctx, user, cmd.Owner, primitive.ObjTypeDataset); err != nil {
 
 		return "", xerrors.Errorf("permission check failed, err:%w", err)
 	}
 
-	if err := s.datasetsCountCheck(cmd.Owner); err != nil {
+	if err := s.datasetsCountCheck(ctx, cmd.Owner); err != nil {
 		return "", xerrors.Errorf("failed to check dataset count, err:%w", err)
 	}
 
-	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
+	coderepo, err := s.codeRepoApp.Create(ctx, user, &cmd.CmdToCreateRepo)
 	if err != nil {
 		return "", xerrors.Errorf("failed to create dataset code repo, err:%w", err)
 	}
@@ -106,7 +108,8 @@ func (s *datasetAppService) Create(user primitive.Account, cmd *CmdToCreateDatas
 }
 
 // Delete deletes a dataset.
-func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.Identity) (action string, err error) {
+func (s *datasetAppService) Delete(
+	ctx context.Context, user primitive.Account, datasetId primitive.Identity) (action string, err error) {
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -123,7 +126,7 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 		datasetId.Identity(), dataset.Owner.Account(), dataset.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanDeleteOrNotFound(user, &dataset, s.permission)
+	notFound, err := commonapp.CanDeleteOrNotFound(ctx, user, &dataset, s.permission)
 	if err != nil {
 		err = xerrors.Errorf("can not delete dataset, err:%w", err)
 		return
@@ -157,9 +160,9 @@ func (s *datasetAppService) Delete(user primitive.Account, datasetId primitive.I
 
 // Update updates a dataset.
 func (s *datasetAppService) Update(
-	user primitive.Account, datasetId primitive.Identity, cmd *CmdToUpdateDataset,
+	ctx context.Context, user primitive.Account, datasetId primitive.Identity, cmd *CmdToUpdateDataset,
 ) (action string, err error) {
-	dataset, action, err := s.getDataset(user, datasetId)
+	dataset, action, err := s.getDataset(ctx, user, datasetId)
 	if err != nil {
 		return
 	}
@@ -191,6 +194,7 @@ func (s *datasetAppService) Update(
 }
 
 func (s *datasetAppService) getDataset(
+	ctx context.Context,
 	user primitive.Account,
 	datasetId primitive.Identity) (dataset domain.Dataset, action string, err error) {
 	dataset, err = s.repoAdapter.FindById(datasetId)
@@ -212,7 +216,7 @@ func (s *datasetAppService) getDataset(
 		datasetId.Identity(), dataset.Owner.Account(), dataset.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanUpdateOrNotFound(user, &dataset, s.permission)
+	notFound, err := commonapp.CanUpdateOrNotFound(ctx, user, &dataset, s.permission)
 	if err != nil {
 		err = xerrors.Errorf("failed to find dataset by id, %w", err)
 		return
@@ -235,7 +239,7 @@ func (s *datasetAppService) getDataset(
 
 // Disable disable a dataset.
 func (s *datasetAppService) Disable(
-	user primitive.Account, datasetId primitive.Identity, cmd *CmdToDisableDataset,
+	ctx context.Context, user primitive.Account, datasetId primitive.Identity, cmd *CmdToDisableDataset,
 ) (action string, err error) {
 	dataset, err := s.repoAdapter.FindById(datasetId)
 	if err != nil {
@@ -254,7 +258,7 @@ func (s *datasetAppService) Disable(
 		datasetId.Identity(), dataset.Owner.Account(), dataset.Name.MSDName(),
 	)
 
-	err = s.canDisable(user)
+	err = s.canDisable(ctx, user)
 	if err != nil {
 		err = xerrors.Errorf("cant disable dataset:%d, %w", datasetId, err)
 		return
@@ -286,9 +290,9 @@ func (s *datasetAppService) Disable(
 	return
 }
 
-func (s *datasetAppService) canDisable(user primitive.Account) error {
+func (s *datasetAppService) canDisable(ctx context.Context, user primitive.Account) error {
 	if s.disableOrg != nil {
-		if err := s.disableOrg.Contains(user); err != nil {
+		if err := s.disableOrg.Contains(ctx, user); err != nil {
 			logrus.Errorf("user:%s cant disable dataset err:%s", user.Account(), err)
 			return allerror.NewNoPermission("no permission", xerrors.Errorf("cant disable"))
 		}
@@ -301,7 +305,8 @@ func (s *datasetAppService) canDisable(user primitive.Account) error {
 }
 
 // GetByName retrieves a dataset by its name.
-func (s *datasetAppService) GetByName(user primitive.Account, index *domain.DatasetIndex) (DatasetDTO, error) {
+func (s *datasetAppService) GetByName(
+	ctx context.Context, user primitive.Account, index *domain.DatasetIndex) (DatasetDTO, error) {
 	var dto DatasetDTO
 
 	dataset, err := s.repoAdapter.FindByName(index)
@@ -316,7 +321,7 @@ func (s *datasetAppService) GetByName(user primitive.Account, index *domain.Data
 		return dto, err
 	}
 
-	if err := s.permission.CanRead(user, &dataset); err != nil {
+	if err := s.permission.CanRead(ctx, user, &dataset); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
 				xerrors.Errorf("not have permission to get dataset:%s, %w", index.Name.MSDName(), err))
@@ -329,7 +334,7 @@ func (s *datasetAppService) GetByName(user primitive.Account, index *domain.Data
 }
 
 // List retrieves a list of datasets.
-func (s *datasetAppService) List(user primitive.Account, cmd *CmdToListDatasets) (
+func (s *datasetAppService) List(ctx context.Context, user primitive.Account, cmd *CmdToListDatasets) (
 	DatasetsDTO, error,
 ) {
 	if user == nil {
@@ -342,7 +347,7 @@ func (s *datasetAppService) List(user primitive.Account, cmd *CmdToListDatasets)
 		} else {
 			if user != cmd.Owner {
 				err := s.permission.CanListOrgResource(
-					user, cmd.Owner, primitive.ObjTypeDataset,
+					ctx, user, cmd.Owner, primitive.ObjTypeDataset,
 				)
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
@@ -359,7 +364,7 @@ func (s *datasetAppService) List(user primitive.Account, cmd *CmdToListDatasets)
 	}, err
 }
 
-func (s *datasetAppService) datasetsCountCheck(owner primitive.Account) error {
+func (s *datasetAppService) datasetsCountCheck(ctx context.Context, owner primitive.Account) error {
 	cmdToList := CmdToListDatasets{
 		Owner: owner,
 	}
@@ -369,12 +374,12 @@ func (s *datasetAppService) datasetsCountCheck(owner primitive.Account) error {
 		return xerrors.Errorf("get datasets count error: %w", err)
 	}
 
-	if s.user.IsOrganization(owner) && total >= config.MaxCountPerOrg {
+	if s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerOrg {
 		return allerror.NewCountExceeded("dataset count exceed",
 			xerrors.Errorf("dataset count(now:%d max:%d) exceed", total, config.MaxCountPerOrg))
 	}
 
-	if !s.user.IsOrganization(owner) && total >= config.MaxCountPerUser {
+	if !s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerUser {
 		return allerror.NewCountExceeded("dataset count exceed",
 			xerrors.Errorf("dataset count(now:%d max:%d) exceed", total, config.MaxCountPerUser))
 	}

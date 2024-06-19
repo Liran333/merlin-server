@@ -116,7 +116,7 @@ setupVault
 # create db for server
 docker exec -i merlin-server-pg-1 psql -U gitea -c 'create database merlin;'
 genServerConfig config.tpl $ROOTDIR/deploy/config.yml
-docker compose up  --no-deps --build -d --wait server
+docker compose up --build -d --wait server
 docker logs merlin-server-server-1
 docker exec -i merlin-server-pg-1 psql -U gitea -d merlin -c "INSERT INTO computility_org
 (org_id , org_name , compute_type, quota_count,used_quota, default_assign_quota, version)

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -65,17 +66,17 @@ type Permission interface {
 
 // SpaceAppService is an interface for space application services.
 type SpaceAppService interface {
-	Create(primitive.Account, *CmdToCreateSpace) (string, error)
-	Delete(primitive.Account, primitive.Identity) (string, error)
-	Update(primitive.Account, primitive.Identity, *CmdToUpdateSpace) (string, error)
-	Disable(primitive.Account, primitive.Identity, *CmdToDisableSpace) (string, error)
-	GetByName(primitive.Account, *domain.SpaceIndex) (SpaceDTO, error)
-	List(primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
+	Create(context.Context, primitive.Account, *CmdToCreateSpace) (string, error)
+	Delete(context.Context, primitive.Account, primitive.Identity) (string, error)
+	Update(context.Context, primitive.Account, primitive.Identity, *CmdToUpdateSpace) (string, error)
+	Disable(context.Context, primitive.Account, primitive.Identity, *CmdToDisableSpace) (string, error)
+	GetByName(context.Context, primitive.Account, *domain.SpaceIndex) (SpaceDTO, error)
+	List(context.Context, primitive.Account, *CmdToListSpaces) (SpacesDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
-	Recommend(primitive.Account) []repository.SpaceSummary
-	Boutique(primitive.Account) []repository.SpaceSummary
-	setSpacesStatus(spacesDTO []repository.SpaceSummary) []repository.SpaceSummary
+	Recommend(context.Context, primitive.Account) []repository.SpaceSummary
+	Boutique(context.Context, primitive.Account) []repository.SpaceSummary
+	setSpacesStatus(ctx context.Context, spacesDTO []repository.SpaceSummary) []repository.SpaceSummary
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -131,8 +132,8 @@ type spaceAppService struct {
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
-func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) (string, error) {
-	err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeSpace)
+func (s *spaceAppService) Create(ctx context.Context, user primitive.Account, cmd *CmdToCreateSpace) (string, error) {
+	err := s.permission.CanCreate(ctx, user, cmd.Owner, primitive.ObjTypeSpace)
 	if err != nil {
 		return "", xerrors.Errorf("failed to create space: %w", err)
 	}
@@ -152,11 +153,11 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 		QuotaCount: count,
 	}
 
-	if err := s.spaceCountCheck(cmd.Owner); err != nil {
+	if err := s.spaceCountCheck(ctx, cmd.Owner); err != nil {
 		return "", err
 	}
 
-	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
+	coderepo, err := s.codeRepoApp.Create(ctx, user, &cmd.CmdToCreateRepo)
 	if err != nil {
 		return "", err
 	}
@@ -208,7 +209,7 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 	}); err != nil {
 		logrus.Errorf("add space id supplyment failed | user: %s, err: %s", user, err)
 
-		_, err = s.Delete(user, space.Id)
+		_, err = s.Delete(ctx, user, space.Id)
 		if err != nil {
 			logrus.Errorf("delete space after add space id supplyment failed | user: %s, err: %s", user, err)
 
@@ -235,7 +236,8 @@ func (s *spaceAppService) Create(user primitive.Account, cmd *CmdToCreateSpace) 
 }
 
 // Delete deletes the space with the given space ID and returns the action performed.
-func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Identity) (action string, err error) {
+func (s *spaceAppService) Delete(
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -250,7 +252,7 @@ func (s *spaceAppService) Delete(user primitive.Account, spaceId primitive.Ident
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanDeleteOrNotFound(user, &space, s.permission)
+	notFound, err := commonapp.CanDeleteOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -356,7 +358,7 @@ func (s *spaceAppService) delSpaceVariableSecret(spaceId primitive.Identity) err
 
 // Update updates the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceAppService) Update(
-	user primitive.Account, spaceId primitive.Identity, cmd *CmdToUpdateSpace,
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity, cmd *CmdToUpdateSpace,
 ) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
@@ -372,7 +374,7 @@ func (s *spaceAppService) Update(
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanUpdateOrNotFound(user, &space, s.permission)
+	notFound, err := commonapp.CanUpdateOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -383,7 +385,8 @@ func (s *spaceAppService) Update(
 	}
 
 	if space.IsDisable() {
-		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled, "resource was disabled, cant be modified.",
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeResourceDisabled,
+			"resource was disabled, cant be modified.",
 			fmt.Errorf("cant change resource to public"))
 		return
 	}
@@ -420,7 +423,7 @@ func (s *spaceAppService) Update(
 
 // Disable disable the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceAppService) Disable(
-	user primitive.Account, spaceId primitive.Identity, cmd *CmdToDisableSpace,
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity, cmd *CmdToDisableSpace,
 ) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
@@ -436,7 +439,7 @@ func (s *spaceAppService) Disable(
 		spaceId.Identity(), space.Owner.Account(), space.Name.MSDName(),
 	)
 
-	err = s.canDisable(user)
+	err = s.canDisable(ctx, user)
 	if err != nil {
 		return
 	}
@@ -451,7 +454,7 @@ func (s *spaceAppService) Disable(
 	}
 
 	// del space app
-	_, err = s.spaceappRepository.FindBySpaceId(space.Id)
+	_, err = s.spaceappRepository.FindBySpaceId(ctx, space.Id)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		logrus.Errorf("get space app by id %v failed, err:%v", space.Id, err)
 		return
@@ -509,9 +512,9 @@ func (s *spaceAppService) Disable(
 	return
 }
 
-func (s *spaceAppService) canDisable(user primitive.Account) error {
+func (s *spaceAppService) canDisable(ctx context.Context, user primitive.Account) error {
 	if s.disableOrg != nil {
-		if err := s.disableOrg.Contains(user); err != nil {
+		if err := s.disableOrg.Contains(ctx, user); err != nil {
 			logrus.Errorf("user:%s cant disable space err:%s", user.Account(), err)
 			return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
 		}
@@ -524,7 +527,8 @@ func (s *spaceAppService) canDisable(user primitive.Account) error {
 }
 
 // GetByName retrieves a space by its name and returns the corresponding SpaceDTO.
-func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceIndex) (SpaceDTO, error) {
+func (s *spaceAppService) GetByName(
+	ctx context.Context, user primitive.Account, index *domain.SpaceIndex) (SpaceDTO, error) {
 	var dto SpaceDTO
 
 	space, err := s.repoAdapter.FindByName(index)
@@ -536,7 +540,7 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 		return dto, err
 	}
 
-	if err := s.permission.CanRead(user, &space); err != nil {
+	if err := s.permission.CanRead(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceNotFound(err)
 		}
@@ -548,7 +552,7 @@ func (s *spaceAppService) GetByName(user primitive.Account, index *domain.SpaceI
 }
 
 // List retrieves a list of spaces based on the provided command parameters and returns the corresponding SpacesDTO.
-func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
+func (s *spaceAppService) List(ctx context.Context, user primitive.Account, cmd *CmdToListSpaces) (
 	SpacesDTO, error,
 ) {
 	if user == nil {
@@ -561,7 +565,7 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 		} else {
 			if user != cmd.Owner {
 				err := s.permission.CanListOrgResource(
-					user, cmd.Owner, primitive.ObjTypeSpace,
+					ctx, user, cmd.Owner, primitive.ObjTypeSpace,
 				)
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
@@ -572,7 +576,7 @@ func (s *spaceAppService) List(user primitive.Account, cmd *CmdToListSpaces) (
 
 	spaceLists, total, err := s.repoAdapter.List(cmd, user, s.member)
 
-	spaceLists = s.setSpacesStatus(spaceLists)
+	spaceLists = s.setSpacesStatus(ctx, spaceLists)
 
 	return SpacesDTO{
 		Total:  total,
@@ -588,7 +592,7 @@ func (s *spaceAppService) DeleteById(user primitive.Account, spaceId string) err
 	return nil
 }
 
-func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
+func (s *spaceAppService) spaceCountCheck(ctx context.Context, owner primitive.Account) error {
 	cmdToList := CmdToListSpaces{
 		Owner: owner,
 	}
@@ -598,12 +602,12 @@ func (s *spaceAppService) spaceCountCheck(owner primitive.Account) error {
 		return allerror.NewCommonRespError("failed to count spaces", xerrors.Errorf("failed to count spaces: %w", err))
 	}
 
-	if s.user.IsOrganization(owner) && total >= config.MaxCountPerOrg {
+	if s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerOrg {
 		return allerror.NewCountExceeded("space count exceed",
 			xerrors.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerOrg))
 	}
 
-	if !s.user.IsOrganization(owner) && total >= config.MaxCountPerUser {
+	if !s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerUser {
 		return allerror.NewCountExceeded("space count exceed",
 			xerrors.Errorf("space count(now:%d max:%d) exceed", total, config.MaxCountPerUser))
 	}
@@ -649,7 +653,7 @@ func (s *spaceAppService) DeleteLike(spaceId primitive.Identity) error {
 	return nil
 }
 
-func (s *spaceAppService) Recommend(user primitive.Account) []repository.SpaceSummary {
+func (s *spaceAppService) Recommend(ctx context.Context, user primitive.Account) []repository.SpaceSummary {
 	var spacesSummary []repository.SpaceSummary
 
 	if len(config.RecommendSpaces) == 0 {
@@ -668,7 +672,7 @@ func (s *spaceAppService) Recommend(user primitive.Account) []repository.SpaceSu
 
 	for _, index := range indexs {
 		idx := index
-		dto, err := s.GetByName(user, &idx)
+		dto, err := s.GetByName(ctx, user, &idx)
 		if err != nil {
 			logrus.Errorf("failed to get recommend space by name:%s err:%s", idx.Name.MSDName(), err)
 			continue
@@ -678,12 +682,12 @@ func (s *spaceAppService) Recommend(user primitive.Account) []repository.SpaceSu
 		spacesSummary = append(spacesSummary, spaceSummary)
 	}
 
-	s.setSpacesStatus(spacesSummary)
+	s.setSpacesStatus(ctx, spacesSummary)
 
 	return spacesSummary
 }
 
-func (s *spaceAppService) Boutique(user primitive.Account) []repository.SpaceSummary {
+func (s *spaceAppService) Boutique(ctx context.Context, user primitive.Account) []repository.SpaceSummary {
 	var spacesSummary []repository.SpaceSummary
 
 	if len(config.BoutiqueSpaces) == 0 {
@@ -702,7 +706,7 @@ func (s *spaceAppService) Boutique(user primitive.Account) []repository.SpaceSum
 
 	for _, index := range indexs {
 		idx := index
-		dto, err := s.GetByName(user, &idx)
+		dto, err := s.GetByName(ctx, user, &idx)
 		if err != nil {
 			logrus.Errorf("failed to get boutique space by name:%s err:%s", idx.Name.MSDName(), err)
 			continue
@@ -712,12 +716,13 @@ func (s *spaceAppService) Boutique(user primitive.Account) []repository.SpaceSum
 		spacesSummary = append(spacesSummary, spaceSummary)
 	}
 
-	s.setSpacesStatus(spacesSummary)
+	s.setSpacesStatus(ctx, spacesSummary)
 
 	return spacesSummary
 }
 
-func (s *spaceAppService) setSpacesStatus(spacesSummary []repository.SpaceSummary) []repository.SpaceSummary {
+func (s *spaceAppService) setSpacesStatus(
+	ctx context.Context, spacesSummary []repository.SpaceSummary) []repository.SpaceSummary {
 	for key, spaceSummary := range spacesSummary {
 		if spaceSummary.Exception != "" {
 			spacesSummary[key].Status = spaceSummary.Exception
@@ -728,7 +733,7 @@ func (s *spaceAppService) setSpacesStatus(spacesSummary []repository.SpaceSummar
 		if err != nil {
 			continue
 		}
-		app, err := s.spaceappRepository.FindBySpaceId(spaceId)
+		app, err := s.spaceappRepository.FindBySpaceId(ctx, spaceId)
 		if err == nil {
 			spacesSummary[key].Status = app.Status.AppStatus()
 			continue

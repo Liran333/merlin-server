@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -31,37 +32,37 @@ type SessionClearAppService interface {
 
 // UserService is an interface for user-related operations.
 type UserService interface {
-	Create(*domain.UserCreateCmd) (UserDTO, error)
-	Delete(domain.Account) error
-	RequestDelete(domain.Account) error
-	UpdateBasicInfo(domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
-	UserInfo(domain.Account, domain.Account) (UserInfoDTO, error)
-	GetByAccount(domain.Account, domain.Account) (UserDTO, error)
-	GetOrgOrUser(primitive.Account, primitive.Account) (UserDTO, error)
-	GetUserAvatarId(domain.Account) (AvatarDTO, error)
-	GetUserFullname(domain.Account) (string, error)
-	GetUsersAvatarId([]domain.Account) ([]AvatarDTO, error)
-	HasUser(primitive.Account) bool
+	Create(context.Context, *domain.UserCreateCmd) (UserDTO, error)
+	Delete(context.Context, domain.Account) error
+	RequestDelete(context.Context, domain.Account) error
+	UpdateBasicInfo(context.Context, domain.Account, UpdateUserBasicInfoCmd) (UserDTO, error)
+	UserInfo(context.Context, domain.Account, domain.Account) (UserInfoDTO, error)
+	GetByAccount(context.Context, domain.Account, domain.Account) (UserDTO, error)
+	GetOrgOrUser(context.Context, primitive.Account, primitive.Account) (UserDTO, error)
+	GetUserAvatarId(context.Context, domain.Account) (AvatarDTO, error)
+	GetUserFullname(context.Context, domain.Account) (string, error)
+	GetUsersAvatarId(context.Context, []domain.Account) ([]AvatarDTO, error)
+	HasUser(context.Context, primitive.Account) bool
 
-	IsOrganization(domain.Account) bool
+	IsOrganization(context.Context, domain.Account) bool
 
-	ListUsers(primitive.Account) ([]UserDTO, error)
+	ListUsers(context.Context, primitive.Account) ([]UserDTO, error)
 
-	GetPlatformUser(domain.Account) (platform.BaseAuthClient, error)
-	GetPlatformUserInfo(domain.Account) (string, error)
+	GetPlatformUser(context.Context, domain.Account) (platform.BaseAuthClient, error)
+	GetPlatformUserInfo(context.Context, domain.Account) (string, error)
 
-	CreateToken(*domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
-	DeleteToken(*domain.TokenDeletedCmd, platform.BaseAuthClient) error
+	CreateToken(context.Context, *domain.TokenCreatedCmd, platform.BaseAuthClient) (TokenDTO, error)
+	DeleteToken(context.Context, *domain.TokenDeletedCmd, platform.BaseAuthClient) error
 	ListTokens(domain.Account) ([]TokenDTO, error)
-	GetToken(domain.Account, primitive.TokenName) (TokenDTO, error)
+	GetToken(context.Context, domain.Account, primitive.TokenName) (TokenDTO, error)
 	VerifyToken(string, primitive.TokenPerm) (TokenDTO, error)
 
 	SendBindEmail(*CmdToSendBindEmail) error
-	VerifyBindEmail(*CmdToVerifyBindEmail) error
+	VerifyBindEmail(context.Context, *CmdToVerifyBindEmail) error
 
-	PrivacyRevoke(user primitive.Account) (string, error)
-	AgreePrivacy(user primitive.Account) error
-	IsAgreePrivacy(user primitive.Account) (bool, error)
+	PrivacyRevoke(context.Context, primitive.Account) (string, error)
+	AgreePrivacy(context.Context, primitive.Account) error
+	IsAgreePrivacy(context.Context, primitive.Account) (bool, error)
 }
 
 // NewUserService creates a new UserService instance with the provided dependencies.
@@ -99,7 +100,7 @@ type userService struct {
 }
 
 // Create creates a new user in the system.
-func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
+func (s userService) Create(ctx context.Context, cmd *domain.UserCreateCmd) (dto UserDTO, err error) {
 	if cmd == nil {
 		e := xerrors.Errorf("input param is empty")
 		err = allerror.NewCommonRespError(e.Error(), e)
@@ -111,7 +112,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 		return
 	}
 
-	if !s.repo.CheckName(cmd.Account) {
+	if !s.repo.CheckName(ctx, cmd.Account) {
 		e := xerrors.Errorf("user name %s is already taken", cmd.Account)
 		err = allerror.New(allerror.ErrorUsernameIsAlreadyTaken, e.Error(), e)
 		return
@@ -132,7 +133,7 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 		v.PlatformPwd = repoUser.PlatformPwd
 	}
 	// create user
-	u, err := s.repo.AddUser(&v)
+	u, err := s.repo.AddUser(ctx, &v)
 	if err != nil {
 		e := xerrors.Errorf("failed to save user in db: %w", err)
 		err = allerror.New(allerror.ErrorFailToSaveUserInDb, "", e)
@@ -146,8 +147,9 @@ func (s userService) Create(cmd *domain.UserCreateCmd) (dto UserDTO, err error) 
 }
 
 // UpdateBasicInfo updates the basic information of a user in the system.
-func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasicInfoCmd) (dto UserDTO, err error) {
-	user, err := s.repo.GetByAccount(account)
+func (s userService) UpdateBasicInfo(
+	ctx context.Context, account domain.Account, cmd UpdateUserBasicInfoCmd) (dto UserDTO, err error) {
+	user, err := s.repo.GetByAccount(ctx, account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", account.Account(), err)
@@ -165,7 +167,7 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 		return
 	}
 
-	if user, err = s.repo.SaveUser(&user); err != nil {
+	if user, err = s.repo.SaveUser(ctx, &user); err != nil {
 		e := xerrors.Errorf("failed to update user info: %w", err)
 		err = allerror.New(allerror.ErrorFailedToUpdateUserInfo, "", e)
 		return
@@ -192,13 +194,13 @@ func (s userService) UpdateBasicInfo(account domain.Account, cmd UpdateUserBasic
 }
 
 // GetPlatformUser retrieves the platform user info for the given account.
-func (s userService) GetPlatformUserInfo(account domain.Account) (string, error) {
+func (s userService) GetPlatformUserInfo(ctx context.Context, account domain.Account) (string, error) {
 	if account == nil {
 		e := xerrors.Errorf("username invalid")
 		return "", allerror.New(allerror.ErrorUsernameInvalid, e.Error(), e)
 	}
 	// get user from db
-	usernew, err := s.repo.GetByAccount(account)
+	usernew, err := s.repo.GetByAccount(ctx, account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeUserNotFound, "",
@@ -214,8 +216,9 @@ func (s userService) GetPlatformUserInfo(account domain.Account) (string, error)
 }
 
 // GetPlatformUser retrieves the platform user for the given account.
-func (s userService) GetPlatformUser(account domain.Account) (token platform.BaseAuthClient, err error) {
-	p, err := s.GetPlatformUserInfo(account)
+func (s userService) GetPlatformUser(
+	ctx context.Context, account domain.Account) (token platform.BaseAuthClient, err error) {
+	p, err := s.GetPlatformUserInfo(ctx, account)
 	if err != nil {
 		return
 	}
@@ -232,13 +235,13 @@ func (s userService) GetPlatformUser(account domain.Account) (token platform.Bas
 }
 
 // HasUser checks if a user with the given account exists in the system.
-func (s userService) HasUser(acc primitive.Account) bool {
+func (s userService) HasUser(ctx context.Context, acc primitive.Account) bool {
 	if acc == nil {
 		logrus.Errorf("username invalid")
 		return false
 	}
 
-	_, err := s.repo.GetByAccount(acc)
+	_, err := s.repo.GetByAccount(ctx, acc)
 	if err != nil {
 		logrus.Errorf("user %s not found", acc.Account())
 		return false
@@ -248,8 +251,8 @@ func (s userService) HasUser(acc primitive.Account) bool {
 }
 
 // Delete deletes a user from the system.
-func (s userService) Delete(account domain.Account) (err error) {
-	u, err := s.repo.GetByAccount(account)
+func (s userService) Delete(ctx context.Context, account domain.Account) (err error) {
+	u, err := s.repo.GetByAccount(ctx, account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			logrus.Warnf("user %s not found, no need to delete", account.Account())
@@ -262,7 +265,7 @@ func (s userService) Delete(account domain.Account) (err error) {
 	}
 
 	// delete user
-	err = s.repo.DeleteUser(&u)
+	err = s.repo.DeleteUser(ctx, &u)
 	if err != nil {
 		err = allerror.New(allerror.ErrorFailedToDeleteUser, "",
 			xerrors.Errorf("failed to delete user in db, %w", err))
@@ -281,8 +284,8 @@ func (s userService) Delete(account domain.Account) (err error) {
 	return
 }
 
-func (s userService) RequestDelete(user domain.Account) error {
-	u, err := s.repo.GetByAccount(user)
+func (s userService) RequestDelete(ctx context.Context, user domain.Account) error {
+	u, err := s.repo.GetByAccount(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.New(allerror.ErrorCodeUserNotFound, "",
@@ -309,14 +312,15 @@ func (s userService) RequestDelete(user domain.Account) error {
 	u.RequestDelete = true
 	u.RequestDeleteAt = utils.Now()
 
-	_, err = s.repo.SaveUser(&u)
+	_, err = s.repo.SaveUser(ctx, &u)
 
 	return err
 }
 
 // UserInfo returns the user information for the given actor and account.
-func (s userService) UserInfo(actor, account domain.Account) (dto UserInfoDTO, err error) {
-	if dto.UserDTO, err = s.GetByAccount(actor, account); err != nil {
+func (s userService) UserInfo(
+	ctx context.Context, actor, account domain.Account) (dto UserInfoDTO, err error) {
+	if dto.UserDTO, err = s.GetByAccount(ctx, actor, account); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", account.Account(), err)
 			err = allerror.New(allerror.ErrorCodeUserNotFound, "", e)
@@ -331,9 +335,10 @@ func (s userService) UserInfo(actor, account domain.Account) (dto UserInfoDTO, e
 }
 
 // GetByAccount retrieves the user information by the given account.
-func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, err error) {
+func (s userService) GetByAccount(
+	ctx context.Context, actor, account domain.Account) (dto UserDTO, err error) {
 	// get user
-	u, err := s.repo.GetByAccount(account)
+	u, err := s.repo.GetByAccount(ctx, account)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", account.Account(), err)
@@ -353,8 +358,8 @@ func (s userService) GetByAccount(actor, account domain.Account) (dto UserDTO, e
 }
 
 // GetOrgOrUser retrieves either an organization or a user by their account and returns it as a UserDTO.
-func (s userService) GetOrgOrUser(actor, acc primitive.Account) (dto UserDTO, err error) {
-	u, err := s.repo.GetByAccount(acc)
+func (s userService) GetOrgOrUser(ctx context.Context, actor, acc primitive.Account) (dto UserDTO, err error) {
+	u, err := s.repo.GetByAccount(ctx, acc)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		return
 	} else if err == nil {
@@ -362,7 +367,7 @@ func (s userService) GetOrgOrUser(actor, acc primitive.Account) (dto UserDTO, er
 		return
 	}
 
-	o, err := s.repo.GetOrgByName(acc)
+	o, err := s.repo.GetOrgByName(ctx, acc)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.New(allerror.ErrorCodeUserNotFound, fmt.Sprintf("org %s not found", acc.Account()),
@@ -377,10 +382,10 @@ func (s userService) GetOrgOrUser(actor, acc primitive.Account) (dto UserDTO, er
 }
 
 // ListUsers returns a list of users.
-func (s userService) ListUsers(actor primitive.Account) (dtos []UserDTO, err error) {
+func (s userService) ListUsers(ctx context.Context, actor primitive.Account) (dtos []UserDTO, err error) {
 	// get user
 	t := domain.UserTypeUser
-	u, _, err := s.repo.ListAccount(&repository.ListOption{Type: &t})
+	u, _, err := s.repo.ListAccount(ctx, &repository.ListOption{Type: &t})
 	if err != nil {
 		err = xerrors.Errorf("failed to list users: %w", err)
 		return
@@ -395,11 +400,11 @@ func (s userService) ListUsers(actor primitive.Account) (dtos []UserDTO, err err
 }
 
 // GetUserAvatarId returns the avatar ID for the given user.
-func (s userService) GetUserAvatarId(user domain.Account) (
+func (s userService) GetUserAvatarId(ctx context.Context, user domain.Account) (
 	AvatarDTO, error,
 ) {
 	var ava AvatarDTO
-	a, err := s.repo.GetUserAvatarId(user)
+	a, err := s.repo.GetUserAvatarId(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", user.Account(), err)
@@ -418,7 +423,7 @@ func (s userService) GetUserAvatarId(user domain.Account) (
 }
 
 // GetUsersAvatarId returns the avatar IDs for the given users.
-func (s userService) GetUsersAvatarId(users []domain.Account) (
+func (s userService) GetUsersAvatarId(ctx context.Context, users []domain.Account) (
 	dtos []AvatarDTO, err error,
 ) {
 	names := make([]string, len(users))
@@ -426,7 +431,7 @@ func (s userService) GetUsersAvatarId(users []domain.Account) (
 		names[i] = users[i].Account()
 	}
 
-	us, err := s.repo.GetUsersAvatarId(names)
+	us, err := s.repo.GetUsersAvatarId(ctx, names)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -446,10 +451,10 @@ func (s userService) GetUsersAvatarId(users []domain.Account) (
 }
 
 // GetUserFullname returns the full name of the given user.
-func (s userService) GetUserFullname(user domain.Account) (
+func (s userService) GetUserFullname(ctx context.Context, user domain.Account) (
 	string, error,
 ) {
-	name, err := s.repo.GetUserFullname(user)
+	name, err := s.repo.GetUserFullname(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", user.Account(), err)
@@ -465,7 +470,7 @@ func (s userService) GetUserFullname(user domain.Account) (
 }
 
 // CreateToken creates a token for the given command and client.
-func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
+func (s userService) CreateToken(ctx context.Context, cmd *domain.TokenCreatedCmd,
 	client platform.BaseAuthClient) (token TokenDTO, err error) {
 	if err = cmd.Validate(); err != nil {
 		err = allerror.NewInvalidParam(err.Error(), xerrors.Errorf("create token cmd validate error: %w", err))
@@ -477,14 +482,14 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
 		return
 	}
 
-	owner, err := s.repo.GetByAccount(cmd.Account)
+	owner, err := s.repo.GetByAccount(ctx, cmd.Account)
 	if err != nil {
 		err = xerrors.Errorf("failed to get user: %w", err)
 		err = allerror.New(allerror.ErrorFailedToCreateToken, "failed to create token", err)
 		return
 	}
 
-	_, err = s.token.GetByName(cmd.Account, cmd.Name)
+	_, err = s.token.GetByName(ctx, cmd.Account, cmd.Name)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		err = xerrors.Errorf("failed to get token by name: %w", err)
 		err = allerror.New(allerror.ErrorFailedToCreateToken, "failed to create token", err)
@@ -519,13 +524,14 @@ func (s userService) CreateToken(cmd *domain.TokenCreatedCmd,
 }
 
 // DeleteToken deletes a token for the given account and name.
-func (s userService) DeleteToken(cmd *domain.TokenDeletedCmd, client platform.BaseAuthClient) (err error) {
+func (s userService) DeleteToken(
+	ctx context.Context, cmd *domain.TokenDeletedCmd, client platform.BaseAuthClient) (err error) {
 	if err = cmd.Validate(); err != nil {
 		err = allerror.NewInvalidParam(err.Error(), xerrors.Errorf("delete token cmd validate error: %w", err))
 		return
 	}
 
-	_, err = s.token.GetByName(cmd.Account, cmd.Name)
+	_, err = s.token.GetByName(ctx, cmd.Account, cmd.Name)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeTokenNotFound, "",
@@ -618,8 +624,8 @@ func (s userService) VerifyToken(token string, perm primitive.TokenPerm) (dto To
 }
 
 // GetToken gets a token by account and name.
-func (s userService) GetToken(acc domain.Account, name primitive.TokenName) (TokenDTO, error) {
-	token, err := s.token.GetByName(acc, name)
+func (s userService) GetToken(ctx context.Context, acc domain.Account, name primitive.TokenName) (TokenDTO, error) {
+	token, err := s.token.GetByName(ctx, acc, name)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.New(allerror.ErrorCodeTokenNotFound, "",
@@ -647,14 +653,14 @@ func (s userService) SendBindEmail(cmd *CmdToSendBindEmail) error {
 }
 
 // VerifyBindEmail verifies the email binding for a user.
-func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
+func (s userService) VerifyBindEmail(ctx context.Context, cmd *CmdToVerifyBindEmail) error {
 	userId, err := s.getUserIdOfLogin(cmd.User)
 	if err != nil {
 		return allerror.New(allerror.ErrorCodeUserNotFound, "",
 			xerrors.Errorf("user %s not found: %w", cmd.User.Account(), err))
 	}
 
-	u, err := s.repo.GetByAccount(cmd.User)
+	u, err := s.repo.GetByAccount(ctx, cmd.User)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.New(allerror.ErrorCodeUserNotFound, "",
@@ -709,7 +715,7 @@ func (s userService) VerifyBindEmail(cmd *CmdToVerifyBindEmail) error {
 	}
 	// we must create git user before save
 	// bcs we need save platform id&pwd
-	_, err = s.repo.SaveUser(&u)
+	_, err = s.repo.SaveUser(ctx, &u)
 	if err != nil {
 		return xerrors.Errorf("failed to save user: %s", err)
 	}
@@ -741,7 +747,7 @@ func (s userService) getUserIdOfLogin(user primitive.Account) (userId string, er
 }
 
 // PrivacyRevoke revokes the privacy settings for a user.
-func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
+func (s userService) PrivacyRevoke(ctx context.Context, user primitive.Account) (string, error) {
 	sessions, err := s.session.FindByUser(user)
 	if err != nil {
 		return "", allerror.New(allerror.ErrorCodeUserNotFound, "",
@@ -764,7 +770,7 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 			xerrors.Errorf("failed to revoke privacy: %w", err))
 	}
 
-	userInfo, err := s.repo.GetByAccount(user)
+	userInfo, err := s.repo.GetByAccount(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", user.Account(), err)
@@ -775,7 +781,7 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 	}
 
 	userInfo.RevokePrivacy()
-	if _, err = s.repo.SaveUser(&userInfo); err != nil {
+	if _, err = s.repo.SaveUser(ctx, &userInfo); err != nil {
 		return "", allerror.New(allerror.ErrorFailedToRevokePrivacy, "",
 			xerrors.Errorf("failed to save user: %w", err))
 	}
@@ -790,8 +796,8 @@ func (s userService) PrivacyRevoke(user primitive.Account) (string, error) {
 	return action, err
 }
 
-func (s userService) AgreePrivacy(user primitive.Account) error {
-	userInfo, err := s.repo.GetByAccount(user)
+func (s userService) AgreePrivacy(ctx context.Context, user primitive.Account) error {
+	userInfo, err := s.repo.GetByAccount(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			e := xerrors.Errorf("user %s not found: %w", user.Account(), err)
@@ -803,7 +809,7 @@ func (s userService) AgreePrivacy(user primitive.Account) error {
 
 	userInfo.AgreePrivacy()
 
-	_, err = s.repo.SaveUser(&userInfo)
+	_, err = s.repo.SaveUser(ctx, &userInfo)
 	if err != nil {
 		err = allerror.New(allerror.ErrorFailedToAgreePrivacy, "",
 			xerrors.Errorf("failed to save user: %w", err))
@@ -812,8 +818,8 @@ func (s userService) AgreePrivacy(user primitive.Account) error {
 	return err
 }
 
-func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
-	userInfo, err := s.repo.GetByAccount(user)
+func (s userService) IsAgreePrivacy(ctx context.Context, user primitive.Account) (bool, error) {
+	userInfo, err := s.repo.GetByAccount(ctx, user)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			return true, nil
@@ -832,8 +838,8 @@ func (s userService) IsAgreePrivacy(user primitive.Account) (bool, error) {
 //
 // Returns:
 // - bool: True if the user is an organization, false otherwise.
-func (s userService) IsOrganization(user domain.Account) bool {
-	userInfo, err := s.repo.GetByAccount(user)
+func (s userService) IsOrganization(ctx context.Context, user domain.Account) bool {
+	userInfo, err := s.repo.GetByAccount(ctx, user)
 	if err != nil {
 		return true
 	}

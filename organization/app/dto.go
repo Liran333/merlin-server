@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -51,9 +53,9 @@ type ApproveDTO struct {
 }
 
 // ToApproveDTO converts a domain.Approve object to an ApproveDTO object.
-func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
+func ToApproveDTO(ctx context.Context, m *domain.Approve, user userapp.UserService) ApproveDTO {
 	var fullname string
-	u, err := user.GetByAccount(nil, m.Username)
+	u, err := user.GetByAccount(ctx, nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 	} else {
@@ -61,7 +63,7 @@ func ToApproveDTO(m *domain.Approve, user userapp.UserService) ApproveDTO {
 	}
 
 	var orgFullName string
-	orgFullName, err = user.GetUserFullname(m.OrgName)
+	orgFullName, err = user.GetUserFullname(ctx, m.OrgName)
 	if err != nil {
 		logrus.Warnf("failed to get org fullname for %s, err:%s", m.OrgName, err)
 	}
@@ -108,9 +110,9 @@ type MemberPagnationDTO struct {
 }
 
 // ToMemberRequestDTO converts a domain.MemberRequest object to a MemberRequestDTO object.
-func ToMemberRequestDTO(m *domain.MemberRequest, user userapp.UserService) MemberRequestDTO {
+func ToMemberRequestDTO(ctx context.Context, m *domain.MemberRequest, user userapp.UserService) MemberRequestDTO {
 	var fullname string
-	u, err := user.GetByAccount(nil, m.Username)
+	u, err := user.GetByAccount(ctx, nil, m.Username)
 	if err != nil {
 		logrus.Warnf("failed to get fullname for %s, err:%s", m.Username, err)
 	} else {

@@ -129,7 +129,7 @@ func (ctl *OrgController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if o, err := ctl.org.UpdateBasicInfo(&cmd); err != nil {
+	if o, err := ctl.org.UpdateBasicInfo(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, o)
@@ -151,7 +151,7 @@ func (ctl *OrgController) Get(ctx *gin.Context) {
 		return
 	}
 
-	if o, err := ctl.org.GetByAccount(orgName); err != nil {
+	if o, err := ctl.org.GetByAccount(ctx.Request.Context(), orgName); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, o)
@@ -177,7 +177,7 @@ func (ctl *OrgController) GetUser(ctx *gin.Context) {
 
 	user := ctl.m.GetUser(ctx)
 
-	if o, err := ctl.org.GetOrgOrUser(user, name); err != nil {
+	if o, err := ctl.org.GetOrgOrUser(ctx.Request.Context(), user, name); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, o)
@@ -210,7 +210,7 @@ func (ctl *OrgController) Check(ctx *gin.Context) {
 		return
 	}
 
-	if ctl.org.CheckName(name) {
+	if ctl.org.CheckName(ctx.Request.Context(), name) {
 		ctx.JSON(http.StatusOK, nil)
 	} else {
 		ctx.JSON(http.StatusConflict, nil)
@@ -259,7 +259,7 @@ func (ctl *OrgController) List(ctx *gin.Context) {
 		Page:     cmd.PageNUm,
 		PageSize: cmd.CountPerPage,
 	}
-	if os, total, err := ctl.org.List(listOption); err != nil {
+	if os, total, err := ctl.org.List(ctx.Request.Context(), listOption); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		var res userapp.UserPaginationDTO
@@ -304,7 +304,7 @@ func (ctl *OrgController) Create(ctx *gin.Context) {
 
 	cmd.Owner = user
 
-	o, err := ctl.org.Create(&cmd)
+	o, err := ctl.org.Create(ctx.Request.Context(), &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -335,7 +335,7 @@ func (ctl *OrgController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	err = ctl.org.Delete(&domain.OrgDeletedCmd{
+	err = ctl.org.Delete(ctx.Request.Context(), &domain.OrgDeletedCmd{
 		Actor: user,
 		Name:  orgName,
 	})
@@ -377,7 +377,7 @@ func (ctl *OrgController) ListMember(ctx *gin.Context) {
 		return
 	}
 
-	if members, err := ctl.org.ListMember(&cmd); err != nil {
+	if members, err := ctl.org.ListMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, members)
@@ -419,7 +419,7 @@ func (ctl *OrgController) EditMember(ctx *gin.Context) {
 	middleware.SetAction(ctx,
 		fmt.Sprintf("edit member %s to be %s of %s", req.User, req.Role, cmd.Org.Account()))
 
-	if _, err = ctl.org.EditMember(&cmd); err != nil {
+	if _, err = ctl.org.EditMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -461,7 +461,7 @@ func (ctl *OrgController) RemoveMember(ctx *gin.Context) {
 	middleware.SetAction(ctx,
 		fmt.Sprintf("remove member %s from %s", req.User, cmd.Org.Account()))
 
-	if err = ctl.org.RemoveMember(&cmd); err != nil {
+	if err = ctl.org.RemoveMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
@@ -493,7 +493,7 @@ func (ctl *OrgController) Leave(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, fmt.Sprintf("leave organization %s", orgName))
 
-	err = ctl.org.RemoveMember(&domain.OrgRemoveMemberCmd{
+	err = ctl.org.RemoveMember(ctx.Request.Context(), &domain.OrgRemoveMemberCmd{
 		Actor:   user,
 		Org:     orgName,
 		Account: user,
@@ -538,7 +538,7 @@ func (ctl *OrgController) InviteMember(ctx *gin.Context) {
 		return
 	}
 
-	if dto, err := ctl.org.InviteMember(&cmd); err != nil {
+	if dto, err := ctl.org.InviteMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, dto)
@@ -582,11 +582,11 @@ func (ctl *OrgController) ListInvitation(ctx *gin.Context) {
 	var dtos []orgapp.ApproveDTO
 	var err error
 	if cmd.Org != nil {
-		dtos, err = ctl.org.ListInvitationByOrg(user, cmd.Org, cmd.Status)
+		dtos, err = ctl.org.ListInvitationByOrg(ctx.Request.Context(), user, cmd.Org, cmd.Status)
 	} else if cmd.Invitee != nil {
-		dtos, err = ctl.org.ListInvitationByInvitee(user, cmd.Invitee, cmd.Status)
+		dtos, err = ctl.org.ListInvitationByInvitee(ctx.Request.Context(), user, cmd.Invitee, cmd.Status)
 	} else if cmd.Inviter != nil {
-		dtos, err = ctl.org.ListInvitationByInviter(user, cmd.Inviter, cmd.Status)
+		dtos, err = ctl.org.ListInvitationByInviter(ctx.Request.Context(), user, cmd.Inviter, cmd.Status)
 	}
 	if err != nil {
 		commonctl.SendError(ctx, err)
@@ -628,7 +628,7 @@ func (ctl *OrgController) RemoveRequest(ctx *gin.Context) {
 		return
 	}
 
-	if _, err = ctl.org.CancelReqMember(&cmd); err != nil {
+	if _, err = ctl.org.CancelReqMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
@@ -668,7 +668,7 @@ func (ctl *OrgController) RequestMember(ctx *gin.Context) {
 		return
 	}
 
-	if dto, err := ctl.org.RequestMember(&cmd); err != nil {
+	if dto, err := ctl.org.RequestMember(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, dto)
@@ -708,7 +708,7 @@ func (ctl *OrgController) ApproveRequest(ctx *gin.Context) {
 		return
 	}
 
-	if _, err = ctl.org.ApproveRequest(&cmd); err != nil {
+	if _, err = ctl.org.ApproveRequest(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
@@ -748,7 +748,7 @@ func (ctl *OrgController) ListRequests(ctx *gin.Context) {
 		return
 	}
 
-	if dtos, err := ctl.org.ListMemberReq(&cmd); err != nil {
+	if dtos, err := ctl.org.ListMemberReq(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, dtos)
@@ -816,7 +816,7 @@ func (ctl *OrgController) RemoveInvitation(ctx *gin.Context) {
 		return
 	}
 
-	if _, err = ctl.org.RevokeInvite(&cmd); err != nil {
+	if _, err = ctl.org.RevokeInvite(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
@@ -856,7 +856,7 @@ func (ctl *OrgController) AcceptInvite(ctx *gin.Context) {
 		return
 	}
 
-	if a, err := ctl.org.AcceptInvite(&cmd); err != nil {
+	if a, err := ctl.org.AcceptInvite(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, a)
@@ -903,11 +903,11 @@ func (ctl *OrgController) GetPrivilege(ctx *gin.Context) {
 	switch req.Type {
 	case "npu":
 		if ctl.npuGatekeeper != nil {
-			orgs, err = ctl.npuGatekeeper.List(opt)
+			orgs, err = ctl.npuGatekeeper.List(ctx.Request.Context(), opt)
 		}
 	case "disable":
 		if ctl.disable != nil {
-			orgs, err = ctl.disable.List(opt)
+			orgs, err = ctl.disable.List(ctx.Request.Context(), opt)
 		}
 	default:
 		e := fmt.Errorf("invalid privilege type: %s", req.Type)
@@ -951,7 +951,7 @@ func (ctl *OrgController) Certificate(ctx *gin.Context) {
 		return
 	}
 
-	if err = ctl.orgCertificate.Certificate(cmd); err != nil {
+	if err = ctl.orgCertificate.Certificate(ctx.Request.Context(), cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, nil)
@@ -977,7 +977,7 @@ func (ctl *OrgController) GetCertification(ctx *gin.Context) {
 	}
 
 	user := ctl.m.GetUser(ctx)
-	if v, err := ctl.orgCertificate.GetCertification(orgName, user); err != nil {
+	if v, err := ctl.orgCertificate.GetCertification(ctx.Request.Context(), orgName, user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
@@ -1012,7 +1012,7 @@ func (ctl *OrgController) CertificateCheck(ctx *gin.Context) {
 		return
 	}
 
-	if b, err := ctl.orgCertificate.DuplicateCheck(cmd); err != nil {
+	if b, err := ctl.orgCertificate.DuplicateCheck(ctx.Request.Context(), cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, b)

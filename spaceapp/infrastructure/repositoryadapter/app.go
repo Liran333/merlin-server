@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryadapter
 
 import (
+	"context"
 	"errors"
 
 	"gorm.io/gorm"
@@ -21,9 +22,9 @@ type dao interface {
 	EqualQuery(field string) string
 	NotEqualQuery(field string) string
 	IsRecordExists(err error) bool
-	GetRecord(filter, result interface{}) error
-	GetByPrimaryKey(row interface{}) error
-	DeleteByPrimaryKey(row interface{}) error
+	GetRecord(ctx context.Context, filter, result interface{}) error
+	GetByPrimaryKey(ctx context.Context, row interface{}) error
+	DeleteByPrimaryKey(ctx context.Context, row interface{}) error
 }
 
 type appRepositoryAdapter struct {
@@ -53,13 +54,14 @@ func (adapter *appRepositoryAdapter) Remove(spaceId primitive.Identity) error {
 }
 
 // FindBySpaceId finds a space application in the repository based on the space ID.
-func (adapter *appRepositoryAdapter) FindBySpaceId(spaceId primitive.Identity) (domain.SpaceApp, error) {
+func (adapter *appRepositoryAdapter) FindBySpaceId(
+	ctx context.Context, spaceId primitive.Identity) (domain.SpaceApp, error) {
 	do := spaceappDO{SpaceId: spaceId.Integer()}
 
 	// It must new a new DO, otherwise the sql statement will include duplicate conditions.
 	result := spaceappDO{}
 
-	if err := adapter.dao.GetRecord(&do, &result); err != nil {
+	if err := adapter.dao.GetRecord(ctx, &do, &result); err != nil {
 		return domain.SpaceApp{}, err
 	}
 
@@ -67,13 +69,13 @@ func (adapter *appRepositoryAdapter) FindBySpaceId(spaceId primitive.Identity) (
 }
 
 // Find finds a space application in the repository based on the space app index.
-func (adapter *appRepositoryAdapter) Find(index *domain.SpaceAppIndex) (domain.SpaceApp, error) {
+func (adapter *appRepositoryAdapter) Find(ctx context.Context, index *domain.SpaceAppIndex) (domain.SpaceApp, error) {
 	do := spaceappDO{SpaceId: index.SpaceId.Integer(), CommitId: index.CommitId}
 
 	// It must new a new DO, otherwise the sql statement will include duplicate conditions.
 	result := spaceappDO{}
 
-	if err := adapter.dao.GetRecord(&do, &result); err != nil {
+	if err := adapter.dao.GetRecord(ctx, &do, &result); err != nil {
 		return domain.SpaceApp{}, err
 	}
 
@@ -128,7 +130,6 @@ func (adapter *appRepositoryAdapter) SaveWithBuildLog(m *domain.SpaceApp, log *d
 
 	return nil
 }
-
 
 // DeleteBySpaceId delete space app by the space ID.
 func (adapter *appRepositoryAdapter) DeleteBySpaceId(spaceId primitive.Identity) error {

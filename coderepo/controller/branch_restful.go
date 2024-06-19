@@ -68,7 +68,7 @@ func (ctl *BranchRestfulController) Create(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	v, err := ctl.appService.Create(user, &cmd)
+	v, err := ctl.appService.Create(ctx.Request.Context(), user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
@@ -100,7 +100,7 @@ func (ctl *BranchRestfulController) Delete(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	err = ctl.appService.Delete(user, &cmd)
+	err = ctl.appService.Delete(ctx.Request.Context(), user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 	} else {

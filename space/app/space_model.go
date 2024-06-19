@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
@@ -22,12 +24,12 @@ import (
 
 // ModelAppService is an interface for the model application service.
 type ModelSpaceAppService interface {
-	GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) ([]SpaceModelDTO, error)
-	GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) ([]SpaceModelDTO, error)
-	GetSpaceIdsByModelId(modelId primitive.Identity) (SpaceIdModelDTO, error)
-	UpdateRelation(spaceId primitive.Identity, modelsIndex []*domain.ModelIndex) error
-	DeleteBySpaceId(modelId primitive.Identity) error
-	DeleteByModelId(spaceId primitive.Identity) error
+	GetModelsBySpaceId(context.Context, primitive.Account, primitive.Identity) ([]SpaceModelDTO, error)
+	GetSpacesByModelId(context.Context, primitive.Account, primitive.Identity) ([]SpaceModelDTO, error)
+	GetSpaceIdsByModelId(primitive.Identity) (SpaceIdModelDTO, error)
+	UpdateRelation(primitive.Identity, []*domain.ModelIndex) error
+	DeleteBySpaceId(primitive.Identity) error
+	DeleteByModelId(primitive.Identity) error
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -40,33 +42,34 @@ func NewModelSpaceAppService(
 	modelInternalApp modelapp.ModelInternalAppService,
 ) ModelSpaceAppService {
 	return &modelSpaceAppService{
-		permission:       permission,
-		repoAdapter:      repoAdapter,
-		modelRepoAdapter: modelRepoAdapter,
-		spaceRepoAdapter: spaceRepoAdapter,
+		permission:          permission,
+		repoAdapter:         repoAdapter,
+		modelRepoAdapter:    modelRepoAdapter,
+		spaceRepoAdapter:    spaceRepoAdapter,
 		spaceappRepoAdapter: spaceappRepoAdapter,
-		modelInternalApp: modelInternalApp,
+		modelInternalApp:    modelInternalApp,
 	}
 }
 
 type modelSpaceAppService struct {
-	permission       commonapp.ResourcePermissionAppService
-	repoAdapter      spacerepo.ModelSpaceRepositoryAdapter
-	modelRepoAdapter modelrepo.ModelRepositoryAdapter
-	spaceRepoAdapter spacerepo.SpaceRepositoryAdapter
+	permission          commonapp.ResourcePermissionAppService
+	repoAdapter         spacerepo.ModelSpaceRepositoryAdapter
+	modelRepoAdapter    modelrepo.ModelRepositoryAdapter
+	spaceRepoAdapter    spacerepo.SpaceRepositoryAdapter
 	spaceappRepoAdapter spaceapprepo.Repository
-	modelInternalApp modelapp.ModelInternalAppService
+	modelInternalApp    modelapp.ModelInternalAppService
 }
 
 // GetModelsBySpaceId return models that exits, user can read and not disable
-func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceId primitive.Identity) (
+func (s *modelSpaceAppService) GetModelsBySpaceId(
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity) (
 	[]SpaceModelDTO, error) {
 	space, err := s.spaceRepoAdapter.FindById(spaceId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
 		return []SpaceModelDTO{}, newSpaceNotFound(err)
 	}
 
-	if err = s.permission.CanRead(user, &space); err != nil {
+	if err = s.permission.CanRead(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceNotFound(err)
 		}
@@ -96,7 +99,7 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 		}
 
 		// check if user can read the model
-		if err := s.permission.CanRead(user, &model); err != nil {
+		if err := s.permission.CanRead(ctx, user, &model); err != nil {
 			continue
 		}
 
@@ -113,14 +116,15 @@ func (s *modelSpaceAppService) GetModelsBySpaceId(user primitive.Account, spaceI
 	return models, nil
 }
 
-func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelId primitive.Identity) (
+func (s *modelSpaceAppService) GetSpacesByModelId(
+	ctx context.Context, user primitive.Account, modelId primitive.Identity) (
 	[]SpaceModelDTO, error) {
 	model, err := s.modelRepoAdapter.FindById(modelId)
 	if err != nil && commonrepo.IsErrorResourceNotExists(err) {
 		return []SpaceModelDTO{}, newModelNotFound(err)
 	}
 
-	if err = s.permission.CanRead(user, &model); err != nil {
+	if err = s.permission.CanRead(ctx, user, &model); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newModelNotFound(err)
 		}
@@ -150,12 +154,12 @@ func (s *modelSpaceAppService) GetSpacesByModelId(user primitive.Account, modelI
 		}
 
 		// check if user can read the space
-		if err := s.permission.CanRead(user, &space); err != nil {
+		if err := s.permission.CanRead(ctx, user, &space); err != nil {
 			continue
 		}
 
 		// if space app is not serving, not return
-		spaceapp, err := s.spaceappRepoAdapter.FindBySpaceId(space.Id)
+		spaceapp, err := s.spaceappRepoAdapter.FindBySpaceId(ctx, space.Id)
 		if err != nil {
 			continue
 		}
@@ -230,7 +234,7 @@ func (s *modelSpaceAppService) checkSpaceDisable(spaceId primitive.Identity) (sp
 func (s *modelSpaceAppService) checkModelsException(
 	spaceId primitive.Identity,
 	modelsIndex []*domain.ModelIndex,
-) ([]primitive.Identity, error){
+) ([]primitive.Identity, error) {
 	var modelsId []primitive.Identity
 	space, err := s.checkSpaceDisable(spaceId)
 	if err != nil {

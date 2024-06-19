@@ -66,7 +66,7 @@ func (ctl *SpaceAppWebController) Get(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if dto, err := ctl.appService.GetByName(user, &index); err != nil {
+	if dto, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, &dto)
@@ -88,7 +88,7 @@ func (ctl *SpaceAppWebController) GetBuildLogs(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if dto, err := ctl.appService.GetBuildLogs(user, &index); err != nil {
+	if dto, err := ctl.appService.GetBuildLogs(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, &dto)
@@ -128,7 +128,7 @@ func (ctl *SpaceAppWebController) GetRealTimeBuildLog(ctx *gin.Context) {
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	buildLog, err := ctl.appService.GetBuildLog(user, &index)
+	buildLog, err := ctl.appService.GetBuildLog(ctx.Request.Context(), user, &index)
 	if err != nil {
 		logrus.Errorf("get build log err:%s", err)
 		ctx.SSEvent("error", "get build log failed")
@@ -186,7 +186,7 @@ func (ctl *SpaceAppWebController) GetRealTimeSpaceLog(ctx *gin.Context) {
 	}
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spaceLog, err := ctl.appService.GetSpaceLog(user, &index)
+	spaceLog, err := ctl.appService.GetSpaceLog(ctx.Request.Context(), user, &index)
 	if err != nil {
 		logrus.Errorf("get space log err:%s", err)
 		ctx.SSEvent("error", "get space log failed")
@@ -245,7 +245,7 @@ func (ctl *SpaceAppWebController) CanRead(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if err := ctl.appService.CheckPermissionRead(user, &index); err != nil {
+	if err := ctl.appService.CheckPermissionRead(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, "successfully")

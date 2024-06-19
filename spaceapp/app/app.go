@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -28,15 +29,15 @@ import (
 
 // SpaceappAppService is the interface for the space app service.
 type SpaceappAppService interface {
-	GetByName(primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
-	GetBuildLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
-	GetBuildLogs(primitive.Account, *spacedomain.SpaceIndex) (BuildLogsDTO, error)
-	GetSpaceLog(primitive.Account, *spacedomain.SpaceIndex) (string, error)
+	GetByName(context.Context, primitive.Account, *spacedomain.SpaceIndex) (SpaceAppDTO, error)
+	GetBuildLog(context.Context, primitive.Account, *spacedomain.SpaceIndex) (string, error)
+	GetBuildLogs(context.Context, primitive.Account, *spacedomain.SpaceIndex) (BuildLogsDTO, error)
+	GetSpaceLog(context.Context, primitive.Account, *spacedomain.SpaceIndex) (string, error)
 	GetRequestDataStream(*domain.SeverSentStream) error
-	RestartSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
-	PauseSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
-	ResumeSpaceApp(primitive.Account, *spacedomain.SpaceIndex) error
-	CheckPermissionRead(primitive.Account, *spacedomain.SpaceIndex) error
+	RestartSpaceApp(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
+	PauseSpaceApp(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
+	ResumeSpaceApp(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
+	CheckPermissionRead(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
 	GetSpaceIdByName(index *spacedomain.SpaceIndex) (spacedomain.Space, error)
 }
 
@@ -68,7 +69,7 @@ func NewSpaceappAppService(
 		computility:           computility,
 		repoAdapterModelSpace: repoAdapterModelSpace,
 		modelRepoAdapter:      modelRepoAdapter,
-		buildLogAdapter: 	   buildLogAdapter,
+		buildLogAdapter:       buildLogAdapter,
 	}
 }
 
@@ -82,7 +83,7 @@ type spaceappAppService struct {
 	computility           computilityapp.ComputilityInternalAppService
 	repoAdapterModelSpace spacerepo.ModelSpaceRepositoryAdapter
 	modelRepoAdapter      modelrepo.ModelRepositoryAdapter
-	buildLogAdapter 	  repository.SpaceAppBuildLogAdapter
+	buildLogAdapter       repository.SpaceAppBuildLogAdapter
 }
 
 func (s *spaceappAppService) canHandleNotDisable(space *spacedomain.Space) error {
@@ -131,7 +132,7 @@ type spaceUserComputilityService struct {
 
 // GetByName retrieves the space app by name.
 func (s *spaceappAppService) GetByName(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) (SpaceAppDTO, error) {
 	var dto SpaceAppDTO
 
@@ -146,7 +147,7 @@ func (s *spaceappAppService) GetByName(
 		return dto, err
 	}
 
-	if err = s.permission.CanRead(user, &space); err != nil {
+	if err = s.permission.CanRead(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceNotFound(xerrors.Errorf("no permission, err: %w", err))
 		} else {
@@ -160,7 +161,7 @@ func (s *spaceappAppService) GetByName(
 		return toSpaceDTO(&space), nil
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err == nil {
 		return toSpaceAppDTO(&app), nil
 	}
@@ -178,7 +179,7 @@ func (s *spaceappAppService) GetByName(
 }
 
 func (s *spaceappAppService) getPrivateReadSpaceApp(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) (domain.SpaceApp, error) {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
@@ -191,7 +192,7 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 		return domain.SpaceApp{}, err
 	}
 
-	if err = s.permission.CanReadPrivate(user, &space); err != nil {
+	if err = s.permission.CanReadPrivate(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceAppNotFound(xerrors.Errorf("space no permission, err:%w", err))
 		} else {
@@ -201,7 +202,7 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 		return domain.SpaceApp{}, err
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))
@@ -216,9 +217,9 @@ func (s *spaceappAppService) getPrivateReadSpaceApp(
 
 // GetBuildLog for get build log
 func (s *spaceappAppService) GetBuildLog(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) (string, error) {
-	app, err := s.getPrivateReadSpaceApp(user, index)
+	app, err := s.getPrivateReadSpaceApp(ctx, user, index)
 	if err != nil {
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
@@ -235,9 +236,9 @@ func (s *spaceappAppService) GetBuildLog(
 
 // GetSpaceLog for get serving log
 func (s *spaceappAppService) GetSpaceLog(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) (string, error) {
-	app, err := s.getPrivateReadSpaceApp(user, index)
+	app, err := s.getPrivateReadSpaceApp(ctx, user, index)
 	if err != nil {
 		return "", xerrors.Errorf("failed to get space app:%w", err)
 	}
@@ -259,7 +260,7 @@ func (s *spaceappAppService) GetRequestDataStream(cmd *domain.SeverSentStream) e
 
 // RestartSpaceApp a SpaceApp in the spaceappAppService.
 func (s *spaceappAppService) RestartSpaceApp(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
@@ -275,7 +276,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 		return err
 	}
 
-	if err = s.permission.CanUpdate(user, &space); err != nil {
+	if err = s.permission.CanUpdate(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = newSpaceAppNotFound(err)
 		}
@@ -283,7 +284,7 @@ func (s *spaceappAppService) RestartSpaceApp(
 		return err
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
@@ -309,19 +310,20 @@ func (s *spaceappAppService) RestartSpaceApp(
 }
 
 // CheckPermissionRead  check user permission for read space app.
-func (s *spaceappAppService) CheckPermissionRead(user primitive.Account, index *spacedomain.SpaceIndex) error {
+func (s *spaceappAppService) CheckPermissionRead(
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
 		err = newSpaceNotFound(err)
 		return err
 	}
 
-	return s.permission.CanRead(user, &space)
+	return s.permission.CanRead(ctx, user, &space)
 }
 
 // PauseSpaceApp pause a SpaceApp in the spaceappAppService.
 func (s *spaceappAppService) PauseSpaceApp(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
@@ -332,7 +334,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 		return err
 	}
 
-	if err = s.permission.CanUpdate(user, &space); err != nil {
+	if err = s.permission.CanUpdate(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			e := fmt.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", e)
@@ -341,7 +343,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 		return err
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
@@ -370,7 +372,7 @@ func (s *spaceappAppService) PauseSpaceApp(
 	if err := s.repo.Save(&app); err != nil {
 		if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
 			err := allerror.New(allerror.ErrorCodeInsufficientQuota,
-				"pause space failed", xerrors.Errorf("bind space comp quota failed, err:%w",err))
+				"pause space failed", xerrors.Errorf("bind space comp quota failed, err:%w", err))
 			return err
 		}
 		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
@@ -435,7 +437,7 @@ func (sc *spaceUserComputilityService) bindSpaceCompQuota() error {
 
 // ResumeSpaceApp a SpaceApp in the spaceappAppService.
 func (s *spaceappAppService) ResumeSpaceApp(
-	user primitive.Account, index *spacedomain.SpaceIndex,
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
 ) error {
 	space, err := s.spaceRepo.FindByName(index)
 	if err != nil {
@@ -451,7 +453,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 		return err
 	}
 
-	if err = s.permission.CanUpdate(user, &space); err != nil {
+	if err = s.permission.CanUpdate(ctx, user, &space); err != nil {
 		if allerror.IsNoPermission(err) {
 			e := xerrors.Errorf("no permission to exec spaceId:%s,err: %w", space.Id.Identity(), err)
 			err = allerror.NewNotFound(allerror.ErrorCodeSpaceNotFound, "not found", e)
@@ -478,7 +480,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 			errInfo, xerrors.New("resource no applicaction file"))
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
@@ -486,7 +488,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 		if !space.Hardware.IsNpu() {
 			return err
 		}
-		app, err = s.reCreateApp(space)
+		app, err = s.reCreateApp(ctx, space)
 		if err != nil {
 			return err
 		}
@@ -500,7 +502,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 
 	if err := spaceCompCmd.bindSpaceCompQuota(); err != nil {
 		err := allerror.New(allerror.ErrorCodeInsufficientQuota,
-			"resume space failed", xerrors.Errorf("bind space comp quota failed, err:%w",err))
+			"resume space failed", xerrors.Errorf("bind space comp quota failed, err:%w", err))
 
 		return err
 	}
@@ -523,7 +525,7 @@ func (s *spaceappAppService) ResumeSpaceApp(
 	return s.msg.SendSpaceAppResumeEvent(&e)
 }
 
-func (s *spaceappAppService) reCreateApp(space spacedomain.Space) (domain.SpaceApp, error) {
+func (s *spaceappAppService) reCreateApp(ctx context.Context, space spacedomain.Space) (domain.SpaceApp, error) {
 	if err := s.repo.Add(&domain.SpaceApp{
 		Status: appprimitive.AppStatusPaused,
 		SpaceAppIndex: domain.SpaceAppIndex{
@@ -533,7 +535,7 @@ func (s *spaceappAppService) reCreateApp(space spacedomain.Space) (domain.SpaceA
 	}); err != nil {
 		return domain.SpaceApp{}, err
 	}
-	return s.repo.FindBySpaceId(space.Id)
+	return s.repo.FindBySpaceId(ctx, space.Id)
 }
 
 // GetSpaceIdByName get space id by name.
@@ -551,16 +553,16 @@ func (s *spaceappAppService) GetSpaceIdByName(index *spacedomain.SpaceIndex) (sp
 }
 
 // GetBuildLogs
-func (s *spaceappAppService) GetBuildLogs(user primitive.Account, index *spacedomain.SpaceIndex) (
+func (s *spaceappAppService) GetBuildLogs(ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex) (
 	dto BuildLogsDTO, err error,
 ) {
-	app, err := s.getPrivateReadSpaceApp(user, index)
+	app, err := s.getPrivateReadSpaceApp(ctx, user, index)
 	if err != nil {
 		err = xerrors.Errorf("failed to get space app, err:%w", err)
 		return
 	}
 
-	log, err := s.buildLogAdapter.Find(app.Id)
+	log, err := s.buildLogAdapter.Find(ctx, app.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))

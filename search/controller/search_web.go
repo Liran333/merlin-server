@@ -59,7 +59,7 @@ func (ctl *SearchWebController) Search(ctx *gin.Context) {
 
 	user := ctl.m.GetUser(ctx)
 
-	dto, err := ctl.searchApp.Search(&cmd, user)
+	dto, err := ctl.searchApp.Search(ctx, &cmd, user)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"golang.org/x/xerrors"
@@ -24,9 +25,11 @@ import (
 
 // SpaceVariableService is an interface for the space variable service.
 type SpaceVariableService interface {
-	CreateVariable(primitive.Account, primitive.Identity, *CmdToCreateSpaceVariable) (string, string, error)
-	DeleteVariable(primitive.Account, primitive.Identity, primitive.Identity) (string, error)
-	UpdateVariable(primitive.Account, primitive.Identity, primitive.Identity, *CmdToUpdateSpaceVariable) (string, error)
+	CreateVariable(
+		context.Context, primitive.Account, primitive.Identity, *CmdToCreateSpaceVariable) (string, string, error)
+	DeleteVariable(context.Context, primitive.Account, primitive.Identity, primitive.Identity) (string, error)
+	UpdateVariable(context.Context, primitive.Account,
+		primitive.Identity, primitive.Identity, *CmdToUpdateSpaceVariable) (string, error)
 	ListVariableSecret(string) (SpaceVariableSecretDTO, error)
 }
 
@@ -58,8 +61,8 @@ type spaceVariableService struct {
 	msgAdapter           message.SpaceMessage
 }
 
-func (s *spaceVariableService) setAppRestarting(spaceId primitive.Identity) error {
-	app, err := s.repo.FindBySpaceId(spaceId)
+func (s *spaceVariableService) setAppRestarting(ctx context.Context, spaceId primitive.Identity) error {
+	app, err := s.repo.FindBySpaceId(ctx, spaceId)
 	if err != nil {
 		return nil
 	}
@@ -72,6 +75,7 @@ func (s *spaceVariableService) setAppRestarting(spaceId primitive.Identity) erro
 
 // Create creates a new space with the given command and returns the ID of the created space.
 func (s *spaceVariableService) CreateVariable(
+	ctx context.Context,
 	user primitive.Account,
 	spaceId primitive.Identity,
 	cmd *CmdToCreateSpaceVariable) (res string, action string, err error) {
@@ -88,7 +92,7 @@ func (s *spaceVariableService) CreateVariable(
 		spaceId.Identity(), space.Owner.Account(), cmd.Name.ENVName(), cmd.Value.ENVValue(),
 	)
 
-	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
+	err = s.permission.CanCreate(ctx, user, space.Owner, primitive.ObjTypeSpace)
 	if err != nil {
 		err = newSpaceNotFound(err)
 		return "", action, err
@@ -128,7 +132,7 @@ func (s *spaceVariableService) CreateVariable(
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
@@ -152,6 +156,7 @@ func (s *spaceVariableService) spaceVariableCountCheck(spaceId primitive.Identit
 
 // DeleteVariable deletes the space variable with the given space ID and variable ID and returns the action performed.
 func (s *spaceVariableService) DeleteVariable(
+	ctx context.Context,
 	user primitive.Account,
 	spaceId primitive.Identity,
 	variableId primitive.Identity,
@@ -177,7 +182,7 @@ func (s *spaceVariableService) DeleteVariable(
 		spaceId.Identity(), space.Owner.Account(), variable.Name.ENVName(),
 	)
 
-	notFound, err := app.CanDeleteOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanDeleteOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -205,7 +210,7 @@ func (s *spaceVariableService) DeleteVariable(
 			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 		return
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}
@@ -214,7 +219,7 @@ func (s *spaceVariableService) DeleteVariable(
 
 // Update updates the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceVariableService) UpdateVariable(
-	user primitive.Account, spaceId primitive.Identity,
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity,
 	variableId primitive.Identity, cmd *CmdToUpdateSpaceVariable,
 ) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
@@ -238,7 +243,7 @@ func (s *spaceVariableService) UpdateVariable(
 		spaceId.Identity(), space.Owner.Account(), variable.Name.ENVName(),
 	)
 
-	notFound, err := app.CanUpdateOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanUpdateOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -273,7 +278,7 @@ func (s *spaceVariableService) UpdateVariable(
 			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 		return
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err:%w", spaceId.Identity(), err))
 	}

@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package loginrepositoryadapter
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
@@ -14,8 +16,8 @@ import (
 
 type dao interface {
 	DB() *gorm.DB
-	GetRecord(filter, result interface{}) error
-	DeleteByPrimaryKey(row interface{}) error
+	GetRecord(ctx context.Context, filter, result interface{}) error
+	DeleteByPrimaryKey(ctx context.Context, row interface{}) error
 
 	EqualQuery(field string) string
 }
@@ -38,9 +40,9 @@ func (adapter *loginAdapter) Add(login *domain.Session) error {
 }
 
 // Delete deletes a login from the database by its ID.
-func (adapter *loginAdapter) Delete(loginId primitive.RandomId) error {
+func (adapter *loginAdapter) Delete(ctx context.Context, loginId primitive.RandomId) error {
 	return adapter.DeleteByPrimaryKey(
-		&loginDO{Id: loginId.RandomId()},
+		ctx, &loginDO{Id: loginId.RandomId()},
 	)
 }
 
@@ -51,10 +53,10 @@ func (adapter *loginAdapter) DeleteByUser(user primitive.Account) error {
 }
 
 // Find finds a login in the database by its ID.
-func (adapter *loginAdapter) Find(loginId primitive.RandomId) (domain.Session, error) {
+func (adapter *loginAdapter) Find(ctx context.Context, loginId primitive.RandomId) (domain.Session, error) {
 	do := loginDO{Id: loginId.RandomId()}
 
-	if err := adapter.GetRecord(&do, &do); err != nil {
+	if err := adapter.GetRecord(ctx, &do, &do); err != nil {
 		return domain.Session{}, err
 	}
 

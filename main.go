@@ -18,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
+	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/config"
@@ -194,6 +195,9 @@ func main() {
 	}
 
 	email.Init(cfg.Email)
+	shutdown := opentelemetry.InitTrace(&cfg.Trace) // must be init before StartWebServer
+
+	defer shutdown()
 
 	// run
 	server.StartWebServer(o.service.Key, o.service.Cert, o.service.RemoveCfg, o.service.Port, o.service.GracePeriod, cfg)

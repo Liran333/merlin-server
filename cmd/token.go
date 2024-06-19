@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -80,7 +81,8 @@ var tokenAddCmd = &cobra.Command{
 		}
 		tokenPerm := viper.GetString("token.create.perm")
 
-		platform, err := userAppService.GetPlatformUser(acc)
+		ctx := context.Background()
+		platform, err := userAppService.GetPlatformUser(ctx, acc)
 		if err != nil {
 			logrus.Fatalf("failed to get platform user %s", err.Error())
 		}
@@ -90,7 +92,7 @@ var tokenAddCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		token, err := userAppService.CreateToken(&domain.TokenCreatedCmd{
+		token, err := userAppService.CreateToken(ctx, &domain.TokenCreatedCmd{
 			Account:    acc,
 			Name:       tokenName,
 			Permission: perm,
@@ -119,14 +121,14 @@ var tokenDelCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf(err.Error())
 		}
-
-		platform, err := userAppService.GetPlatformUser(acc)
+		ctx := context.Background()
+		platform, err := userAppService.GetPlatformUser(ctx, acc)
 		if err != nil {
 			logrus.Fatalf("failed to get platform user , %s", err.Error())
 		}
 
 		fmt.Println("delete ", acc.Account(), tokenName)
-		err = userAppService.DeleteToken(&domain.TokenDeletedCmd{
+		err = userAppService.DeleteToken(ctx, &domain.TokenDeletedCmd{
 			Account: acc,
 			Name:    tokenName,
 		}, platform)
@@ -177,7 +179,7 @@ var tokenGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("get user token failed :%s with %s", err.Error(), viper.GetString("token.get.name"))
 		}
-		token, err := userAppService.GetToken(acc, name)
+		token, err := userAppService.GetToken(ctx, acc, name)
 		if err != nil {
 			logrus.Fatalf("get user token failed :%s", err.Error())
 		} else {

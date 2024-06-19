@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"context"
+
 	"golang.org/x/xerrors"
 	"gorm.io/gorm/clause"
 
@@ -102,13 +104,13 @@ func (impl *tokenRepoImpl) GetByLastEight(LastEight string) (r []domain.Platform
 }
 
 // GetByName retrieves a token by its name and owner.
-func (impl *tokenRepoImpl) GetByName(acc primitive.Account,
+func (impl *tokenRepoImpl) GetByName(ctx context.Context, acc primitive.Account,
 	name primitive.TokenName) (r domain.PlatformToken, err error) {
 	tmpDo := &TokenDO{}
 	tmpDo.Name = name.TokenName()
 	tmpDo.Owner = acc.Account()
 
-	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+	if err = impl.GetRecord(ctx, &tmpDo, &tmpDo); err != nil {
 		err = xerrors.Errorf("failed to get token by name: %w", err)
 		return
 	}

@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repository
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/organization/domain"
 	orgprimitive "github.com/openmerlin/merlin-server/organization/domain/primitive"
@@ -21,7 +23,7 @@ type FindOption struct {
 // Certificate represents the repository for organization certificates.
 type Certificate interface {
 	Save(domain.OrgCertificate) error
-	Find(FindOption) (domain.OrgCertificate, error)
-	DuplicateCheck(option FindOption) (domain.OrgCertificate, error)
+	Find(context.Context, FindOption) (domain.OrgCertificate, error)
+	DuplicateCheck(ctx context.Context, option FindOption) (domain.OrgCertificate, error)
 	DeleteByOrgName(orgName primitive.Account) error
 }

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -32,18 +33,18 @@ func newSpaceAppNotFound(err error) error {
 
 // SpaceappInternalAppService is an interface that defines the methods for creating and managing a SpaceApp.
 type SpaceappInternalAppService interface {
-	Create(cmd *CmdToCreateApp) error
+	Create(ctx context.Context, cmd *CmdToCreateApp) error
 
-	NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error
-	NotifyIsBuildFailed(cmd *CmdToNotifyFailedStatus) error
-	NotifyStarting(cmd *CmdToNotifyStarting) error
-	NotifyIsStartFailed(cmd *CmdToNotifyFailedStatus) error
-	NotifyIsServing(cmd *CmdToNotifyServiceIsStarted) error
-	NotifyIsRestartFailed(cmd *CmdToNotifyFailedStatus) error
-	NotifyIsResumeFailed(cmd *CmdToNotifyFailedStatus) error
+	NotifyIsBuilding(ctx context.Context, cmd *CmdToNotifyBuildIsStarted) error
+	NotifyIsBuildFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error
+	NotifyStarting(ctx context.Context, cmd *CmdToNotifyStarting) error
+	NotifyIsStartFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error
+	NotifyIsServing(ctx context.Context, cmd *CmdToNotifyServiceIsStarted) error
+	NotifyIsRestartFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error
+	NotifyIsResumeFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error
 
-	ForcePauseSpaceApp(primitive.Identity) error
-	PauseSpaceApp(primitive.Identity) error
+	ForcePauseSpaceApp(context.Context, primitive.Identity) error
+	PauseSpaceApp(context.Context, primitive.Identity) error
 }
 
 // NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
@@ -74,7 +75,7 @@ type spaceappInternalAppService struct {
 }
 
 // Create creates a new SpaceApp in the spaceappInternalAppService.
-func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
+func (s *spaceappInternalAppService) Create(ctx context.Context, cmd *CmdToCreateApp) error {
 	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -100,7 +101,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 		return err
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err == nil {
 		if app.IsAppNotAllowToInit() {
 			e := fmt.Errorf("spaceId:%s, not allow to init", space.Id.Identity())
@@ -146,7 +147,7 @@ func (s *spaceappInternalAppService) Create(cmd *CmdToCreateApp) error {
 	return nil
 }
 
-func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.SpaceApp, error) {
+func (s *spaceappInternalAppService) getSpaceApp(ctx context.Context, cmd CmdToCreateApp) (domain.SpaceApp, error) {
 	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -166,7 +167,7 @@ func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.Spa
 		return domain.SpaceApp{}, err
 	}
 
-	v, err := s.repo.FindBySpaceId(space.Id)
+	v, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
@@ -178,8 +179,8 @@ func (s *spaceappInternalAppService) getSpaceApp(cmd CmdToCreateApp) (domain.Spa
 }
 
 // NotifyIsBuilding notifies that the build process of a SpaceApp has started.
-func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsStarted) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyIsBuilding(ctx context.Context, cmd *CmdToNotifyBuildIsStarted) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -197,8 +198,8 @@ func (s *spaceappInternalAppService) NotifyIsBuilding(cmd *CmdToNotifyBuildIsSta
 }
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
-func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyIsBuildFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -210,7 +211,7 @@ func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedS
 	}
 
 	if err := s.repo.SaveWithBuildLog(&v, &domain.SpaceAppBuildLog{
-		Logs:  cmd.Logs,
+		Logs: cmd.Logs,
 	}); err != nil {
 		logrus.Errorf("spaceId:%s save with build log db failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
@@ -222,8 +223,8 @@ func (s *spaceappInternalAppService) NotifyIsBuildFailed(cmd *CmdToNotifyFailedS
 }
 
 // NotifyStarting notifies that the build process of a SpaceApp has finished.
-func (s *spaceappInternalAppService) NotifyStarting(cmd *CmdToNotifyStarting) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyStarting(ctx context.Context, cmd *CmdToNotifyStarting) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -234,7 +235,7 @@ func (s *spaceappInternalAppService) NotifyStarting(cmd *CmdToNotifyStarting) er
 	}
 
 	if err := s.repo.SaveWithBuildLog(&v, &domain.SpaceAppBuildLog{
-		Logs:  cmd.Logs,
+		Logs: cmd.Logs,
 	}); err != nil {
 		logrus.Errorf("spaceId:%s save with build log db failed, err:%s", cmd.SpaceId.Identity(), err)
 		return err
@@ -246,8 +247,8 @@ func (s *spaceappInternalAppService) NotifyStarting(cmd *CmdToNotifyStarting) er
 }
 
 // NotifyIsBuildFailed notifies change SpaceApp status.
-func (s *spaceappInternalAppService) NotifyIsStartFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyIsStartFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -266,8 +267,8 @@ func (s *spaceappInternalAppService) NotifyIsStartFailed(cmd *CmdToNotifyFailedS
 }
 
 // NotifyIsServing notifies that a service of a SpaceApp has serving.
-func (s *spaceappInternalAppService) NotifyIsServing(cmd *CmdToNotifyServiceIsStarted) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyIsServing(ctx context.Context, cmd *CmdToNotifyServiceIsStarted) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -287,8 +288,8 @@ func (s *spaceappInternalAppService) NotifyIsServing(cmd *CmdToNotifyServiceIsSt
 }
 
 // NotifyIsReStartFailed notifies change SpaceApp status.
-func (s *spaceappInternalAppService) NotifyIsRestartFailed(cmd *CmdToNotifyFailedStatus) error {
-	v, err := s.getSpaceApp(cmd.SpaceAppIndex)
+func (s *spaceappInternalAppService) NotifyIsRestartFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error {
+	v, err := s.getSpaceApp(ctx, cmd.SpaceAppIndex)
 	if err != nil {
 		return err
 	}
@@ -307,7 +308,7 @@ func (s *spaceappInternalAppService) NotifyIsRestartFailed(cmd *CmdToNotifyFaile
 }
 
 // NotifyIsResumeFailed notifies change SpaceApp status.
-func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailedStatus) error {
+func (s *spaceappInternalAppService) NotifyIsResumeFailed(ctx context.Context, cmd *CmdToNotifyFailedStatus) error {
 	space, err := s.spaceRepo.FindById(cmd.SpaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -318,7 +319,7 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 		return err
 	}
 
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = newSpaceAppNotFound(err)
@@ -362,7 +363,7 @@ func (s *spaceappInternalAppService) NotifyIsResumeFailed(cmd *CmdToNotifyFailed
 }
 
 // PauseSpaceApp pause a SpaceApp in the spaceappAppService.
-func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identity) error {
+func (s *spaceappInternalAppService) ForcePauseSpaceApp(ctx context.Context, spaceId primitive.Identity) error {
 	space, err := s.spaceRepo.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -378,7 +379,7 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 		spaceRepo:   s.spaceRepo,
 		computility: s.computility,
 	}
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		if err := spaceCompCmd.unbindSpaceCompQuota(); err != nil {
 			logrus.Errorf("spaceId:%s release space comp quota failed, err:%s", space.Id.Identity(), err)
@@ -421,7 +422,7 @@ func (s *spaceappInternalAppService) ForcePauseSpaceApp(spaceId primitive.Identi
 	return nil
 }
 
-func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) error {
+func (s *spaceappInternalAppService) PauseSpaceApp(ctx context.Context, spaceId primitive.Identity) error {
 	space, err := s.spaceRepo.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -431,7 +432,7 @@ func (s *spaceappInternalAppService) PauseSpaceApp(spaceId primitive.Identity) e
 
 		return err
 	}
-	app, err := s.repo.FindBySpaceId(space.Id)
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
 	if err != nil {
 		err = newSpaceAppNotFound(err)
 		logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)

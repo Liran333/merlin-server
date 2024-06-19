@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package postgresql
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,9 +22,9 @@ import (
 
 // Impl is an interface for database operations.
 type Impl interface {
-	GetRecord(filter, result interface{}) error
-	GetByPrimaryKey(row interface{}) error
-	DeleteByPrimaryKey(row interface{}) error
+	GetRecord(ctx context.Context, filter, result interface{}) error
+	GetByPrimaryKey(ctx context.Context, row interface{}) error
+	DeleteByPrimaryKey(ctx context.Context, row interface{}) error
 	LikeFilter(field, value string) (query, arg string)
 	IntersectionFilter(field string, value []string) (query string, arg pq.StringArray)
 	EqualQuery(field string) string
@@ -31,6 +32,7 @@ type Impl interface {
 	OrderByDesc(field string) string
 	InFilter(field string) string
 	DB() *gorm.DB
+	WithContext(context.Context) *gorm.DB
 	TableName() string
 }
 
@@ -58,9 +60,13 @@ func (dao *daoImpl) DB() *gorm.DB {
 	return db.Table(dao.table)
 }
 
+func (dao *daoImpl) WithContext(ctx context.Context) *gorm.DB {
+	return db.WithContext(ctx).Table(dao.table)
+}
+
 // GetRecord retrieves a single record that matches the given filter criteria.
-func (dao *daoImpl) GetRecord(filter, result interface{}) error {
-	err := dao.DB().Where(filter).First(result).Error
+func (dao *daoImpl) GetRecord(ctx context.Context, filter, result interface{}) error {
+	err := dao.WithContext(ctx).Where(filter).First(result).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(errors.New("not found"))
@@ -70,8 +76,8 @@ func (dao *daoImpl) GetRecord(filter, result interface{}) error {
 }
 
 // GetByPrimaryKey retrieves a single record by its primary key.
-func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
-	err := dao.DB().First(row).Error
+func (dao *daoImpl) GetByPrimaryKey(ctx context.Context, row interface{}) error {
+	err := dao.WithContext(ctx).First(row).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(errors.New("not found"))
@@ -81,8 +87,8 @@ func (dao *daoImpl) GetByPrimaryKey(row interface{}) error {
 }
 
 // DeleteByPrimaryKey deletes a record by its primary key.
-func (dao *daoImpl) DeleteByPrimaryKey(row interface{}) error {
-	err := dao.DB().Delete(row).Error
+func (dao *daoImpl) DeleteByPrimaryKey(ctx context.Context, row interface{}) error {
+	err := dao.WithContext(ctx).Delete(row).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return repository.NewErrorResourceNotExists(errors.New("not found"))

@@ -92,7 +92,7 @@ func (ctl *SessionInternalController) Clear(ctx *gin.Context) {
 		return
 	}
 
-	if err = ctl.s.Clear(sessionId); err != nil {
+	if err = ctl.s.Clear(ctx.Request.Context(), sessionId); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)

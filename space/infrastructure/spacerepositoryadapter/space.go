@@ -102,7 +102,7 @@ func (adapter *spaceAdapter) List(opt *repository.ListOption, login primitive.Ac
 			if err != nil {
 				return nil, 0, err
 			}
-			orgNames := make([]string, len(members))
+			orgNames := make([]string, 0, len(members))
 			for _, member := range members {
 				orgNames = append(orgNames, member.OrgName.Account())
 			}
@@ -165,10 +165,12 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		_, arg := likeFilter(fieldName, opt.Name)
 
 		if !opt.ExcludeFullname {
-			query2, arg2 := likeFilter(fieldFullName, opt.Name)
-			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)).Or(query2, arg2))
+			_, arg2 := likeFilter(fieldFullName, opt.Name)
+			db = db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ? OR "+fieldFullName+
+				" ilike ?", arg, arg2)).Session(&gorm.Session{})
 		} else {
 			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)))
+
 		}
 
 		if strings.Contains(readme, strings.ToLower(opt.Name)) {

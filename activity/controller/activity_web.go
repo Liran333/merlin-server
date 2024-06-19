@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -130,13 +131,13 @@ func (ctl *ActivityWebController) List(ctx *gin.Context) {
 	list = append(list, user)
 
 	// List activities based on the prepared list and command
-	dto, err := ctl.appService.List(user, list, &cmd)
+	dto, err := ctl.appService.List(ctx.Request.Context(), user, list, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return
 	}
 
-	if v, err := ctl.setAvatars(&dto); err != nil {
+	if v, err := ctl.setAvatars(ctx, &dto); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
@@ -263,7 +264,7 @@ func (ctl *ActivityWebController) Delete(ctx *gin.Context) {
 }
 
 // setAvatars sets avatars for the activities in an ActivitysDTO object.
-func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
+func (ctl *ActivityWebController) setAvatars(ctx context.Context, dto *app.ActivitysDTO) (activitiesInfo, error) {
 	as := dto.Activities
 
 	// get avatars
@@ -277,7 +278,7 @@ func (ctl *ActivityWebController) setAvatars(dto *app.ActivitysDTO) (activitiesI
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
-		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		userInfo, err := ctl.user.GetOrgOrUser(ctx, nil, accounts[i])
 		if err != nil {
 			return activitiesInfo{}, err
 		}

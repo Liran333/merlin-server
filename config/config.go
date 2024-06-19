@@ -16,6 +16,7 @@ import (
 	internal "github.com/openmerlin/merlin-server/common/controller/middleware/internalservice"
 	"github.com/openmerlin/merlin-server/common/controller/middleware/ratelimiter"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/domain/trace"
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	gitea "github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
@@ -67,6 +68,7 @@ type Config struct {
 	Dataset      datasets.Config      `json:"datasets"`
 	Space        space.Config         `json:"space"`
 	Email        email.Config         `json:"email"`
+	Trace        trace.Config         `json:"trace"`
 	Activity     activity.Config      `json:"activity"`
 	Session      session.Config       `json:"session"`
 	SpaceApp     spaceapp.Config      `json:"space_app"`
@@ -137,6 +139,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.Postgresql,
 		&cfg.Vault,
 		&cfg.OtherConfig,
+		&cfg.Trace,
 	}
 }
 

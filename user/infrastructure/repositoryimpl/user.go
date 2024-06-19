@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,13 +22,16 @@ import (
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
+	"github.com/sirupsen/logrus"
 )
 
 // NewUserRepo creates a new user repository with the given database implementation and encryption utility.
 func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 	userTableName = db.TableName()
+	logrus.Infof("user table name: %s", userTableName)
 
 	if err := postgresql.DB().AutoMigrate(&UserDO{}); err != nil {
+		logrus.Fatalf("failed to auto migrate user table: %v", err)
 		return nil
 	}
 
@@ -41,11 +45,11 @@ type userRepoImpl struct {
 }
 
 // AddOrg adds a new organization to the repository and returns it.
-func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err error) {
+func (impl *userRepoImpl) AddOrg(ctx context.Context, o *org.Organization) (new org.Organization, err error) {
 	o.Id = primitive.CreateIdentity(primitive.GetId())
 	do := toOrgDO(o)
 
-	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
+	err = impl.WithContext(ctx).Clauses(clause.Returning{}).Create(&do).Error
 	if err != nil {
 		return
 	}
@@ -54,13 +58,13 @@ func (impl *userRepoImpl) AddOrg(o *org.Organization) (new org.Organization, err
 }
 
 // SaveOrg saves an existing organization in the repository and returns it.
-func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, err error) {
+func (impl *userRepoImpl) SaveOrg(ctx context.Context, o *org.Organization) (new org.Organization, err error) {
 	do := toOrgDO(o)
 	do.Version += 1
 
 	tmpDo := &UserDO{}
 	tmpDo.ID = o.Id.Integer()
-	v := impl.DB().Model(
+	v := impl.WithContext(ctx).Model(
 		tmpDo,
 	).Clauses(clause.Returning{}).Where(
 		impl.EqualQuery(fieldVersion), o.Version,
@@ -82,11 +86,12 @@ func (impl *userRepoImpl) SaveOrg(o *org.Organization) (new org.Organization, er
 }
 
 // DeleteOrg deletes an organization from the repository by its primary key.
-func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
+func (impl *userRepoImpl) DeleteOrg(ctx context.Context, o *org.Organization) error {
 	tmpDo := &UserDO{}
 	tmpDo.ID = o.Id.Integer()
 
 	return impl.DeleteByPrimaryKey(
+		ctx,
 		tmpDo,
 	)
 }
@@ -95,9 +100,10 @@ func (impl *userRepoImpl) DeleteOrg(o *org.Organization) error {
 // check if the name is available
 // return true mean the name is available
 // return false mean the name is not available
-func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
+func (impl *userRepoImpl) CheckName(ctx context.Context, name primitive.Account) bool {
 	var count int64
-	err := impl.DB().Where(fmt.Sprintf(`LOWER(%s) = ?`, fieldName), strings.ToLower(name.Account())).Count(&count).Error
+	err := impl.WithContext(ctx).Where(fmt.Sprintf(`LOWER(%s) = ?`, fieldName),
+		strings.ToLower(name.Account())).Count(&count).Error
 
 	if err == nil && count == 0 {
 		return true
@@ -107,12 +113,13 @@ func (impl *userRepoImpl) CheckName(name primitive.Account) bool {
 }
 
 // GetOrgByName retrieves an organization by its name.
-func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organization, err error) {
+func (impl *userRepoImpl) GetOrgByName(ctx context.Context,
+	account primitive.Account) (r org.Organization, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
 	tmpDo.Type = domain.UserTypeOrganization
 
-	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+	if err = impl.GetRecord(ctx, &tmpDo, &tmpDo); err != nil {
 		return
 	}
 
@@ -120,8 +127,9 @@ func (impl *userRepoImpl) GetOrgByName(account primitive.Account) (r org.Organiz
 }
 
 // GetOrgByOwner retrieves organizations owned by the given account.
-func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Organization, err error) {
-	query := impl.DB().Where(
+func (impl *userRepoImpl) GetOrgByOwner(
+	ctx context.Context, account primitive.Account) (os []org.Organization, err error) {
+	query := impl.WithContext(ctx).Where(
 		impl.EqualQuery(fieldOwner), account.Account(),
 	).Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization)
 
@@ -144,8 +152,9 @@ func (impl *userRepoImpl) GetOrgByOwner(account primitive.Account) (os []org.Org
 }
 
 // GetOrgList retrieves organizations owned by organization id array or owner.
-func (impl *userRepoImpl) GetOrgList(opt *repository.ListOrgOption) (os []org.Organization, err error) {
-	query := impl.DB()
+func (impl *userRepoImpl) GetOrgList(
+	ctx context.Context, opt *repository.ListOrgOption) (os []org.Organization, err error) {
+	query := impl.WithContext(ctx)
 	if len(opt.OrgIDs) > 0 {
 		query = query.Where(impl.InFilter(fieldID), opt.OrgIDs)
 	}
@@ -170,8 +179,9 @@ func (impl *userRepoImpl) GetOrgList(opt *repository.ListOrgOption) (os []org.Or
 	return
 }
 
-func (impl *userRepoImpl) GetOrgPageList(opt *repository.ListPageOrgOption) ([]org.Organization, int, error) {
-	query := impl.DB()
+func (impl *userRepoImpl) GetOrgPageList(
+	ctx context.Context, opt *repository.ListPageOrgOption) ([]org.Organization, int, error) {
+	query := impl.WithContext(ctx)
 	if len(opt.OrgIDs) > 0 {
 		query = query.Where(impl.InFilter(fieldID), opt.OrgIDs)
 	}
@@ -207,8 +217,8 @@ func (impl *userRepoImpl) GetOrgPageList(opt *repository.ListPageOrgOption) ([]o
 }
 
 // GetOrgCountByOwner retrieves the count of organizations owned by the given account.
-func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total int64, err error) {
-	err = impl.DB().
+func (impl *userRepoImpl) GetOrgCountByOwner(ctx context.Context, account primitive.Account) (total int64, err error) {
+	err = impl.WithContext(ctx).
 		Where(impl.EqualQuery(fieldOwner), account.Account()).
 		Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization).
 		Count(&total).Error
@@ -217,14 +227,14 @@ func (impl *userRepoImpl) GetOrgCountByOwner(account primitive.Account) (total i
 }
 
 // AddUser adds a new user to the database.
-func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
+func (impl *userRepoImpl) AddUser(ctx context.Context, u *domain.User) (new domain.User, err error) {
 	u.Id = primitive.CreateIdentity(primitive.GetId())
 	do, err := toUserDO(u, impl.e)
 	if err != nil {
 		return
 	}
 
-	err = impl.DB().Clauses(clause.Returning{}).Create(&do).Error
+	err = impl.DB().WithContext(ctx).Clauses(clause.Returning{}).Create(&do).Error
 
 	if err != nil {
 		return
@@ -234,7 +244,7 @@ func (impl *userRepoImpl) AddUser(u *domain.User) (new domain.User, err error) {
 }
 
 // SaveUser saves the given user to the database and returns the updated user.
-func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) {
+func (impl *userRepoImpl) SaveUser(ctx context.Context, u *domain.User) (new domain.User, err error) {
 	do, err := toUserDO(u, impl.e)
 	if err != nil {
 		return
@@ -244,7 +254,7 @@ func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) 
 
 	tmpDo := &UserDO{}
 	tmpDo.ID = u.Id.Integer()
-	v := impl.DB().Model(
+	v := impl.WithContext(ctx).Model(
 		tmpDo,
 	).Clauses(clause.Returning{}).Where(
 		impl.EqualQuery(fieldVersion), u.Version,
@@ -266,21 +276,22 @@ func (impl *userRepoImpl) SaveUser(u *domain.User) (new domain.User, err error) 
 }
 
 // DeleteUser deletes the given user from the database.
-func (impl *userRepoImpl) DeleteUser(u *domain.User) error {
+func (impl *userRepoImpl) DeleteUser(ctx context.Context, u *domain.User) error {
 	tmpDo := &UserDO{}
 	tmpDo.ID = u.Id.Integer()
 
 	return impl.DeleteByPrimaryKey(
+		ctx,
 		tmpDo,
 	)
 }
 
 // GetByAccount retrieves a user by their account information.
-func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, err error) {
+func (impl *userRepoImpl) GetByAccount(ctx context.Context, account domain.Account) (r domain.User, err error) {
 	tmpDo := &UserDO{}
 	// note: gorm struct query will ignore zero value field
 	// so using Where instead of impl.GetRecord
-	query := impl.DB().Where(
+	query := impl.WithContext(ctx).Where(
 		impl.EqualQuery(fieldName), account.Account(),
 	).Where(impl.EqualQuery(fieldType), domain.UserTypeUser)
 
@@ -298,11 +309,11 @@ func (impl *userRepoImpl) GetByAccount(account domain.Account) (r domain.User, e
 }
 
 // GetUserFullname retrieves the full name of a user by their account information.
-func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname string, err error) {
+func (impl *userRepoImpl) GetUserFullname(ctx context.Context, account domain.Account) (fullname string, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
 
-	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+	if err = impl.GetRecord(ctx, &tmpDo, &tmpDo); err != nil {
 		return
 	}
 
@@ -310,11 +321,12 @@ func (impl *userRepoImpl) GetUserFullname(account domain.Account) (fullname stri
 }
 
 // GetUserAvatarId retrieves the avatar ID of a user by their account information.
-func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id primitive.AvatarId, err error) {
+func (impl *userRepoImpl) GetUserAvatarId(
+	ctx context.Context, account domain.Account) (id primitive.AvatarId, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
 
-	if err = impl.GetRecord(&tmpDo, &tmpDo); err != nil {
+	if err = impl.GetRecord(ctx, &tmpDo, &tmpDo); err != nil {
 		return
 	}
 
@@ -322,8 +334,8 @@ func (impl *userRepoImpl) GetUserAvatarId(account domain.Account) (id primitive.
 }
 
 // GetUsersAvatarId retrieves the avatar IDs of multiple users by their names.
-func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User, err error) {
-	query := impl.DB().Where(
+func (impl *userRepoImpl) GetUsersAvatarId(ctx context.Context, names []string) (users []domain.User, err error) {
+	query := impl.WithContext(ctx).Where(
 		impl.InFilter(fieldName), names,
 	)
 
@@ -346,8 +358,9 @@ func (impl *userRepoImpl) GetUsersAvatarId(names []string) (users []domain.User,
 }
 
 // ListAccount lists users based on the provided ListOption.
-func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domain.User, count int, err error) {
-	query := impl.DB()
+func (impl *userRepoImpl) ListAccount(
+	ctx context.Context, opt *repository.ListOption) (users []domain.User, count int, err error) {
+	query := impl.WithContext(ctx)
 
 	if opt == nil {
 		err = fmt.Errorf("list option is nil")
@@ -390,8 +403,8 @@ func (impl *userRepoImpl) ListAccount(opt *repository.ListOption) (users []domai
 	return
 }
 
-func (impl *userRepoImpl) SearchUser(opt *repository.ListOption) ([]domain.User, int, error) {
-	db := impl.DB()
+func (impl *userRepoImpl) SearchUser(ctx context.Context, opt *repository.ListOption) ([]domain.User, int, error) {
+	db := impl.WithContext(ctx)
 
 	if opt == nil {
 		err := fmt.Errorf("list option is nil")
@@ -441,8 +454,8 @@ func (impl *userRepoImpl) SearchUser(opt *repository.ListOption) ([]domain.User,
 	return users, int(total), nil
 }
 
-func (impl *userRepoImpl) SearchOrg(opt *repository.ListOption) ([]org.Organization, int, error) {
-	db := impl.DB()
+func (impl *userRepoImpl) SearchOrg(ctx context.Context, opt *repository.ListOption) ([]org.Organization, int, error) {
+	db := impl.WithContext(ctx)
 
 	if opt == nil {
 		err := fmt.Errorf("list option is nil")

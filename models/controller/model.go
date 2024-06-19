@@ -70,7 +70,7 @@ func (ctl *ModelController) Create(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if v, err := ctl.appService.Create(user, &cmd); err != nil {
+	if v, err := ctl.appService.Create(ctx, user, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, v)
@@ -97,7 +97,7 @@ func (ctl *ModelController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	action, err := ctl.appService.Delete(user, modelId)
+	action, err := ctl.appService.Delete(ctx.Request.Context(), user, modelId)
 
 	middleware.SetAction(ctx, action)
 
@@ -142,7 +142,7 @@ func (ctl *ModelController) Update(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Update(
-		ctl.userMiddleWare.GetUser(ctx),
+		ctx.Request.Context(), ctl.userMiddleWare.GetUser(ctx),
 		modelId, &cmd,
 	)
 

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -21,9 +22,9 @@ import (
 
 // SessionAppService is an interface for session application service.
 type SessionAppService interface {
-	Login(*CmdToLogin) (dto SessionDTO, user UserDTO, err error)
-	Logout(primitive.RandomId) (string, error)
-	Clear(primitive.RandomId) error
+	Login(context.Context, *CmdToLogin) (dto SessionDTO, user UserDTO, err error)
+	Logout(context.Context, primitive.RandomId) (string, error)
+	Clear(context.Context, primitive.RandomId) error
 
 	CheckAndRefresh(*CmdToCheck) (primitive.Account, string, error)
 	CheckSession(*CmdToCheck) (primitive.Account, error)
@@ -59,32 +60,32 @@ type sessionAppService struct {
 }
 
 // Login logs in a user and returns the session DTO, user DTO, and error.
-func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO, err error) {
+func (s *sessionAppService) Login(ctx context.Context, cmd *CmdToLogin) (dto SessionDTO, user UserDTO, err error) {
 	login, err := s.oidc.GetByCode(cmd.Code, cmd.RedirectURI)
 	if err != nil {
 		return
 	}
 
-	user, err = s.userApp.GetByAccount(login.Name, login.Name)
+	user, err = s.userApp.GetByAccount(ctx, login.Name, login.Name)
 	if err != nil {
 		_, ok := allerror.IsNotFound(err)
 		if !ok {
 			return
 		}
 
-		if user, err = s.createUser(&login); err != nil {
+		if user, err = s.createUser(ctx, &login); err != nil {
 			return
 		}
 	}
 
 	if !user.IsAgreePrivacy {
-		err = s.userApp.AgreePrivacy(primitive.CreateAccount(user.Name))
+		err = s.userApp.AgreePrivacy(ctx, primitive.CreateAccount(user.Name))
 		if err != nil {
 			return
 		}
 	}
 
-	if err = s.clearLogin(login.Name, cmd.IP); err != nil {
+	if err = s.clearLogin(ctx, login.Name, cmd.IP); err != nil {
 		return
 	}
 
@@ -121,7 +122,7 @@ func (s *sessionAppService) Login(cmd *CmdToLogin) (dto SessionDTO, user UserDTO
 }
 
 // Logout logs out a user and returns the ID token and error.
-func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error) {
+func (s *sessionAppService) Logout(ctx context.Context, sessionId primitive.RandomId) (string, error) {
 	session, err := s.sessionFastRepo.Find(sessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -131,7 +132,7 @@ func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error)
 		return "", err
 	}
 
-	if err := s.sessionRepo.Delete(session.Id); err != nil {
+	if err := s.sessionRepo.Delete(ctx, session.Id); err != nil {
 		return "", err
 	}
 
@@ -142,8 +143,8 @@ func (s *sessionAppService) Logout(sessionId primitive.RandomId) (string, error)
 	return session.IdToken, nil
 }
 
-func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
-	session, err := s.sessionRepo.Find(sessionId)
+func (s *sessionAppService) Clear(ctx context.Context, sessionId primitive.RandomId) error {
+	session, err := s.sessionRepo.Find(ctx, sessionId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -152,7 +153,7 @@ func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
 		return err
 	}
 
-	err = s.sessionRepo.Delete(sessionId)
+	err = s.sessionRepo.Delete(ctx, sessionId)
 
 	_, createdAt := utils.DateAndTime(session.CreatedAt)
 
@@ -171,8 +172,8 @@ func (s *sessionAppService) Clear(sessionId primitive.RandomId) error {
 	return err
 }
 
-func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error) {
-	return s.userApp.Create(&userapp.CmdToCreateUser{
+func (s *sessionAppService) createUser(ctx context.Context, login *repository.Login) (UserDTO, error) {
+	return s.userApp.Create(ctx, &userapp.CmdToCreateUser{
 		Desc:     login.Desc,
 		Email:    login.Email,
 		Account:  login.Name,
@@ -182,7 +183,7 @@ func (s *sessionAppService) createUser(login *repository.Login) (UserDTO, error)
 	})
 }
 
-func (s *sessionAppService) clearLogin(name primitive.Account, ip string) error {
+func (s *sessionAppService) clearLogin(ctx context.Context, name primitive.Account, ip string) error {
 	logins, err := s.sessionRepo.FindByUser(name)
 	if err != nil || len(logins) == 0 {
 		return err
@@ -193,7 +194,7 @@ func (s *sessionAppService) clearLogin(name primitive.Account, ip string) error 
 			return err
 		}
 
-		return s.sessionRepo.Delete(sessionId)
+		return s.sessionRepo.Delete(ctx, sessionId)
 	}
 
 	n := len(logins)

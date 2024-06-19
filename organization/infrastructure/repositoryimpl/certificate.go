@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryimpl
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -37,7 +39,8 @@ func (impl *certificateRepoImpl) Save(cert domain.OrgCertificate) error {
 }
 
 // Find finds an organization certificate.
-func (impl *certificateRepoImpl) Find(option repository.FindOption) (domain.OrgCertificate, error) {
+func (impl *certificateRepoImpl) Find(
+	ctx context.Context, option repository.FindOption) (domain.OrgCertificate, error) {
 	do := CertificateDO{}
 	if option.OrgName != nil {
 		do.OrgName = option.OrgName.Account()
@@ -51,7 +54,7 @@ func (impl *certificateRepoImpl) Find(option repository.FindOption) (domain.OrgC
 		do.USCC = option.UnifiedSocialCreditCode.USCC()
 	}
 
-	if err := impl.GetRecord(&do, &do); err != nil {
+	if err := impl.GetRecord(ctx, &do, &do); err != nil {
 		return domain.OrgCertificate{}, err
 	}
 
@@ -59,7 +62,8 @@ func (impl *certificateRepoImpl) Find(option repository.FindOption) (domain.OrgC
 }
 
 // DuplicateCheck checks if the certificate already exists.
-func (impl *certificateRepoImpl) DuplicateCheck(option repository.FindOption) (domain.OrgCertificate, error) {
+func (impl *certificateRepoImpl) DuplicateCheck(
+	ctx context.Context, option repository.FindOption) (domain.OrgCertificate, error) {
 	var do CertificateDO
 
 	queryOr := impl.DB().Order(fieldID)
@@ -79,11 +83,11 @@ func (impl *certificateRepoImpl) DuplicateCheck(option repository.FindOption) (d
 		queryOr.Or(impl.EqualQuery(fieldPhone), option.Phone.PhoneNumber())
 	}
 
-	query := impl.DB().
+	query := impl.WithContext(ctx).
 		Where(impl.EqualQuery(fieldStatus), orgprimitive.NewPassedStatus().CertificateStatus()).
 		Where(queryOr)
 
-	if err := impl.GetRecord(query, &do); err != nil {
+	if err := impl.GetRecord(ctx, query, &do); err != nil {
 		return domain.OrgCertificate{}, err
 	}
 

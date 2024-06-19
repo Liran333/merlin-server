@@ -62,7 +62,7 @@ func (ctl *SpaceController) CreateVariable(ctx *gin.Context) {
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-	v, action, err := ctl.variableService.CreateVariable(user, spaceId, &cmd)
+	v, action, err := ctl.variableService.CreateVariable(ctx.Request.Context(), user, spaceId, &cmd)
 
 	middleware.SetAction(ctx, action)
 
@@ -96,7 +96,7 @@ func (ctl *SpaceController) DeleteVariable(ctx *gin.Context) {
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-	action, err := ctl.variableService.DeleteVariable(user, spaceId, variableId)
+	action, err := ctl.variableService.DeleteVariable(ctx.Request.Context(), user, spaceId, variableId)
 
 	middleware.SetAction(ctx, action)
 
@@ -144,7 +144,7 @@ func (ctl *SpaceController) UpdateVariable(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 	action, err := ctl.variableService.UpdateVariable(
-		user, spaceId, variableId, &cmd,
+		ctx.Request.Context(), user, spaceId, variableId, &cmd,
 	)
 
 	middleware.SetAction(ctx, fmt.Sprintf("%s, set %s", action, req.action()))
@@ -169,7 +169,7 @@ func (ctl *SpaceController) GetVariableSecret(ctx *gin.Context) {
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-	space, err := ctl.appService.GetByName(user, &index)
+	space, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return

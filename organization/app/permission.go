@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
@@ -84,6 +86,7 @@ func (p *permService) doCheckPerm(role primitive.Role, objType primitive.ObjType
 
 // Check checks if user can operate on organization's resource of a specified type.
 func (p *permService) Check(
+	ctx context.Context,
 	user primitive.Account,
 	org primitive.Account,
 	objType primitive.ObjType,
@@ -99,7 +102,7 @@ func (p *permService) Check(
 		return allerror.NewNoPermission(e.Error(), e)
 	}
 
-	m, err := p.org.GetByOrgAndUser(org.Account(), user.Account())
+	m, err := p.org.GetByOrgAndUser(ctx, org.Account(), user.Account())
 	if err != nil {
 		e := xerrors.Errorf(
 			"%s does not have a valid role in %s", user.Account(), org.Account(),

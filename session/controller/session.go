@@ -69,7 +69,7 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 		return
 	}
 
-	session, user, err := ctl.s.Login(&cmd)
+	session, user, err := ctl.s.Login(ctx, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -89,7 +89,7 @@ func (ctl *SessionController) Login(ctx *gin.Context) {
 	}
 	if ctl.disable != nil {
 		userAccount, _ := primitive.NewAccount(user.Name)
-		err = ctl.disable.Contains(userAccount)
+		err = ctl.disable.Contains(ctx.Request.Context(), userAccount)
 		if err != nil {
 			u.IsDisableAdmin = false
 		} else {
@@ -123,7 +123,7 @@ func (ctl *SessionController) Logout(ctx *gin.Context) {
 		return
 	}
 
-	idToken, err := ctl.s.Logout(sessionId)
+	idToken, err := ctl.s.Logout(ctx.Request.Context(), sessionId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 

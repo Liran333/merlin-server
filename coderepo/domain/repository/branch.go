@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repository
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
@@ -13,8 +15,8 @@ import (
 // BranchRepositoryAdapter represents an interface for managing branches in a code repository.
 type BranchRepositoryAdapter interface {
 	Add(*domain.Branch) error
-	Delete(primitive.Identity) error
-	FindByIndex(*domain.BranchIndex) (domain.Branch, error)
+	Delete(context.Context, primitive.Identity) error
+	FindByIndex(context.Context, *domain.BranchIndex) (domain.Branch, error)
 }
 
 // BranchClientAdapter represents an interface for interacting with branches in a code repository client.

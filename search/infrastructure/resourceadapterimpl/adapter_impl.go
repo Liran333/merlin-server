@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package resourceadapterimpl
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -48,7 +49,7 @@ func NewSearchRepositoryAdapter(
 }
 
 // Search for models if the search type includes primitive.SearchTypeModel
-func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchResult, error) {
+func (adapter *searchAdapter) Search(ctx context.Context, opt *domain.SearchOption) (domain.SearchResult, error) {
 	var result domain.SearchResult
 	if utils.Contains(opt.SearchType, primitive.SearchTypeModel) {
 		cmd := &modelrepo.ListOption{
@@ -59,7 +60,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			Count:           true,
 			Visibility:      primitive.VisibilityPublic,
 		}
-		models, err := adapter.SearchModel(cmd, opt.Account)
+		models, err := adapter.SearchModel(ctx, cmd, opt.Account)
 		if err != nil {
 			return result, err
 		}
@@ -104,7 +105,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
-		users, err := adapter.SearchUser(cmd)
+		users, err := adapter.SearchUser(ctx, cmd)
 		if err != nil {
 			return result, err
 		}
@@ -117,7 +118,7 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 			PageNum:      DefaultPage,
 			CountPerPage: opt.Size,
 		}
-		orgs, err := adapter.SearchOrg(cmd)
+		orgs, err := adapter.SearchOrg(ctx, cmd)
 		if err != nil {
 			return result, err
 		}
@@ -128,10 +129,10 @@ func (adapter *searchAdapter) Search(opt *domain.SearchOption) (domain.SearchRes
 }
 
 // SearchModel for search models
-func (adapter *searchAdapter) SearchModel(cmd *modelrepo.ListOption, account domain.Account) (
+func (adapter *searchAdapter) SearchModel(ctx context.Context, cmd *modelrepo.ListOption, account domain.Account) (
 	domain.SearchResultModel, error) {
 	var result domain.SearchResultModel
-	v, count, err := adapter.model.List(cmd, account, adapter.member)
+	v, count, err := adapter.model.List(ctx, cmd, account, adapter.member)
 	if err != nil {
 		return result, err
 	}
@@ -192,10 +193,11 @@ func (adapter *searchAdapter) SearchSpace(cmd *spacerepo.ListOption, account dom
 }
 
 // SearchUser provides a method to search for users
-func (adapter *searchAdapter) SearchUser(cmd *repository.ListOption) (domain.SearchResultUser, error) {
+func (adapter *searchAdapter) SearchUser(
+	ctx context.Context, cmd *repository.ListOption) (domain.SearchResultUser, error) {
 	var result domain.SearchResultUser
 
-	v, count, err := adapter.user.SearchUser(cmd)
+	v, count, err := adapter.user.SearchUser(ctx, cmd)
 	if err != nil {
 		return result, err
 	}
@@ -214,10 +216,11 @@ func (adapter *searchAdapter) SearchUser(cmd *repository.ListOption) (domain.Sea
 }
 
 // SearchOrg provides a method to search for orgs
-func (adapter *searchAdapter) SearchOrg(cmd *repository.ListOption) (domain.SearchResultOrg, error) {
+func (adapter *searchAdapter) SearchOrg(
+	ctx context.Context, cmd *repository.ListOption) (domain.SearchResultOrg, error) {
 	var result domain.SearchResultOrg
 
-	v, count, err := adapter.user.SearchOrg(cmd)
+	v, count, err := adapter.user.SearchOrg(ctx, cmd)
 	if err != nil {
 		return result, err
 	}

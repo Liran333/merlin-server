@@ -172,8 +172,9 @@ func (adapter *datasetAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		_, arg := likeFilter(fieldName, opt.Name)
 
 		if !opt.ExcludeFullname {
-			query2, arg2 := likeFilter(fieldFullName, opt.Name)
-			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)).Or(query2, arg2))
+			_, arg2 := likeFilter(fieldFullName, opt.Name)
+			db = db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ? OR "+fieldFullName+
+				" ilike ?", arg, arg2)).Session(&gorm.Session{})
 		} else {
 			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)))
 		}

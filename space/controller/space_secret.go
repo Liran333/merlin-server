@@ -62,7 +62,7 @@ func (ctl *SpaceController) CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	v, action, err := ctl.secretService.CreateSecret(user, spaceId, &cmd)
+	v, action, err := ctl.secretService.CreateSecret(ctx.Request.Context(), user, spaceId, &cmd)
 
 	middleware.SetAction(ctx, action)
 
@@ -96,7 +96,7 @@ func (ctl *SpaceController) DeleteSecret(ctx *gin.Context) {
 	}
 
 	user := ctl.userMiddleWare.GetUser(ctx)
-	action, err := ctl.secretService.DeleteSecret(user, spaceId, secretId)
+	action, err := ctl.secretService.DeleteSecret(ctx.Request.Context(), user, spaceId, secretId)
 
 	middleware.SetAction(ctx, action)
 
@@ -146,6 +146,7 @@ func (ctl *SpaceController) UpdateSecret(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 	action, err := ctl.secretService.UpdateSecret(
+		ctx.Request.Context(),
 		user,
 		spaceId, secretId, &cmd,
 	)

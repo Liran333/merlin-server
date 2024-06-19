@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/opensourceways/server-common-lib/interrupts"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	_ "github.com/openmerlin/merlin-server/api"
 	"github.com/openmerlin/merlin-server/config"
@@ -28,6 +29,15 @@ const (
 	waitServerStart = 3 // 3s
 )
 
+func RequestFilter(r *http.Request) bool {
+	if strings.Contains(r.RequestURI, "/swagger/") ||
+		strings.Contains(r.RequestURI, "/internal/heartbeat") {
+		return false
+	}
+
+	return true
+}
+
 // StartWebServer starts a web server with the given configuration.
 // It initializes the services, sets up the routers for different APIs, and starts the server.
 // If TLS key and certificate are provided, it will use HTTPS.
@@ -36,6 +46,7 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(logRequest())
+	engine.Use(otelgin.Middleware(cfg.Trace.Name, otelgin.WithFilter(RequestFilter)), ReponseTraceID())
 	engine.UseRawPath = true
 	engine.TrustedPlatform = "x-real-ip"
 
@@ -92,6 +103,8 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 
 func logRequest() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		c.Writer.Header().Add("x-request-id", c.GetHeader("x-request-id"))
+
 		startTime := time.Now()
 
 		c.Next()
@@ -102,8 +115,7 @@ func logRequest() gin.HandlerFunc {
 			logrus.Errorf("error on %s %s:\n%+v", c.Request.Method, c.Request.RequestURI, ginErr.Unwrap())
 		}
 
-		if strings.Contains(c.Request.RequestURI, "/swagger/") ||
-			strings.Contains(c.Request.RequestURI, "/internal/heartbeat") {
+		if !RequestFilter(c.Request) {
 			return
 		}
 

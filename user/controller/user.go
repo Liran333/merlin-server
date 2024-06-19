@@ -109,7 +109,7 @@ func (ctl *UserController) Update(ctx *gin.Context) {
 		middleware.SetAction(ctx, fmt.Sprintf("revoke user:%s's delete request", user.Account()))
 	}
 
-	if u, err := ctl.s.UpdateBasicInfo(user, cmd); err != nil {
+	if u, err := ctl.s.UpdateBasicInfo(ctx.Request.Context(), user, cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, u)
@@ -124,7 +124,7 @@ func CheckMail(m middleware.UserMiddleWare, us app.UserService, securityLog midd
 			return
 		}
 
-		u, err := us.GetByAccount(user, user)
+		u, err := us.GetByAccount(ctx, user, user)
 		if err != nil {
 			securityLog.Warn(ctx, err.Error())
 			_ = ctx.AbortWithError(http.StatusBadRequest, xerrors.Errorf("failed to get user info: %w", err))
@@ -174,7 +174,7 @@ func (ctl *UserController) BindEmail(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctl.s.VerifyBindEmail(&cmd); err != nil {
+	if err := ctl.s.VerifyBindEmail(ctx.Request.Context(), &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, nil)
@@ -234,7 +234,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	}
 
 	// get user own info
-	u, err := ctl.s.UserInfo(user, user)
+	u, err := ctl.s.UserInfo(ctx.Request.Context(), user, user)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -242,7 +242,7 @@ func (ctl *UserController) Get(ctx *gin.Context) {
 	}
 
 	if ctl.disable != nil {
-		err = ctl.disable.Contains(user)
+		err = ctl.disable.Contains(ctx.Request.Context(), user)
 		if err != nil {
 			u.IsDisableAdmin = false
 		} else {
@@ -265,7 +265,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 
 	user := ctl.m.GetUser(ctx)
 
-	platform, err := ctl.s.GetPlatformUser(user)
+	platform, err := ctl.s.GetPlatformUser(ctx.Request.Context(), user)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -281,6 +281,7 @@ func (ctl *UserController) DeletePlatformToken(ctx *gin.Context) {
 	middleware.SetAction(ctx, fmt.Sprintf("delete token %s", name))
 
 	err = ctl.s.DeleteToken(
+		ctx.Request.Context(),
 		&domain.TokenDeletedCmd{
 			Account: user,
 			Name:    name,
@@ -327,14 +328,14 @@ func (ctl *UserController) CreatePlatformToken(ctx *gin.Context) {
 		return
 	}
 
-	pl, err := ctl.s.GetPlatformUser(user)
+	pl, err := ctl.s.GetPlatformUser(ctx.Request.Context(), user)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	if v, err := ctl.s.CreateToken(&cmd, pl); err != nil {
+	if v, err := ctl.s.CreateToken(ctx.Request.Context(), &cmd, pl); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, v)
@@ -376,7 +377,7 @@ func (ctl *UserController) PrivacyRevoke(ctx *gin.Context) {
 		return
 	}
 
-	if idToken, err := ctl.s.PrivacyRevoke(user); err != nil {
+	if idToken, err := ctl.s.PrivacyRevoke(ctx.Request.Context(), user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		ctl.clear.ClearCookieAfterRevokePrivacy(ctx)
@@ -401,7 +402,7 @@ func (ctl *UserController) RequestDelete(ctx *gin.Context) {
 
 	middleware.SetAction(ctx, fmt.Sprintf("request delete user:%s's info", user.Account()))
 
-	if err := ctl.s.RequestDelete(user); err != nil {
+	if err := ctl.s.RequestDelete(ctx.Request.Context(), user); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)

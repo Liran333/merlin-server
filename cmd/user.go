@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -59,7 +60,7 @@ var userAddCmd = &cobra.Command{
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
 
-		_, err = userAppService.Create(&domain.UserCreateCmd{
+		_, err = userAppService.Create(ctx, &domain.UserCreateCmd{
 			Email:    email,
 			Account:  acc,
 			Desc:     desc,
@@ -90,7 +91,9 @@ var userGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("invalid owner :%s", err.Error())
 		}
-		u, err := userAppService.GetByAccount(ac, acc)
+
+		ctx := context.Background()
+		u, err := userAppService.GetByAccount(ctx, ac, acc)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		} else {
@@ -123,7 +126,7 @@ var userGetAvaCmd = &cobra.Command{
 			}
 		}
 
-		u, err := userAppService.GetUsersAvatarId(users)
+		u, err := userAppService.GetUsersAvatarId(ctx, users)
 		if err != nil {
 			logrus.Fatalf("get user failed :%s", err.Error())
 		} else {
@@ -146,8 +149,8 @@ var userDelCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("delete user failed :%s with %s", err.Error(), viper.GetString("user.del.name"))
 		}
-
-		err = userAppService.Delete(acc)
+		ctx := context.Background()
+		err = userAppService.Delete(ctx, acc)
 		if err != nil {
 			logrus.Fatalf("delete user failed :%s", err.Error())
 		} else {
@@ -181,7 +184,8 @@ var userEditCmd = &cobra.Command{
 			updateCmd.Fullname = fullname
 		}
 
-		_, err = userAppService.UpdateBasicInfo(acc, updateCmd)
+		ctx := context.Background()
+		_, err = userAppService.UpdateBasicInfo(ctx, acc, updateCmd)
 		if err != nil {
 			logrus.Fatalf("edit user failed :%s", err.Error())
 		} else {
@@ -207,7 +211,9 @@ var userBindCmd = &cobra.Command{
 			logrus.Fatalf("user email invalid, %s", err.Error())
 		}
 
-		err = userAppService.VerifyBindEmail(&userapp.CmdToVerifyBindEmail{
+		ctx := context.Background()
+
+		err = userAppService.VerifyBindEmail(ctx, &userapp.CmdToVerifyBindEmail{
 			User:     acc,
 			Email:    email,
 			PassCode: "123",

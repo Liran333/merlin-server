@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -27,15 +28,15 @@ import (
 
 // ModelAppService is an interface for the model application service.
 type ModelAppService interface {
-	Create(primitive.Account, *CmdToCreateModel) (string, error)
-	Delete(primitive.Account, primitive.Identity) (string, error)
-	Update(primitive.Account, primitive.Identity, *CmdToUpdateModel) (string, error)
-	Disable(primitive.Account, primitive.Identity, *CmdToDisableModel) (string, error)
-	GetByName(primitive.Account, *domain.ModelIndex) (ModelDTO, error)
-	List(primitive.Account, *CmdToListModels) (ModelsDTO, error)
+	Create(context.Context, primitive.Account, *CmdToCreateModel) (string, error)
+	Delete(context.Context, primitive.Account, primitive.Identity) (string, error)
+	Update(context.Context, primitive.Account, primitive.Identity, *CmdToUpdateModel) (string, error)
+	Disable(context.Context, primitive.Account, primitive.Identity, *CmdToDisableModel) (string, error)
+	GetByName(context.Context, primitive.Account, *domain.ModelIndex) (ModelDTO, error)
+	List(context.Context, primitive.Account, *CmdToListModels) (ModelsDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
-	Recommend(primitive.Account) []ModelDTO
+	Recommend(context.Context, primitive.Account) []ModelDTO
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -70,16 +71,16 @@ type modelAppService struct {
 }
 
 // Create creates a new model.
-func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) (string, error) {
-	if err := s.permission.CanCreate(user, cmd.Owner, primitive.ObjTypeModel); err != nil {
+func (s *modelAppService) Create(ctx context.Context, user primitive.Account, cmd *CmdToCreateModel) (string, error) {
+	if err := s.permission.CanCreate(ctx, user, cmd.Owner, primitive.ObjTypeModel); err != nil {
 		return "", err
 	}
 
-	if err := s.modelCountCheck(cmd.Owner); err != nil {
+	if err := s.modelCountCheck(ctx, cmd.Owner); err != nil {
 		return "", err
 	}
 
-	coderepo, err := s.codeRepoApp.Create(user, &cmd.CmdToCreateRepo)
+	coderepo, err := s.codeRepoApp.Create(ctx, user, &cmd.CmdToCreateRepo)
 	if err != nil {
 		return "", err
 	}
@@ -106,7 +107,8 @@ func (s *modelAppService) Create(user primitive.Account, cmd *CmdToCreateModel) 
 }
 
 // Delete deletes a model.
-func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Identity) (action string, err error) {
+func (s *modelAppService) Delete(
+	ctx context.Context, user primitive.Account, modelId primitive.Identity) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -121,7 +123,7 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanDeleteOrNotFound(user, &model, s.permission)
+	notFound, err := commonapp.CanDeleteOrNotFound(ctx, user, &model, s.permission)
 	if err != nil {
 		return
 	}
@@ -151,7 +153,7 @@ func (s *modelAppService) Delete(user primitive.Account, modelId primitive.Ident
 
 // Update updates a model.
 func (s *modelAppService) Update(
-	user primitive.Account, modelId primitive.Identity, cmd *CmdToUpdateModel,
+	ctx context.Context, user primitive.Account, modelId primitive.Identity, cmd *CmdToUpdateModel,
 ) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
 	if err != nil {
@@ -167,7 +169,7 @@ func (s *modelAppService) Update(
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	notFound, err := commonapp.CanUpdateOrNotFound(user, &model, s.permission)
+	notFound, err := commonapp.CanUpdateOrNotFound(ctx, user, &model, s.permission)
 	if err != nil {
 		return
 	}
@@ -209,7 +211,7 @@ func (s *modelAppService) Update(
 }
 
 // Disable disable a model.
-func (s *modelAppService) Disable(
+func (s *modelAppService) Disable(ctx context.Context,
 	user primitive.Account, modelId primitive.Identity, cmd *CmdToDisableModel,
 ) (action string, err error) {
 	model, err := s.repoAdapter.FindById(modelId)
@@ -226,7 +228,7 @@ func (s *modelAppService) Disable(
 		modelId.Identity(), model.Owner.Account(), model.Name.MSDName(),
 	)
 
-	err = s.canDisable(user)
+	err = s.canDisable(ctx, user)
 	if err != nil {
 		return
 	}
@@ -262,9 +264,9 @@ func (s *modelAppService) Disable(
 	return
 }
 
-func (s *modelAppService) canDisable(user primitive.Account) error {
+func (s *modelAppService) canDisable(ctx context.Context, user primitive.Account) error {
 	if s.disableOrg != nil {
-		if err := s.disableOrg.Contains(user); err != nil {
+		if err := s.disableOrg.Contains(ctx, user); err != nil {
 			logrus.Errorf("user:%s cant disable model err:%s", user.Account(), err)
 			return allerror.NewNoPermission("no permission", fmt.Errorf("cant disable"))
 		}
@@ -277,7 +279,8 @@ func (s *modelAppService) canDisable(user primitive.Account) error {
 }
 
 // GetByName retrieves a model by its name.
-func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelIndex) (ModelDTO, error) {
+func (s *modelAppService) GetByName(
+	ctx context.Context, user primitive.Account, index *domain.ModelIndex) (ModelDTO, error) {
 	var dto ModelDTO
 
 	model, err := s.repoAdapter.FindByName(index)
@@ -289,7 +292,7 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 		return dto, err
 	}
 
-	if err := s.permission.CanRead(user, &model); err != nil {
+	if err := s.permission.CanRead(ctx, user, &model); err != nil {
 		if allerror.IsNoPermission(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found", err)
 		}
@@ -301,7 +304,7 @@ func (s *modelAppService) GetByName(user primitive.Account, index *domain.ModelI
 }
 
 // List retrieves a list of models.
-func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
+func (s *modelAppService) List(ctx context.Context, user primitive.Account, cmd *CmdToListModels) (
 	ModelsDTO, error,
 ) {
 	if user == nil {
@@ -314,7 +317,7 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 		} else {
 			if user != cmd.Owner {
 				err := s.permission.CanListOrgResource(
-					user, cmd.Owner, primitive.ObjTypeModel,
+					ctx, user, cmd.Owner, primitive.ObjTypeModel,
 				)
 				if err != nil {
 					cmd.Visibility = primitive.VisibilityPublic
@@ -323,7 +326,7 @@ func (s *modelAppService) List(user primitive.Account, cmd *CmdToListModels) (
 		}
 	}
 
-	v, total, err := s.repoAdapter.List(cmd, user, s.member)
+	v, total, err := s.repoAdapter.List(ctx, cmd, user, s.member)
 
 	return ModelsDTO{
 		Total:  total,
@@ -339,7 +342,7 @@ func (s *modelAppService) DeleteById(user primitive.Account, modelId string) err
 	return nil
 }
 
-func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
+func (s *modelAppService) modelCountCheck(ctx context.Context, owner primitive.Account) error {
 	cmdToList := CmdToListModels{
 		Owner: owner,
 	}
@@ -349,12 +352,12 @@ func (s *modelAppService) modelCountCheck(owner primitive.Account) error {
 		return xerrors.Errorf("get model count error: %w", err)
 	}
 
-	if s.user.IsOrganization(owner) && total >= config.MaxCountPerOrg {
+	if s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerOrg {
 		return allerror.NewCountExceeded("model count exceed",
 			xerrors.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerOrg))
 	}
 
-	if !s.user.IsOrganization(owner) && total >= config.MaxCountPerUser {
+	if !s.user.IsOrganization(ctx, owner) && total >= config.MaxCountPerUser {
 		return allerror.NewCountExceeded("model count exceed",
 			xerrors.Errorf("model count(now:%d max:%d) exceed", total, config.MaxCountPerUser))
 	}
@@ -401,7 +404,7 @@ func (s *modelAppService) DeleteLike(modelId primitive.Identity) error {
 	return nil
 }
 
-func (s *modelAppService) Recommend(user primitive.Account) []ModelDTO {
+func (s *modelAppService) Recommend(ctx context.Context, user primitive.Account) []ModelDTO {
 	var modelsDTO []ModelDTO
 
 	if len(config.RecommendModels) == 0 {
@@ -420,7 +423,7 @@ func (s *modelAppService) Recommend(user primitive.Account) []ModelDTO {
 
 	for _, index := range indexs {
 		idx := index
-		dto, err := s.GetByName(user, &idx)
+		dto, err := s.GetByName(ctx, user, &idx)
 		if err != nil {
 			logrus.Errorf("failed to get model by name:%s err:%s", idx.Name.MSDName(), err)
 			continue

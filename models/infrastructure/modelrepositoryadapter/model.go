@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package modelrepositoryadapter
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -94,8 +95,8 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 }
 
 // List retrieves a list of models based on the provided options.
-func (adapter *modelAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (
-	[]repository.ModelSummary, int, error) {
+func (adapter *modelAdapter) List(ctx context.Context, opt *repository.ListOption,
+	login primitive.Account, member orgrepo.OrgMember) ([]repository.ModelSummary, int, error) {
 	query := adapter.toQuery(opt)
 
 	if opt.Visibility != nil {
@@ -138,7 +139,7 @@ func (adapter *modelAdapter) List(opt *repository.ListOption, login primitive.Ac
 
 	var dos []modelDO
 
-	err := query.Find(&dos).Error
+	err := query.WithContext(ctx).Find(&dos).Error
 	if err != nil || len(dos) == 0 {
 		return nil, 0, nil
 	}
@@ -167,8 +168,9 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		_, arg := likeFilter(fieldName, opt.Name)
 
 		if !opt.ExcludeFullname {
-			query2, arg2 := likeFilter(fieldFullName, opt.Name)
-			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)).Or(query2, arg2))
+			_, arg2 := likeFilter(fieldFullName, opt.Name)
+			db = db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ? OR "+fieldFullName+
+				" ilike ?", arg, arg2)).Session(&gorm.Session{})
 		} else {
 			db = db.Where(db.Where(gorm.Expr("CONCAT("+fieldOwner+", '/', "+fieldName+") ilike ?", arg)))
 		}

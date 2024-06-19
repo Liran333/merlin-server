@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/domain"
@@ -27,17 +28,17 @@ func NewResourcePermissionAppService(
 
 // ResourcePermissionAppService defines methods for checking resource permissions.
 type ResourcePermissionAppService interface {
-	CanRead(user primitive.Account, r domain.Resource) error
-	CanUpdate(user primitive.Account, r domain.Resource) error
-	CanDelete(user primitive.Account, r domain.Resource) error
-	CanCreate(user, owner primitive.Account, t primitive.ObjType) error
-	CanReadPrivate(user primitive.Account, r domain.Resource) error
-	CanListOrgResource(primitive.Account, primitive.Account, primitive.ObjType) error
+	CanRead(ctx context.Context, user primitive.Account, r domain.Resource) error
+	CanUpdate(ctx context.Context, user primitive.Account, r domain.Resource) error
+	CanDelete(ctx context.Context, user primitive.Account, r domain.Resource) error
+	CanCreate(ctx context.Context, user, owner primitive.Account, t primitive.ObjType) error
+	CanReadPrivate(ctx context.Context, user primitive.Account, r domain.Resource) error
+	CanListOrgResource(context.Context, primitive.Account, primitive.Account, primitive.ObjType) error
 }
 
 // orgResourcePermissionValidator
 type orgResourcePermissionValidator interface {
-	Check(primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
+	Check(context.Context, primitive.Account, primitive.Account, primitive.ObjType, primitive.Action) error
 }
 
 // resourcePermissionAppService
@@ -48,24 +49,26 @@ type resourcePermissionAppService struct {
 
 // CanListOrgResource checks if the user has permission to list organization resources of a specific type.
 func (impl *resourcePermissionAppService) CanListOrgResource(
-	user, owner primitive.Account, t primitive.ObjType,
+	ctx context.Context, user, owner primitive.Account, t primitive.ObjType,
 ) error {
-	return impl.org.Check(user, owner, t, primitive.ActionRead)
+	return impl.org.Check(ctx, user, owner, t, primitive.ActionRead)
 }
 
 // CanRead checks if the user has permission to read the specified resource.
-func (impl *resourcePermissionAppService) CanRead(user primitive.Account, r domain.Resource) error {
+func (impl *resourcePermissionAppService) CanRead(
+	ctx context.Context, user primitive.Account, r domain.Resource) error {
 	if r.IsPublic() {
 		return nil
 	}
-	return impl.CanReadPrivate(user, r)
+	return impl.CanReadPrivate(ctx, user, r)
 }
 
 // disable administrator can read model, space and repocode obj.
-func (impl *resourcePermissionAppService) disableAdminCanRead(user primitive.Account, r domain.Resource) (err error) {
+func (impl *resourcePermissionAppService) disableAdminCanRead(
+	ctx context.Context, user primitive.Account, r domain.Resource) (err error) {
 	if impl.disableOrg != nil {
 		action, _ := orgapp.NewAction(string(orgapp.Disable))
-		err = impl.disableOrg.Contains(user)
+		err = impl.disableOrg.Contains(ctx, user)
 		if err == nil && impl.disableOrg.IsCanReadObj(action, r.ResourceType()) {
 			return nil
 		}
@@ -74,10 +77,11 @@ func (impl *resourcePermissionAppService) disableAdminCanRead(user primitive.Acc
 }
 
 // CanReadPrivate checks if the user has permission to read private the specified resource.
-func (impl *resourcePermissionAppService) CanReadPrivate(user primitive.Account, r domain.Resource) error {
-	err := impl.canReadPrivate(user, r)
+func (impl *resourcePermissionAppService) CanReadPrivate(
+	ctx context.Context, user primitive.Account, r domain.Resource) error {
+	err := impl.canReadPrivate(ctx, user, r)
 	if err != nil {
-		if err1 := impl.disableAdminCanRead(user, r); err1 == nil {
+		if err1 := impl.disableAdminCanRead(ctx, user, r); err1 == nil {
 			return nil
 		}
 	}
@@ -85,7 +89,8 @@ func (impl *resourcePermissionAppService) CanReadPrivate(user primitive.Account,
 }
 
 // canReadPrivate checks if the user has permission to read private the specified resource.
-func (impl *resourcePermissionAppService) canReadPrivate(user primitive.Account, r domain.Resource) error {
+func (impl *resourcePermissionAppService) canReadPrivate(
+	ctx context.Context, user primitive.Account, r domain.Resource) error {
 	// can't access private resource anonymously
 	if user == nil {
 		return allerror.NewNoPermission("no permission", fmt.Errorf("anno can not access private resource"))
@@ -101,30 +106,33 @@ func (impl *resourcePermissionAppService) canReadPrivate(user primitive.Account,
 		return allerror.NewNoPermission("no permission", fmt.Errorf("can't access other individual's private resource"))
 	}
 
-	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead)
+	return impl.org.Check(ctx, user, r.ResourceOwner(), r.ResourceType(), primitive.ActionRead)
 }
 
 // CanUpdate checks if the user has permission to update the specified resource.
-func (impl *resourcePermissionAppService) CanUpdate(user primitive.Account, r domain.Resource) error {
-	return impl.canModify(user, r, primitive.ActionWrite)
+func (impl *resourcePermissionAppService) CanUpdate(
+	ctx context.Context, user primitive.Account, r domain.Resource) error {
+	return impl.canModify(ctx, user, r, primitive.ActionWrite)
 }
 
 // CanDelete checks if the user has permission to delete the specified resource.
-func (impl *resourcePermissionAppService) CanDelete(user primitive.Account, r domain.Resource) error {
-	return impl.canModify(user, r, primitive.ActionDelete)
+func (impl *resourcePermissionAppService) CanDelete(
+	ctx context.Context, user primitive.Account, r domain.Resource) error {
+	return impl.canModify(ctx, user, r, primitive.ActionDelete)
 }
 
 // CanCreate checks if the user has permission to create a resource of the specified type, owned by the specified owner.
-func (impl *resourcePermissionAppService) CanCreate(user, owner primitive.Account, t primitive.ObjType) error {
+func (impl *resourcePermissionAppService) CanCreate(
+	ctx context.Context, user, owner primitive.Account, t primitive.ObjType) error {
 	if user == owner {
 		return nil
 	}
 
-	return impl.org.Check(user, owner, t, primitive.ActionCreate)
+	return impl.org.Check(ctx, user, owner, t, primitive.ActionCreate)
 }
 
 func (impl *resourcePermissionAppService) canModify(
-	user primitive.Account, r domain.Resource, action primitive.Action,
+	ctx context.Context, user primitive.Account, r domain.Resource, action primitive.Action,
 ) error {
 	// can't modify resource anonymously
 	if user == nil {
@@ -141,5 +149,5 @@ func (impl *resourcePermissionAppService) canModify(
 		return allerror.NewNoPermission("no permission", fmt.Errorf("can't modify other individual's resource"))
 	}
 
-	return impl.org.Check(user, r.ResourceOwner(), r.ResourceType(), action)
+	return impl.org.Check(ctx, user, r.ResourceOwner(), r.ResourceType(), action)
 }

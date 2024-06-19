@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openmerlin/merlin-server/common/domain"
@@ -16,9 +17,9 @@ import (
 // CanDeleteOrNotFound checks if the user has permission to modify the specified resource or
 // the resource is not found for user.
 func CanDeleteOrNotFound(
-	user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
+	ctx context.Context, user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
 ) (bool, error) {
-	err := ps.CanDelete(user, resource)
+	err := ps.CanDelete(ctx, user, resource)
 	if err == nil {
 		// has permission
 		return false, nil
@@ -28,15 +29,15 @@ func CanDeleteOrNotFound(
 		return false, err
 	}
 
-	return isNoPermissionOrNotFound(user, resource, ps)
+	return isNoPermissionOrNotFound(ctx, user, resource, ps)
 }
 
 // CanUpdateOrNotFound checks if the user has permission to update the specified resource or
 // the resource is not found for user.
 func CanUpdateOrNotFound(
-	user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
+	ctx context.Context, user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
 ) (bool, error) {
-	err := ps.CanUpdate(user, resource)
+	err := ps.CanUpdate(ctx, user, resource)
 	if err == nil {
 		// has permission
 		return false, nil
@@ -46,13 +47,13 @@ func CanUpdateOrNotFound(
 		return false, err
 	}
 
-	return isNoPermissionOrNotFound(user, resource, ps)
+	return isNoPermissionOrNotFound(ctx, user, resource, ps)
 }
 
 func isNoPermissionOrNotFound(
-	user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
+	ctx context.Context, user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
 ) (bool, error) {
-	err := ps.CanRead(user, resource)
+	err := ps.CanRead(ctx, user, resource)
 	if err == nil {
 		// It is no permission when it can read
 		return false, allerror.NewNoPermission("no permission", fmt.Errorf("no permission to read"))
@@ -69,9 +70,9 @@ func isNoPermissionOrNotFound(
 // CanReadOrNotFound checks if the user has permission to read the specified resource or
 // the resource is not found for user.
 func CanReadOrNotFound(
-	user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
+	ctx context.Context, user primitive.Account, resource domain.Resource, ps ResourcePermissionAppService,
 ) (bool, error) {
-	err := ps.CanRead(user, resource)
+	err := ps.CanRead(ctx, user, resource)
 	if err == nil {
 		// has permission
 		return false, nil

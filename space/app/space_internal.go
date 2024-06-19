@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	sdk "github.com/openmerlin/merlin-sdk/space"
@@ -29,7 +30,7 @@ type SpaceInternalAppService interface {
 	UpdateLocalCMD(spaceId primitive.Identity, cmd string) error
 	UpdateEnvInfo(spaceId primitive.Identity, envInfo string) error
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
-	Disable(primitive.Identity) error
+	Disable(context.Context, primitive.Identity) error
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	NotifyUpdateCodes(primitive.Identity, *CmdToNotifyUpdateCode) error
 }
@@ -123,7 +124,7 @@ func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, c
 }
 
 // Disable disable the space with the given space ID using the provided command and returns the action performed.
-func (s *spaceInternalAppService) Disable(spaceId primitive.Identity) (err error) {
+func (s *spaceInternalAppService) Disable(ctx context.Context, spaceId primitive.Identity) (err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
@@ -134,7 +135,7 @@ func (s *spaceInternalAppService) Disable(spaceId primitive.Identity) (err error
 	}
 
 	// del space app
-	_, err = s.spaceappRepository.FindBySpaceId(spaceId)
+	_, err = s.spaceappRepository.FindBySpaceId(ctx, spaceId)
 	if err != nil && !commonrepo.IsErrorResourceNotExists(err) {
 		logrus.Errorf("get space app by id %v failed, err:%v", spaceId, err)
 		return

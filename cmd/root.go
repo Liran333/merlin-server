@@ -80,6 +80,8 @@ func initServer(configFile string) {
 	if err := basegitea.Init(&cfg.Git); err != nil {
 		logrus.Fatalf("init gitea failed, err:%s", err.Error())
 	}
+
+	//_ = opentelemetry.InitTrace(&cfg.Trace)
 }
 
 func execute() {

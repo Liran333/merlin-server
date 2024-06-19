@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package controller
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/openmerlin/merlin-server/activity/app"
@@ -82,13 +84,13 @@ func (ctl *ActivityRestfulController) List(ctx *gin.Context) {
 	var list []primitive.Account
 
 	// List activities based on the prepared list and command
-	dto, err := ctl.appService.List(user, list, &cmd)
+	dto, err := ctl.appService.List(ctx.Request.Context(), user, list, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return
 	}
 
-	if v, err := ctl.setAvatars(&dto); err != nil {
+	if v, err := ctl.setAvatars(ctx, &dto); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
@@ -96,7 +98,7 @@ func (ctl *ActivityRestfulController) List(ctx *gin.Context) {
 }
 
 // setAvatars populates the avatar information for the activities in the provided ActivitysDTO.
-func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivitysDTO) (activitiesInfo, error) {
+func (ctl *ActivityRestfulController) setAvatars(ctx context.Context, dto *app.ActivitysDTO) (activitiesInfo, error) {
 	ac := dto.Activities
 
 	// get avatars
@@ -113,7 +115,7 @@ func (ctl *ActivityRestfulController) setAvatars(dto *app.ActivitysDTO) (activit
 		i++
 	}
 
-	avatars, err := ctl.user.GetUsersAvatarId(accounts)
+	avatars, err := ctl.user.GetUsersAvatarId(ctx, accounts)
 	if err != nil {
 		return activitiesInfo{}, err
 	}

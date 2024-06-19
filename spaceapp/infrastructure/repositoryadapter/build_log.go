@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repositoryadapter
 
 import (
+	"context"
 	"errors"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -37,12 +38,12 @@ func (adapter *buildLogAdapterImpl) Save(log *domain.SpaceAppBuildLog) error {
 	return nil
 }
 
-func (adapter *buildLogAdapterImpl) Find(appId primitive.Identity) (
+func (adapter *buildLogAdapterImpl) Find(ctx context.Context, appId primitive.Identity) (
 	log domain.SpaceAppBuildLog, err error,
 ) {
 	do := spaceappDO{Id: appId.Integer()}
 
-	if err = adapter.dao.GetByPrimaryKey(&do); err == nil {
+	if err = adapter.dao.GetByPrimaryKey(ctx, &do); err == nil {
 		log.Logs = do.AllBuildLog
 		log.AppId = appId
 	}

@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package repository
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/spaceapp/domain"
 )
@@ -14,15 +16,15 @@ import (
 type Repository interface {
 	Add(*domain.SpaceApp) error
 	Remove(primitive.Identity) error
-	Find(*domain.SpaceAppIndex) (domain.SpaceApp, error)
+	Find(context.Context, *domain.SpaceAppIndex) (domain.SpaceApp, error)
 	Save(*domain.SpaceApp) error
 	SaveWithBuildLog(*domain.SpaceApp, *domain.SpaceAppBuildLog) error
-	FindBySpaceId(primitive.Identity) (domain.SpaceApp, error)
+	FindBySpaceId(context.Context, primitive.Identity) (domain.SpaceApp, error)
 	DeleteBySpaceId(primitive.Identity) error
 }
 
 // SpaceAppBuildLogAdapter is an interface that defines methods for managing space app build logs.
 type SpaceAppBuildLogAdapter interface {
-	Find(primitive.Identity) (domain.SpaceAppBuildLog, error)
+	Find(context.Context, primitive.Identity) (domain.SpaceAppBuildLog, error)
 	Save(*domain.SpaceAppBuildLog) error
 }

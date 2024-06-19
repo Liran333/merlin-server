@@ -65,7 +65,7 @@ func (ctl *DatasetRestfulController) Get(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	dto, err := ctl.appService.GetByName(user, &index)
+	dto, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 		return
@@ -129,7 +129,7 @@ func (ctl *DatasetRestfulController) List(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	if result, err := ctl.appService.List(user, &cmd); err != nil {
+	if result, err := ctl.appService.List(ctx.Request.Context(), user, &cmd); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, result)

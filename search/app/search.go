@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/openmerlin/merlin-server/search/domain"
@@ -14,7 +16,7 @@ import (
 
 // SearchAppService search app service
 type SearchAppService interface {
-	Search(cmd *CmdToSearch, user domain.Account) (SearchDTO, error)
+	Search(ctx context.Context, cmd *CmdToSearch, user domain.Account) (SearchDTO, error)
 }
 
 // NewSearchAppService creates a new instance of the SearchAppService.
@@ -30,7 +32,7 @@ type searchAppService struct {
 }
 
 // Search is a method of the SearchAppService interface that performs a search operation.
-func (s *searchAppService) Search(cmd *CmdToSearch, user domain.Account) (SearchDTO, error) {
+func (s *searchAppService) Search(ctx context.Context, cmd *CmdToSearch, user domain.Account) (SearchDTO, error) {
 
 	var dto SearchDTO
 
@@ -41,7 +43,7 @@ func (s *searchAppService) Search(cmd *CmdToSearch, user domain.Account) (Search
 		Size:       cmd.Size.Size(),
 	}
 
-	searchResult, err := s.resourceAdapter.Search(searchOption)
+	searchResult, err := s.resourceAdapter.Search(ctx, searchOption)
 	if err != nil {
 		logrus.Error("Failed to search, error: ", err)
 		return dto, err

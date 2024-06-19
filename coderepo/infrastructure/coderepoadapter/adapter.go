@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package coderepoadapter
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -23,7 +24,7 @@ const (
 
 // UserInfoAdapter is an interface that defines the methods for retrieving platform-specific user information.
 type UserInfoAdapter interface {
-	GetPlatformUserInfo(primitive.Account) (string, error)
+	GetPlatformUserInfo(context.Context, primitive.Account) (string, error)
 }
 
 // codeRepoAdapter is an implementation of the CodeRepoAdapter interface.
@@ -39,7 +40,7 @@ func NewRepoAdapter(c *gitea.Client, userAdapter UserInfoAdapter, cfg *Config) *
 }
 
 // Add adds a new code repository to the code repository service.
-func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) error {
+func (adapter *codeRepoAdapter) Add(ctx context.Context, repo *domain.CodeRepo, initReadme bool) error {
 	defaultRef := primitive.InitCodeFileRef().FileRef()
 
 	opt := gitea.CreateRepoOption{
@@ -54,7 +55,7 @@ func (adapter *codeRepoAdapter) Add(repo *domain.CodeRepo, initReadme bool) erro
 		opt.AutoInit = true
 	}
 
-	p, err := adapter.userAdapter.GetPlatformUserInfo(repo.CreatedBy)
+	p, err := adapter.userAdapter.GetPlatformUserInfo(ctx, repo.CreatedBy)
 	if err != nil {
 		return fmt.Errorf("failed to get platform user info: %w", err)
 	}
@@ -131,4 +132,3 @@ func (adapter *codeRepoAdapter) IsNotFound(index primitive.Identity) bool {
 	_, resp, _ := adapter.client.GetRepoByID(index.Integer())
 	return resp.StatusCode == http.StatusNotFound
 }
-

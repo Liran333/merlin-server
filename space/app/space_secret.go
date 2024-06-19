@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"golang.org/x/xerrors"
@@ -24,9 +25,13 @@ import (
 
 // SpaceSecretService is an interface for the space secret service.
 type SpaceSecretService interface {
-	CreateSecret(primitive.Account, primitive.Identity, *CmdToCreateSpaceSecret) (string, string, error)
-	DeleteSecret(primitive.Account, primitive.Identity, primitive.Identity) (string, error)
-	UpdateSecret(primitive.Account, primitive.Identity, primitive.Identity, *CmdToUpdateSpaceSecret) (string, error)
+	CreateSecret(
+		context.Context, primitive.Account,
+		primitive.Identity, *CmdToCreateSpaceSecret) (string, string, error)
+	DeleteSecret(context.Context, primitive.Account, primitive.Identity, primitive.Identity) (string, error)
+	UpdateSecret(
+		context.Context, primitive.Account, primitive.Identity,
+		primitive.Identity, *CmdToUpdateSpaceSecret) (string, error)
 }
 
 // NewSpaceSecretService creates a new instance of the space secret service.
@@ -57,8 +62,8 @@ type spaceSecretService struct {
 	msgAdapter           message.SpaceMessage
 }
 
-func (s *spaceSecretService) setAppRestarting(spaceId primitive.Identity) error {
-	app, err := s.repo.FindBySpaceId(spaceId)
+func (s *spaceSecretService) setAppRestarting(ctx context.Context, spaceId primitive.Identity) error {
+	app, err := s.repo.FindBySpaceId(ctx, spaceId)
 	if err != nil {
 		return nil
 	}
@@ -71,6 +76,7 @@ func (s *spaceSecretService) setAppRestarting(spaceId primitive.Identity) error 
 
 // Create creates a new space with the given command and returns the ID of the created space.
 func (s *spaceSecretService) CreateSecret(
+	ctx context.Context,
 	user primitive.Account,
 	spaceId primitive.Identity,
 	cmd *CmdToCreateSpaceSecret) (res string, action string, err error) {
@@ -87,7 +93,7 @@ func (s *spaceSecretService) CreateSecret(
 		spaceId.Identity(), space.Owner.Account(), cmd.Name.ENVName(),
 	)
 
-	err = s.permission.CanCreate(user, space.Owner, primitive.ObjTypeSpace)
+	err = s.permission.CanCreate(ctx, user, space.Owner, primitive.ObjTypeSpace)
 	if err != nil {
 		err = newSpaceNotFound(err)
 		return "", action, err
@@ -127,7 +133,7 @@ func (s *spaceSecretService) CreateSecret(
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return "", action, err
@@ -151,6 +157,7 @@ func (s *spaceSecretService) spaceSecretCountCheck(spaceId primitive.Identity) e
 
 // DeleteVariable deletes the space variable with the given space ID and variable ID and returns the action performed.
 func (s *spaceSecretService) DeleteSecret(
+	ctx context.Context,
 	user primitive.Account,
 	spaceId primitive.Identity,
 	secretId primitive.Identity,
@@ -176,7 +183,7 @@ func (s *spaceSecretService) DeleteSecret(
 		secretId.Identity(), space.Owner.Account(), secret.Name.ENVName(),
 	)
 
-	notFound, err := app.CanDeleteOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanDeleteOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -204,7 +211,7 @@ func (s *spaceSecretService) DeleteSecret(
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 	}
@@ -213,7 +220,7 @@ func (s *spaceSecretService) DeleteSecret(
 
 // Update updates the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceSecretService) UpdateSecret(
-	user primitive.Account, spaceId primitive.Identity,
+	ctx context.Context, user primitive.Account, spaceId primitive.Identity,
 	secretId primitive.Identity, cmd *CmdToUpdateSpaceSecret,
 ) (action string, err error) {
 	space, err := s.repoAdapter.FindById(spaceId)
@@ -237,7 +244,7 @@ func (s *spaceSecretService) UpdateSecret(
 		spaceId.Identity(), space.Owner.Account(), secret.Name.ENVName(),
 	)
 
-	notFound, err := app.CanUpdateOrNotFound(user, &space, s.permission)
+	notFound, err := app.CanUpdateOrNotFound(ctx, user, &space, s.permission)
 	if err != nil {
 		return
 	}
@@ -272,7 +279,7 @@ func (s *spaceSecretService) UpdateSecret(
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 		return
 	}
-	if err = s.setAppRestarting(space.Id); err != nil {
+	if err = s.setAppRestarting(ctx, space.Id); err != nil {
 		err = allerror.NewCommonRespError("failed to restart space app",
 			xerrors.Errorf("space id:%s, err: %w", spaceId.Identity(), err))
 	}

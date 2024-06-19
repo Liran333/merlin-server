@@ -182,7 +182,7 @@ func (ctl *SpaceInternalController) Disable(ctx *gin.Context) {
 		return
 	}
 
-	err = ctl.appService.Disable(spaceId)
+	err = ctl.appService.Disable(ctx.Request.Context(), spaceId)
 
 	if err != nil {
 		commonctl.SendError(ctx, err)

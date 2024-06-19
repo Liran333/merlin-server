@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+
 	"golang.org/x/xerrors"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain/resourceadapter"
@@ -12,10 +14,10 @@ import (
 )
 
 type CommentService interface {
-	CreateIssueComment(CmdToCreateIssueComment) error
-	UpdateIssueComment(CmdToUpdateIssueComment) error
-	DeleteIssueComment(CmdToDeleteIssueComment) error
-	ReportComment(CmdToReportComment) error
+	CreateIssueComment(context.Context, CmdToCreateIssueComment) error
+	UpdateIssueComment(context.Context, CmdToUpdateIssueComment) error
+	DeleteIssueComment(context.Context, CmdToDeleteIssueComment) error
+	ReportComment(context.Context, CmdToReportComment) error
 }
 
 func NewCommentService(
@@ -42,13 +44,13 @@ type commentService struct {
 	commentReportRepo repository.IssueCommentReport
 }
 
-func (i *commentService) CreateIssueComment(cmd CmdToCreateIssueComment) error {
+func (i *commentService) CreateIssueComment(ctx context.Context, cmd CmdToCreateIssueComment) error {
 	r, err := i.resource.GetByIndex(cmd.ResourceId)
 	if err != nil {
 		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
 	}
 
-	if err = i.permission.CanRead(cmd.Owner, r); err != nil {
+	if err = i.permission.CanRead(ctx, cmd.Owner, r); err != nil {
 		return err
 	}
 
@@ -73,13 +75,13 @@ func (i *commentService) CreateIssueComment(cmd CmdToCreateIssueComment) error {
 	return nil
 }
 
-func (i *commentService) UpdateIssueComment(cmd CmdToUpdateIssueComment) error {
+func (i *commentService) UpdateIssueComment(ctx context.Context, cmd CmdToUpdateIssueComment) error {
 	r, err := i.resource.GetByIndex(cmd.ResourceId)
 	if err != nil {
 		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
 	}
 
-	if err = i.permission.CanRead(cmd.User, r); err != nil {
+	if err = i.permission.CanRead(ctx, cmd.User, r); err != nil {
 		return err
 	}
 
@@ -104,13 +106,13 @@ func (i *commentService) UpdateIssueComment(cmd CmdToUpdateIssueComment) error {
 	return nil
 }
 
-func (i *commentService) DeleteIssueComment(cmd CmdToDeleteIssueComment) error {
+func (i *commentService) DeleteIssueComment(ctx context.Context, cmd CmdToDeleteIssueComment) error {
 	r, err := i.resource.GetByIndex(cmd.ResourceId)
 	if err != nil {
 		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
 	}
 
-	if err = i.permission.CanRead(cmd.User, r); err != nil {
+	if err = i.permission.CanRead(ctx, cmd.User, r); err != nil {
 		return err
 	}
 
@@ -130,13 +132,13 @@ func (i *commentService) DeleteIssueComment(cmd CmdToDeleteIssueComment) error {
 	return i.commentRepo.Delete(comment.Id)
 }
 
-func (i *commentService) ReportComment(cmd CmdToReportComment) error {
+func (i *commentService) ReportComment(ctx context.Context, cmd CmdToReportComment) error {
 	r, err := i.resource.GetByIndex(cmd.ResourceId)
 	if err != nil {
 		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
 	}
 
-	if err = i.permission.CanRead(cmd.User, r); err != nil {
+	if err = i.permission.CanRead(ctx, cmd.User, r); err != nil {
 		return err
 	}
 

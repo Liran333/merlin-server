@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -41,7 +42,7 @@ func (s *stubOrg) Save(o *orgdomain.OrgMember) (orgdomain.OrgMember, error) {
 }
 
 // Delete deletes the given organization member without returning any errors.
-func (s *stubOrg) Delete(*orgdomain.OrgMember) error {
+func (s *stubOrg) Delete(context.Context, *orgdomain.OrgMember) error {
 	return nil
 }
 
@@ -63,7 +64,7 @@ func (s *stubOrg) GetByOrgAndRole(u string, r primitive.Role) ([]orgdomain.OrgMe
 
 // GetByOrgAndUser retrieves the organization member of the specified organization and user
 // and returns it without any errors.
-func (s *stubOrg) GetByOrgAndUser(org, user string) (orgdomain.OrgMember, error) {
+func (s *stubOrg) GetByOrgAndUser(ctx context.Context, org, user string) (orgdomain.OrgMember, error) {
 	if org == "org" && user == "XXXX" {
 		return *stubMember, nil
 	} else if org == "member" && user == "ffff" {
@@ -177,7 +178,7 @@ func TestPermCheck(t *testing.T) {
 	app := NewPermService(&cfg, &stubOrg{})
 
 	for i, test := range tests {
-		err := app.Check(test.user, test.org, test.objType, test.op)
+		err := app.Check(context.Background(), test.user, test.org, test.objType, test.op)
 		if (err == nil) != results[i] {
 			t.Errorf("case num %d valid result is %v ", i, err)
 		}

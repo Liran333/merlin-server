@@ -22,6 +22,8 @@ import (
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
+
+	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
 )
 
 // initOrg depends on initUser
@@ -52,6 +54,7 @@ func initOrg(cfg *config.Config, services *allServices) error {
 		services.userApp, org, orgMember,
 		invitation, permission, &cfg.Org.Domain, git,
 		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo,
+		opentelemetry.NewTracer(&cfg.Trace),
 	)
 
 	services.npuGatekeeper = app.NewPrivilegeOrgService(services.orgApp, cfg.PrivilegeOrg.Npu, app.AllocNpu)

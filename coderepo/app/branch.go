@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"context"
+
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	repoprimitive "github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	"github.com/openmerlin/merlin-server/coderepo/domain/repository"
@@ -18,8 +20,8 @@ import (
 
 // BranchAppService defines the interface for a branch application service.
 type BranchAppService interface {
-	Create(primitive.Account, *CmdToCreateBranch) (BranchCreateDTO, error)
-	Delete(primitive.Account, *CmdToDeleteBranch) error
+	Create(context.Context, primitive.Account, *CmdToCreateBranch) (BranchCreateDTO, error)
+	Delete(context.Context, primitive.Account, *CmdToDeleteBranch) error
 }
 
 // NewBranchAppService creates a new instance of the BranchAppService.
@@ -45,11 +47,11 @@ type branchAppService struct {
 }
 
 // Create creates a new branch based on the provided command and returns the created branch DTO.
-func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch) (
+func (s *branchAppService) Create(ctx context.Context, user primitive.Account, cmd *CmdToCreateBranch) (
 	dto BranchCreateDTO, err error,
 ) {
 	index := cmd.RepoIndex()
-	if err = s.canModify(user, cmd.RepoType, &index); err != nil {
+	if err = s.canModify(ctx, user, cmd.RepoType, &index); err != nil {
 		return
 	}
 
@@ -68,13 +70,13 @@ func (s *branchAppService) Create(user primitive.Account, cmd *CmdToCreateBranch
 }
 
 // Delete deletes a branch based on the provided command.
-func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch) error {
+func (s *branchAppService) Delete(ctx context.Context, user primitive.Account, cmd *CmdToDeleteBranch) error {
 	index := cmd.RepoIndex()
-	if err := s.canModify(user, cmd.RepoType, &index); err != nil {
+	if err := s.canModify(ctx, user, cmd.RepoType, &index); err != nil {
 		return err
 	}
 
-	br, err := s.branchAdapter.FindByIndex(&cmd.BranchIndex)
+	br, err := s.branchAdapter.FindByIndex(ctx, &cmd.BranchIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
@@ -87,11 +89,11 @@ func (s *branchAppService) Delete(user primitive.Account, cmd *CmdToDeleteBranch
 		return err
 	}
 
-	return s.branchAdapter.Delete(br.Id)
+	return s.branchAdapter.Delete(ctx, br.Id)
 }
 
 func (s *branchAppService) canModify(
-	user primitive.Account, t repoprimitive.RepoType, index *domain.CodeRepoIndex,
+	ctx context.Context, user primitive.Account, t repoprimitive.RepoType, index *domain.CodeRepoIndex,
 ) error {
 	repo, err := s.resourceAdapter.GetByType(t, index)
 	if err != nil {
@@ -102,5 +104,5 @@ func (s *branchAppService) canModify(
 		return err
 	}
 
-	return s.permission.CanUpdate(user, repo)
+	return s.permission.CanUpdate(ctx, user, repo)
 }

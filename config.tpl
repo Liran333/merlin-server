@@ -395,6 +395,7 @@ kafka:
   user_name: {{(ds "secret").data.KAFKA_USERNAME }}
   password: {{(ds "secret").data.KAFKA_PASSWORD }}
   algorithm: {{(ds "secret").data.KAFKA_ALGO }}
+  otel: true
   skip_cert_verify: true
 
 ratelimit:
@@ -432,3 +433,8 @@ email:
   from: "348134071@qq.com"
   host: "smtp.qq.com"
   port: 465
+
+trace:
+  enabled: true
+  name: merlin-server
+  endpoint: {{(ds "data").OTEL_ENDPOINT }}

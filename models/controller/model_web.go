@@ -6,6 +6,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -74,7 +75,7 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	dto, err := ctl.appService.GetByName(user, &index)
+	dto, err := ctl.appService.GetByName(ctx.Request.Context(), user, &index)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -97,7 +98,7 @@ func (ctl *ModelWebController) Get(ctx *gin.Context) {
 		ModelDTO: &dto,
 	}
 
-	if userInfo, err := ctl.user.GetOrgOrUser(user, index.Owner); err != nil {
+	if userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), user, index.Owner); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		detail.AvatarId = userInfo.AvatarId
@@ -150,7 +151,7 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 
 		user := ctl.userMiddleWare.GetUser(ctx)
 
-		dto, err := ctl.appService.List(user, &cmd)
+		dto, err := ctl.appService.List(ctx.Request.Context(), user, &cmd)
 		if err != nil {
 			commonctl.SendError(ctx, err)
 
@@ -162,7 +163,7 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 			ModelsDTO: &dto,
 		}
 
-		if userInfo, err := ctl.user.GetOrgOrUser(user, cmd.Owner); err != nil {
+		if userInfo, err := ctl.user.GetOrgOrUser(ctx.Request.Context(), user, cmd.Owner); err != nil {
 			commonctl.SendError(ctx, err)
 		} else {
 			result.AvatarId = userInfo.AvatarId
@@ -182,7 +183,7 @@ func (ctl *ModelWebController) List(ctx *gin.Context) {
 func (ctl *ModelWebController) ListRecommends(ctx *gin.Context) {
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	modelsDTO := ctl.appService.Recommend(user)
+	modelsDTO := ctl.appService.Recommend(ctx.Request.Context(), user)
 
 	mrs := make([]modelRecommendInfo, 0, len(modelsDTO))
 
@@ -234,21 +235,21 @@ func (ctl *ModelWebController) ListGlobal(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	result, err := ctl.appService.List(user, &cmd)
+	result, err := ctl.appService.List(ctx, user, &cmd)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
 		return
 	}
 
-	if v, err := ctl.setUserInfo(&result); err != nil {
+	if v, err := ctl.setUserInfo(ctx, &result); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
 	}
 }
 
-func (ctl *ModelWebController) setUserInfo(dto *app.ModelsDTO) (modelsInfo, error) {
+func (ctl *ModelWebController) setUserInfo(ctx context.Context, dto *app.ModelsDTO) (modelsInfo, error) {
 	ms := dto.Models
 
 	// get avatars
@@ -261,7 +262,7 @@ func (ctl *ModelWebController) setUserInfo(dto *app.ModelsDTO) (modelsInfo, erro
 	i := 0
 	for k := range v {
 		accounts[i] = primitive.CreateAccount(k)
-		userInfo, err := ctl.user.GetOrgOrUser(nil, accounts[i])
+		userInfo, err := ctl.user.GetOrgOrUser(ctx, nil, accounts[i])
 		if err != nil {
 			return modelsInfo{}, err
 		}
@@ -305,7 +306,7 @@ func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
 
 	user := ctl.userMiddleWare.GetUser(ctx)
 
-	spaces, err := ctl.modelSpaceService.GetSpacesByModelId(user, modelId)
+	spaces, err := ctl.modelSpaceService.GetSpacesByModelId(ctx.Request.Context(), user, modelId)
 	if err != nil {
 		commonctl.SendError(ctx, err)
 
@@ -313,7 +314,7 @@ func (ctl *ModelWebController) GetSpacesByModelId(ctx *gin.Context) {
 	}
 
 	for _, space := range spaces {
-		if avatar, err := ctl.user.GetUserAvatarId(primitive.CreateAccount(space.Owner)); err != nil {
+		if avatar, err := ctl.user.GetUserAvatarId(ctx.Request.Context(), primitive.CreateAccount(space.Owner)); err != nil {
 			space.AvatarId = ""
 		} else {
 			space.AvatarId = avatar.AvatarId
@@ -357,6 +358,7 @@ func (ctl *ModelWebController) disable(ctx *gin.Context) {
 	}
 
 	action, err := ctl.appService.Disable(
+		ctx.Request.Context(),
 		ctl.userMiddleWare.GetUser(ctx),
 		modelId,
 		&cmd,
