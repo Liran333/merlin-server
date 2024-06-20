@@ -66,6 +66,22 @@ func toModelDO(m *domain.Model) modelDO {
 	return do
 }
 
+func toModelStatisticDO(m *domain.Model) modelDO {
+	do := modelDO{
+		Id:            m.Id.Integer(),
+		DownloadCount: m.DownloadCount,
+	}
+
+	return do
+}
+
+func toModelUseInOpenmindDO(m *domain.Model) modelDO {
+	return modelDO{
+		Id:            m.Id.Integer(),
+		UseInOpenmind: m.UseInOpenmind,
+	}
+}
+
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
 	do := modelDO{
 		Task:        labels.Task,

@@ -96,6 +96,27 @@ func (adapter *datasetAdapter) Save(dataset *domain.Dataset) error {
 	return nil
 }
 
+// Save skip Hooks methods and don’t track the update time when updating an existing dataset in the database.
+func (adapter *datasetAdapter) InternalSave(dataset *domain.Dataset) error {
+	do := toDatasetStatisticDO(dataset)
+
+	v := adapter.db().Model(
+		&datasetDO{Id: dataset.Id.Integer()},
+	).Omit(fieldUpdatedAt).Updates(&do)
+
+	if v.Error != nil {
+		return xerrors.Errorf("failed to save dataset to db, %w", v.Error)
+	}
+
+	if v.RowsAffected == 0 {
+		return commonrepo.NewErrorConcurrentUpdating(
+			xerrors.Errorf("%w", errors.New("concurrent updating")),
+		)
+	}
+
+	return nil
+}
+
 // List retrieves a list of dataset based on the provided options.
 func (adapter *datasetAdapter) List(opt *repository.ListOption,
 	login primitive.Account, member orgrepo.OrgMember) ([]repository.DatasetSummary, int, error) {

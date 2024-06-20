@@ -8,14 +8,13 @@ package app
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
+	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
-	"github.com/openmerlin/merlin-server/utils"
+	"github.com/sirupsen/logrus"
 )
 
 // ModelInternalAppService is an interface for the internal model application service.
@@ -95,7 +94,7 @@ func (s *modelInternalAppService) GetByNames(modelsIndex []*domain.ModelIndex) (
 
 // UpdateStatistics updates the statistics of a model.
 func (s *modelInternalAppService) UpdateStatistics(modelId primitive.Identity, cmd *CmdToUpdateStatistics) error {
-	model, err := s.modelAdapter.FindById(modelId)
+	_, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
@@ -103,16 +102,18 @@ func (s *modelInternalAppService) UpdateStatistics(modelId primitive.Identity, c
 		}
 		return err
 	}
-
-	model.DownloadCount = cmd.DownloadCount
-	model.UpdatedAt = utils.Now()
-
-	return s.modelAdapter.Save(&model)
+	newModel := domain.Model{
+		CodeRepo: coderepo.CodeRepo{
+			Id: modelId,
+		},
+		DownloadCount: cmd.DownloadCount,
+	}
+	return s.modelAdapter.InternalSaveStatistic(&newModel)
 }
 
 // UpdateUseInOpenmind set the use in openmind tag of a model.
 func (s *modelInternalAppService) UpdateUseInOpenmind(modelId primitive.Identity, cmd string) error {
-	model, err := s.modelAdapter.FindById(modelId)
+	_, err := s.modelAdapter.FindById(modelId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
@@ -120,11 +121,14 @@ func (s *modelInternalAppService) UpdateUseInOpenmind(modelId primitive.Identity
 		}
 		return err
 	}
+	newModel := domain.Model{
+		CodeRepo: coderepo.CodeRepo{
+			Id: modelId,
+		},
+		UseInOpenmind: cmd,
+	}
 
-	model.UseInOpenmind = cmd
-	model.UpdatedAt = utils.Now()
-
-	if err := s.modelAdapter.Save(&model); err != nil {
+	if err := s.modelAdapter.InternalSaveUseInOpenmind(&newModel); err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeModelNotFound, "not found",
 				fmt.Errorf("%s not found, %w", modelId, err))

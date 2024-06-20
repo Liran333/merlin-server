@@ -75,6 +75,7 @@ type DatasetRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Dataset, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Dataset) error
+	InternalSave(*domain.Dataset) error
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]DatasetSummary, int, error)
 	Count(*ListOption) (int, error)
 	AddLike(domain.Dataset) error

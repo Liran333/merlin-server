@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	sdk "github.com/openmerlin/merlin-sdk/space"
+	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 
@@ -21,7 +22,6 @@ import (
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 	spaceappRepository "github.com/openmerlin/merlin-server/spaceapp/domain/repository"
-	"github.com/openmerlin/merlin-server/utils"
 )
 
 // SpaceInternalAppService is an interface for space internal application service
@@ -104,7 +104,7 @@ func (s *spaceInternalAppService) UpdateEnvInfo(spaceId primitive.Identity, envI
 
 // UpdateStatistics updates the statistics of a space.
 func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, cmd *CmdToUpdateStatistics) error {
-	space, err := s.repoAdapter.FindById(spaceId)
+	_, err := s.repoAdapter.FindById(spaceId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(
@@ -115,12 +115,15 @@ func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, c
 
 		return err
 	}
+	newSpace := domain.Space{
+		CodeRepo: coderepo.CodeRepo{
+			Id: spaceId,
+		},
+		DownloadCount: cmd.DownloadCount,
+		VisitCount:    cmd.VisitCount,
+	}
 
-	space.DownloadCount = cmd.DownloadCount
-	space.VisitCount = cmd.VisitCount
-	space.UpdatedAt = utils.Now()
-
-	return s.repoAdapter.Save(&space)
+	return s.repoAdapter.InternalSave(&newSpace)
 }
 
 // Disable disable the space with the given space ID using the provided command and returns the action performed.

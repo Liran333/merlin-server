@@ -13,22 +13,22 @@ import (
 )
 
 const (
-	filedId            = "id"
-	fieldName          = "name"
-	fieldTask          = "task"
-	fieldOwner         = "owner"
-	fieldOthers        = "others"
-	fieldLicense       = "license"
-	fieldVersion       = "version"
-	fieldFullName      = "fullname"
-	fieldHardware      = "hardware"
-	fieldLocalCMD      = "local_cmd"
-	fieldUpdatedAt     = "updated_at"
-	fieldCreatedAt     = "created_at"
-	fieldVisibility    = "visibility"
-	fieldBaseImage     = "base_image"
-	fieldLikeCount     = "like_count"
-	fieldDownloadCount = "download_count"
+	filedId                = "id"
+	fieldName              = "name"
+	fieldTask              = "task"
+	fieldOwner             = "owner"
+	fieldOthers            = "others"
+	fieldLicense           = "license"
+	fieldVersion           = "version"
+	fieldFullName          = "fullname"
+	fieldHardware          = "hardware"
+	fieldLocalCMD          = "local_cmd"
+	fieldUpdatedAt         = "updated_at"
+	fieldCreatedAt         = "created_at"
+	fieldVisibility        = "visibility"
+	fieldBaseImage         = "base_image"
+	fieldLikeCount         = "like_count"
+	fieldDownloadCount     = "download_count"
 	filedVisitCount        = "visit_count"
 	fieldNoApplicationFile = "no_application_file"
 )
@@ -76,6 +76,16 @@ func toSpaceDO(m *domain.Space) spaceDO {
 
 	if m.Labels.Task != nil {
 		do.Task = m.Labels.Task.Task()
+	}
+
+	return do
+}
+
+func toSpaceStatisticDO(m *domain.Space) spaceDO {
+	do := spaceDO{
+		Id:            m.Id.Integer(),
+		DownloadCount: m.DownloadCount,
+		VisitCount:    m.VisitCount,
 	}
 
 	return do
@@ -165,7 +175,7 @@ func (do *spaceDO) toSpace() domain.Space {
 			Framework: do.Framework,
 		},
 		CompPowerAllocated: do.CompPowerAllocated,
-		NoApplicationFile: do.NoApplicationFile,
+		NoApplicationFile:  do.NoApplicationFile,
 		CommitId:           do.CommitId,
 	}
 }
@@ -190,9 +200,9 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 			License:   primitive.CreateLicense(do.License),
 			Framework: do.Framework,
 		},
-		IsNpu: spaceprimitive.CreateHardware(do.Hardware).IsNpu(),
-		Exception: do.Exception,
+		IsNpu:              spaceprimitive.CreateHardware(do.Hardware).IsNpu(),
+		Exception:          do.Exception,
 		CompPowerAllocated: do.CompPowerAllocated,
-		NoApplicationFile: do.NoApplicationFile,
+		NoApplicationFile:  do.NoApplicationFile,
 	}
 }

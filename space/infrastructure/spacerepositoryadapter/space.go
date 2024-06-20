@@ -90,6 +90,27 @@ func (adapter *spaceAdapter) Save(space *domain.Space) error {
 	return nil
 }
 
+// Save skip Hooks methods and don’t track the update time when updating a space in the database and returns an error if any occurs.
+func (adapter *spaceAdapter) InternalSave(space *domain.Space) error {
+	do := toSpaceStatisticDO(space)
+
+	v := adapter.db().Model(
+		&spaceDO{Id: space.Id.Integer()},
+	).Omit(fieldUpdatedAt).Updates(&do)
+
+	if v.Error != nil {
+		return v.Error
+	}
+
+	if v.RowsAffected == 0 {
+		return commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
+	}
+
+	return nil
+}
+
 // List is a method of spaceAdapter that takes a ListOption pointer as input
 // and returns a slice of SpaceSummary, total count, and an error if any occurs.
 func (adapter *spaceAdapter) List(opt *repository.ListOption, login primitive.Account, member orgrepo.OrgMember) (

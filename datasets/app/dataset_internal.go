@@ -8,12 +8,12 @@ package app
 import (
 	"golang.org/x/xerrors"
 
+	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/datasets/domain"
 	"github.com/openmerlin/merlin-server/datasets/domain/repository"
-	"github.com/openmerlin/merlin-server/utils"
 )
 
 // DatasetInternalAppService is an interface for the internal dataset application service.
@@ -84,7 +84,7 @@ func (s *datasetInternalAppService) GetByNames(datasetsIndex []*domain.DatasetIn
 
 // UpdateStatistics updates the statistics of a dataset.
 func (s *datasetInternalAppService) UpdateStatistics(datasetId primitive.Identity, cmd *CmdToUpdateStatistics) error {
-	dataset, err := s.datasetAdapter.FindById(datasetId)
+	_, err := s.datasetAdapter.FindById(datasetId)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = allerror.NewNotFound(allerror.ErrorCodeDatasetNotFound, "not found",
@@ -93,8 +93,11 @@ func (s *datasetInternalAppService) UpdateStatistics(datasetId primitive.Identit
 		return xerrors.Errorf("failed to update statistics, %w", err)
 	}
 
-	dataset.DownloadCount = cmd.DownloadCount
-	dataset.UpdatedAt = utils.Now()
-
-	return s.datasetAdapter.Save(&dataset)
+	newDataset := domain.Dataset{
+		CodeRepo: coderepo.CodeRepo{
+			Id: datasetId,
+		},
+		DownloadCount: cmd.DownloadCount,
+	}
+	return s.datasetAdapter.InternalSave(&newDataset)
 }

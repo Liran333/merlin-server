@@ -75,6 +75,8 @@ type ModelRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Model, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Model) error
+	InternalSaveStatistic(*domain.Model) error
+	InternalSaveUseInOpenmind(*domain.Model) error
 	List(context.Context, *ListOption, primitive.Account, orgrepo.OrgMember) ([]ModelSummary, int, error)
 	Count(*ListOption) (int, error)
 	AddLike(domain.Model) error

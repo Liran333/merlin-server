@@ -14,25 +14,25 @@ import (
 
 // SpaceSummary represents a summary of a space.
 type SpaceSummary struct {
-	Id            string             `json:"id"`
-	Name          string             `json:"name"`
-	Desc          string             `json:"desc"`
-	Owner         string             `json:"owner"`
-	AvatarId      string             `json:"space_avatar_id"`
-	Fullname      string             `json:"fullname"`
-	BaseImage     string             `json:"base_image"`
-	UpdatedAt     int64              `json:"updated_at"`
-	LikeCount     int                `json:"like_count"`
-	DownloadCount int                `json:"download_count"`
-	VisitCount    int                `json:"visit_count"`
-	Disable       bool               `json:"disable"`
-	DisableReason string             `json:"disable_reason"`
-	Labels        domain.SpaceLabels `json:"labels"`
-	Exception	  string			 `json:"exception"`
-	Status		  string			 `json:"status"`
-	IsNpu		  bool				 `json:"is_npu"`
-	CompPowerAllocated	bool		 `json:"comp_power_allocated"`
-	NoApplicationFile   bool		 `json:"no_application_file"`
+	Id                 string             `json:"id"`
+	Name               string             `json:"name"`
+	Desc               string             `json:"desc"`
+	Owner              string             `json:"owner"`
+	AvatarId           string             `json:"space_avatar_id"`
+	Fullname           string             `json:"fullname"`
+	BaseImage          string             `json:"base_image"`
+	UpdatedAt          int64              `json:"updated_at"`
+	LikeCount          int                `json:"like_count"`
+	DownloadCount      int                `json:"download_count"`
+	VisitCount         int                `json:"visit_count"`
+	Disable            bool               `json:"disable"`
+	DisableReason      string             `json:"disable_reason"`
+	Labels             domain.SpaceLabels `json:"labels"`
+	Exception          string             `json:"exception"`
+	Status             string             `json:"status"`
+	IsNpu              bool               `json:"is_npu"`
+	CompPowerAllocated bool               `json:"comp_power_allocated"`
+	NoApplicationFile  bool               `json:"no_application_file"`
 }
 
 // ListOption contains options for listing spaces.
@@ -89,6 +89,7 @@ type SpaceRepositoryAdapter interface {
 	FindById(primitive.Identity) (domain.Space, error)
 	Delete(primitive.Identity) error
 	Save(*domain.Space) error
+	InternalSave(*domain.Space) error
 	List(*ListOption, primitive.Account, orgrepo.OrgMember) ([]SpaceSummary, int, error)
 	Count(*ListOption) (int, error)
 	AddLike(domain.Space) error

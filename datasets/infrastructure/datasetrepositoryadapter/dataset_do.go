@@ -62,6 +62,19 @@ func toDatasetDO(m *domain.Dataset) datasetDO {
 	return do
 }
 
+func toDatasetStatisticDO(m *domain.Dataset) datasetDO {
+	do := datasetDO{
+		Id:            m.Id.Integer(),
+		DownloadCount: m.DownloadCount,
+	}
+
+	if m.DisableReason != nil {
+		do.DisableReason = m.DisableReason.DisableReason()
+	}
+
+	return do
+}
+
 func toLabelsDO(labels *domain.DatasetLabels) datasetDO {
 	do := datasetDO{
 		License: labels.License,

@@ -94,6 +94,48 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 	return nil
 }
 
+// Save don’t track the update time when updating an existing model in the database.
+func (adapter *modelAdapter) InternalSaveStatistic(model *domain.Model) error {
+	do := toModelStatisticDO(model)
+
+	v := adapter.db().Model(
+		&modelDO{Id: model.Id.Integer()},
+	).Omit(fieldUpdatedAt).Updates(&do)
+
+	if v.Error != nil {
+		return v.Error
+	}
+
+	if v.RowsAffected == 0 {
+		return commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
+	}
+
+	return nil
+}
+
+// Save  skip Hooks methods and don’t track the update time when updating an existing model in the database.
+func (adapter *modelAdapter) InternalSaveUseInOpenmind(model *domain.Model) error {
+	do := toModelUseInOpenmindDO(model)
+
+	v := adapter.db().Model(
+		&modelDO{Id: model.Id.Integer()},
+	).UpdateColumns(&do)
+
+	if v.Error != nil {
+		return v.Error
+	}
+
+	if v.RowsAffected == 0 {
+		return commonrepo.NewErrorConcurrentUpdating(
+			errors.New("concurrent updating"),
+		)
+	}
+
+	return nil
+}
+
 // List retrieves a list of models based on the provided options.
 func (adapter *modelAdapter) List(ctx context.Context, opt *repository.ListOption,
 	login primitive.Account, member orgrepo.OrgMember) ([]repository.ModelSummary, int, error) {
