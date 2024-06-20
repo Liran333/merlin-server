@@ -31,8 +31,8 @@ require (
 	golang.org/x/crypto v0.24.0
 	google.golang.org/grpc v1.64.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
-	gorm.io/driver/postgres v1.5.9
-	gorm.io/gorm v1.25.10
+	gorm.io/driver/postgres v1.5.4
+	gorm.io/gorm v1.25.5
 	gorm.io/plugin/opentelemetry v0.1.4
 	k8s.io/apimachinery v0.28.4
 	sigs.k8s.io/yaml v1.4.0
