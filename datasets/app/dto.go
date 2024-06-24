@@ -79,7 +79,7 @@ type DatasetDTO struct {
 // DatasetLabelsDTO is a struct that represents a data transfer object for dataset labels.
 type DatasetLabelsDTO struct {
 	Task     []string `json:"task"`
-	License  string   `json:"license"`
+	Licenses []string `json:"license"`
 	Size     string   `json:"size"`
 	Language []string `json:"language"`
 	Domain   []string `json:"domain"`
@@ -90,7 +90,7 @@ func toDatasetLabelsDTO(dataset *domain.Dataset) DatasetLabelsDTO {
 
 	return DatasetLabelsDTO{
 		Task:     labels.Task.UnsortedList(),
-		License:  dataset.License.License(),
+		Licenses: dataset.License.License(),
 		Size:     labels.Size,
 		Language: labels.Language.UnsortedList(),
 		Domain:   labels.Domain.UnsortedList(),

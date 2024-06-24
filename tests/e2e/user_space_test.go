@@ -208,7 +208,7 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 	assert.Equal(s.T(), strings.ToLower("CPU basic 2 vCPU · 16GB · FREE"), space.Hardware)
 	assert.Equal(s.T(), "pytorch", space.Labels.Framework)
 	assert.Equal(s.T(), "python3.8-pytorch2.1", space.BaseImage)
-	assert.Equal(s.T(), "mit", space.Labels.License)
+	assert.Equal(s.T(), []string{"mit"}, space.Labels.License)
 	assert.Equal(s.T(), "test1", space.Owner)
 	assert.Equal(s.T(), "gradio", space.Sdk)
 	assert.Equal(s.T(), "public", space.Visibility)
@@ -245,7 +245,7 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(Interal, id,
 		swaggerInternal.ControllerRepoStatistics{
 			DownloadCount: 15,
-			VisitCount: 20,
+			VisitCount:    20,
 		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)

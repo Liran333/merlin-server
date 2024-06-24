@@ -107,7 +107,7 @@ func (m *Space) SetNoApplicationFile(hasHtml, hasApp bool) {
 // SpaceLabels represents labels associated with a space.
 type SpaceLabels struct {
 	Task      spaceprimitive.Task // task label
-	License   primitive.License   // license label
+	Licenses  primitive.License   // license label
 	Framework string              // framework
 }
 

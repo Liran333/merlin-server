@@ -43,7 +43,7 @@ func (m *Dataset) IsDisable() bool {
 // DatasetLabels represents the labels associated with a dataset, including task labels and other labels.
 type DatasetLabels struct {
 	Task     sets.Set[string] // task label
-	License  string           // license label
+	License  sets.Set[string] // license label
 	Size     string           // Size label
 	Language sets.Set[string] // Language label
 	Domain   sets.Set[string] // Domain label

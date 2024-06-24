@@ -20,7 +20,7 @@ type ModelSummary struct {
 	Desc          string   `json:"desc"`
 	Task          string   `json:"task"`
 	Owner         string   `json:"owner"`
-	License       string   `json:"license"`
+	Licenses      []string `json:"license"`
 	Fullname      string   `json:"fullname"`
 	UpdatedAt     int64    `json:"updated_at"`
 	LikeCount     int      `json:"like_count"`

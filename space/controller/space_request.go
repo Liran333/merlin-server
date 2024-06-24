@@ -13,6 +13,7 @@ import (
 	"github.com/openmerlin/merlin-sdk/space"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -481,15 +482,13 @@ type spacesRecommendInfo struct {
 }
 
 type reqToResetLabel struct {
-	License string
-	Task    string
+	Licenses []string
+	Task     string
 }
 
 func (req *reqToResetLabel) toCmd() (cmd app.CmdToResetLabels, err error) {
-	if req.License != "" {
-		if cmd.License, err = primitive.NewLicense(req.License); err != nil {
-			return cmd, xerrors.Errorf("invalid license: %w", err)
-		}
+	if len(req.Licenses) > 0 {
+		cmd.Licenses = sets.New[string](req.Licenses...)
 	}
 
 	if cmd.Task, err = spaceprimitive.NewTask(req.Task); err != nil {

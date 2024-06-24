@@ -205,8 +205,9 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(equalQuery(fieldOwner), opt.Owner.Account())
 	}
 
-	if opt.License != nil {
-		db = db.Where(equalQuery(fieldLicense), opt.License.License())
+	if opt.License != nil && len(opt.License.License()) > 0 {
+		query, arg := intersectionFilter(fieldLicense, opt.License.License())
+		db = db.Where(query, arg)
 	}
 
 	if opt.Labels.Task != nil {

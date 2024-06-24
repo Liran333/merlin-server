@@ -30,8 +30,8 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 		cmd.Others = sets.New[string](req.Tags...)
 	}
 
-	if len(req.License) > 0 {
-		cmd.License = req.License
+	if len(req.Licenses) > 0 {
+		cmd.Licenses = sets.New[string](req.Licenses...)
 	}
 
 	cmd.Frameworks = sets.New[string]()

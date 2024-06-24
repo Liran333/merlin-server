@@ -43,7 +43,7 @@ func toDatasetDO(m *domain.Dataset) datasetDO {
 		Desc:          m.Desc.MSDDesc(),
 		Name:          m.Name.MSDName(),
 		Owner:         m.Owner.Account(),
-		License:       m.License.License(),
+		Licenses:      m.License.License(),
 		Fullname:      m.Fullname.MSDFullname(),
 		CreatedBy:     m.CreatedBy.Account(),
 		Visibility:    m.Visibility.Visibility(),
@@ -77,8 +77,11 @@ func toDatasetStatisticDO(m *domain.Dataset) datasetDO {
 
 func toLabelsDO(labels *domain.DatasetLabels) datasetDO {
 	do := datasetDO{
-		License: labels.License,
-		Size:    labels.Size,
+		Size: labels.Size,
+	}
+
+	if labels.License != nil {
+		do.Licenses = labels.License.UnsortedList()
 	}
 
 	if labels.Task != nil {
@@ -97,21 +100,21 @@ func toLabelsDO(labels *domain.DatasetLabels) datasetDO {
 }
 
 type datasetDO struct {
-	Id            int64  `gorm:"column:id;"`
-	Desc          string `gorm:"column:desc"`
-	Name          string `gorm:"column:name;index:dataset_index,unique,priority:2"`
-	Owner         string `gorm:"column:owner;index:dataset_index,unique,priority:1"`
-	License       string `gorm:"column:license"`
-	Fullname      string `gorm:"column:fullname"`
-	CreatedBy     string `gorm:"column:created_by"`
-	Visibility    string `gorm:"column:visibility"`
-	Disable       bool   `gorm:"column:disable"`
-	DisableReason string `gorm:"column:disable_reason"`
-	CreatedAt     int64  `gorm:"column:created_at"`
-	UpdatedAt     int64  `gorm:"column:updated_at"`
-	Version       int    `gorm:"column:version"`
-	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
-	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
+	Id            int64          `gorm:"column:id;"`
+	Desc          string         `gorm:"column:desc"`
+	Name          string         `gorm:"column:name;index:dataset_index,unique,priority:2"`
+	Owner         string         `gorm:"column:owner;index:dataset_index,unique,priority:1"`
+	Licenses      pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:license,type:gin"`
+	Fullname      string         `gorm:"column:fullname"`
+	CreatedBy     string         `gorm:"column:created_by"`
+	Visibility    string         `gorm:"column:visibility"`
+	Disable       bool           `gorm:"column:disable"`
+	DisableReason string         `gorm:"column:disable_reason"`
+	CreatedAt     int64          `gorm:"column:created_at"`
+	UpdatedAt     int64          `gorm:"column:updated_at"`
+	Version       int            `gorm:"column:version"`
+	LikeCount     int            `gorm:"column:like_count;not null;default:0"`
+	DownloadCount int            `gorm:"column:download_count;not null;default:0"`
 
 	// labels
 	Task     pq.StringArray `gorm:"column:task;type:text[];default:'{}';index:task,type:gin"`
@@ -131,7 +134,7 @@ func (do *datasetDO) toDataset() domain.Dataset {
 			Id:         primitive.CreateIdentity(do.Id),
 			Name:       primitive.CreateMSDName(do.Name),
 			Owner:      primitive.CreateAccount(do.Owner),
-			License:    primitive.CreateLicense(do.License),
+			License:    primitive.CreateLicense(do.Licenses),
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
@@ -161,7 +164,7 @@ func (do *datasetDO) toDatasetSummary() repository.DatasetSummary {
 		Desc:          do.Desc,
 		Task:          do.Task,
 		Owner:         do.Owner,
-		License:       do.License,
+		Licenses:      do.Licenses,
 		Fullname:      do.Fullname,
 		UpdatedAt:     do.UpdatedAt,
 		LikeCount:     do.LikeCount,

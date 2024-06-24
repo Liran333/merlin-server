@@ -13,7 +13,7 @@ import (
 
 type reqToResetDatasetLabel struct {
 	Task     []string `yaml:"task"`
-	License  string   `yaml:"license"`
+	Licenses []string `yaml:"license"`
 	Size     string   `yaml:"size"`
 	Language []string `yaml:"language"`
 	Domain   []string `yaml:"domain"`
@@ -26,8 +26,8 @@ func (req *reqToResetDatasetLabel) toCmd() app.CmdToResetLabels {
 		cmd.Task = sets.New[string](req.Task...)
 	}
 
-	if len(req.License) > 0 {
-		cmd.License = req.License
+	if len(req.Licenses) > 0 {
+		cmd.License = sets.New[string](req.Licenses...)
 	}
 
 	if len(req.Size) > 0 {

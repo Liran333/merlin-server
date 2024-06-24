@@ -8,6 +8,7 @@ import (
 	"math/rand"
 
 	sdk "github.com/openmerlin/merlin-sdk/space"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	coderepoapp "github.com/openmerlin/merlin-server/coderepo/app"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -31,13 +32,13 @@ type CmdToCreateSpace struct {
 
 func (cmd *CmdToCreateSpace) toSpace() domain.Space {
 	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() == "" {
-		configAvatarId := config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))]	// #nosec G404
+		configAvatarId := config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))] // #nosec G404
 		cmd.AvatarId = primitive.CreateAvatarId(configAvatarId)
 	}
 
 	label := domain.SpaceLabels{
 		Framework: cmd.BaseImage.Type(),
-		License:   cmd.License,
+		Licenses:  cmd.License,
 	}
 
 	return domain.Space{
@@ -138,9 +139,9 @@ type SpaceDTO struct {
 
 // SpaceLabelsDTO is a struct used to represent labels of a space.
 type SpaceLabelsDTO struct {
-	Task      string `json:"task"`
-	License   string `json:"license"`
-	Framework string `json:"framework"`
+	Task      string   `json:"task"`
+	License   []string `json:"license"`
+	Framework string   `json:"framework"`
 }
 
 func toSpaceLabelsDTO(space *domain.Space) SpaceLabelsDTO {
@@ -208,7 +209,7 @@ func toSpaceSummary(spaceDTO *SpaceDTO) repository.SpaceSummary {
 		DisableReason: spaceDTO.DisableReason,
 		Labels: domain.SpaceLabels{
 			Task:      spaceprimitive.CreateTask(spaceDTO.Labels.Task),
-			License:   primitive.CreateLicense(spaceDTO.Labels.License),
+			Licenses:  primitive.CreateLicense(spaceDTO.Labels.License),
 			Framework: spaceDTO.Labels.Framework,
 		},
 		IsNpu:              spaceDTO.IsNpu,
@@ -324,8 +325,8 @@ type CmdToUpdateStatistics struct {
 
 // CmdToResetLabels is a type alias for domain.SpaceLabels, representing a command to reset space labels.
 type CmdToResetLabels struct {
-	Task    spaceprimitive.Task
-	License primitive.License
+	Task     spaceprimitive.Task
+	Licenses sets.Set[string] // license label
 }
 
 // CmdToNotifyUpdateCode is to update no application file and commitId

@@ -46,7 +46,7 @@ func toModelDO(m *domain.Model) modelDO {
 		Desc:          m.Desc.MSDDesc(),
 		Name:          m.Name.MSDName(),
 		Owner:         m.Owner.Account(),
-		License:       m.License.License(),
+		Licenses:      m.License.License(),
 		Fullname:      m.Fullname.MSDFullname(),
 		CreatedBy:     m.CreatedBy.Account(),
 		Visibility:    m.Visibility.Visibility(),
@@ -85,7 +85,6 @@ func toModelUseInOpenmindDO(m *domain.Model) modelDO {
 func toLabelsDO(labels *domain.ModelLabels) modelDO {
 	do := modelDO{
 		Task:        labels.Task,
-		License:     labels.License,
 		LibraryName: labels.LibraryName,
 	}
 
@@ -93,6 +92,9 @@ func toLabelsDO(labels *domain.ModelLabels) modelDO {
 		do.Others = labels.Others.UnsortedList()
 	}
 
+	if labels.Licenses != nil {
+		do.Licenses = labels.Licenses.UnsortedList()
+	}
 	if labels.Frameworks != nil {
 		do.Frameworks = labels.Frameworks.UnsortedList()
 	}
@@ -108,21 +110,21 @@ func toLabelsDO(labels *domain.ModelLabels) modelDO {
 }
 
 type modelDO struct {
-	Id            int64  `gorm:"column:id;"`
-	Desc          string `gorm:"column:desc"`
-	Name          string `gorm:"column:name;index:model_index,unique,priority:2"`
-	Owner         string `gorm:"column:owner;index:model_index,unique,priority:1"`
-	License       string `gorm:"column:license"`
-	Fullname      string `gorm:"column:fullname"`
-	CreatedBy     string `gorm:"column:created_by"`
-	Visibility    string `gorm:"column:visibility"`
-	Disable       bool   `gorm:"column:disable"`
-	DisableReason string `gorm:"column:disable_reason"`
-	CreatedAt     int64  `gorm:"column:created_at"`
-	UpdatedAt     int64  `gorm:"column:updated_at"`
-	Version       int    `gorm:"column:version"`
-	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
-	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
+	Id            int64          `gorm:"column:id;"`
+	Desc          string         `gorm:"column:desc"`
+	Name          string         `gorm:"column:name;index:model_index,unique,priority:2"`
+	Owner         string         `gorm:"column:owner;index:model_index,unique,priority:1"`
+	Licenses      pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:licenses,type:gin"`
+	Fullname      string         `gorm:"column:fullname"`
+	CreatedBy     string         `gorm:"column:created_by"`
+	Visibility    string         `gorm:"column:visibility"`
+	Disable       bool           `gorm:"column:disable"`
+	DisableReason string         `gorm:"column:disable_reason"`
+	CreatedAt     int64          `gorm:"column:created_at"`
+	UpdatedAt     int64          `gorm:"column:updated_at"`
+	Version       int            `gorm:"column:version"`
+	LikeCount     int            `gorm:"column:like_count;not null;default:0"`
+	DownloadCount int            `gorm:"column:download_count;not null;default:0"`
 
 	// labels
 	Task        string         `gorm:"column:task;index:task"`
@@ -147,7 +149,7 @@ func (do *modelDO) toModel() domain.Model {
 			Id:         primitive.CreateIdentity(do.Id),
 			Name:       primitive.CreateMSDName(do.Name),
 			Owner:      primitive.CreateAccount(do.Owner),
-			License:    primitive.CreateLicense(do.License),
+			License:    primitive.CreateLicense(do.Licenses),
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
@@ -166,6 +168,7 @@ func (do *modelDO) toModel() domain.Model {
 			Task:        do.Task,
 			LibraryName: do.LibraryName,
 			Others:      sets.New[string](do.Others...),
+			Licenses:    sets.New[string](do.Licenses...),
 			Frameworks:  sets.New[string](do.Frameworks...),
 			Languages:   sets.New[string](do.Languages...),
 			Hardwares:   sets.New[string](do.Hardwares...),
@@ -180,7 +183,7 @@ func (do *modelDO) toModelSummary() repository.ModelSummary {
 		Desc:          do.Desc,
 		Task:          do.Task,
 		Owner:         do.Owner,
-		License:       do.License,
+		Licenses:      do.Licenses,
 		Fullname:      do.Fullname,
 		UpdatedAt:     do.UpdatedAt,
 		Frameworks:    do.Frameworks,

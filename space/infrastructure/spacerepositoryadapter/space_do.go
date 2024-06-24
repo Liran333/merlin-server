@@ -5,6 +5,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package spacerepositoryadapter
 
 import (
+	"github.com/lib/pq"
+
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain"
@@ -44,7 +46,6 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		Desc:               m.Desc.MSDDesc(),
 		Name:               m.Name.MSDName(),
 		Owner:              m.Owner.Account(),
-		License:            m.License.License(),
 		AvatarId:           m.AvatarId.AvatarId(),
 		Hardware:           m.Hardware.Hardware(),
 		Fullname:           m.Fullname.MSDFullname(),
@@ -78,6 +79,10 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		do.Task = m.Labels.Task.Task()
 	}
 
+	if m.Labels.Licenses != nil {
+		do.License = m.Labels.Licenses.License()
+	}
+
 	return do
 }
 
@@ -94,33 +99,33 @@ func toSpaceStatisticDO(m *domain.Space) spaceDO {
 func toLabelsDO(labels *domain.SpaceLabels) spaceDO {
 	return spaceDO{
 		Task:    labels.Task.Task(),
-		License: labels.License.License(),
+		License: labels.Licenses.License(),
 	}
 }
 
 type spaceDO struct {
-	Id            int64  `gorm:"column:id;"`
-	SDK           string `gorm:"column:sdk"`
-	Desc          string `gorm:"column:desc"`
-	Name          string `gorm:"column:name;index:space_index,unique,priority:2"`
-	Owner         string `gorm:"column:owner;index:space_index,unique,priority:1"`
-	License       string `gorm:"column:license"`
-	Hardware      string `gorm:"column:hardware"`
-	Framework     string `gorm:"column:framework"`
-	Fullname      string `gorm:"column:fullname"`
-	AvatarId      string `gorm:"column:avatar_id"`
-	CreatedBy     string `gorm:"column:created_by"`
-	Visibility    string `gorm:"column:visibility"`
-	Disable       bool   `gorm:"column:disable"`
-	DisableReason string `gorm:"column:disable_reason"`
-	Exception     string `gorm:"column:exception"`
-	CreatedAt     int64  `gorm:"column:created_at"`
-	UpdatedAt     int64  `gorm:"column:updated_at"`
-	Version       int    `gorm:"column:version"`
-	LikeCount     int    `gorm:"column:like_count;not null;default:0"`
-	DownloadCount int    `gorm:"column:download_count;not null;default:0"`
-	VisitCount    int    `gorm:"column:visit_count;not null;default:0"`
-	BaseImage     string `gorm:"column:base_image"`
+	Id            int64          `gorm:"column:id;"`
+	SDK           string         `gorm:"column:sdk"`
+	Desc          string         `gorm:"column:desc"`
+	Name          string         `gorm:"column:name;index:space_index,unique,priority:2"`
+	Owner         string         `gorm:"column:owner;index:space_index,unique,priority:1"`
+	License       pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:licenses,type:gin"`
+	Hardware      string         `gorm:"column:hardware"`
+	Framework     string         `gorm:"column:framework"`
+	Fullname      string         `gorm:"column:fullname"`
+	AvatarId      string         `gorm:"column:avatar_id"`
+	CreatedBy     string         `gorm:"column:created_by"`
+	Visibility    string         `gorm:"column:visibility"`
+	Disable       bool           `gorm:"column:disable"`
+	DisableReason string         `gorm:"column:disable_reason"`
+	Exception     string         `gorm:"column:exception"`
+	CreatedAt     int64          `gorm:"column:created_at"`
+	UpdatedAt     int64          `gorm:"column:updated_at"`
+	Version       int            `gorm:"column:version"`
+	LikeCount     int            `gorm:"column:like_count;not null;default:0"`
+	DownloadCount int            `gorm:"column:download_count;not null;default:0"`
+	VisitCount    int            `gorm:"column:visit_count;not null;default:0"`
+	BaseImage     string         `gorm:"column:base_image"`
 	// local cmd
 	LocalCmd string `gorm:"column:local_cmd;type:text;default:'{}'"`
 	// local EnvInfo
@@ -171,7 +176,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		VisitCount:    do.VisitCount,
 		Labels: domain.SpaceLabels{
 			Task:      spaceprimitive.CreateTask(do.Task),
-			License:   primitive.CreateLicense(do.License),
+			Licenses:  primitive.CreateLicense(do.License),
 			Framework: do.Framework,
 		},
 		CompPowerAllocated: do.CompPowerAllocated,
@@ -197,7 +202,7 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		DisableReason: do.DisableReason,
 		Labels: domain.SpaceLabels{
 			Task:      spaceprimitive.CreateTask(do.Task),
-			License:   primitive.CreateLicense(do.License),
+			Licenses:  primitive.CreateLicense(do.License),
 			Framework: do.Framework,
 		},
 		IsNpu:              spaceprimitive.CreateHardware(do.Hardware).IsNpu(),

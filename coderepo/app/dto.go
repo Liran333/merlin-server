@@ -98,7 +98,7 @@ func ToCodeRepoInfo(v domain.Resource) CodeRepoInfo {
 		Name:       v.RepoIndex().Name.MSDName(),
 		Type:       string(v.ResourceType()),
 		Owner:      v.RepoIndex().Owner.Account(),
-		License:    v.ResourceLicense().License(),
+		Licenses:   v.ResourceLicense().License(),
 		Visibility: v.ResourceVisibility().Visibility(),
 	}
 }

@@ -95,7 +95,7 @@ func (s *SuiteSpace) TestSpaceCreateMSCPU() {
 	assert.Equal(s.T(), s.Sdk, space.Data.Sdk)
 	assert.Equal(s.T(), s.Fullname, space.Data.Fullname)
 	assert.Equal(s.T(), strings.ToLower(s.CPU), space.Data.Hardware)
-	assert.Equal(s.T(), s.License, space.Data.Labels.License)
+	assert.Equal(s.T(), s.License, space.Data.Labels.License[0])
 	assert.Equal(s.T(), s.Desc, space.Data.Desc)
 	assert.Equal(s.T(), s.Visibility, space.Data.Visibility)
 	assert.Equal(s.T(), "mindspore", space.Data.Labels.Framework)
@@ -138,7 +138,7 @@ func (s *SuiteSpace) TestSpaceCreatePTCPU() {
 	assert.Equal(s.T(), s.Sdk, space.Data.Sdk)
 	assert.Equal(s.T(), s.Fullname, space.Data.Fullname)
 	assert.Equal(s.T(), strings.ToLower(s.CPU), space.Data.Hardware)
-	assert.Equal(s.T(), s.License, space.Data.Labels.License)
+	assert.Equal(s.T(), s.License, space.Data.Labels.License[0])
 	assert.Equal(s.T(), s.Desc, space.Data.Desc)
 	assert.Equal(s.T(), s.Visibility, space.Data.Visibility)
 	assert.Equal(s.T(), "pytorch", space.Data.Labels.Framework)
@@ -181,7 +181,7 @@ func (s *SuiteSpace) TestSpaceCreatePTNPU() {
 	assert.Equal(s.T(), s.Sdk, space.Data.Sdk)
 	assert.Equal(s.T(), s.Fullname, space.Data.Fullname)
 	assert.Equal(s.T(), strings.ToLower(s.NPU), space.Data.Hardware)
-	assert.Equal(s.T(), s.License, space.Data.Labels.License)
+	assert.Equal(s.T(), s.License, space.Data.Labels.License[0])
 	assert.Equal(s.T(), s.Desc, space.Data.Desc)
 	assert.Equal(s.T(), s.Visibility, space.Data.Visibility)
 	assert.Equal(s.T(), "pytorch", space.Data.Labels.Framework)
@@ -224,7 +224,7 @@ func (s *SuiteSpace) TestSpaceCreateMSNPU() {
 	assert.Equal(s.T(), s.Sdk, space.Data.Sdk)
 	assert.Equal(s.T(), s.Fullname, space.Data.Fullname)
 	assert.Equal(s.T(), strings.ToLower(s.NPU), space.Data.Hardware)
-	assert.Equal(s.T(), s.License, space.Data.Labels.License)
+	assert.Equal(s.T(), s.License, space.Data.Labels.License[0])
 	assert.Equal(s.T(), s.Desc, space.Data.Desc)
 	assert.Equal(s.T(), s.Visibility, space.Data.Visibility)
 	assert.Equal(s.T(), "mindspore", space.Data.Labels.Framework)
@@ -458,8 +458,8 @@ func (s *SuiteSpace) TestSpaceSetDomain() {
 	assert.NotEqual(s.T(), "", id)
 
 	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdLabelPut(Interal, id, swaggerInternal.GithubComOpenmerlinMerlinServerSpaceControllerReqToResetLabel{
-		Task:    "nlp",
-		License: "apache-2.0",
+		Task:     "nlp",
+		Licenses: []string{"apache-2.0"},
 	})
 
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
@@ -476,7 +476,7 @@ func (s *SuiteSpace) TestSpaceSetDomain() {
 	assert.Equal(s.T(), s.Sdk, space.Data.Sdk)
 	assert.Equal(s.T(), s.Fullname, space.Data.Fullname)
 	assert.Equal(s.T(), strings.ToLower(s.NPU), space.Data.Hardware)
-	assert.Equal(s.T(), "apache-2.0", space.Data.Labels.License)
+	assert.Equal(s.T(), []string{"apache-2.0"}, space.Data.Labels.License)
 	assert.Equal(s.T(), s.Desc, space.Data.Desc)
 	assert.Equal(s.T(), s.Visibility, space.Data.Visibility)
 	assert.Equal(s.T(), "mindspore", space.Data.Labels.Framework)
@@ -484,8 +484,8 @@ func (s *SuiteSpace) TestSpaceSetDomain() {
 
 	// invalid domain
 	_, r, err = ApiInteral.SpaceInternalApi.V1SpaceIdLabelPut(Interal, id, swaggerInternal.GithubComOpenmerlinMerlinServerSpaceControllerReqToResetLabel{
-		Task:    "123",
-		License: "apache-2.0",
+		Task:     "123",
+		Licenses: []string{"apache-2.0"},
 	})
 
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
@@ -824,7 +824,7 @@ func (s *SuiteSpace) TestListRecommendSpace() {
 	assert.Equal(s.T(), 1, len(spaces))
 	assert.Equal(s.T(), s.Desc, spaces[0].Desc)
 	assert.Equal(s.T(), s.Fullname, spaces[0].Fullname)
-	assert.Equal(s.T(), s.License, getString(s.T(), spaces[0].Labels.License))
+	assert.Equal(s.T(), s.License, spaces[0].Labels.Licenses.([]interface{})[0])
 	assert.Equal(s.T(), s.Name, spaces[0].Name)
 	assert.Equal(s.T(), s.Owner, spaces[0].Owner)
 	assert.Equal(s.T(), s.BaseImageMSNPU, spaces[0].BaseImage)
@@ -865,7 +865,7 @@ func (s *SuiteSpace) TestListBoutiqueSpace() {
 	assert.Equal(s.T(), 1, len(spaces))
 	assert.Equal(s.T(), s.Desc, spaces[0].Desc)
 	assert.Equal(s.T(), s.Fullname, spaces[0].Fullname)
-	assert.Equal(s.T(), s.License, getString(s.T(), spaces[0].Labels.License))
+	assert.Equal(s.T(), s.License, spaces[0].Labels.Licenses.([]interface{})[0])
 	assert.Equal(s.T(), s.Name, spaces[0].Name)
 	assert.Equal(s.T(), s.Owner, spaces[0].Owner)
 	assert.Equal(s.T(), s.BaseImageMSNPU, spaces[0].BaseImage)

@@ -54,7 +54,7 @@ func (s *SuiteModel) TestListRecommendModel() {
 	assert.Equal(s.T(), "testmodel", models[0].Name)
 	assert.Equal(s.T(), "test1", models[0].Owner)
 	assert.Equal(s.T(), "public", models[0].Visibility)
-	assert.Equal(s.T(), "mit", models[0].Labels.License)
+	assert.Equal(s.T(), []string{"mit"}, models[0].Labels.License)
 
 	// 删除模型
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest, id)

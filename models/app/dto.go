@@ -81,11 +81,11 @@ type ModelDTO struct {
 type ModelLabelsDTO struct {
 	Task        string   `json:"task"`
 	Others      []string `json:"others"`
-	License     string   `json:"license"`
+	Licenses    []string `json:"license"`
 	Frameworks  []string `json:"frameworks"`
 	LibraryName string   `json:"library_name"`
 	Hardwares   []string `json:"hardwares"`
-	Languages   []string `json:"languages"`
+	Languages   []string `json:"language"`
 }
 
 func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
@@ -94,7 +94,7 @@ func toModelLabelsDTO(model *domain.Model) ModelLabelsDTO {
 	return ModelLabelsDTO{
 		Task:        labels.Task,
 		Others:      labels.Others.UnsortedList(),
-		License:     model.License.License(),
+		Licenses:    labels.Licenses.UnsortedList(),
 		Frameworks:  labels.Frameworks.UnsortedList(),
 		LibraryName: labels.LibraryName,
 		Hardwares:   labels.Hardwares.UnsortedList(),

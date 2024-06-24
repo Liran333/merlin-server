@@ -96,7 +96,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	// 修改模型label
 	resetLabelBody := swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks:  []string{"PyTorch"},
-		License:     "apache-2.0",
+		Licenses:    []string{"apache-2.0"},
 		Task:        "document-question-answering",
 		Hardwares:   []string{"CPU"},
 		Languages:   []string{"cn"},
@@ -115,7 +115,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	labels := getData(s.T(), modelData["labels"])
 	assert.Equal(s.T(),
 		map[string]interface{}(map[string]interface{}{
-			"frameworks": []string{"PyTorch"}, "library_name": "openmind", "hardwares": []string{"CPU"}, "languages": []string{"cn"}, "license": "apache-2.0", "others": []string{},
+			"frameworks": []string{"PyTorch"}, "library_name": "openmind", "hardwares": []string{"CPU"}, "language": []string{"cn"}, "license": []string{"apache-2.0"}, "others": []string{},
 			"task": "document-question-answering"}),
 		labels)
 
@@ -124,7 +124,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 		Frameworks: []string{"PyTorch", "MindSpore"},
 		Hardwares:  []string{"CPU", "GPU"},
 		Languages:  []string{"cn", "en"},
-		License:    "apache-2.0",
+		Licenses:   []string{"apache-2.0"},
 		Task:       "copa",
 	}
 	_, r, err = ApiInteral.ModelInternalApi.V1ModelIdLabelPut(Interal, id, resetLabelBody)
@@ -139,14 +139,14 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelSuccess() {
 	modelData = getData(s.T(), modelRes.Data)
 	labels = getData(s.T(), modelData["labels"])
 
-	assert.Equal(s.T(), "apache-2.0", labels["license"])
+	assert.Equal(s.T(), []string{"apache-2.0"}, labels["license"])
 	assert.Equal(s.T(), "copa", labels["task"])
 	assert.Contains(s.T(),
 		[][]string{{"PyTorch", "MindSpore"}, {"MindSpore", "PyTorch"}}, getData(s.T(), labels)["frameworks"])
 	assert.Contains(s.T(),
 		[][]string{{"CPU", "GPU"}, {"GPU", "CPU"}}, getData(s.T(), labels)["hardwares"])
 	assert.Contains(s.T(),
-		[][]string{{"cn", "en"}, {"en", "cn"}}, getData(s.T(), labels)["languages"])
+		[][]string{{"cn", "en"}, {"en", "cn"}}, getData(s.T(), labels)["language"])
 
 	// 删除模型
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
@@ -174,7 +174,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	resetLabelBody := swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks:  []string{"PyTorch123"},
 		Hardwares:   []string{"CPU123"},
-		License:     "apache-2.0",
+		Licenses:    []string{"apache-2.0"},
 		Task:        "copa123",
 		LibraryName: "openmind123",
 	}
@@ -191,7 +191,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	labels := getData(s.T(), modelData["labels"])
 	// 非法的Frameworks、LibraryName、Task和Hardwares不会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []string{}, "library_name": "", "hardwares": []string{}, "languages": []string{}, "license": "apache-2.0",
+		map[string]interface{}{"frameworks": []string{}, "library_name": "", "hardwares": []string{}, "language": []string{}, "license": []string{"apache-2.0"},
 			"others": []string{}, "task": ""},
 		labels)
 
@@ -199,7 +199,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	resetLabelBody = swaggerInternal.GithubComOpenmerlinMerlinServerModelsControllerReqToResetLabel{
 		Frameworks:  []string{"PyTorch123", "MindSpore"},
 		Hardwares:   []string{"CPU123", "GPU"},
-		License:     "apache-2.0",
+		Licenses:    []string{"apache-2.0"},
 		LibraryName: "openmind",
 		Task:        "copa123",
 	}
@@ -216,7 +216,7 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	labels = getData(s.T(), modelData["labels"])
 	// 合法的Frameworks,Hardwares和LibraryName会修改成功
 	assert.Equal(s.T(),
-		map[string]interface{}{"frameworks": []string{"MindSpore"}, "hardwares": []string{"GPU"}, "languages": []string{}, "library_name": "openmind", "license": "apache-2.0",
+		map[string]interface{}{"frameworks": []string{"MindSpore"}, "hardwares": []string{"GPU"}, "language": []string{}, "library_name": "openmind", "license": []string{"apache-2.0"},
 			"others": []string{}, "task": ""},
 		labels)
 

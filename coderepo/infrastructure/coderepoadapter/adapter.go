@@ -45,7 +45,7 @@ func (adapter *codeRepoAdapter) Add(ctx context.Context, repo *domain.CodeRepo, 
 
 	opt := gitea.CreateRepoOption{
 		Name:          repo.Name.MSDName(),
-		License:       repo.License.License(),
+		License:       repo.License.License()[0],
 		Private:       repo.Visibility.IsPrivate() || adapter.config.ForceToBePrivate,
 		DefaultBranch: defaultRef,
 	}
@@ -121,7 +121,7 @@ func (adapter *codeRepoAdapter) FindByIndex(index primitive.Identity) (domain.Co
 		Name:  primitive.CreateMSDName(repo.Name),
 		Owner: primitive.CreateAccount(repo.Owner.UserName),
 		// todo fix license
-		License:    primitive.CreateLicense("unkown"),
+		License:    primitive.CreateLicense([]string{"unkown"}),
 		Visibility: primitive.CreateVisibility(visibility),
 		CreatedBy:  primitive.CreateAccount(repo.Owner.UserName),
 	}, err

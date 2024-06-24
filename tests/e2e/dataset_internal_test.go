@@ -95,7 +95,7 @@ func (s *SuiteInternalDataset) TestInternalDatasetResetLabelSuccess() {
 
 	// 修改数据集label
 	resetLabelBody := swaggerInternal.ControllerReqToResetDatasetLabel{
-		License:  "apache-2.0",
+		Licenses: []string{"apache-2.0"},
 		Task:     []string{"task1"},
 		Size:     "n<1K",
 		Language: []string{"Chinese"},
@@ -114,7 +114,7 @@ func (s *SuiteInternalDataset) TestInternalDatasetResetLabelSuccess() {
 	labels := getData(s.T(), datasetData["labels"])
 	assert.Equal(s.T(),
 		map[string]interface{}(map[string]interface{}{
-			"license":  "apache-2.0",
+			"license":  []string{"apache-2.0"},
 			"task":     []string{"task1"},
 			"size":     "n<1K",
 			"language": []string{"Chinese"},

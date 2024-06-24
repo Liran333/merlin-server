@@ -188,8 +188,8 @@ func (s *spaceInternalAppService) ResetLabels(spaceId primitive.Identity, cmd *C
 		space.Labels.Task = cmd.Task
 	}
 
-	if cmd.License != nil {
-		space.License = cmd.License
+	if cmd.Licenses != nil {
+		space.Labels.Licenses = primitive.CreateLicense(cmd.Licenses.UnsortedList())
 	}
 
 	err = s.repoAdapter.Save(&space)
