@@ -2327,6 +2327,9 @@ const docTemplateinternal = `{
             "properties": {
                 "download_count": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },

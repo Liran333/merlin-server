@@ -4134,6 +4134,9 @@
                 },
                 "type": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4544,6 +4547,9 @@
                 },
                 "visibility": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4919,6 +4925,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }

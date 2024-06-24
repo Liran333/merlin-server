@@ -196,6 +196,8 @@ definitions:
     properties:
       download_count:
         type: integer
+      visit_count:
+        type: integer
     type: object
   controller.reqToCheckPermission:
     properties:

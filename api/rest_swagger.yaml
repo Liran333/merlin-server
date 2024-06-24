@@ -422,6 +422,8 @@ definitions:
         type: integer
       type:
         type: string
+      visit_count:
+        type: integer
     type: object
   controller.bindEmailRequest:
     properties:
@@ -691,6 +693,8 @@ definitions:
         type: integer
       visibility:
         type: string
+      visit_count:
+        type: integer
     type: object
   controller.tokenCreateRequest:
     properties:
@@ -942,6 +946,8 @@ definitions:
       status:
         type: string
       updated_at:
+        type: integer
+      visit_count:
         type: integer
     type: object
 info:

@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package e2e
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -67,6 +68,35 @@ func (s *SuiteSearchQuery) TestSearchQueryDataset() {
 
 	//  delete dataset
 	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// TestSearchQueryOrg used for test
+func (s *SuiteSearchQuery) TestSearchQueryOrg() {
+	// create testOrg
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, swaggerRest.ControllerOrgCreateRequest{
+		Name:     "testorg",
+		Fullname: "testorgfull",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	fmt.Println("data:", getData(s.T(), data.Data))
+
+	s.SearchKey = "testorgfull"
+	s.SearchType = []string{"org"}
+	orgRes, r, err := ApiWeb.SearchWebApi.V1SearchGet(AuthRest, s.SearchKey, s.SearchType, nil)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	orgs := orgRes.Data.OrgResult.Result
+	assert.Equal(s.T(), 1, len(orgs))
+	assert.Equal(s.T(), "testorg", orgs[0].Account)
+	assert.Equal(s.T(), "testorgfull", orgs[0].FullName)
+
+	//  delete org
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, "testorg")
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
 }

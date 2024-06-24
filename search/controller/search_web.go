@@ -42,7 +42,7 @@ type SearchWebController struct {
 // @Param    type  query  []string  true "type of space/model/dataset/org/user" Enums(space,model,dataset,org,user)
 // @Param  	 size  query  int    false "page data size" Maximum(100)
 // @Accept   json
-// @Success  200  {object}  commonctl.ResponseData{data=app.SearchDTO,msg=string,code=string}
+// @Success  200  {object}  commonctl.ResponseData{data=domain.SearchResult,msg=string,code=string}
 // @Router /v1/search [get]
 func (ctl *SearchWebController) Search(ctx *gin.Context) {
 	var req quickSearchRequest

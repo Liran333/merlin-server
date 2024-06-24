@@ -418,7 +418,13 @@ func (impl *userRepoImpl) SearchUser(ctx context.Context, opt *repository.ListOp
 
 	queryName, argName := impl.LikeFilter(fieldName, opt.Name)
 
-	db = db.Where(queryName, argName)
+	if !opt.ExcludeFullname {
+		_, argName2 := impl.LikeFilter(fieldFullname, opt.Name)
+		db = db.Where(fieldName+" ilike ? OR "+fieldFullname+
+			" ilike ?", argName, argName2).Session(&gorm.Session{})
+	} else {
+		db = db.Where(queryName, argName)
+	}
 
 	db = db.Where(impl.EqualQuery(fieldType), domain.UserTypeUser)
 
@@ -469,7 +475,13 @@ func (impl *userRepoImpl) SearchOrg(ctx context.Context, opt *repository.ListOpt
 
 	queryName, argName := impl.LikeFilter(fieldName, opt.Name)
 
-	db = db.Where(queryName, argName)
+	if !opt.ExcludeFullname {
+		_, argName2 := impl.LikeFilter(fieldFullname, opt.Name)
+		db = db.Where(fieldName+" ilike ? OR "+fieldFullname+
+			" ilike ?", argName, argName2).Session(&gorm.Session{})
+	} else {
+		db = db.Where(queryName, argName)
+	}
 
 	db = db.Where(impl.EqualQuery(fieldType), domain.UserTypeOrganization)
 

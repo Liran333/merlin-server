@@ -4149,6 +4149,9 @@ const docTemplaterest = `{
                 },
                 "type": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4559,6 +4562,9 @@ const docTemplaterest = `{
                 },
                 "visibility": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4934,6 +4940,9 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }

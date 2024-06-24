@@ -18,6 +18,8 @@ type ListOption struct {
 	// because the Name can be subpart of the real resource name
 	Name string
 
+	ExcludeFullname bool
+
 	// list the Owner only used when type is organization
 	Owner primitive.Account
 

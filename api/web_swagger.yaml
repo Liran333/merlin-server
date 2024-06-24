@@ -40,6 +40,8 @@ definitions:
         type: integer
       type:
         type: string
+      visit_count:
+        type: integer
     type: object
   app.ActivitysDTO:
     properties:
@@ -221,11 +223,6 @@ definitions:
       type:
         type: string
     type: object
-  app.SearchDTO:
-    properties:
-      result_set:
-        $ref: '#/definitions/domain.SearchResult'
-    type: object
   app.SpaceAppDTO:
     properties:
       app_url:
@@ -259,6 +256,8 @@ definitions:
       owner:
         type: string
       updated_at:
+        type: integer
+      visit_count:
         type: integer
     type: object
   app.SpaceVariableSecretDTO:
@@ -872,6 +871,8 @@ definitions:
         type: integer
       visibility:
         type: string
+      visit_count:
+        type: integer
     type: object
   controller.spaceInfo:
     properties:
@@ -915,6 +916,8 @@ definitions:
         type: string
       updated_at:
         type: integer
+      visit_count:
+        type: integer
     type: object
   controller.spaceRecommendInfo:
     properties:
@@ -955,6 +958,8 @@ definitions:
       status:
         type: string
       updated_at:
+        type: integer
+      visit_count:
         type: integer
     type: object
   controller.spacesInfo:
@@ -1419,6 +1424,8 @@ definitions:
       status:
         type: string
       updated_at:
+        type: integer
+      visit_count:
         type: integer
     type: object
   repository.SpaceVariableSecretSummary:
@@ -2987,7 +2994,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/app.SearchDTO'
+                  $ref: '#/definitions/domain.SearchResult'
                 msg:
                   type: string
               type: object

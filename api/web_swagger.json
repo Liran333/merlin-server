@@ -2509,7 +2509,7 @@
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/app.SearchDTO"
+                                            "$ref": "#/definitions/domain.SearchResult"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -4614,6 +4614,9 @@
                 },
                 "type": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4892,14 +4895,6 @@
                 }
             }
         },
-        "app.SearchDTO": {
-            "type": "object",
-            "properties": {
-                "result_set": {
-                    "$ref": "#/definitions/domain.SearchResult"
-                }
-            }
-        },
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
@@ -4950,6 +4945,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }
@@ -5884,6 +5882,9 @@
                 },
                 "visibility": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -5949,6 +5950,9 @@
                 },
                 "updated_at": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -6010,6 +6014,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }
@@ -6713,6 +6720,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }

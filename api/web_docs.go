@@ -2524,7 +2524,7 @@ const docTemplateweb = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/app.SearchDTO"
+                                            "$ref": "#/definitions/domain.SearchResult"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -4629,6 +4629,9 @@ const docTemplateweb = `{
                 },
                 "type": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4907,14 +4910,6 @@ const docTemplateweb = `{
                 }
             }
         },
-        "app.SearchDTO": {
-            "type": "object",
-            "properties": {
-                "result_set": {
-                    "$ref": "#/definitions/domain.SearchResult"
-                }
-            }
-        },
         "app.SpaceAppDTO": {
             "type": "object",
             "properties": {
@@ -4965,6 +4960,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }
@@ -5899,6 +5897,9 @@ const docTemplateweb = `{
                 },
                 "visibility": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -5964,6 +5965,9 @@ const docTemplateweb = `{
                 },
                 "updated_at": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -6025,6 +6029,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }
@@ -6728,6 +6735,9 @@ const docTemplateweb = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 }
             }
