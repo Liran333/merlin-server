@@ -64,7 +64,7 @@ type User interface {
 	SaveUser(context.Context, *domain.User) (domain.User, error)
 	DeleteUser(context.Context, *domain.User) error
 	GetByAccount(context.Context, domain.Account) (domain.User, error)
-	GetUserAvatarId(context.Context, domain.Account) (primitive.AvatarId, error)
+	GetUserAvatarId(context.Context, domain.Account) (primitive.Avatar, error)
 	GetUsersAvatarId(context.Context, []string) ([]domain.User, error)
 	GetUserFullname(context.Context, domain.Account) (string, error)
 

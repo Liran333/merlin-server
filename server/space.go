@@ -8,6 +8,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/config"
@@ -17,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
+	"github.com/openmerlin/merlin-server/space/infrastructure/obsadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/securestoragadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/spacerepositoryadapter"
 	"github.com/openmerlin/merlin-server/spaceapp/infrastructure/repositoryadapter"
@@ -43,6 +45,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		services.computilityApp,
 		services.spaceappApp,
 		services.userApp,
+		obsadapter.NewClient(obs.Client()),
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(

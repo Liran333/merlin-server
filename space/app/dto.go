@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package app
 
 import (
+	"io"
 	"math/rand"
 
 	sdk "github.com/openmerlin/merlin-sdk/space"
@@ -27,13 +28,13 @@ type CmdToCreateSpace struct {
 	Fullname  primitive.MSDFullname
 	Hardware  spaceprimitive.Hardware
 	BaseImage spaceprimitive.BaseImage
-	AvatarId  primitive.AvatarId
+	AvatarId  primitive.Avatar
 }
 
 func (cmd *CmdToCreateSpace) toSpace() domain.Space {
-	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() == "" {
+	if cmd.AvatarId != nil && cmd.AvatarId.URL() == "" {
 		configAvatarId := config.avatarIdsSet.UnsortedList()[rand.Intn(len(config.avatarIdsSet))] // #nosec G404
-		cmd.AvatarId = primitive.CreateAvatarId(configAvatarId)
+		cmd.AvatarId = primitive.CreateAvatar(configAvatarId)
 	}
 
 	label := domain.SpaceLabels{
@@ -41,7 +42,7 @@ func (cmd *CmdToCreateSpace) toSpace() domain.Space {
 		Licenses:  cmd.License,
 	}
 
-	return domain.Space{
+	s := domain.Space{
 		SDK:       cmd.SDK,
 		Desc:      cmd.Desc,
 		Hardware:  cmd.Hardware,
@@ -50,6 +51,8 @@ func (cmd *CmdToCreateSpace) toSpace() domain.Space {
 		AvatarId:  cmd.AvatarId,
 		Labels:    label,
 	}
+
+	return s
 }
 
 // CmdToUpdateSpace is a struct used to update a space.
@@ -60,7 +63,7 @@ type CmdToUpdateSpace struct {
 	Desc     primitive.MSDDesc
 	Fullname primitive.MSDFullname
 	Hardware spaceprimitive.Hardware
-	AvatarId primitive.AvatarId
+	AvatarId primitive.Avatar
 }
 
 func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
@@ -84,7 +87,7 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 		b = true
 	}
 
-	if v := cmd.AvatarId; v != nil && v != space.AvatarId {
+	if v := cmd.AvatarId; v != nil && v.URL() != space.AvatarId.URL() {
 		space.AvatarId = v
 		b = true
 	}
@@ -166,7 +169,7 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		CreatedAt:     space.CreatedAt,
 		UpdatedAt:     space.UpdatedAt,
 		LikeCount:     space.LikeCount,
-		AvatarId:      space.AvatarId.AvatarId(),
+		AvatarId:      space.AvatarId.URL(),
 		Visibility:    space.Visibility.Visibility(),
 		DownloadCount: space.DownloadCount,
 		VisitCount:    space.VisitCount,
@@ -334,4 +337,21 @@ type CmdToNotifyUpdateCode struct {
 	CommitId string
 	HasHtml  bool
 	HasApp   bool
+}
+
+// CmdToUploadCover is to update no application file and commitId
+type CmdToUploadCover struct {
+	Image    io.Reader
+	User     primitive.Account
+	FileName string
+}
+
+type SpaceCoverDTO struct {
+	URL string `json:"url"`
+}
+
+func toSpaceCoverDTO(u string) SpaceCoverDTO {
+	return SpaceCoverDTO{
+		URL: u,
+	}
 }

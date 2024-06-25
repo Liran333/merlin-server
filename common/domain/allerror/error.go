@@ -17,6 +17,9 @@ const (
 	// ErrorCodeUserNotFound is const
 	ErrorCodeUserNotFound = "user_not_found"
 
+	// ErrorCodeUserNotFound is const
+	ErrorCodeFileUploadFailed = "file_upload_failed"
+
 	// ErrorRateLimitOver is const
 	ErrorRateLimitOver = "rate_limit_over"
 

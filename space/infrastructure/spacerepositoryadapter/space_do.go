@@ -41,12 +41,14 @@ var (
 
 func toSpaceDO(m *domain.Space) spaceDO {
 	do := spaceDO{
-		Id:                 m.Id.Integer(),
-		SDK:                m.SDK.SDK(),
-		Desc:               m.Desc.MSDDesc(),
-		Name:               m.Name.MSDName(),
-		Owner:              m.Owner.Account(),
-		AvatarId:           m.AvatarId.AvatarId(),
+		Id:       m.Id.Integer(),
+		SDK:      m.SDK.SDK(),
+		Desc:     m.Desc.MSDDesc(),
+		Name:     m.Name.MSDName(),
+		Owner:    m.Owner.Account(),
+		License:  m.License.License(),
+		AvatarId: m.AvatarId.Storage(),
+
 		Hardware:           m.Hardware.Hardware(),
 		Fullname:           m.Fullname.MSDFullname(),
 		Framework:          m.Labels.Framework,
@@ -165,7 +167,7 @@ func (do *spaceDO) toSpace() domain.Space {
 		Fullname:      primitive.CreateMSDFullname(do.Fullname),
 		Hardware:      spaceprimitive.CreateHardware(do.Hardware),
 		BaseImage:     spaceprimitive.CreateBaseImage(do.BaseImage),
-		AvatarId:      primitive.CreateAvatarId(do.AvatarId),
+		AvatarId:      primitive.CreateAvatar(do.AvatarId),
 		CreatedAt:     do.CreatedAt,
 		UpdatedAt:     do.UpdatedAt,
 		Version:       do.Version,
@@ -193,7 +195,7 @@ func (do *spaceDO) toSpaceSummary() repository.SpaceSummary {
 		Owner:         do.Owner,
 		Fullname:      do.Fullname,
 		BaseImage:     do.BaseImage,
-		AvatarId:      do.AvatarId,
+		AvatarId:      primitive.CreateAvatar(do.AvatarId).URL(),
 		UpdatedAt:     do.UpdatedAt,
 		LikeCount:     do.LikeCount,
 		DownloadCount: do.DownloadCount,

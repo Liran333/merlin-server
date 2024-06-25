@@ -207,7 +207,7 @@ func (adapter *searchAdapter) SearchUser(
 		users = append(users, domain.UserResult{
 			Account:  u.Account.Account(),
 			FullName: u.Fullname.AccountFullname(),
-			AvatarId: u.AvatarId.AvatarId(),
+			AvatarId: u.AvatarId.URL(),
 		})
 	}
 	result.UserResult = users

@@ -6,12 +6,15 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
@@ -74,4 +77,28 @@ func EncodeToken(token string, salt string) (string, error) {
 	enc := base64.RawStdEncoding.EncodeToString(encBytes)
 
 	return enc, nil
+}
+
+func GetSaltHash(s string) string {
+	h := sha256.New()
+
+	bs := []byte(s)
+	salt := generateRandomSalt(4)
+	bs = append(bs, salt...)
+
+	h.Write(bs)
+
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func generateRandomSalt(saltSize int) []byte {
+	var salt = make([]byte, saltSize)
+
+	_, err := rand.Read(salt[:])
+
+	if err != nil {
+		logrus.Errorf("gererate sailt error: %v", err)
+	}
+
+	return salt
 }

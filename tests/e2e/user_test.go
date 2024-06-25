@@ -160,7 +160,7 @@ func (s *SuiteUser) TestGetAvatarId() {
 	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), "", data.Data.AvatarId)
+	assert.Equal(s.T(), "https://avatars.githubusercontent.com/u/2853724?v=5", data.Data.AvatarId)
 }
 
 // TestUser used for testing

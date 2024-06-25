@@ -5,16 +5,20 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package controller
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/domain"
 	"github.com/openmerlin/merlin-server/utils"
+	"golang.org/x/xerrors"
 )
 
 type userBasicInfoUpdateRequest struct {
-	AvatarId     *string `json:"avatar_id"`
+	AvatarId     string  `json:"avatar_id"`
 	Desc         *string `json:"description"`
 	Fullname     *string `json:"fullname"`
 	RevokeDelete *bool   `json:"revoke_delete"`
@@ -43,6 +47,12 @@ func (req *userBasicInfoUpdateRequest) toCmd() (
 	if req.Desc == nil && req.Fullname == nil && req.RevokeDelete == nil {
 		err = fmt.Errorf("all param are empty")
 		return
+	}
+
+	if req.AvatarId != "" {
+		if cmd.AvatarId, err = primitive.NewAvatar(req.AvatarId); err != nil {
+			return
+		}
 	}
 
 	return
@@ -133,4 +143,44 @@ type tokenVerifyResp struct {
 
 type revokePrivacyInfo struct {
 	IdToken string `json:"id_token"`
+}
+
+func toUploadAvatarCmd(ctx *gin.Context, user primitive.Account) (app.CmdToUploadAvatar, error) {
+	f, err := ctx.FormFile("file")
+	if err != nil {
+		return app.CmdToUploadAvatar{}, xerrors.Errorf("failed to parse request param: %w", err)
+	}
+
+	if f.Size > config.MaxAvatarFileSize {
+		err = errors.New("file too big")
+
+		return app.CmdToUploadAvatar{}, err
+	}
+
+	name, err := primitive.NewFileName(f.Filename)
+	if err != nil {
+		return app.CmdToUploadAvatar{}, err
+	}
+
+	if !name.IsPictureName() {
+		err = errors.New("file format error")
+
+		return app.CmdToUploadAvatar{}, err
+	}
+
+	p, err := f.Open()
+	if err != nil {
+		return app.CmdToUploadAvatar{}, xerrors.Errorf("can not get file: %w", err)
+	}
+
+	defer p.Close()
+
+	cmd := app.CmdToUploadAvatar{
+		User:  user,
+		Image: p,
+		FileName: commonctl.GetSaltHash(fmt.Sprintf("%s%s%v",
+			user.Account(), f.Filename, utils.Now())) + name.GetFormat(),
+	}
+
+	return cmd, nil
 }

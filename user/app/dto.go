@@ -39,7 +39,6 @@ type UserDTO struct {
 	Name            string  `json:"account"`
 	Fullname        string  `json:"fullname"`
 	AvatarId        string  `json:"avatar_id"`
-	AvatarUrl       string  `json:"avatar_url"`
 	Email           *string `json:"email,omitempty"`
 	Phone           *string `json:"phone,omitempty"`
 	Description     string  `json:"description"`
@@ -69,11 +68,7 @@ func ToDTO(org *orgdomain.Organization) UserDTO {
 func newUserDTO(u *domain.User, actor primitive.Account) (dto UserDTO) {
 	dto.Name = u.Account.Account()
 	if u.AvatarId != nil {
-		dto.AvatarId = u.AvatarId.AvatarId()
-	}
-
-	if u.AvatarUrl != nil {
-		dto.AvatarUrl = u.AvatarUrl.URL()
+		dto.AvatarId = u.AvatarId.URL()
 	}
 
 	if u.Desc != nil {
@@ -149,7 +144,7 @@ type AvatarDTO = sdk.AvatarDTO
 
 // ToAvatarDTO converts a domain.User object to an AvatarDTO.
 func ToAvatarDTO(a *domain.User) (dto AvatarDTO) {
-	dto.AvatarId = a.AvatarId.AvatarId()
+	dto.AvatarId = a.AvatarId.URL()
 	dto.Name = a.Account.Account()
 	return
 }
@@ -161,37 +156,33 @@ type ToUserDTO interface {
 
 // UpdateUserBasicInfoCmd represents the command to update basic user information.
 type UpdateUserBasicInfoCmd struct {
-	Desc            primitive.AccountDesc
-	AvatarId        primitive.AvatarId
-	Fullname        primitive.AccountFullname
-	descChanged     bool
-	avatarChanged   bool
-	fullNameChanged bool
-	RevokeDelete    bool
+	Desc         primitive.AccountDesc
+	AvatarId     primitive.Avatar
+	Fullname     primitive.AccountFullname
+	RevokeDelete bool
 }
 
 func (cmd *UpdateUserBasicInfoCmd) toUser(u *domain.User) (changed bool) {
-	if cmd.AvatarId != nil && cmd.AvatarId.AvatarId() != u.AvatarId.AvatarId() {
+	if cmd.AvatarId != nil && cmd.AvatarId.URL() != u.AvatarId.URL() {
 		u.AvatarId = cmd.AvatarId
-		cmd.avatarChanged = true
+		changed = true
 	}
 
 	if cmd.Desc != nil && cmd.Desc.AccountDesc() != u.Desc.AccountDesc() {
 		u.Desc = cmd.Desc
-		cmd.descChanged = true
+		changed = true
 	}
 
 	if cmd.Fullname != nil && u.Fullname.AccountFullname() != cmd.Fullname.AccountFullname() {
 		u.Fullname = cmd.Fullname
-		cmd.fullNameChanged = true
+		changed = true
 	}
 
 	if cmd.RevokeDelete {
 		u.RequestDelete = false
 		u.RequestDeleteAt = 0
+		changed = true
 	}
-
-	changed = cmd.avatarChanged || cmd.descChanged || cmd.fullNameChanged || cmd.RevokeDelete
 
 	return
 }
@@ -210,10 +201,13 @@ type CmdToVerifyBindEmail struct {
 	PassCode string
 }
 
-// CmdToVerifyBindEmail represents the command to verify a bind email.
+// CmdToUploadAvatar represents the command to upload avatar.
 type CmdToUploadAvatar struct {
-	User     primitive.Account
 	Image    io.Reader
+	User     primitive.Account
 	FileName string
-	OrgName  primitive.Account
+}
+
+type AvatarUrlDTO struct {
+	URL string `json:"url"`
 }

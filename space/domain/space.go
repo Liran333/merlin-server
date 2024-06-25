@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
+	"fmt"
 	"strings"
 
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
@@ -30,7 +31,7 @@ type Space struct {
 	Labels        SpaceLabels
 	Fullname      primitive.MSDFullname
 	Hardware      spaceprimitive.Hardware
-	AvatarId      primitive.AvatarId
+	AvatarId      primitive.Avatar
 	BaseImage     spaceprimitive.BaseImage
 	LocalCmd      string
 	LocalEnvInfo  string
@@ -191,4 +192,20 @@ func (s *Space) GetQuotaCount() int {
 // IsValidHardwareType checks if the provided hardware type string is a valid hardware type.
 func IsValidHardwareType(h string) bool {
 	return strings.ToLower(h) == computilityTypeNpu || strings.ToLower(h) == computilityTypeCpu
+}
+
+type CoverInfo struct {
+	User        primitive.Account
+	FileName    string
+	Path        string
+	Bucket      string
+	CdnEndpoint string
+}
+
+func (c *CoverInfo) GetCoverURL() string {
+	return fmt.Sprintf("%s%s/%s/%s", c.CdnEndpoint, c.Path, c.User.Account(), c.FileName)
+}
+
+func (c *CoverInfo) GetObsPath() string {
+	return fmt.Sprintf("%s/%s/%s", c.Path, c.User.Account(), c.FileName)
 }

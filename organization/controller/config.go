@@ -15,12 +15,12 @@ func Init(cfg *Config) {
 
 // Config represents the application configuration.
 type Config struct {
-	MaxAvatarFileSzie int64 `json:"max_avatar_file_size"`
+	MaxAvatarFileSize int64 `json:"max_avatar_file_size"`
 }
 
 // SetDefault sets the default values for the configuration.
 func (cfg *Config) SetDefault() {
-	if cfg.MaxAvatarFileSzie <= 0 {
-		cfg.MaxAvatarFileSzie = 1048576
+	if cfg.MaxAvatarFileSize <= 0 {
+		cfg.MaxAvatarFileSize = 1048576
 	}
 }

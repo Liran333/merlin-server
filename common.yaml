@@ -140,6 +140,11 @@ BOUTIQUE_SPACES:
 SKIP_AVATAR_IDS:
   - "https://files.authing.co/authing-console/default-user-avatar.png"
 
+ALLOW_IMAGE_EXTENSION:
+  - ".png"
+  - ".jpg"
+  - ".jpeg"
+
 BASE_IMAGE:
 - TYPE: 'CPU basic 2 vCPU · 16GB · FREE'
   BASE_IMAGE:
@@ -170,3 +175,5 @@ COOKIE_SESSION_ID: session_id
 
 MAX_AVATAR_FILE_SIZE: 2097152
 MAX_COVER_FILE_SIZE: 2097152
+USER_AVATAR_OBS_PATH: user
+SPACE_COVER_OBS_PATH: space

@@ -27,6 +27,8 @@ var (
 	passwordInstance        *passwordImpl
 	acceptableAvatarDomains []string
 	skipAvatarids           sets.Set[string]
+	cdnUrlConfig            string
+	allowImageExtension     sets.Set[string]
 )
 
 // Init initializes the configuration with the given Config struct.
@@ -37,6 +39,7 @@ func Init(cfg *Config) (err error) {
 	tokenConfig = cfg.TokenConfig
 	websiteConfig = cfg.WebsiteConfig
 	accountConfig = cfg.AccountConfig
+	cdnUrlConfig = cfg.CdnUrlConfig
 
 	m := map[string]bool{}
 	for _, v := range cfg.Licenses {
@@ -62,6 +65,11 @@ func Init(cfg *Config) (err error) {
 		skipAvatarids.Insert(v)
 	}
 
+	allowImageExtension = sets.New[string]()
+	for _, v := range cfg.AllowImageExtension {
+		allowImageExtension.Insert(v)
+	}
+
 	return
 }
 
@@ -78,6 +86,8 @@ type Config struct {
 	PasswordConfig          PasswordConfig `json:"password_config"`
 	AcceptableAvatarDomains []string       `json:"acceptable_avatar_domains" required:"true"`
 	SkipAvatarIds           []string       `json:"skip_avatar_ids"`
+	CdnUrlConfig            string         `json:"cdn_url_config"            required:"true"`
+	AllowImageExtension     []string       `json:"allow_image_extension"     required:"true"`
 }
 
 // SetDefault sets default values for Config if they are not provided.

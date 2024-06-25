@@ -18,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/kafka"
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
@@ -169,6 +170,13 @@ func main() {
 	// gitea
 	if err := gitea.Init(&cfg.Git); err != nil {
 		logrus.Errorf("init gitea failed, err:%s", err.Error())
+
+		return
+	}
+
+	// obs
+	if err := obs.Init(&cfg.Obs); err != nil {
+		logrus.Errorf("init obs failed, err:%s", err.Error())
 
 		return
 	}

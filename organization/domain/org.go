@@ -35,7 +35,7 @@ type OrgCreatedCmd struct {
 	FullName    primitive.AccountFullname `json:"fullname"`
 	Description primitive.AccountDesc     `json:"description"`
 	Website     primitive.Website         `json:"website"`
-	AvatarId    primitive.AvatarId        `json:"avatar_id"`
+	AvatarId    primitive.Avatar          `json:"avatar_id"`
 	Owner       primitive.Account         `json:"owner"`
 }
 
@@ -44,7 +44,7 @@ type OrgPaginationCmd struct {
 	FullName     primitive.AccountFullname `json:"fullname"`
 	Description  primitive.AccountDesc     `json:"description"`
 	Website      primitive.Website         `json:"website"`
-	AvatarId     primitive.AvatarId        `json:"avatar_id"`
+	AvatarId     primitive.Avatar          `json:"avatar_id"`
 	Owner        primitive.Account         `json:"owner"`
 	Count        bool
 	PageNum      int
@@ -81,7 +81,7 @@ type OrgUpdatedBasicInfoCmd struct {
 	FullName     primitive.AccountFullname
 	Description  primitive.AccountDesc
 	Website      primitive.Website
-	AvatarId     primitive.AvatarId
+	AvatarId     primitive.Avatar
 }
 
 // Validate validates the OrgUpdatedBasicInfoCmd fields.
@@ -101,7 +101,7 @@ func (cmd OrgUpdatedBasicInfoCmd) Validate() error {
 
 // ToOrg updates the Organization object with the values from the OrgUpdatedBasicInfoCmd.
 func (cmd OrgUpdatedBasicInfoCmd) ToOrg(o *Organization) (change bool) {
-	if cmd.AvatarId != o.AvatarId && cmd.AvatarId != nil {
+	if cmd.AvatarId != nil && cmd.AvatarId.URL() != o.AvatarId.URL() {
 		o.AvatarId = cmd.AvatarId
 		change = true
 	}
@@ -198,6 +198,7 @@ type OrgMember struct {
 	Type      InviteType                `json:"type"`
 	CreatedAt int64                     `json:"created_at"`
 	UpdatedAt int64                     `json:"updated_at"`
+	AvatarId  string                    `json:"avatar_id"`
 	Version   int
 }
 
@@ -373,6 +374,7 @@ func (cmd OrgAddMemberCmd) ToMember(memberInfo domain.User) OrgMember {
 		OrgId:    cmd.OrgId,
 		Role:     primitive.Role(cmd.Role),
 		Type:     cmd.Type,
+		AvatarId: memberInfo.AvatarId.URL(),
 	}
 }
 

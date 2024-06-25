@@ -181,16 +181,16 @@ func (s *SuiteUserSpace) TestUserCanVisitSelfPublicSpace() {
 // 创建space 成功，并成功能查询到各种参数
 func (s *SuiteUserSpace) TestCreateSpace() {
 	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
-		Desc:       "space desc",
-		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		License:    "mit",
-		BaseImage:  "python3.8-pytorch2.1",
-		Name:       "testspace",
-		Owner:      "test1",
-		Sdk:        "gradio",
-		Visibility: "public",
-		AvatarId:   "https://gitee.com/1",
+		Desc:          "space desc",
+		Fullname:      "spacefullname",
+		Hardware:      "CPU basic 2 vCPU · 16GB · FREE",
+		License:       "mit",
+		BaseImage:     "python3.8-pytorch2.1",
+		Name:          "testspace",
+		Owner:         "test1",
+		Sdk:           "gradio",
+		Visibility:    "public",
+		SpaceAvatarId: "https://gitee.com/1",
 	})
 
 	id := getString(s.T(), data.Data)
@@ -225,16 +225,16 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 // 可以通过内部接口设置下载统计
 func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
-		Desc:       "space desc",
-		Fullname:   "spacefullname",
-		Hardware:   "CPU basic 2 vCPU · 16GB · FREE",
-		License:    "mit",
-		BaseImage:  "python3.8-pytorch2.1",
-		Name:       "testspace",
-		Owner:      "test1",
-		Sdk:        "gradio",
-		Visibility: "public",
-		AvatarId:   "https://gitee.com/1",
+		Desc:          "space desc",
+		Fullname:      "spacefullname",
+		Hardware:      "CPU basic 2 vCPU · 16GB · FREE",
+		License:       "mit",
+		BaseImage:     "python3.8-pytorch2.1",
+		Name:          "testspace",
+		Owner:         "test1",
+		Sdk:           "gradio",
+		Visibility:    "public",
+		SpaceAvatarId: "https://gitee.com/1",
 	})
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)

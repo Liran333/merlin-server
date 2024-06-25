@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/xerrors"
@@ -54,8 +55,7 @@ type User struct {
 	CreatedAt       int64
 	UpdatedAt       int64
 	Desc            primitive.AccountDesc
-	AvatarId        primitive.AvatarId
-	AvatarUrl       primitive.URL
+	AvatarId        primitive.Avatar
 	Type            UserType
 	DefaultRole     primitive.Role
 	AllowRequest    bool
@@ -82,14 +82,10 @@ func (u *User) RevokePrivacy() {
 	u.IsAgreePrivacy = false
 }
 
-func (u *User) UpdateAvatar(url string) {
-	u.AvatarUrl = primitive.CreateURL(url)
-}
-
 // UserInfo represents additional information about a user.
 type UserInfo struct {
 	Account  Account
-	AvatarId primitive.AvatarId
+	AvatarId primitive.Avatar
 }
 
 // PlatformToken represents a token associated with a platform account.
@@ -178,7 +174,7 @@ type UserCreateCmd struct {
 	Email    primitive.Email
 	Account  Account
 	Desc     primitive.AccountDesc
-	AvatarId primitive.AvatarId
+	AvatarId primitive.Avatar
 	Fullname primitive.AccountFullname
 	Phone    primitive.Phone
 }
@@ -232,7 +228,7 @@ type FollowerInfo struct {
 // FollowerUserInfo is a struct for storing follower user information.
 type FollowerUserInfo struct {
 	Account    Account
-	AvatarId   primitive.AvatarId
+	AvatarId   primitive.Avatar
 	Desc       primitive.AccountDesc
 	IsFollower bool
 }
@@ -262,4 +258,19 @@ func (cmd *UserCreateCmd) ToUser() User {
 		Type:     UserTypeUser,
 		Phone:    cmd.Phone,
 	}
+}
+
+type AvatarInfo struct {
+	Path        string
+	Account     Account
+	FileName    string
+	CdnEndpoint string
+}
+
+func (a *AvatarInfo) GetAvatarURL() string {
+	return fmt.Sprintf("%s%s/%s/%s", a.CdnEndpoint, a.Path, a.Account.Account(), a.FileName)
+}
+
+func (a *AvatarInfo) GetObsPath() string {
+	return fmt.Sprintf("%s/%s/%s", a.Path, a.Account.Account(), a.FileName)
 }

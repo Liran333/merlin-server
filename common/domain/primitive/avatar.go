@@ -7,56 +7,84 @@ package primitive
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
-// AvatarId is an interface that represents a unique identifier for an avatar.
-type AvatarId interface {
-	AvatarId() string
+// Avatar is an interface for CdnImageURL operations.
+type Avatar interface {
+	URL() string
+	Storage() string
 }
 
-// NewAvatarId creates a new AvatarId instance from the given string.
-func NewAvatarId(v string) (AvatarId, error) {
+// NewAvatar creates a new URL instance with the given value.
+func NewAvatar(v string) (Avatar, error) {
 	if v == "" {
-		return dpAvatarId(v), nil
+		return avatar(v), nil
 	}
 
-	avatarId, err := url.ParseRequestURI(v)
+	imageURL, err := url.ParseRequestURI(v)
 	if err != nil {
-		return nil, errors.New("avatar must be a valid uri")
+		return nil, xerrors.Errorf("invalid url: %w", err)
 	}
 
 	if skipAvatarids.Has(v) {
-		return dpAvatarId(""), nil
+		return avatar(""), nil
 	}
 
 	for _, domain := range acceptableAvatarDomains {
 		if strings.HasPrefix(v, domain) {
-			return dpAvatarId(avatarId.String()), nil
+			return avatar(imageURL.String()), nil
 		}
 	}
 
-	return nil, errors.New("avatar url domain not allowed")
-}
-
-// CreateAvatarId creates a new AvatarId instance from the given string.
-func CreateAvatarId(v string) AvatarId {
-	if skipAvatarids.Has(v) {
-		return dpAvatarId("")
+	if strings.HasPrefix(v, cdnUrlConfig) {
+		return avatar(imageURL.String()), nil
 	}
 
-	return dpAvatarId(v)
+	return nil, errors.New("invalid image url")
 }
 
-type dpAvatarId string
+// CreateAvatar is usually called internally, such as repository.
+func CreateAvatar(v string) Avatar {
+	if skipAvatarids.Has(v) {
+		return avatar("")
+	}
 
-// AvatarId returns the string representation of the AvatarId.
-func (r dpAvatarId) AvatarId() string {
+	return avatar(v)
+}
+
+type avatar string
+
+// Storage returns the avatar storage format as a string.
+func (r avatar) Storage() string {
+	if strings.HasPrefix(string(r), cdnUrlConfig) {
+		s := strings.TrimPrefix(string(r), cdnUrlConfig)
+
+		return s
+	}
+
 	return string(r)
 }
 
-// DomainValue returns the string representation of the AvatarId.
-func (r dpAvatarId) DomainValue() string {
-	return string(r)
+// URL returns URL as string.
+func (r avatar) URL() string {
+	if r == "" {
+		return ""
+	}
+
+	if skipAvatarids.Has(string(r)) {
+		return ""
+	}
+
+	for _, domain := range acceptableAvatarDomains {
+		if strings.HasPrefix(string(r), domain) {
+			return string(r)
+		}
+	}
+
+	return fmt.Sprintf("%s%s", cdnUrlConfig, r)
 }

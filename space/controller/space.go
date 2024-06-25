@@ -34,6 +34,8 @@ func addRouteForSpaceController(
 		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Delete)
 	r.PUT("/v1/space/:id", m.Write,
 		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.Update)
+	r.POST("/v1/space/cover/upload", m.Write,
+		userctl.CheckMail(ctl.userMiddleWare, ctl.user, sl), l.Write, rl.CheckLimit, ctl.UploadCover)
 }
 
 // SpaceController is a struct that contains the necessary dependencies for handling space-related operations.
@@ -223,5 +225,34 @@ func (ctl *SpaceController) Disable(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary Upload Space Cover
+// @Description  upload space cover
+// @Tags     Space
+// @Accept   json
+// @Security Bearer
+// @Success  201  {object}  commonctl.ResponseData{data=app.SpaceCoverDTO,msg=string,code=string}
+// @Router   /v1/space/cover/upload [post]
+func (ctl *SpaceController) UploadCover(ctx *gin.Context) {
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if user == nil {
+		return
+	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("request upload avatar of user:%s", user.Account()))
+
+	cmd, err := toUploadCoverCmd(ctx, user)
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	if d, err := ctl.appService.UploadCover(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, d)
 	}
 }

@@ -94,6 +94,9 @@ space:
     {{- range (ds "common").SPACE_AVATAR_IDS}}
       - "{{ . }}"
     {{- end }}
+    obs_path:  {{ (ds "common").USER_AVATAR_OBS_PATH }}
+    obs_bucket:  {{ (ds "data").USER_OBS_BUCKET }}
+    cdn_endpoint: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
     recommend_spaces:
     {{- range $v := (ds "common").RECOMMEND_SPACES }}
     - owner: {{ $v.owner }}
@@ -289,6 +292,7 @@ user:
       token: token
     key: {{(ds "secret").data.USER_ENC_KEY }}
     max_token_per_user: {{ (ds "common").MAX_TOKEN }}
+    obs_path:  {{ (ds "common").USER_AVATAR_OBS_PATH }}
     obs_bucket:  {{ (ds "data").USER_OBS_BUCKET }}
     cdn_endpoint: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
   controller:
@@ -348,6 +352,11 @@ primitive:
 {{- end }}
   skip_avatar_ids:
 {{- range (ds "common").SKIP_AVATAR_IDS}}
+  - "{{ . }}"
+{{- end }}
+  cdn_url_config: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
+  allow_image_extension:
+{{- range (ds "common").ALLOW_IMAGE_EXTENSION}}
   - "{{ . }}"
 {{- end }}
 

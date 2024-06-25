@@ -55,7 +55,7 @@ var userAddCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
-		ava, err := primitive.NewAvatarId("")
+		ava, err := primitive.NewAvatar("")
 		if err != nil {
 			logrus.Fatalf("create user failed :%s", err.Error())
 		}
@@ -171,7 +171,7 @@ var userEditCmd = &cobra.Command{
 			logrus.Fatalf("edit user failed :%s with %s", err.Error(), viper.GetString("user.edit.name"))
 		}
 		updateCmd := userapp.UpdateUserBasicInfoCmd{}
-		avatar, err := primitive.NewAvatarId(viper.GetString("user.edit.avatar"))
+		avatar, err := primitive.NewAvatar(viper.GetString("user.edit.avatar"))
 		if err == nil {
 			updateCmd.AvatarId = avatar
 		}

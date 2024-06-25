@@ -18,6 +18,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
@@ -31,6 +32,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
 	userapp "github.com/openmerlin/merlin-server/user/app"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
+	"github.com/openmerlin/merlin-server/user/infrastructure/obsadapter"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/utils"
 )
@@ -67,7 +69,7 @@ func initorg() {
 	)
 
 	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
-		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain)
+		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain, obsadapter.NewClient(obs.Client()))
 
 	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org.Domain, git,
 		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo, opentelemetry.NewTracer(&cfg.Trace),
@@ -105,7 +107,7 @@ var orgAddCmd = &cobra.Command{
 			logrus.Fatalf("invalid website :%s", err.Error())
 		}
 
-		ava, err := primitive.NewAvatarId(viper.GetString("org.create.avatarid"))
+		ava, err := primitive.NewAvatar(viper.GetString("org.create.avatarid"))
 		if err != nil {
 			logrus.Fatalf("invalid avatarid :%s", err.Error())
 		}
@@ -621,7 +623,7 @@ var orgEditCmd = &cobra.Command{
 		updateCmd := domain.OrgUpdatedBasicInfoCmd{}
 		avatar := viper.GetString("org.edit.avatar")
 		if avatar != "" {
-			if updateCmd.AvatarId, err = primitive.NewAvatarId(avatar); err != nil {
+			if updateCmd.AvatarId, err = primitive.NewAvatar(avatar); err != nil {
 				logrus.Fatalf("edit org failed :%s with %s", err.Error(), viper.GetString("org.edit.avatar"))
 			}
 		}

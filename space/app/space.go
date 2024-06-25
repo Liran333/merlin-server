@@ -22,6 +22,7 @@ import (
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
 	"github.com/openmerlin/merlin-server/space/domain/message"
+	"github.com/openmerlin/merlin-server/space/domain/obs"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
 	spaceappApp "github.com/openmerlin/merlin-server/spaceapp/app"
@@ -77,6 +78,7 @@ type SpaceAppService interface {
 	Recommend(context.Context, primitive.Account) []repository.SpaceSummary
 	Boutique(context.Context, primitive.Account) []repository.SpaceSummary
 	setSpacesStatus(ctx context.Context, spacesDTO []repository.SpaceSummary) []repository.SpaceSummary
+	UploadCover(*CmdToUploadCover) (SpaceCoverDTO, error)
 }
 
 // NewSpaceAppService creates a new instance of SpaceAppService.
@@ -95,6 +97,7 @@ func NewSpaceAppService(
 	computilityApp computilityapp.ComputilityInternalAppService,
 	spaceappApp spaceappApp.SpaceappAppService,
 	user userapp.UserService,
+	obs obs.ObsService,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -111,6 +114,7 @@ func NewSpaceAppService(
 		computilityApp:       computilityApp,
 		spaceappApp:          spaceappApp,
 		user:                 user,
+		obs:                  obs,
 	}
 }
 
@@ -129,6 +133,7 @@ type spaceAppService struct {
 	computilityApp       computilityapp.ComputilityInternalAppService
 	spaceappApp          spaceappApp.SpaceappAppService
 	user                 userapp.UserService
+	obs                  obs.ObsService
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -409,7 +414,7 @@ func (s *spaceAppService) Update(
 	}
 
 	if oldVisibility != space.Visibility.Visibility() {
-		if _, err :=  s.spaceappApp.WakeupSpaceApp(ctx, user,
+		if _, err := s.spaceappApp.WakeupSpaceApp(ctx, user,
 			&domain.SpaceIndex{Name: space.Name, Owner: space.Owner}); err != nil {
 			logrus.Errorf("failed to walk up space app, space id:%s", spaceId.Identity())
 		}
@@ -751,4 +756,25 @@ func (s *spaceAppService) setSpacesStatus(
 	}
 
 	return spacesSummary
+}
+
+// UpdateCover upload cover and  updates the cover url of space.
+func (s *spaceAppService) UploadCover(cmd *CmdToUploadCover) (SpaceCoverDTO, error) {
+	cover := domain.CoverInfo{
+		User:        cmd.User,
+		FileName:    cmd.FileName,
+		Bucket:      config.ObsBucket,
+		Path:        config.ObsPath,
+		CdnEndpoint: config.CdnEndpoint,
+	}
+
+	err := s.obs.CreateObject(cmd.Image, config.ObsBucket, cover.GetObsPath())
+	if err != nil {
+		err = allerror.NewResourceDisabled(allerror.ErrorCodeFileUploadFailed, "",
+			xerrors.Errorf("failed to upload space cover: %w", err))
+
+		return SpaceCoverDTO{}, err
+	}
+
+	return toSpaceCoverDTO(cover.GetCoverURL()), nil
 }

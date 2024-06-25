@@ -17,6 +17,7 @@ import (
 	orgrepository "github.com/openmerlin/merlin-server/organization/domain/repository"
 	session "github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/user/domain/obs"
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
 	"github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -63,6 +64,8 @@ type UserService interface {
 	PrivacyRevoke(context.Context, primitive.Account) (string, error)
 	AgreePrivacy(context.Context, primitive.Account) error
 	IsAgreePrivacy(context.Context, primitive.Account) (bool, error)
+
+	UploadAvatar(*CmdToUploadAvatar) (AvatarUrlDTO, error)
 }
 
 // NewUserService creates a new UserService instance with the provided dependencies.
@@ -75,6 +78,7 @@ func NewUserService(
 	oidc session.OIDCAdapter,
 	sc SessionClearAppService,
 	config *domain.Config,
+	obs obs.ObsService,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -85,6 +89,7 @@ func NewUserService(
 		session:      session,
 		sessionClear: sc,
 		config:       config,
+		obs:          obs,
 	}
 }
 
@@ -97,6 +102,7 @@ type userService struct {
 	session      session.SessionRepositoryAdapter
 	sessionClear SessionClearAppService
 	config       *domain.Config
+	obs          obs.ObsService
 }
 
 // Create creates a new user in the system.
@@ -179,7 +185,6 @@ func (s userService) UpdateBasicInfo(
 			Account:  user.Account,
 			Fullname: user.Fullname,
 			Email:    user.Email,
-			AvatarId: user.AvatarId,
 			Desc:     user.Desc,
 		}); err != nil {
 			e := xerrors.Errorf("failed to update git user info: %w", err)
@@ -418,7 +423,7 @@ func (s userService) GetUserAvatarId(ctx context.Context, user domain.Account) (
 
 	return AvatarDTO{
 		Name:     user.Account(),
-		AvatarId: a.AvatarId(),
+		AvatarId: a.URL(),
 	}, nil
 }
 
@@ -693,7 +698,6 @@ func (s userService) VerifyBindEmail(ctx context.Context, cmd *CmdToVerifyBindEm
 		Account:  u.Account,
 		Fullname: u.Fullname,
 		Desc:     u.Desc,
-		AvatarId: u.AvatarId,
 	}
 
 	if u.PlatformId == 0 {
@@ -865,4 +869,33 @@ func (s userService) CanCreateToken(user domain.Account) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// UploadAvatar upload avatar.
+func (s userService) UploadAvatar(cmd *CmdToUploadAvatar) (AvatarUrlDTO, error) {
+	if cmd == nil {
+		e := xerrors.Errorf("input param is empty")
+		err := allerror.NewCommonRespError(e.Error(), e)
+
+		return AvatarUrlDTO{}, err
+	}
+
+	avatar := domain.AvatarInfo{
+		Path:        s.config.ObsPath,
+		CdnEndpoint: s.config.CdnEndpoint,
+		Account:     cmd.User,
+		FileName:    cmd.FileName,
+	}
+
+	err := s.obs.CreateObject(cmd.Image, s.config.ObsBucket, avatar.GetObsPath())
+	if err != nil {
+		return AvatarUrlDTO{}, allerror.New(allerror.ErrorCodeFileUploadFailed, "",
+			xerrors.Errorf("failed to upload avatar: %w", err))
+	}
+
+	dto := AvatarUrlDTO{
+		URL: avatar.GetAvatarURL(),
+	}
+
+	return dto, nil
 }

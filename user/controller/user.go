@@ -61,6 +61,8 @@ func AddRouterForUserController(
 	rg.POST("/v1/user/email/send", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.SendEmail)
 
 	rg.PUT("/v1/user/privacy", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.PrivacyRevoke)
+
+	rg.POST("/v1/user/avatar/upload", m.Write, l.Write, rl.CheckLimit, p.Check, ctl.UploadAvatar)
 }
 
 // UserController is a struct that holds references to user repository, user service, and user middleware.
@@ -406,5 +408,36 @@ func (ctl *UserController) RequestDelete(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfDelete(ctx)
+	}
+}
+
+// @Summary  Upload User Avatar
+// @Description  upload user avatar
+// @Tags     User
+// @Accept   json
+// @Security Bearer
+// @Success  201  {object}  commonctl.ResponseData{data=app.AvatarUrlDTO,msg=string,code=string}
+// @Router   /v1/user/avatar/upload [post]
+func (ctl *UserController) UploadAvatar(ctx *gin.Context) {
+	middleware.SetAction(ctx, "request upload user avatar")
+
+	user := ctl.m.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	middleware.SetAction(ctx, fmt.Sprintf("request upload avatar of user:%s", user.Account()))
+
+	cmd, err := toUploadAvatarCmd(ctx, user)
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	if d, err := ctl.s.UploadAvatar(&cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, d)
 	}
 }

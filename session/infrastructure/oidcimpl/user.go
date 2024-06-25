@@ -90,7 +90,7 @@ func (impl *user) GetByAccessToken(accessToken string) (userInfo repository.User
 		return
 	}
 
-	if userInfo.AvatarId, err = primitive.NewAvatarId(v.Picture); err != nil {
+	if userInfo.AvatarId, err = primitive.NewAvatar(v.Picture); err != nil {
 		return
 	}
 

@@ -17,7 +17,6 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
-	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	org "github.com/openmerlin/merlin-server/organization/domain"
 	"github.com/openmerlin/merlin-server/user/domain"
@@ -35,13 +34,12 @@ func NewUserRepo(db postgresql.Impl, enc crypto.Encrypter) repository.User {
 		return nil
 	}
 
-	return &userRepoImpl{Impl: db, e: enc, obs: obs.Client()}
+	return &userRepoImpl{Impl: db, e: enc}
 }
 
 type userRepoImpl struct {
 	postgresql.Impl
-	e   crypto.Encrypter
-	obs obs.ObsService
+	e crypto.Encrypter
 }
 
 // AddOrg adds a new organization to the repository and returns it.
@@ -322,7 +320,7 @@ func (impl *userRepoImpl) GetUserFullname(ctx context.Context, account domain.Ac
 
 // GetUserAvatarId retrieves the avatar ID of a user by their account information.
 func (impl *userRepoImpl) GetUserAvatarId(
-	ctx context.Context, account domain.Account) (id primitive.AvatarId, err error) {
+	ctx context.Context, account domain.Account) (id primitive.Avatar, err error) {
 	tmpDo := &UserDO{}
 	tmpDo.Name = account.Account()
 
@@ -330,7 +328,7 @@ func (impl *userRepoImpl) GetUserAvatarId(
 		return
 	}
 
-	return primitive.CreateAvatarId(tmpDo.AvatarId), nil
+	return primitive.CreateAvatar(tmpDo.AvatarId), nil
 }
 
 // GetUsersAvatarId retrieves the avatar IDs of multiple users by their names.

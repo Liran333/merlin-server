@@ -147,6 +147,7 @@ type MemberDTO struct {
 	Role        string `json:"role"`
 	CreatedAt   int64  `json:"created_at"`
 	UpdatedAt   int64  `json:"updated_at"`
+	AvatarId    string `json:"avatar_id"`
 }
 
 // OrgListOptions represents the options for listing organizations.
@@ -175,6 +176,7 @@ func ToMemberDTO(member *domain.OrgMember) MemberDTO {
 		OrgId:     member.OrgId.Identity(),
 		CreatedAt: member.CreatedAt,
 		UpdatedAt: member.UpdatedAt,
+		AvatarId:  member.AvatarId,
 	}
 }
 

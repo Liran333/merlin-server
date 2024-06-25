@@ -25,6 +25,6 @@ func (cfg *Config) SetDefault() {
 	}
 
 	if cfg.MaxCoverFileSize <= 0 {
-		cfg.MaxCoverFileSize = 2097152
+		cfg.MaxCoverFileSize = 5242880
 	}
 }

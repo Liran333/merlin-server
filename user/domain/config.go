@@ -14,6 +14,7 @@ type tables struct {
 type Config struct {
 	Key             []byte `json:"key"    required:"true"`
 	Tables          tables `json:"tables" required:"true"`
+	ObsPath         string `json:"obs_path" required:"true"`
 	ObsBucket       string `json:"obs_bucket" required:"true"`
 	CdnEndpoint     string `json:"cdn_endpoint" required:"true"`
 	MaxTokenPerUser int    `json:"max_token_per_user" required:"true"`

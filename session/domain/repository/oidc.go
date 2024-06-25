@@ -32,7 +32,7 @@ type UserInfo struct {
 	Desc     primitive.AccountDesc
 	Name     domain.Account
 	Email    primitive.Email
-	AvatarId primitive.AvatarId
+	AvatarId primitive.Avatar
 	Fullname primitive.AccountFullname
 	Phone    primitive.Phone
 	UserId   string

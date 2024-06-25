@@ -489,6 +489,13 @@ func (org *orgService) ListMember(ctx context.Context, cmd *domain.OrgListMember
 		dtos[i] = ToMemberDTO(&members[i])
 		dtos[i].OrgName = o.Name
 		dtos[i].OrgFullName = o.Fullname
+		u, err := org.user.GetUserAvatarId(context.Background(), members[i].Username)
+		if err != nil {
+			logrus.Errorf("list org members err: get avatar id error: %v", err)
+
+			continue
+		}
+		dtos[i].AvatarId = u.AvatarId
 	}
 
 	return

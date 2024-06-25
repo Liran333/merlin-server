@@ -10,17 +10,20 @@ import (
 	"math"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/openmerlin/merlin-sdk/space"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-server/common/controller"
+	commonctl "github.com/openmerlin/merlin-server/common/controller"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/space/app"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
+	"github.com/openmerlin/merlin-server/utils"
 )
 
 const (
@@ -39,7 +42,7 @@ type reqToCreateSpace struct {
 	BaseImage  string `json:"base_image" required:"true"`
 	Fullname   string `json:"fullname"`
 	Visibility string `json:"visibility" required:"true"`
-	AvatarId   string `json:"avatar_id"`
+	AvatarId   string `json:"space_avatar_id"`
 }
 
 func (req *reqToCreateSpace) action() string {
@@ -87,7 +90,7 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 		return
 	}
 
-	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+	if cmd.AvatarId, err = primitive.NewAvatar(req.AvatarId); err != nil {
 		err = xerrors.Errorf("invalid avatar id: %w", err)
 		return
 	}
@@ -107,7 +110,7 @@ func (req *reqToCreateSpace) toCmd() (cmd app.CmdToCreateSpace, err error) {
 type reqToUpdateSpace struct {
 	SDK        *string `json:"sdk"`
 	Desc       *string `json:"desc"`
-	AvatarId   *string `json:"avatar_id"`
+	AvatarId   *string `json:"space_avatar_id"`
 	Fullname   *string `json:"fullname"`
 	Hardware   *string `json:"hardware"`
 	Visibility *string `json:"visibility"`
@@ -141,7 +144,7 @@ func (p *reqToUpdateSpace) toCmd() (cmd app.CmdToUpdateSpace, err error) {
 	}
 
 	if p.AvatarId != nil {
-		if cmd.AvatarId, err = primitive.NewAvatarId(*p.AvatarId); err != nil {
+		if cmd.AvatarId, err = primitive.NewAvatar(*p.AvatarId); err != nil {
 			return
 		}
 	}
@@ -522,4 +525,44 @@ func (req *reqToNotifyUpdateCode) toCmd() (cmd app.CmdToNotifyUpdateCode, err er
 	cmd.HasHtml = true
 	cmd.HasApp = true
 	return
+}
+
+func toUploadCoverCmd(ctx *gin.Context, user primitive.Account) (app.CmdToUploadCover, error) {
+	f, err := ctx.FormFile("file")
+	if err != nil {
+		return app.CmdToUploadCover{}, xerrors.Errorf("failed to parse request param: %w", err)
+	}
+
+	if f.Size > config.MaxCoverFileSize {
+		err = errors.New("file too big")
+
+		return app.CmdToUploadCover{}, err
+	}
+
+	name, err := primitive.NewFileName(f.Filename)
+	if err != nil {
+		return app.CmdToUploadCover{}, err
+	}
+
+	if !name.IsPictureName() {
+		err = errors.New("file format error")
+
+		return app.CmdToUploadCover{}, err
+	}
+
+	p, err := f.Open()
+	if err != nil {
+		return app.CmdToUploadCover{}, xerrors.Errorf("can not get file: %w", err)
+	}
+
+	defer p.Close()
+
+	cmd := app.CmdToUploadCover{
+		User:  user,
+		Image: p,
+		FileName: commonctl.GetSaltHash(fmt.Sprintf("%s%s%v",
+			user.Account(), f.Filename, utils.Now())) + name.GetFormat(),
+	}
+
+	return cmd, nil
 }

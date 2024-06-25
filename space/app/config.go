@@ -26,14 +26,18 @@ func Init(cfg *Config) {
 
 // Config is a struct that holds the configuration for max count per owner.
 type Config struct {
-	AvatarIds             []string `json:"avatar_ids" required:"true"`
-	MaxCountPerUser       int      `json:"max_count_per_user"`
-	MaxCountPerOrg        int      `json:"max_count_per_org"`
-	MaxCountSpaceSecret   int      `json:"max_count_space_secret"`
-	MaxCountSpaceVariable int      `json:"max_count_space_variable"`
-	avatarIdsSet          sets.Set[string]
+	AvatarIds             []string         `json:"avatar_ids" required:"true"`
+	ObsPath               string           `json:"obs_path" required:"true"`
+	ObsBucket             string           `json:"obs_bucket" required:"true"`
+	CdnEndpoint           string           `json:"cdn_endpoint" required:"true"`
+	MaxCountPerUser       int              `json:"max_count_per_user"`
+	MaxCountPerOrg        int              `json:"max_count_per_org"`
+	MaxCountSpaceSecret   int              `json:"max_count_space_secret"`
+	MaxCountSpaceVariable int              `json:"max_count_space_variable"`
 	RecommendSpaces       []RecommendIndex `json:"recommend_spaces"`
 	BoutiqueSpaces        []BoutiqueIndex  `json:"boutique_spaces"`
+
+	avatarIdsSet sets.Set[string]
 }
 
 type RecommendIndex struct {

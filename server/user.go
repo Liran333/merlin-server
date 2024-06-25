@@ -11,6 +11,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
+	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/infrastructure/giteauser"
@@ -19,6 +20,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/loginrepositoryadapter"
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
+	"github.com/openmerlin/merlin-server/space/infrastructure/obsadapter"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/controller"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
@@ -49,6 +51,7 @@ func initUser(cfg *config.Config, services *allServices) {
 		oidcimpl.NewAuthingUser(),
 		session,
 		&cfg.User.Domain,
+		obsadapter.NewClient(obs.Client()),
 	)
 }
 

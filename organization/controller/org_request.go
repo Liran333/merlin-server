@@ -66,9 +66,16 @@ func (req *orgBasicInfoUpdateRequest) toCmd(user primitive.Account, orgName stri
 
 		empty = false
 	}
+
 	if req.AllowRequest != nil {
 		cmd.AllowRequest = req.AllowRequest
 		empty = false
+	}
+
+	if req.AvatarId != "" {
+		if cmd.AvatarId, err = primitive.NewAvatar(req.AvatarId); err != nil {
+			return
+		}
 	}
 
 	if empty {
@@ -167,7 +174,7 @@ func (req *orgCreateRequest) toCmd() (cmd domain.OrgCreatedCmd, err error) {
 		return
 	}
 
-	if cmd.AvatarId, err = primitive.NewAvatarId(req.AvatarId); err != nil {
+	if cmd.AvatarId, err = primitive.NewAvatar(req.AvatarId); err != nil {
 		return
 	}
 

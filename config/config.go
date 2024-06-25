@@ -109,6 +109,8 @@ func (cfg *Config) Init() error {
 
 	cfg.Activity.Init()
 
+	cfg.User.Init()
+
 	internal.Init(&cfg.Internal)
 
 	return nil
