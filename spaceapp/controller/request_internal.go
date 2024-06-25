@@ -120,3 +120,18 @@ func (req *reqToFailedStatus) toCmd() (cmd app.CmdToNotifyFailedStatus, err erro
 
 	return
 }
+
+// reqToSleepSpaceApp
+type reqToSleepSpaceApp struct {
+	reqToCreateSpaceApp
+}
+
+func (req *reqToSleepSpaceApp) toCmd() (cmd app.CmdToSleepSpaceApp, err error) {
+	if cmd.SpaceId, err = primitive.NewIdentity(req.SpaceId); err != nil {
+		return
+	}
+
+	cmd.CommitId = req.CommitId
+
+	return
+}

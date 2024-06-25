@@ -45,6 +45,8 @@ type SpaceappInternalAppService interface {
 
 	ForcePauseSpaceApp(context.Context, primitive.Identity) error
 	PauseSpaceApp(context.Context, primitive.Identity) error
+
+	SleepSpaceApp(context.Context, *CmdToSleepSpaceApp) error
 }
 
 // NewSpaceappInternalAppService creates a new instance of spaceappInternalAppService
@@ -475,5 +477,62 @@ func (s *spaceappInternalAppService) PauseSpaceApp(ctx context.Context, spaceId 
 		return err
 	}
 	logrus.Infof("spaceId:%s paused app successful", space.Id.Identity())
+	return nil
+}
+
+func (s *spaceappInternalAppService) SleepSpaceApp(ctx context.Context, cmd *CmdToSleepSpaceApp) error {
+	space, err := s.spaceRepo.FindById(cmd.SpaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("not found, err: %w", err))
+		} else {
+			err = xerrors.Errorf("find space by id failed, err: %w", err)
+		}
+		logrus.Errorf("spaceId:%s get space failed, err:%s", cmd.SpaceId.Identity(), err)
+		return err
+	}
+
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space app, err:%w", err)
+		}
+		logrus.Errorf("spaceId:%s get space app failed, err:%s", space.Id.Identity(), err)
+		return err
+	}
+
+	if app.CommitId != cmd.CommitId {
+		err = xerrors.Errorf("sleep commit id:%s is not equal app:%s, failed to sleep space app",
+			cmd.CommitId, app.CommitId)
+		logrus.Errorf("spaceId:%s sleep failed, err:%s", space.Id.Identity(), err)
+		return err
+	}
+
+	if app.Status.IsSleeping() {
+		logrus.Infof("spaceId:%s is sleeping", space.Id.Identity())
+		return nil
+	}
+
+	if err := app.SleepService(); err != nil {
+		logrus.Errorf("spaceId:%s sleep service failed", space.Id.Identity())
+		return err
+	}
+
+	if err := s.repo.Save(&app); err != nil {
+		e := fmt.Errorf("failed to save spaceId:%s db failed, err: %w", space.Id.Identity(), err)
+		err = allerror.New(allerror.ErrorCodeSpaceAppSleepFailed, e.Error(), e)
+		logrus.Errorf("spaceId:%s space sleep app failed:%s", space.Id.Identity(), err)
+		return err
+	}
+	e := domain.NewSpaceAppSleepEvent(&domain.SpaceAppIndex{
+		SpaceId: app.SpaceId,
+	})
+	if err := s.msg.SendSpaceAppSleepEvent(&e); err != nil {
+		logrus.Errorf("spaceId:%s send sleep topic failed:%s", space.Id.Identity(), err)
+		return err
+	}
+	logrus.Infof("spaceId:%s sleep app successful", space.Id.Identity())
 	return nil
 }

@@ -408,6 +408,13 @@ func (s *spaceAppService) Update(
 		return
 	}
 
+	if oldVisibility != space.Visibility.Visibility() {
+		if _, err :=  s.spaceappApp.WakeupSpaceApp(ctx, user,
+			&domain.SpaceIndex{Name: space.Name, Owner: space.Owner}); err != nil {
+			logrus.Errorf("failed to walk up space app, space id:%s", spaceId.Identity())
+		}
+	}
+
 	e := domain.NewSpaceUpdatedEvent(domain.SpaceUpdateEventParam{
 		IsPriToPub:    isPrivateToPublic,
 		Space:         &space,

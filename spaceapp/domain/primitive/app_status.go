@@ -13,8 +13,6 @@ import (
 )
 
 const (
-	appInvalid = "invalid"
-
 	appInit = "init"
 
 	building    = "building"
@@ -30,14 +28,13 @@ const (
 	paused       = "paused"
 	resuming     = "resuming"
 	resumeFailed = "resume_failed"
+
+	sleeping = "sleeping"
 )
 
 var (
 	// AppStatusInit represents the application status when it is in the initialization phase.
 	AppStatusInit = appStatus(appInit)
-
-	// AppStatusInvalid represents the application status when it is invalid requests.
-	AppStatusInvalid = appStatus(appInvalid)
 
 	// AppStatusServing represents the application status when it is serving requests.
 	AppStatusServing = appStatus(serving)
@@ -68,10 +65,12 @@ var (
 
 	// AppStatusResumeFailed represents the application status when the app is resume failed.
 	AppStatusResumeFailed = appStatus(resumeFailed)
+
+	// AppStatusSleeping represents the application status when the app is sleeping.
+	AppStatusSleeping = appStatus(sleeping)
 )
 
 var acceptAppStatusSets = sets.NewString(
-	appInvalid,
 	buildFailed,
 	startFailed,
 	restartFailed,
@@ -80,7 +79,6 @@ var acceptAppStatusSets = sets.NewString(
 // AppStatus is an interface that defines methods for working with application statuses.
 type AppStatus interface {
 	IsInit() bool
-	IsInvalid() bool
 	AppStatus() string
 	IsBuilding() bool
 	IsStarting() bool
@@ -92,6 +90,7 @@ type AppStatus interface {
 	IsUpdateStatusAccept() bool
 	IsStartFailed() bool
 	IsServing() bool
+	IsSleeping() bool
 }
 
 // NewAppStatus creates a new instance of AppStatus based on the provided value.
@@ -99,7 +98,6 @@ func NewAppStatus(v string) (AppStatus, error) {
 	v = strings.ToLower(v)
 
 	switch v {
-	case appInvalid:
 	case appInit:
 	case serving:
 	case building:
@@ -132,11 +130,6 @@ func (r appStatus) AppStatus() string {
 // IsInit checks if the appStatus is equal to appInit.
 func (r appStatus) IsInit() bool {
 	return string(r) == appInit
-}
-
-// IsInit checks if the appStatus is equal to appInit.
-func (r appStatus) IsInvalid() bool {
-	return string(r) == appInvalid
 }
 
 // IsBuilding checks if the appStatus is equal to building.
@@ -182,6 +175,11 @@ func (r appStatus) IsStartFailed() bool {
 // IsServing checks if the appStatus serving
 func (r appStatus) IsServing() bool {
 	return string(r) == serving
+}
+
+// IsSleeping checks if the appStatus is equal to sleeping.
+func (r appStatus) IsSleeping() bool {
+	return string(r) == sleeping
 }
 
 // checks if the appStatus can be update

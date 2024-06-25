@@ -17,4 +17,7 @@ type SpaceAppMessage interface {
 	SendSpaceAppPauseEvent(EventMessage) error
 	SendSpaceAppResumeEvent(EventMessage) error
 	SendSpaceAppForcePauseEvent(EventMessage) error
+	SendSpaceAppHeartbeatEvent(EventMessage) error
+	SendSpaceAppSleepEvent(EventMessage) error
+	SendSpaceAppWakeupEvent(EventMessage) error
 }

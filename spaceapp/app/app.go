@@ -39,6 +39,8 @@ type SpaceappAppService interface {
 	ResumeSpaceApp(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
 	CheckPermissionRead(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
 	GetSpaceIdByName(index *spacedomain.SpaceIndex) (spacedomain.Space, error)
+	WakeupSpaceApp(context.Context, primitive.Account, *spacedomain.SpaceIndex) (domain.SpaceApp, error)
+	WakeupSpaceAppWithMsg(context.Context, primitive.Account, *spacedomain.SpaceIndex) error
 }
 
 // spaceRepository
@@ -318,7 +320,17 @@ func (s *spaceappAppService) CheckPermissionRead(
 		return err
 	}
 
-	return s.permission.CanRead(ctx, user, &space)
+	if err := s.permission.CanRead(ctx, user, &space); err != nil {
+		return err
+	}
+
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
+	if err == nil {
+		e := domain.NewSpaceAppHeartbeatEvent(&app)
+		return s.msg.SendSpaceAppHeartbeatEvent(&e)
+	}
+
+	return nil
 }
 
 // PauseSpaceApp pause a SpaceApp in the spaceappAppService.
@@ -576,4 +588,84 @@ func (s *spaceappAppService) GetBuildLogs(ctx context.Context, user primitive.Ac
 	dto.Logs = log.Logs
 
 	return
+}
+
+func (s *spaceappAppService) getReadSpaceApp(
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
+) (domain.SpaceApp, error) {
+	space, err := s.spaceRepo.FindByName(index)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceNotFound(xerrors.Errorf("space not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space, err:%w", err)
+		}
+
+		return domain.SpaceApp{}, err
+	}
+
+	if err = s.canHandleNotDisable(&space); err != nil {
+		logrus.Errorf("space %v cant wakeup, because was disabled", space.Name.MSDName())
+		return domain.SpaceApp{},err
+	}
+
+	if err = s.permission.CanRead(ctx, user, &space); err != nil {
+		if allerror.IsNoPermission(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space no permission, err:%w", err))
+		} else {
+			err = xerrors.Errorf("no permission to get space, err:%w", err)
+		}
+
+		return domain.SpaceApp{}, err
+	}
+
+	app, err := s.repo.FindBySpaceId(ctx, space.Id)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = newSpaceAppNotFound(xerrors.Errorf("space app not found, err:%w", err))
+		} else {
+			err = xerrors.Errorf("failed to get space app, err:%w", err)
+		}
+
+		return domain.SpaceApp{}, err
+	}
+	return app, nil
+}
+
+// WakeupSpaceApp a SpaceApp in the spaceappAppService.
+func (s *spaceappAppService) WakeupSpaceApp(
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
+) (domain.SpaceApp, error) {
+	app, err := s.getReadSpaceApp(ctx, user, index)
+	if err != nil {
+		return domain.SpaceApp{}, xerrors.Errorf("failed to get space app:%w", err)
+	}
+
+	if err := app.WakeupService(); err != nil {
+		e := xerrors.Errorf("wake up spaceId:%s failed, err: %w", app.SpaceId.Identity(), err)
+		err = allerror.New(allerror.ErrorCodeSpaceAppWakeupFailed, "wake up space failed", e)
+		return domain.SpaceApp{}, err
+	}
+
+	if err := s.repo.Save(&app); err != nil {
+		e := xerrors.Errorf("update wake up spaceId:%s db failed, err: %w", app.SpaceId.Identity(), err)
+		err = allerror.New(allerror.ErrorCodeSpaceAppWakeupFailed, "update wake up space failed", e)
+		return domain.SpaceApp{}, err
+	}
+	return app, nil
+}
+
+// WakeupSpaceAppWithMsg a SpaceApp in the spaceappAppService.
+func (s *spaceappAppService) WakeupSpaceAppWithMsg(
+	ctx context.Context, user primitive.Account, index *spacedomain.SpaceIndex,
+) error {
+	app, err := s.WakeupSpaceApp(ctx, user, index)
+	if err != nil {
+		return xerrors.Errorf("failed to wakeup space app:%w", err)
+	}
+
+	e := domain.NewSpaceAppWakeupEvent(&domain.SpaceAppIndex{
+		SpaceId: app.SpaceId,
+	})
+	return s.msg.SendSpaceAppWakeupEvent(&e)
 }

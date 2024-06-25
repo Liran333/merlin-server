@@ -381,6 +381,9 @@ space_app:
     space_app_restarted: space_app_restarted
     space_app_paused: space_app_paused
     space_app_resumed: space_resume
+    space_app_heartbeat: space_app_heartbeat
+    space_app_sleep: space_app_sleep
+    space_app_wakeup: space_app_wakeup
     space_force_event: space_force_event
   controller:
     sse_token: {{(ds "secret").data.SSE_TOKEN }}

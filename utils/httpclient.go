@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
@@ -52,10 +53,8 @@ func (hc *HttpClient) SendAndHandle(req *http.Request, handle func(http.Header, 
 
 	if resp.StatusCode < statusCodeUpLimit || resp.StatusCode > statusCodeDownLimit {
 		rb, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return xerrors.Errorf("failed to read response body: %w", err)
-		}
-		return xerrors.Errorf("response has status:%s and body:%q", resp.Status, rb)
+		logrus.Infof("get logs failed, body:%s, err:%s", rb, err)
+		return xerrors.Errorf("No logs")
 	}
 
 	if handle != nil {

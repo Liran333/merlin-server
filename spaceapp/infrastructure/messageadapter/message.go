@@ -46,6 +46,21 @@ func (p *messageAdapter) SendSpaceAppForcePauseEvent(e message.EventMessage) err
 	return send(p.topics.SpaceForceEvent, e)
 }
 
+// SendSpaceAppHeartbeatEvent sends a SpaceAppHeartbeat event message to the corresponding topic.
+func (p *messageAdapter) SendSpaceAppHeartbeatEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceAppHeartbeat, e)
+}
+
+// SendSpaceAppSleepEvent sends a SpaceAppSleep event message to the corresponding topic.
+func (p *messageAdapter) SendSpaceAppSleepEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceAppSleep, e)
+}
+
+// SendSpaceAppWakeupEvent sends a SpaceAppWakeup event message to the corresponding topic.
+func (p *messageAdapter) SendSpaceAppWakeupEvent(e message.EventMessage) error {
+	return send(p.topics.SpaceAppWakeup, e)
+}
+
 func send(topic string, v message.EventMessage) error {
 	body, err := v.Message()
 	if err != nil {

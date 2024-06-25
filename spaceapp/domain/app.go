@@ -204,6 +204,30 @@ func (app *SpaceApp) ResumeService() error {
 	return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 }
 
+// SleepService sleep the service for space app
+func (app *SpaceApp) SleepService() error {
+	if !app.Status.IsServing() {
+		e := fmt.Errorf("spaceId:%s, not serving", app.SpaceId.Identity())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = appprimitive.AppStatusSleeping
+
+	return nil
+}
+
+// WakeupService wakeup the service for space app
+func (app *SpaceApp) WakeupService() error {
+	if !app.Status.IsSleeping() {
+		e := fmt.Errorf("spaceId:%s, is not sleeping", app.SpaceId.Identity())
+		return allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
+	}
+
+	app.Status = appprimitive.AppStatusServeStarting
+
+	return nil
+}
+
 // IsAppNotAllowToInit app can be init if return false
 func (app *SpaceApp) IsAppNotAllowToInit() bool {
 	if app.Status.IsPaused() || app.Status.IsResuming() || app.Status.IsResumeFailed() {

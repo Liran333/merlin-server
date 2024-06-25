@@ -35,7 +35,8 @@ func AddRouteForSpaceappInternalController(
 	r.PUT(`/v1/space-app/serving`, m.Write, ctl.NotifySpaceAppServing)
 	r.PUT(`/v1/space-app/failed_status`, m.Write, ctl.NotifySpaceAppFailedStatus)
 
-	r.POST("/v1/space-app/pause", m.Write, ctl.Pause)
+	r.POST(`/v1/space-app/pause`, m.Write, ctl.Pause)
+	r.POST(`/v1/space-app/sleep`, m.Write, ctl.Sleep)
 }
 
 // SpaceAppInternalController is a struct that holds the app service
@@ -196,25 +197,29 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppFailedStatus(ctx *gin.Conte
 	case appprimitive.AppStatusBuildFailed:
 		if err := ctl.appService.NotifyIsBuildFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	case appprimitive.AppStatusStartFailed:
 		if err := ctl.appService.NotifyIsStartFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	case appprimitive.AppStatusRestartFailed:
 		if err := ctl.appService.NotifyIsRestartFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	case appprimitive.AppStatusResumeFailed:
 		if err := ctl.appService.NotifyIsResumeFailed(ctx.Request.Context(), &cmd); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	default:
 		e := fmt.Errorf("old status not %s, can not set", cmd.Status.AppStatus())
 		err = allerror.New(allerror.ErrorCodeSpaceAppUnmatchedStatus, e.Error(), e)
 		commonctl.SendError(ctx, err)
+		return
 	}
-	commonctl.SendRespOfPut(ctx, nil)
 }
 
 // @Summary  Post
@@ -243,11 +248,43 @@ func (ctl *SpaceAppInternalController) Pause(ctx *gin.Context) {
 	if cmd.IsForce {
 		if err := ctl.appService.ForcePauseSpaceApp(ctx.Request.Context(), cmd.SpaceId); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	} else {
 		if err := ctl.appService.PauseSpaceApp(ctx.Request.Context(), cmd.SpaceId); err != nil {
 			commonctl.SendError(ctx, err)
+			return
 		}
 	}
 	commonctl.SendRespOfPost(ctx, "successfully")
+}
+
+// @Summary  Post
+// @Description  sleep space app
+// @Tags     SpaceApp
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Security Internal
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/space-app/sleep [post]
+func (ctl *SpaceAppInternalController) Sleep(ctx *gin.Context) {
+
+	req := reqToSleepSpaceApp{}
+
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+	if err := ctl.appService.SleepSpaceApp(ctx.Request.Context(), &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "successfully")
+	}
 }

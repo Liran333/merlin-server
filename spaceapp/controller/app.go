@@ -25,6 +25,7 @@ func addRouterForSpaceappController(
 	r.POST("/v1/space-app/:owner/:name/restart", m.Write, l.CheckLimit, ctl.Restart)
 	r.POST("/v1/space-app/:owner/:name/pause", m.Write, l.CheckLimit, ctl.Pause)
 	r.POST("/v1/space-app/:owner/:name/resume", m.Write, l.CheckLimit, ctl.Resume)
+	r.POST("/v1/space-app/:owner/:name/wakeup", m.Write, l.CheckLimit, ctl.Wakeup)
 
 }
 
@@ -125,6 +126,33 @@ func (ctl *SpaceAppController) Resume(ctx *gin.Context) {
 	}
 
 	if err := ctl.appService.ResumeSpaceApp(ctx.Request.Context(), user, &index); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "successfully")
+	}
+}
+
+// @Summary  Post
+// @Description  wakeup space app
+// @Tags     Space
+// @Param    owner  path  string  true  "owner of space"
+// @Param    name   path  string  true  "name of space"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData
+// @Router   /v1/space-app/{owner}/{name}/wakeup [post]
+func (ctl *SpaceAppController) Wakeup(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	user := ctl.userMiddleWare.GetUserAndExitIfFailed(ctx)
+	if user == nil {
+		return
+	}
+
+	if err := ctl.appService.WakeupSpaceAppWithMsg(ctx.Request.Context(), user, &index); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPost(ctx, "successfully")

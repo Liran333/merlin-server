@@ -112,3 +112,8 @@ type CmdToNotifyFailedStatus struct {
 type BuildLogsDTO struct {
 	Logs string `json:"logs"`
 }
+
+// CmdToSleepSpaceApp is a command to sleep space app
+type CmdToSleepSpaceApp struct {
+	domain.SpaceAppIndex
+}

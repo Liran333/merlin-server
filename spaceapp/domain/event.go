@@ -80,3 +80,56 @@ func NewSpaceAppResumeEvent(app *SpaceAppIndex) spaceappResumedEvent {
 		CommitId: app.CommitId,
 	}
 }
+
+// spaceappHeartbeatEvent
+type spaceappHeartbeatEvent struct {
+	SpaceId  	string `json:"space_id"`
+	CommitId 	string `json:"commit_id"`
+}
+
+// Message returns the JSON representation of the spaceappResumedEvent.
+func (e *spaceappHeartbeatEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppHeartbeatEvent creates a spaceappHeartbeatEvent instance with the given SpaceApp.
+func NewSpaceAppHeartbeatEvent(app *SpaceApp) spaceappHeartbeatEvent {
+	return spaceappHeartbeatEvent{
+		SpaceId:  	app.SpaceId.Identity(),
+		CommitId: 	app.CommitId,
+	}
+}
+
+// spaceappSleepEvent
+type spaceappSleepEvent struct {
+	SpaceId  	string `json:"space_id"`
+}
+
+// Message returns the JSON representation of the spaceappSleepEvent.
+func (e *spaceappSleepEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppSleepEvent creates a spaceappSleepEvent instance with the given SpaceApp.
+func NewSpaceAppSleepEvent(app *SpaceAppIndex) spaceappSleepEvent {
+	return spaceappSleepEvent{
+		SpaceId:  	app.SpaceId.Identity(),
+	}
+}
+
+// spaceappWakeupEvent
+type spaceappWakeupEvent struct {
+	SpaceId  	string `json:"space_id"`
+}
+
+// Message returns the JSON representation of the spaceappWakeupEvent.
+func (e *spaceappWakeupEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// NewSpaceAppWakeupEvent creates a spaceappWakeupEvent instance with the given SpaceApp.
+func NewSpaceAppWakeupEvent(app *SpaceAppIndex) spaceappWakeupEvent {
+	return spaceappWakeupEvent{
+		SpaceId:  	app.SpaceId.Identity(),
+	}
+}

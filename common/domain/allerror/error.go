@@ -86,6 +86,12 @@ const (
 	// ErrorCodeSpaceAppResumeOverTime is const
 	ErrorCodeSpaceAppResumeOverTime = "space_app_resume_over_time"
 
+	// ErrorCodeSpaceAppSleepFailed sleep space app
+	ErrorCodeSpaceAppSleepFailed = "space_app_sleep_failed"
+
+	// ErrorCodeSpaceAppWakeupFailed sleep space app
+	ErrorCodeSpaceAppWakeupFailed = "space_app_wakeup_failed" // #nosec G101
+
 	// ErrorCodeAccessTokenInvalid This error code is for restful api
 	ErrorCodeAccessTokenInvalid = "access_token_invalid"
 
