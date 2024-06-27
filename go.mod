@@ -13,7 +13,7 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/lib/pq v1.10.9
 	github.com/openmerlin/go-sdk/gitea v0.0.0-20240228092842-85159a1af458
-	github.com/openmerlin/merlin-sdk v0.0.0-20240612025222-11a40b762d8e
+	github.com/openmerlin/merlin-sdk v0.0.0-20240627023944-e4c8f0c6053f
 	github.com/opensourceways/community-robot-lib v0.0.0-20231106030104-fefc5fa67771
 	github.com/opensourceways/kafka-lib v0.0.0-20240524084529-a3e2bbb21be3
 	github.com/opensourceways/redis-lib v0.0.0-20240229112647-bcce13fb1094

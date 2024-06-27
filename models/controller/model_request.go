@@ -169,6 +169,8 @@ type reqToListGlobalModels struct {
 	Task       string `form:"task"`
 	License    string `form:"license"`
 	Frameworks string `form:"frameworks"`
+	Hardwares  string `form:"hardwares"`
+	Language   string `form:"language"`
 
 	reqToListUserModels
 }
@@ -190,7 +192,8 @@ func (req *reqToListGlobalModels) toCmd() (app.CmdToListModels, error) {
 	}
 
 	cmd.Labels.Frameworks = toStringsSets(req.Frameworks)
-
+	cmd.Labels.Hardwares = toStringsSets(req.Hardwares)
+	cmd.Labels.Languages = toStringsSets(req.Language)
 	return cmd, nil
 }
 

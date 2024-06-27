@@ -214,6 +214,10 @@ func (adapter *spaceAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(equalQuery(fieldTask), opt.Labels.Task.Task())
 	}
 
+	if len(opt.Labels.HardwareType) > 0 {
+		db = db.Where(equalQuery(fieldHardwareType), opt.Labels.HardwareType)
+	}
+
 	if opt.Hardware != nil {
 		db = db.Where(equalQuery(fieldHardware), opt.Hardware.Hardware())
 	}

@@ -182,6 +182,9 @@ func (s *spaceAppService) Create(ctx context.Context, user primitive.Account, cm
 
 	if cmd.Hardware.IsNpu() {
 		space.CompPowerAllocated = true
+		space.Labels.HardwareType = "npu"
+	} else {
+		space.Labels.HardwareType = "cpu"
 	}
 
 	if err = s.repoAdapter.Add(&space); err != nil {

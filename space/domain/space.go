@@ -107,9 +107,10 @@ func (m *Space) SetNoApplicationFile(hasHtml, hasApp bool) {
 
 // SpaceLabels represents labels associated with a space.
 type SpaceLabels struct {
-	Task      spaceprimitive.Task // task label
-	Licenses  primitive.License   // license label
-	Framework string              // framework
+	Task         spaceprimitive.Task // task label
+	Licenses     primitive.License   // license label
+	HardwareType string              // hardware_type
+	Framework    string              // framework
 }
 
 // SpaceIndex represents an index for spaces in the code repository.
@@ -187,6 +188,15 @@ func (s *Space) GetQuotaCount() int {
 	}
 
 	return 0
+}
+
+func (s *Space) GetHardwareType() string {
+	if s.Hardware.IsNpu() {
+		return "npu"
+	} else if s.Hardware.IsCpu() {
+		return "cpu"
+	}
+	return ""
 }
 
 // IsValidHardwareType checks if the provided hardware type string is a valid hardware type.

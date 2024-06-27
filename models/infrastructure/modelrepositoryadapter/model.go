@@ -11,13 +11,12 @@ import (
 	"fmt"
 	"strings"
 
-	"gorm.io/gorm"
-
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
+	"gorm.io/gorm"
 )
 
 const (
@@ -79,7 +78,7 @@ func (adapter *modelAdapter) Save(model *domain.Model) error {
 	).Where(
 		equalQuery(fieldVersion), model.Version,
 	).Select(`*`).Omit(fieldTask, fieldOthers, fieldFrameworks, filedLibraryName, fieldHardwares,
-		fileLanguages).Updates(&do)
+		fieldLanguages).Updates(&do)
 
 	if v.Error != nil {
 		return v.Error
@@ -237,6 +236,16 @@ func (adapter *modelAdapter) toQuery(opt *repository.ListOption) *gorm.DB {
 		db = db.Where(equalQuery(fieldTask), v)
 	}
 
+	if v := opt.Labels.Hardwares; v != nil && v.Len() > 0 {
+		query, arg := intersectionFilter(fieldHardwares, v.UnsortedList())
+		db = db.Where(query, arg)
+	}
+
+	if v := opt.Labels.Languages; v != nil && v.Len() > 0 {
+		query, arg := intersectionFilter(fieldLanguages, v.UnsortedList())
+		db = db.Where(query, arg)
+
+	}
 	if v := opt.Labels.Others; v != nil && v.Len() > 0 {
 		query, arg := intersectionFilter(fieldOthers, v.UnsortedList())
 

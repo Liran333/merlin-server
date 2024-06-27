@@ -212,12 +212,12 @@ func (req *reqToListUserSpaces) toCmd() (cmd app.CmdToListSpaces, err error) {
 
 // reqToListGlobalSpaces
 type reqToListGlobalSpaces struct {
-	Task       string `form:"task"`
-	License    string `form:"license"`
-	Hardware   string `form:"hardware"`
-	Framework  string `form:"framework"`
-	HasAppFile bool   `form:"has_app_file"`
-
+	Task         string `form:"task"`
+	License      string `form:"license"`
+	Hardware     string `form:"hardware"`
+	Framework    string `form:"framework"`
+	HasAppFile   bool   `form:"has_app_file"`
+	HardwareType string `form:"hardware_type"`
 	reqToListUserSpaces
 }
 
@@ -255,7 +255,7 @@ func (req *reqToListGlobalSpaces) toCmd() (app.CmdToListSpaces, error) {
 	}
 
 	cmd.HasAppFile = req.HasAppFile
-
+	cmd.Labels.HardwareType = req.HardwareType
 	return cmd, nil
 }
 

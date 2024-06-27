@@ -29,7 +29,7 @@ const (
 	fieldVisibility    = "visibility"
 	fieldFrameworks    = "frameworks"
 	fieldHardwares     = "hardwares"
-	fileLanguages      = "languages"
+	fieldLanguages     = "languages"
 	fieldLikeCount     = "like_count"
 	filedLibraryName   = "library_name"
 	fieldDownloadCount = "download_count"

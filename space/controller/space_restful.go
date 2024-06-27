@@ -104,6 +104,7 @@ func (ctl *SpaceRestfulController) Get(ctx *gin.Context) {
 // @Param    owner           query  string  true   "owner of space" MaxLength(40)
 // @Param    license         query  string  false  "license label" MaxLength(40)
 // @Param    framework       query  string  false  "framework " Enums(pytorch, mindspore)
+// @Param    hardware_type   query  string  false  "type of space" Enums(npu, cpu)
 // @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
 // @Param    has_app_file    query  bool    false  "show has app file space" Enums(true, false)
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)

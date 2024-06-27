@@ -18,6 +18,7 @@ const (
 	filedId                = "id"
 	fieldName              = "name"
 	fieldTask              = "task"
+	fieldHardwareType      = "hardware_type"
 	fieldOwner             = "owner"
 	fieldOthers            = "others"
 	fieldLicense           = "license"
@@ -52,6 +53,7 @@ func toSpaceDO(m *domain.Space) spaceDO {
 		Hardware:           m.Hardware.Hardware(),
 		Fullname:           m.Fullname.MSDFullname(),
 		Framework:          m.Labels.Framework,
+		HardwareType:       m.Labels.HardwareType,
 		BaseImage:          m.BaseImage.BaseImage(),
 		CreatedBy:          m.CreatedBy.Account(),
 		Visibility:         m.Visibility.Visibility(),
@@ -113,6 +115,7 @@ type spaceDO struct {
 	Owner         string         `gorm:"column:owner;index:space_index,unique,priority:1"`
 	License       pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:licenses,type:gin"`
 	Hardware      string         `gorm:"column:hardware"`
+	HardwareType  string         `gorm:"column:hardware_type"`
 	Framework     string         `gorm:"column:framework"`
 	Fullname      string         `gorm:"column:fullname"`
 	AvatarId      string         `gorm:"column:avatar_id"`
@@ -177,9 +180,10 @@ func (do *spaceDO) toSpace() domain.Space {
 		DownloadCount: do.DownloadCount,
 		VisitCount:    do.VisitCount,
 		Labels: domain.SpaceLabels{
-			Task:      spaceprimitive.CreateTask(do.Task),
-			Licenses:  primitive.CreateLicense(do.License),
-			Framework: do.Framework,
+			Task:         spaceprimitive.CreateTask(do.Task),
+			Licenses:     primitive.CreateLicense(do.License),
+			Framework:    do.Framework,
+			HardwareType: do.HardwareType,
 		},
 		CompPowerAllocated: do.CompPowerAllocated,
 		NoApplicationFile:  do.NoApplicationFile,

@@ -23,12 +23,13 @@ import (
 type CmdToCreateSpace struct {
 	coderepoapp.CmdToCreateRepo
 
-	SDK       spaceprimitive.SDK
-	Desc      primitive.MSDDesc
-	Fullname  primitive.MSDFullname
-	Hardware  spaceprimitive.Hardware
-	BaseImage spaceprimitive.BaseImage
-	AvatarId  primitive.Avatar
+	SDK          spaceprimitive.SDK
+	Desc         primitive.MSDDesc
+	Fullname     primitive.MSDFullname
+	Hardware     spaceprimitive.Hardware
+	HardwareType string
+	BaseImage    spaceprimitive.BaseImage
+	AvatarId     primitive.Avatar
 }
 
 func (cmd *CmdToCreateSpace) toSpace() domain.Space {
@@ -84,6 +85,7 @@ func (cmd *CmdToUpdateSpace) toSpace(space *domain.Space) (b bool) {
 
 	if v := cmd.Hardware; v != nil && v != space.Hardware {
 		space.Hardware = v
+		space.Labels.HardwareType = space.GetHardwareType()
 		b = true
 	}
 

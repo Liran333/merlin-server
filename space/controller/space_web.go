@@ -255,6 +255,7 @@ func (ctl *SpaceWebController) ListBoutiques(ctx *gin.Context) {
 // @Param    task            query  string  false  "task label" MaxLength(100)
 // @Param    license         query  string  false  "license label" MaxLength(40)
 // @Param    framework       query  string  false  "framework " Enums(pytorch, mindspore)
+// @Param    hardware_type   query  string  false  "type of space" Enums(npu, cpu)
 // @Param    count           query  bool    false  "whether to calculate the total" Enums(true, false)
 // @Param    sort_by         query  string  false  "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created" Enums(most_likes, alphabetical,most_downloads,recently_updated,recently_created)
 // @Param    page_num        query  int     false  "page num which starts from 1" Mininum(1)
@@ -266,7 +267,6 @@ func (ctl *SpaceWebController) ListGlobal(ctx *gin.Context) {
 	var req reqToListGlobalSpaces
 	if err := ctx.BindQuery(&req); err != nil {
 		commonctl.SendBadRequestParam(ctx, err)
-
 		return
 	}
 
