@@ -5,7 +5,9 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 // Package email provides functionality for sending emails.
 package email
 
-import "gopkg.in/gomail.v2"
+import (
+	"gopkg.in/gomail.v2"
+)
 
 var instance *emailImpl
 

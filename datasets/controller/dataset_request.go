@@ -14,6 +14,7 @@ import (
 	// "github.com/openmerlin/merlin-sdk/datasets"
 
 	"github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/datasets/app"
 	"github.com/openmerlin/merlin-server/datasets/domain/repository"
@@ -226,6 +227,28 @@ func (req *restfulReqToListDatasets) toCmd() (app.CmdToListDatasets, error) {
 		}
 	}
 
+	return cmd, nil
+}
+
+type reqReportDatasetEmail struct {
+	DatasetName string `json:"dataset_name"`
+	Msg         string `json:"msg"`
+	Owner       string `json:"owner"`
+}
+
+func (p *reqReportDatasetEmail) toCmd() (cmd app.CmdToReportDatasetEmail, err error) {
+	if p.DatasetName == "" || p.Msg == "" {
+		e := fmt.Errorf("missing parameters")
+		err = allerror.NewNoPermission(e.Error(), e)
+		return app.CmdToReportDatasetEmail{}, err
+	}
+	if cmd.DataSetName, err = primitive.NewMSDName(p.DatasetName); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
+	if cmd.Owner, err = primitive.NewAccount(p.Owner); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
+	cmd.Msg = p.Msg
 	return cmd, nil
 }
 

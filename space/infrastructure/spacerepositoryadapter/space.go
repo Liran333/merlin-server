@@ -48,6 +48,14 @@ func (adapter *spaceAdapter) FindByName(index *domain.SpaceIndex) (domain.Space,
 	return do.toSpace(), nil
 }
 
+func (adapter *spaceAdapter) FindSpaceByName(spaceName string) (domain.Space, error) {
+	do := spaceDO{Name: spaceName}
+	if err := adapter.GetRecord(&do, &do); err != nil {
+		return domain.Space{}, err
+	}
+	return do.toSpace(), nil
+}
+
 // FindById finds a space by its ID and returns it along with an error if any occurs.
 func (adapter *spaceAdapter) FindById(spaceId primitive.Identity) (domain.Space, error) {
 	do := spaceDO{Id: spaceId.Integer()}

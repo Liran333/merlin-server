@@ -50,3 +50,4 @@ PG_MAX_IDLE: 50
 
 USER_OBS_BUCKET: merlin-local
 AVATAR_CDN_ENDPOINT: https://local
+ROOT_URL: https://modelfoundry.test.osinfra.cn

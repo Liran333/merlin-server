@@ -18,6 +18,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/controller"
 	commonctl "github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/space/app"
@@ -278,6 +279,28 @@ func (req *restfulReqToListSpaces) toCmd() (app.CmdToListSpaces, error) {
 		}
 	}
 
+	return cmd, nil
+}
+
+type reqReportSpaceEmail struct {
+	SpaceName string `json:"space_name"`
+	Msg       string `json:"msg"`
+	Owner     string `json:"owner"`
+}
+
+func (p *reqReportSpaceEmail) toCmd() (cmd app.CmdToReportDatasetEmail, err error) {
+	if p.SpaceName == "" || p.Msg == "" {
+		e := fmt.Errorf("missing parameters")
+		err = allerror.NewNoPermission(e.Error(), e)
+		return app.CmdToReportDatasetEmail{}, err
+	}
+	if cmd.SpaceName, err = primitive.NewMSDName(p.SpaceName); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
+	if cmd.Owner, err = primitive.NewAccount(p.Owner); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
+	cmd.Msg = p.Msg
 	return cmd, nil
 }
 

@@ -94,6 +94,7 @@ type SpaceRepositoryAdapter interface {
 	Count(*ListOption) (int, error)
 	AddLike(domain.Space) error
 	DeleteLike(domain.Space) error
+	FindSpaceByName(string) (domain.Space, error)
 }
 
 // SpaceLabelsRepoAdapter is an interface for interacting with space label repositories.

@@ -12,9 +12,11 @@ import (
 	"strings"
 
 	"github.com/openmerlin/merlin-sdk/models"
+	"golang.org/x/xerrors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/openmerlin/merlin-server/common/controller"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	"github.com/openmerlin/merlin-server/models/app"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
@@ -226,6 +228,28 @@ func (req *restfulReqToListModels) toCmd() (app.CmdToListModels, error) {
 		}
 	}
 
+	return cmd, nil
+}
+
+type reqReportEmail struct {
+	Model string `json:"model"`
+	Msg   string `json:"msg"`
+	Owner string `json:"owner"`
+}
+
+func (p *reqReportEmail) toCmd() (cmd app.CmdToReportEmail, err error) {
+	if p.Model == "" || p.Msg == "" || p.Owner == "" {
+		e := fmt.Errorf("missing parameters")
+		err = allerror.NewNoPermission(e.Error(), e)
+		return app.CmdToReportEmail{}, err
+	}
+	cmd.Msg = p.Msg
+	if cmd.Model, err = primitive.NewMSDName(p.Model); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
+	if cmd.Owner, err = primitive.NewAccount(p.Owner); err != nil {
+		return cmd, xerrors.Errorf("%w", err)
+	}
 	return cmd, nil
 }
 

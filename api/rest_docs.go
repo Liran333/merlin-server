@@ -232,6 +232,390 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/dataset": {
+            "get": {
+                "description": "list global public datasets",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetRestful"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "name of dataset",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "task labels, separate multiple each ones with commas",
+                        "name": "task",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "size label",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "language labels, separate multiple each ones with commas",
+                        "name": "language",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "domain labels, separate multiple each ones with commas",
+                        "name": "domain",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "owner of dataset",
+                        "name": "owner",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "license label",
+                        "name": "license",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            true,
+                            false
+                        ],
+                        "type": "boolean",
+                        "description": "whether to calculate the total",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "most_likes",
+                            "alphabetical",
+                            "most_downloads",
+                            "recently_updated",
+                            "recently_created"
+                        ],
+                        "type": "string",
+                        "description": "sort types: most_likes, alphabetical, most_downloads, recently_updated, recently_created",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page num which starts from 1",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "count per page",
+                        "name": "count_per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.DatasetsDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create dataset",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Create",
+                "parameters": [
+                    {
+                        "description": "body of creating dataset",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToCreateDataset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/dataset/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportDatasetEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/dataset/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "update dataset",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Update",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of dataset",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating dataset",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqToUpdateDataset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete dataset",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Delete",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of dataset",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/dataset/{owner}/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get dataset",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetRestful"
+                ],
+                "summary": "Get",
+                "parameters": [
+                    {
+                        "maxLength": 40,
+                        "type": "string",
+                        "description": "owner of dataset",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "name of dataset",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/app.DatasetDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/invite": {
             "get": {
                 "security": [
@@ -629,6 +1013,60 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/model/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/model/{id}": {
             "put": {
                 "security": [
@@ -965,49 +1403,6 @@ const docTemplaterest = `{
                                         },
                                         "data": {
                                             "$ref": "#/definitions/github_com_openmerlin_merlin-server_user_app.UserDTO"
-                                        },
-                                        "msg": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/organization/avatar/upload": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "upload organization avatar",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Organization"
-                ],
-                "summary": "Upload Avatar",
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/controller.ResponseData"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/app.AvatarUrlDTO"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -2130,6 +2525,47 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/space-app/{owner}/{name}/wakeup": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "wakeup space app",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Space"
+                ],
+                "summary": "Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner of space",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "name of space",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/space/cover/upload": {
             "post": {
                 "security": [
@@ -2161,6 +2597,60 @@ const docTemplaterest = `{
                                         },
                                         "data": {
                                             "$ref": "#/definitions/app.SpaceCoverDTO"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/space/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpaceRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportSpaceEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -3370,6 +3860,50 @@ const docTemplaterest = `{
                 }
             }
         },
+        "app.DatasetDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.DatasetLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "app.DatasetLabelsDTO": {
             "type": "object",
             "properties": {
@@ -3386,7 +3920,10 @@ const docTemplaterest = `{
                     }
                 },
                 "license": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "size": {
                     "type": "string"
@@ -3399,9 +3936,26 @@ const docTemplaterest = `{
                 }
             }
         },
+        "app.DatasetsDTO": {
+            "type": "object",
+            "properties": {
+                "datasets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.DatasetSummary"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "app.MemberDTO": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "integer"
                 },
@@ -3554,7 +4108,7 @@ const docTemplaterest = `{
                         "type": "string"
                     }
                 },
-                "languages": {
+                "language": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3564,7 +4118,10 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "license": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "others": {
                     "type": "array",
@@ -3646,7 +4203,10 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "license": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "task": {
                     "type": "string"
@@ -4015,6 +4575,71 @@ const docTemplaterest = `{
                 }
             }
         },
+        "controller.reqReportDatasetEmail": {
+            "type": "object",
+            "properties": {
+                "dataset_name": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportEmail": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportSpaceEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "space_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToCreateDataset": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.reqToCreateModel": {
             "type": "object",
             "properties": {
@@ -4105,6 +4730,20 @@ const docTemplaterest = `{
             "type": "object",
             "properties": {
                 "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateDataset": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "visibility": {
                     "type": "string"
                 }
             }
@@ -4370,7 +5009,7 @@ const docTemplaterest = `{
                     "description": "framework",
                     "type": "string"
                 },
-                "license": {
+                "licenses": {
                     "description": "license label"
                 },
                 "task": {
@@ -4493,6 +5132,68 @@ const docTemplaterest = `{
                 }
             }
         },
+        "repository.DatasetSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
         "repository.ModelSummary": {
             "type": "object",
             "properties": {
@@ -4521,7 +5222,10 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "license": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "like_count": {
                     "type": "integer"

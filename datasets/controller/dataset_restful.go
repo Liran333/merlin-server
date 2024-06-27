@@ -41,6 +41,7 @@ func AddRouteForDatasetRestfulController(
 
 	r.GET("/v1/dataset/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/dataset", m.Optional, rl.CheckLimit, ctl.List)
+	r.POST("/v1/dataset/report", m.Optional, rl.CheckLimit, ctl.Report)
 }
 
 // DatasetRestfulController is a struct that holds the app service for dataset restful operations.
@@ -133,5 +134,32 @@ func (ctl *DatasetRestfulController) List(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, result)
+	}
+}
+
+// @Summary  SendReportMail
+// @Description  send report Email
+// @Tags     DatasetRestful
+// @Param    body  body      reqReportDatasetEmail  true  "body of send report"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/dataset/report [post]
+func (ctl *DatasetRestfulController) Report(ctx *gin.Context) {
+	var req reqReportDatasetEmail
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if err := ctl.appService.SendReportMail(user, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "succes send Email")
 	}
 }

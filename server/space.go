@@ -8,6 +8,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
@@ -17,6 +18,7 @@ import (
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 	"github.com/openmerlin/merlin-server/space/app"
 	"github.com/openmerlin/merlin-server/space/controller"
+	emailimpl "github.com/openmerlin/merlin-server/space/infrastructure/emailadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/messageadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/obsadapter"
 	"github.com/openmerlin/merlin-server/space/infrastructure/securestoragadapter"
@@ -46,6 +48,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		services.spaceappApp,
 		services.userApp,
 		obsadapter.NewClient(obs.Client()),
+		emailimpl.NewEmailImpl(email.GetEmailInst(), cfg.Email.ReportEmail, cfg.Email.RootUrl, cfg.Email.MailTemplate),
 	)
 
 	services.modelSpace = app.NewModelSpaceAppService(

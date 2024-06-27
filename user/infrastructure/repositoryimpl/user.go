@@ -186,6 +186,7 @@ func (impl *userRepoImpl) GetOrgPageList(
 	if opt.Owner != nil {
 		query = query.Where(impl.EqualQuery(fieldOwner), opt.Owner.Account())
 	}
+	query = query.Where(impl.EqualQuery(fieldType), 1)
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err

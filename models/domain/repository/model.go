@@ -81,6 +81,7 @@ type ModelRepositoryAdapter interface {
 	Count(*ListOption) (int, error)
 	AddLike(domain.Model) error
 	DeleteLike(domain.Model) error
+	FindByModelName(string) (domain.Model, error)
 }
 
 // ModelLabelsRepoAdapter represents an interface for managing model labels.

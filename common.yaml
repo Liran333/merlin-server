@@ -169,11 +169,25 @@ MAX_SPACE_PER_ORG: 4
 MAX_SPACE_PER_USER: 4
 MAX_DATASET_PER_ORG: 4
 MAX_DATASET_PER_USER: 4
-
 COOKIE_CSRF_TOKEN: csrf_token
 COOKIE_SESSION_ID: session_id
+REPORT_COMMENT_EMAIL:
+  - "yuanxiaotong2@h-partners.com"
 
 MAX_AVATAR_FILE_SIZE: 2097152
 MAX_COVER_FILE_SIZE: 2097152
 USER_AVATAR_OBS_PATH: user
 SPACE_COVER_OBS_PATH: space
+REGEXP_RULE: ([<a-zA-Z|\/a-zA-Z]>)
+MAIL_TEMPLATE:     <html>
+    <body>
+    <h3>被举报的%s</h3>
+    <p>%s</p>
+    <h3>举报原因</h3>
+    <p>%s</p>
+    <h3>举报用户</h3>
+    <p>%s</p>
+    <h3>跳转链接</h3>
+    <p>%s</p>
+    </body>
+    </html>

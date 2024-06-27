@@ -51,6 +51,7 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
 
 	r.PUT("/v1/model/:id/disable", ctl.ModelController.userMiddleWare.Write, l.Write, ctl.disable)
+	r.POST("/v1/model/web/report", m.Optional, p.CheckOwner, ctl.Report)
 }
 
 // ModelWebController is a struct that holds the app service for model web operations.
@@ -370,5 +371,32 @@ func (ctl *ModelWebController) disable(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  SendReportMail
+// @Description  send report Email
+// @Tags     ModelWeb
+// @Param    body  body      reqReportEmail  true  "body of send report"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/model/web/report [post]
+func (ctl *ModelWebController) Report(ctx *gin.Context) {
+	var req reqReportEmail
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if err := ctl.appService.SendReportmail(user, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "succes send Email")
 	}
 }

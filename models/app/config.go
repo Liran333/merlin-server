@@ -17,6 +17,7 @@ type Config struct {
 	MaxCountPerOrg  int              `json:"max_count_per_org"`
 	MaxCountPerUser int              `json:"max_count_per_user"`
 	RecommendModels []RecommendIndex `json:"recommend_models"`
+	RegexpRule      string           `json:"regexp_rule"`
 }
 
 // RecommendIndex is a struct that holds the configuration for max count per owner.

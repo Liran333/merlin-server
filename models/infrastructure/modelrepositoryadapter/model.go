@@ -50,6 +50,14 @@ func (adapter *modelAdapter) FindByName(index *domain.ModelIndex) (domain.Model,
 	return do.toModel(), nil
 }
 
+func (adapter *modelAdapter) FindByModelName(modelName string) (domain.Model, error) {
+	do := modelDO{Name: modelName}
+	if err := adapter.GetRecord(&do, &do); err != nil {
+		return domain.Model{}, err
+	}
+	return do.toModel(), nil
+}
+
 // FindById finds a model by its ID.
 func (adapter *modelAdapter) FindById(modelId primitive.Identity) (domain.Model, error) {
 	do := modelDO{Id: modelId.Integer()}

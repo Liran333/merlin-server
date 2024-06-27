@@ -36,8 +36,8 @@ type Config struct {
 	MaxCountSpaceVariable int              `json:"max_count_space_variable"`
 	RecommendSpaces       []RecommendIndex `json:"recommend_spaces"`
 	BoutiqueSpaces        []BoutiqueIndex  `json:"boutique_spaces"`
-
-	avatarIdsSet sets.Set[string]
+	RegexpRule            string           `json:"regexp_rule"`
+	avatarIdsSet          sets.Set[string]
 }
 
 type RecommendIndex struct {

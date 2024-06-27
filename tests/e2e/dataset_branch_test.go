@@ -5,6 +5,7 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package e2e
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -215,6 +216,118 @@ func (s *SuiteDatasetBranch) TestOrgUserCreateInvalidBranch() {
 
 	time.Sleep(1 * time.Second)
 
+	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 测试举报内容有非法字符
+func (s *SuiteInternalDataset) TestDatasetReport() {
+	// 创建数据集
+	data, r, err := ApiRest.DatasetApi.V1DatasetPost(AuthRest2, swaggerRest.ControllerReqToCreateDataset{
+		Name:       "testdataset",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+	// 提交举报信息
+	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest2, swaggerRest.ControllerReqReportDatasetEmail{
+		DatasetName: "testdataset",
+		Msg:         "test Reprot</a>",
+		Owner:       "test2",
+	})
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除数据集
+	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 私人数据集举报失败
+func (s *SuiteInternalDataset) TestPrivateDataset() {
+	// 创建数据集
+	data, r, err := ApiRest.DatasetApi.V1DatasetPost(AuthRest2, swaggerRest.ControllerReqToCreateDataset{
+		Name:       "testdataset",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "private",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	id := getString(s.T(), data.Data)
+	// 提交举报信息
+	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest, swaggerRest.ControllerReqReportDatasetEmail{
+		DatasetName: "testdataset",
+		Msg:         "test report",
+		Owner:       "test2",
+	})
+	assert.NotNil(s.T(), err)
+	fmt.Println(err.Error())
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除数据集
+	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 测试举报内容有非法字符(web)
+func (s *SuiteInternalDataset) TestDatasetReportWeb() {
+	// 创建数据集
+	data, r, err := ApiRest.DatasetApi.V1DatasetPost(AuthRest2, swaggerRest.ControllerReqToCreateDataset{
+		Name:       "testdataset",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "public",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+	// 提交举报信息
+	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest2, swaggerRest.ControllerReqReportDatasetEmail{
+		DatasetName: "testdataset",
+		Msg:         "test Reprot</a>",
+		Owner:       "test2",
+	})
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除数据集
+	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 私人数据集举报失败(web)
+func (s *SuiteInternalDataset) TestPrivateDatasetWeb() {
+	// 创建数据集
+	data, r, err := ApiRest.DatasetApi.V1DatasetPost(AuthRest2, swaggerRest.ControllerReqToCreateDataset{
+		Name:       "testdataset",
+		Owner:      "test2",
+		License:    "mit",
+		Visibility: "private",
+	})
+
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	id := getString(s.T(), data.Data)
+	// 提交举报信息
+	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest, swaggerRest.ControllerReqReportDatasetEmail{
+		DatasetName: "testdataset",
+		Msg:         "test report",
+		Owner:       "test2",
+	})
+	assert.NotNil(s.T(), err)
+	fmt.Println(err.Error())
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除数据集
 	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)

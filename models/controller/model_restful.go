@@ -41,6 +41,7 @@ func AddRouteForModelRestfulController(
 
 	r.GET("/v1/model/:owner/:name", p.CheckOwner, m.Optional, rl.CheckLimit, ctl.Get)
 	r.GET("/v1/model", m.Optional, rl.CheckLimit, ctl.List)
+	r.POST("/v1/model/report", m.Optional, rl.CheckLimit, ctl.Report)
 }
 
 // ModelRestfulController is a struct that holds the app service for model restful operations.
@@ -132,5 +133,32 @@ func (ctl *ModelRestfulController) List(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, result)
+	}
+}
+
+// @Summary  SendReportMail
+// @Description  send report Email
+// @Tags     ModelRestful
+// @Param    body  body      reqReportEmail  true  "body of send report"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/model/report [post]
+func (ctl *ModelRestfulController) Report(ctx *gin.Context) {
+	var req reqReportEmail
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if err := ctl.appService.SendReportmail(user, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "succes send Email")
 	}
 }

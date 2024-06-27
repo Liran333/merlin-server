@@ -8,11 +8,13 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
 	"github.com/openmerlin/merlin-server/config"
 	"github.com/openmerlin/merlin-server/datasets/app"
 	"github.com/openmerlin/merlin-server/datasets/controller"
 	"github.com/openmerlin/merlin-server/datasets/infrastructure/datasetrepositoryadapter"
+	"github.com/openmerlin/merlin-server/datasets/infrastructure/emailimpl"
 	"github.com/openmerlin/merlin-server/datasets/infrastructure/messageadapter"
 	orgrepoimpl "github.com/openmerlin/merlin-server/organization/infrastructure/repositoryimpl"
 )
@@ -31,6 +33,7 @@ func initDataset(cfg *config.Config, services *allServices) error {
 		orgrepoimpl.NewMemberRepo(postgresql.DAO(cfg.Org.Domain.Tables.Member)),
 		services.disable,
 		services.userApp,
+		emailimpl.NewEmailImpl(email.GetEmailInst(), cfg.Email.ReportEmail, cfg.Email.RootUrl, cfg.Email.MailTemplate),
 	)
 
 	return nil

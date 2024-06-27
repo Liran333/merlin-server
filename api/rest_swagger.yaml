@@ -42,6 +42,35 @@ definitions:
       branch_name:
         type: string
     type: object
+  app.DatasetDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.DatasetLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
   app.DatasetLabelsDTO:
     properties:
       domain:
@@ -53,7 +82,9 @@ definitions:
           type: string
         type: array
       license:
-        type: string
+        items:
+          type: string
+        type: array
       size:
         type: string
       task:
@@ -61,8 +92,19 @@ definitions:
           type: string
         type: array
     type: object
+  app.DatasetsDTO:
+    properties:
+      datasets:
+        items:
+          $ref: '#/definitions/repository.DatasetSummary'
+        type: array
+      total:
+        type: integer
+    type: object
   app.MemberDTO:
     properties:
+      avatar_id:
+        type: string
       created_at:
         type: integer
       full_name:
@@ -163,14 +205,16 @@ definitions:
         items:
           type: string
         type: array
-      languages:
+      language:
         items:
           type: string
         type: array
       library_name:
         type: string
       license:
-        type: string
+        items:
+          type: string
+        type: array
       others:
         items:
           type: string
@@ -223,7 +267,9 @@ definitions:
       framework:
         type: string
       license:
-        type: string
+        items:
+          type: string
+        type: array
       task:
         type: string
     type: object
@@ -466,6 +512,48 @@ definitions:
     required:
     - user
     type: object
+  controller.reqReportDatasetEmail:
+    properties:
+      dataset_name:
+        type: string
+      msg:
+        type: string
+      owner:
+        type: string
+    type: object
+  controller.reqReportEmail:
+    properties:
+      model:
+        type: string
+      msg:
+        type: string
+      owner:
+        type: string
+    type: object
+  controller.reqReportSpaceEmail:
+    properties:
+      msg:
+        type: string
+      owner:
+        type: string
+      space_name:
+        type: string
+    type: object
+  controller.reqToCreateDataset:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      license:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      visibility:
+        type: string
+    type: object
   controller.reqToCreateModel:
     properties:
       desc:
@@ -525,6 +613,15 @@ definitions:
   controller.reqToDisableSpace:
     properties:
       reason:
+        type: string
+    type: object
+  controller.reqToUpdateDataset:
+    properties:
+      desc:
+        type: string
+      fullname:
+        type: string
+      visibility:
         type: string
     type: object
   controller.reqToUpdateModel:
@@ -702,7 +799,7 @@ definitions:
       framework:
         description: framework
         type: string
-      license:
+      licenses:
         description: license label
       task:
         description: task label
@@ -783,6 +880,47 @@ definitions:
       website:
         type: string
     type: object
+  repository.DatasetSummary:
+    properties:
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      domain:
+        items:
+          type: string
+        type: array
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      language:
+        items:
+          type: string
+        type: array
+      license:
+        items:
+          type: string
+        type: array
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      size:
+        type: string
+      task:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: integer
+    type: object
   repository.ModelSummary:
     properties:
       desc:
@@ -802,7 +940,9 @@ definitions:
       id:
         type: string
       license:
-        type: string
+        items:
+          type: string
+        type: array
       like_count:
         type: integer
       name:
@@ -992,6 +1132,245 @@ paths:
       summary: DeleteBranch
       tags:
       - BranchRestful
+  /v1/dataset:
+    get:
+      consumes:
+      - application/json
+      description: list global public datasets
+      parameters:
+      - description: name of dataset
+        in: query
+        maxLength: 100
+        name: name
+        type: string
+      - description: task labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: task
+        type: string
+      - description: size label
+        in: query
+        maxLength: 40
+        name: size
+        type: string
+      - description: language labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: language
+        type: string
+      - description: domain labels, separate multiple each ones with commas
+        in: query
+        maxLength: 100
+        name: domain
+        type: string
+      - description: owner of dataset
+        in: query
+        maxLength: 40
+        name: owner
+        required: true
+        type: string
+      - description: license label
+        in: query
+        maxLength: 40
+        name: license
+        type: string
+      - description: whether to calculate the total
+        enum:
+        - true
+        - false
+        in: query
+        name: count
+        type: boolean
+      - description: 'sort types: most_likes, alphabetical, most_downloads, recently_updated,
+          recently_created'
+        enum:
+        - most_likes
+        - alphabetical
+        - most_downloads
+        - recently_updated
+        - recently_created
+        in: query
+        name: sort_by
+        type: string
+      - description: page num which starts from 1
+        in: query
+        name: page_num
+        type: integer
+      - description: count per page
+        in: query
+        name: count_per_page
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.DatasetsDTO'
+                msg:
+                  type: string
+              type: object
+      summary: List
+      tags:
+      - DatasetRestful
+    post:
+      consumes:
+      - application/json
+      description: create dataset
+      parameters:
+      - description: body of creating dataset
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToCreateDataset'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Create
+      tags:
+      - Dataset
+  /v1/dataset/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete dataset
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete
+      tags:
+      - Dataset
+    put:
+      consumes:
+      - application/json
+      description: update dataset
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body of updating dataset
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToUpdateDataset'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Update
+      tags:
+      - Dataset
+  /v1/dataset/{owner}/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get dataset
+      parameters:
+      - description: owner of dataset
+        in: path
+        maxLength: 40
+        name: owner
+        required: true
+        type: string
+      - description: name of dataset
+        in: path
+        maxLength: 100
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.DatasetDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: Get
+      tags:
+      - DatasetRestful
+  /v1/dataset/report:
+    post:
+      consumes:
+      - application/json
+      description: send report Email
+      parameters:
+      - description: body of send report
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqReportDatasetEmail'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: SendReportMail
+      tags:
+      - DatasetRestful
   /v1/invite:
     delete:
       consumes:
@@ -1330,6 +1709,37 @@ paths:
       security:
       - Bearer: []
       summary: Get
+      tags:
+      - ModelRestful
+  /v1/model/report:
+    post:
+      consumes:
+      - application/json
+      description: send report Email
+      parameters:
+      - description: body of send report
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqReportEmail'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: SendReportMail
       tags:
       - ModelRestful
   /v1/name:
@@ -1773,30 +2183,6 @@ paths:
       summary: EditMember
       tags:
       - Organization
-  /v1/organization/avatar/upload:
-    post:
-      consumes:
-      - application/json
-      description: upload organization avatar
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/controller.ResponseData'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/app.AvatarUrlDTO'
-                msg:
-                  type: string
-              type: object
-      security:
-      - Bearer: []
-      summary: Upload Avatar
-      tags:
-      - Organization
   /v1/request:
     delete:
       consumes:
@@ -2160,6 +2546,32 @@ paths:
       summary: Post
       tags:
       - Space
+  /v1/space-app/{owner}/{name}/wakeup:
+    post:
+      consumes:
+      - application/json
+      description: wakeup space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Bearer: []
+      summary: Post
+      tags:
+      - Space
   /v1/space/{id}:
     delete:
       consumes:
@@ -2482,6 +2894,37 @@ paths:
       summary: Upload Space Cover
       tags:
       - Space
+  /v1/space/report:
+    post:
+      consumes:
+      - application/json
+      description: send report Email
+      parameters:
+      - description: body of send report
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqReportSpaceEmail'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: SendReportMail
+      tags:
+      - SpaceRestful
   /v1/space{id}/secret:
     post:
       consumes:

@@ -142,3 +142,9 @@ type CmdToResetLabels = domain.DatasetLabels
 type CmdToUpdateStatistics struct {
 	DownloadCount int `json:"download_count"`
 }
+
+type CmdToReportDatasetEmail struct {
+	DataSetName primitive.MSDName
+	Msg         string
+	Owner       primitive.Account
+}

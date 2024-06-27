@@ -47,6 +47,7 @@ func AddRouteForDatasetWebController(
 	r.GET("/v1/dataset", m.Optional, ctl.ListGlobal)
 
 	r.PUT("/v1/dataset/:id/disable", ctl.DatasetController.userMiddleWare.Write, l.Write, ctl.disable)
+	r.POST("/v1/dataset/web/report", m.Optional, p.CheckOwner, ctl.Report)
 }
 
 // DatasetWebController is a struct that holds the app service for dataset web operations.
@@ -293,5 +294,31 @@ func (ctl *DatasetWebController) disable(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfPut(ctx, nil)
+	}
+}
+
+// @Summary  SendReportMail
+// @Description  send report Email
+// @Tags     DatasetWeb
+// @Param    body  body      reqReportDatasetEmail  true  "body of send report"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/dataset/web/report [post]
+func (ctl *DatasetWebController) Report(ctx *gin.Context) {
+	var req reqReportDatasetEmail
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, xerrors.Errorf("failed to parse req, %w", err))
+		return
+	}
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+	}
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if err := ctl.appService.SendReportMail(user, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "success send Email")
 	}
 }

@@ -876,6 +876,68 @@ func (s *SuiteSpace) TestListBoutiqueSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// 检查举报内容非法字符
+func (s *SuiteSpace) TestCheckStr() {
+	// 创建space
+	space, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       s.Desc,
+		Fullname:   s.Fullname,
+		Hardware:   s.NPU,
+		License:    s.License,
+		Name:       s.Name,
+		Owner:      s.Owner,
+		Sdk:        s.Sdk,
+		Visibility: s.Visibility,
+		BaseImage:  s.BaseImageMSNPU,
+	})
+	id := space.Data
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 发送举报
+	_, r, err = ApiRest.SpaceRestfulApi.V1SpaceReportPost(AuthRest, swaggerRest.ControllerReqReportSpaceEmail{
+		SpaceName: s.Name,
+		Msg:       "</p>hello,world",
+		Owner:     s.Owner,
+	})
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除space
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
+// 私有仓库除创建者外不允许举报
+func (s *SuiteSpace) TestPrivateReport() {
+	// 创建space
+	space, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:       s.Desc,
+		Fullname:   s.Fullname,
+		Hardware:   s.NPU,
+		License:    s.License,
+		Name:       s.Name,
+		Owner:      s.Owner,
+		Sdk:        s.Sdk,
+		Visibility: "private",
+		BaseImage:  s.BaseImageMSNPU,
+	})
+	id := space.Data
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 发送举报
+	_, r, err = ApiRest.SpaceRestfulApi.V1SpaceReportPost(AuthRest2, swaggerRest.ControllerReqReportSpaceEmail{
+		SpaceName: s.Name,
+		Msg:       "hello,world",
+		Owner:     s.Owner,
+	})
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
+	// 删除space
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 func TestSpacen(t *testing.T) {
 	suite.Run(t, new(SuiteSpace))
 }

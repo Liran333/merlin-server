@@ -37,6 +37,56 @@ definitions:
       name:
         type: string
     type: object
+  app.DatasetDTO:
+    properties:
+      created_at:
+        type: integer
+      desc:
+        type: string
+      disable:
+        type: boolean
+      disable_reason:
+        type: string
+      download_count:
+        type: integer
+      fullname:
+        type: string
+      id:
+        type: string
+      labels:
+        $ref: '#/definitions/app.DatasetLabelsDTO'
+      like_count:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      updated_at:
+        type: integer
+      visibility:
+        type: string
+    type: object
+  app.DatasetLabelsDTO:
+    properties:
+      domain:
+        items:
+          type: string
+        type: array
+      language:
+        items:
+          type: string
+        type: array
+      license:
+        items:
+          type: string
+        type: array
+      size:
+        type: string
+      task:
+        items:
+          type: string
+        type: array
+    type: object
   app.ModelDTO:
     properties:
       created_at:
@@ -78,14 +128,16 @@ definitions:
         items:
           type: string
         type: array
-      languages:
+      language:
         items:
           type: string
         type: array
       library_name:
         type: string
       license:
-        type: string
+        items:
+          type: string
+        type: array
       others:
         items:
           type: string
@@ -133,6 +185,11 @@ definitions:
       data: {}
       msg:
         type: string
+    type: object
+  controller.datasetStatistics:
+    properties:
+      download_count:
+        type: integer
     type: object
   controller.modelStatistics:
     properties:
@@ -196,6 +253,27 @@ definitions:
       org_name:
         type: string
     type: object
+  controller.reqToResetDatasetLabel:
+    properties:
+      domain:
+        items:
+          type: string
+        type: array
+      language:
+        items:
+          type: string
+        type: array
+      licenses:
+        items:
+          type: string
+        type: array
+      size:
+        type: string
+      task:
+        items:
+          type: string
+        type: array
+    type: object
   controller.reqToUpdateBuildInfo:
     properties:
       commit_id:
@@ -254,8 +332,10 @@ definitions:
         type: array
       libraryName:
         type: string
-      license:
-        type: string
+      licenses:
+        items:
+          type: string
+        type: array
       tags:
         items:
           type: string
@@ -265,8 +345,10 @@ definitions:
     type: object
   github_com_openmerlin_merlin-server_space_controller.reqToResetLabel:
     properties:
-      license:
-        type: string
+      licenses:
+        items:
+          type: string
+        type: array
       task:
         type: string
     type: object
@@ -619,6 +701,110 @@ paths:
       summary: ComputilityOrgDelete
       tags:
       - ComputilityInternal
+  /v1/dataset/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get dataset info by id
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/app.DatasetDTO'
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: GetById
+      tags:
+      - DatasetInternal
+    put:
+      consumes:
+      - application/json
+      description: update dataset info by id
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body of updating dataset info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.datasetStatistics'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: Update dataset info
+      tags:
+      - DatasetInternal
+  /v1/dataset/{id}/label:
+    put:
+      consumes:
+      - application/json
+      description: reset label of datasets
+      parameters:
+      - description: id of dataset
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqToResetDatasetLabel'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: ResetLabel
+      tags:
+      - DatasetInternal
   /v1/model/{id}:
     get:
       consumes:
@@ -986,6 +1172,32 @@ paths:
       security:
       - Internal: []
       summary: NotifySpaceAppServing
+      tags:
+      - SpaceApp
+  /v1/space-app/sleep:
+    post:
+      consumes:
+      - application/json
+      description: sleep space app
+      parameters:
+      - description: owner of space
+        in: path
+        name: owner
+        required: true
+        type: string
+      - description: name of space
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - Internal: []
+      summary: Post
       tags:
       - SpaceApp
   /v1/space-app/starting:

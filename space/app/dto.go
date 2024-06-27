@@ -270,6 +270,12 @@ type CmdToCreateSpaceVariable struct {
 	Value spaceprimitive.ENVValue
 }
 
+type CmdToReportDatasetEmail struct {
+	SpaceName primitive.MSDName
+	Msg       string
+	Owner     primitive.Account
+}
+
 // CmdToUpdateSpaceVariable is a struct used to update a space variable.
 type CmdToUpdateSpaceVariable struct {
 	Desc  primitive.MSDDesc

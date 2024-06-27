@@ -90,6 +90,53 @@ func (s *SuiteOrgModify) TestOrgDeleteFail() {
 	assert.NotNil(s.T(), err)
 }
 
+// 获取数据时应过滤用户
+func (s *SuiteOrgModify) TestFilterUser() {
+	// 创建组织
+	d := swaggerRest.ControllerOrgCreateRequest{
+		Name:     s.name,
+		Fullname: s.fullname,
+	}
+
+	_, r, err := ApiRest.OrganizationApi.V1OrganizationPost(AuthRest, d)
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 修改申请权限
+	_, r, err = ApiRest.OrganizationApi.V1OrganizationNamePut(AuthRest, s.name,
+		swaggerRest.ControllerOrgBasicInfoUpdateRequest{
+			AllowRequest: true,
+		})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 用户加入组织
+	_, r, err = ApiRest.OrganizationApi.V1RequestPost(AuthRest2, swaggerRest.ControllerOrgReqMemberRequest{
+		OrgName: s.name,
+		Msg:     "request me",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 同意加入
+	_, r, err = ApiRest.OrganizationApi.V1RequestPut(AuthRest, swaggerRest.ControllerOrgApproveMemberRequest{
+		User:    "test2",
+		OrgName: s.name,
+		Msg:     "approve me",
+		Member:  "write",
+	})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+	// 查询
+	data, r, err := ApiRest.OrganizationApi.V1OrganizationGet(AuthRest, &swaggerRest.OrganizationApiV1OrganizationGetOpts{})
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	orgs := getData(s.T(), data.Data)
+	labels := orgs["Labels"]
+	assert.Equal(s.T(), 1, len(labels.([]swaggerRest.GithubComOpenmerlinMerlinServerUserAppUserDto)))
+	// 删除组织
+	r, err = ApiRest.OrganizationApi.V1OrganizationNameDelete(AuthRest, s.name)
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestOrgModify used for testing
 func TestOrgModify(t *testing.T) {
 	suite.Run(t, new(SuiteOrgModify))

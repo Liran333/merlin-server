@@ -14,8 +14,9 @@ func Init(cfg *Config) {
 
 // Config is a struct that holds the configuration for max count per owner.
 type Config struct {
-	MaxCountPerOrg  int `json:"max_count_per_org"`
-	MaxCountPerUser int `json:"max_count_per_user"`
+	MaxCountPerOrg  int    `json:"max_count_per_org"`
+	MaxCountPerUser int    `json:"max_count_per_user"`
+	GegexpRule      string `json:"regexp_rule"`
 }
 
 // SetDefault sets the default values for the Config struct.

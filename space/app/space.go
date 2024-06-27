@@ -7,6 +7,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -21,6 +22,7 @@ import (
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	orgrepo "github.com/openmerlin/merlin-server/organization/domain/repository"
 	"github.com/openmerlin/merlin-server/space/domain"
+	"github.com/openmerlin/merlin-server/space/domain/email"
 	"github.com/openmerlin/merlin-server/space/domain/message"
 	"github.com/openmerlin/merlin-server/space/domain/obs"
 	"github.com/openmerlin/merlin-server/space/domain/repository"
@@ -78,6 +80,7 @@ type SpaceAppService interface {
 	Recommend(context.Context, primitive.Account) []repository.SpaceSummary
 	Boutique(context.Context, primitive.Account) []repository.SpaceSummary
 	setSpacesStatus(ctx context.Context, spacesDTO []repository.SpaceSummary) []repository.SpaceSummary
+	SendSpaceReportEmail(primitive.Account, *CmdToReportDatasetEmail) error
 	UploadCover(*CmdToUploadCover) (SpaceCoverDTO, error)
 }
 
@@ -98,6 +101,7 @@ func NewSpaceAppService(
 	spaceappApp spaceappApp.SpaceappAppService,
 	user userapp.UserService,
 	obs obs.ObsService,
+	email email.Email,
 ) SpaceAppService {
 	return &spaceAppService{
 		permission:           permission,
@@ -115,6 +119,7 @@ func NewSpaceAppService(
 		spaceappApp:          spaceappApp,
 		user:                 user,
 		obs:                  obs,
+		email:                email,
 	}
 }
 
@@ -134,6 +139,7 @@ type spaceAppService struct {
 	spaceappApp          spaceappApp.SpaceappAppService
 	user                 userapp.UserService
 	obs                  obs.ObsService
+	email                email.Email
 }
 
 // Create creates a new space with the given command and returns the ID of the created space.
@@ -759,6 +765,36 @@ func (s *spaceAppService) setSpacesStatus(
 	}
 
 	return spacesSummary
+}
+
+func (s *spaceAppService) SendSpaceReportEmail(user primitive.Account, cmd *CmdToReportDatasetEmail) error {
+	pattern, _ := regexp.Compile(config.RegexpRule)
+	html := pattern.FindStringSubmatch(cmd.Msg)
+	if len(html) > 0 {
+		e := fmt.Errorf("contains illegal characters")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	index := domain.SpaceIndex{
+		Owner: cmd.Owner,
+		Name:  cmd.SpaceName,
+	}
+	data, err := s.repoAdapter.FindByName(&index)
+	if err != nil {
+		err := allerror.NewNoPermission(err.Error(), err)
+		return err
+	}
+	if data.Visibility == primitive.CreateVisibility("private") && data.Owner != user {
+		e := fmt.Errorf("no permission")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	safeMsg := utils.XSSEscapeString(cmd.Msg)
+	url := fmt.Sprintf("%s/spaces/%s/%s", s.email.GetRootUrl(), data.Owner.Account(), data.Name)
+	if err := s.email.Send(cmd.SpaceName.MSDName(), safeMsg, user.Account(), url); err != nil {
+		return err
+	}
+	return nil
 }
 
 // UpdateCover upload cover and  updates the cover url of space.

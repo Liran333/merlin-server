@@ -8,6 +8,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -18,6 +19,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
+	"github.com/openmerlin/merlin-server/models/domain/email"
 	"github.com/openmerlin/merlin-server/models/domain/message"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
@@ -37,6 +39,7 @@ type ModelAppService interface {
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
 	Recommend(context.Context, primitive.Account) []ModelDTO
+	SendReportmail(primitive.Account, *CmdToReportEmail) error
 }
 
 // NewModelAppService creates a new instance of the model application service.
@@ -48,6 +51,7 @@ func NewModelAppService(
 	member orgrepo.OrgMember,
 	disableOrg orgapp.PrivilegeOrg,
 	user userapp.UserService,
+	email email.Email,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
@@ -57,6 +61,7 @@ func NewModelAppService(
 		member:      member,
 		disableOrg:  disableOrg,
 		user:        user,
+		email:       email,
 	}
 }
 
@@ -68,6 +73,7 @@ type modelAppService struct {
 	member      orgrepo.OrgMember
 	disableOrg  orgapp.PrivilegeOrg
 	user        userapp.UserService
+	email       email.Email
 }
 
 // Create creates a new model.
@@ -433,4 +439,34 @@ func (s *modelAppService) Recommend(ctx context.Context, user primitive.Account)
 	}
 
 	return modelsDTO
+}
+
+func (s *modelAppService) SendReportmail(user primitive.Account, cmd *CmdToReportEmail) error {
+	pattern, _ := regexp.Compile(config.RegexpRule)
+	html := pattern.FindStringSubmatch(cmd.Msg)
+	if len(html) > 0 {
+		e := fmt.Errorf("contains illegal characters")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	index := domain.ModelIndex{
+		Owner: cmd.Owner,
+		Name:  cmd.Model,
+	}
+	data, err := s.repoAdapter.FindByName(&index)
+	if err != nil {
+		err := allerror.NewNoPermission(err.Error(), err)
+		return err
+	}
+	if data.Visibility == primitive.CreateVisibility("private") && data.Owner != user {
+		e := fmt.Errorf("no permission")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	safeMsg := utils.XSSEscapeString(cmd.Msg)
+	url := fmt.Sprintf("%s/models/%s/%s", s.email.GetRootUrl(), data.Owner.Account(), data.Name)
+	if err := s.email.Send(cmd.Model.MSDName(), safeMsg, user.Account(), url); err != nil {
+		return err
+	}
+	return nil
 }

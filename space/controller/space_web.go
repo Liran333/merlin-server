@@ -57,6 +57,7 @@ func AddRouteForSpaceWebController(
 	r.GET("/v1/space/relation/:id/model", m.Optional, rl.CheckLimit, ctl.GetModelsBySpaceId)
 
 	r.PUT("/v1/space/:id/disable", ctl.SpaceController.userMiddleWare.Write, l.Write, rl.CheckLimit, ctl.Disable)
+	r.POST("/v1/space/web/report", p.CheckOwner, m.Optional, ctl.SpaceReport)
 }
 
 // SpaceWebController is a struct that holds the necessary dependencies for
@@ -368,4 +369,31 @@ func (ctl *SpaceWebController) GetModelsBySpaceId(ctx *gin.Context) {
 	}
 
 	commonctl.SendRespOfGet(ctx, &models)
+}
+
+// @Summary  SendReportMail
+// @Description  send report Email
+// @Tags     SpaceWeb
+// @Param    body  body      reqReportSpaceEmail  true  "body of send report"
+// @Accept   json
+// @Security Bearer
+// @Success  201   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/space/web/report [post]
+func (ctl *SpaceWebController) SpaceReport(ctx *gin.Context) {
+	var req reqReportSpaceEmail
+	if err := ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+	cmd, err := req.toCmd()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+	user := ctl.userMiddleWare.GetUser(ctx)
+	if err := ctl.appService.SendSpaceReportEmail(user, &cmd); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx, "succes send Email")
+	}
 }

@@ -97,6 +97,7 @@ space:
     obs_path:  {{ (ds "common").USER_AVATAR_OBS_PATH }}
     obs_bucket:  {{ (ds "data").USER_OBS_BUCKET }}
     cdn_endpoint: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
+    regexp_rule: {{(ds "common").REGEXP_RULE}}
     recommend_spaces:
     {{- range $v := (ds "common").RECOMMEND_SPACES }}
     - owner: {{ $v.owner }}
@@ -251,6 +252,7 @@ model:
     {{- end }}
     max_count_per_org: {{(ds "common").MAX_MODEL_PER_ORG }}
     max_count_per_user: {{(ds "common").MAX_MODEL_PER_USER }}
+    regexp_rule: {{(ds "common").REGEXP_RULE}}
 
 datasets:
   tables:
@@ -269,6 +271,7 @@ datasets:
   app:
     max_count_per_org: {{(ds "common").MAX_DATASET_PER_ORG }}
     max_count_per_user: {{(ds "common").MAX_DATASET_PER_USER }}
+    regexp_rule: {{(ds "common").REGEXP_RULE}}
 
 redis:
   address: {{(ds "secret").data.REDIS_HOST }}:{{(ds "secret").data.REDIS_PORT }}
@@ -441,10 +444,16 @@ other_config:
 #      org_name: testorg3
 
 email:
-  auth_code: "xxx"
-  from: "348134071@qq.com"
+  auth_code: "xxxx"
+  from: "1319586716@qq.com"
   host: "smtp.qq.com"
   port: 465
+  report_email:
+    {{- range (ds "common").REPORT_COMMENT_EMAIL}}
+        - "{{ . }}"
+    {{- end }}
+  root_url: {{(ds "data").ROOT_URL}}
+  mail_template: {{ (ds "common").MAIL_TEMPLATE}}
 
 trace:
   enabled: true

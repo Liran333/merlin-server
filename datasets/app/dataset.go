@@ -8,6 +8,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
@@ -18,6 +19,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/datasets/domain"
+	"github.com/openmerlin/merlin-server/datasets/domain/email"
 	"github.com/openmerlin/merlin-server/datasets/domain/message"
 	"github.com/openmerlin/merlin-server/datasets/domain/repository"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
@@ -36,6 +38,7 @@ type DatasetAppService interface {
 	List(context.Context, primitive.Account, *CmdToListDatasets) (DatasetsDTO, error)
 	AddLike(primitive.Identity) error
 	DeleteLike(primitive.Identity) error
+	SendReportMail(primitive.Account, *CmdToReportDatasetEmail) error
 }
 
 // NewDatasetAppService creates a new instance of the dataset application service.
@@ -47,6 +50,7 @@ func NewDatasetAppService(
 	member orgrepo.OrgMember,
 	disableOrg orgapp.PrivilegeOrg,
 	user userapp.UserService,
+	email email.Email,
 ) DatasetAppService {
 	return &datasetAppService{
 		permission:  permission,
@@ -56,6 +60,7 @@ func NewDatasetAppService(
 		member:      member,
 		disableOrg:  disableOrg,
 		user:        user,
+		email:       email,
 	}
 }
 
@@ -67,6 +72,7 @@ type datasetAppService struct {
 	member      orgrepo.OrgMember
 	disableOrg  orgapp.PrivilegeOrg
 	user        userapp.UserService
+	email       email.Email
 }
 
 // Create creates a new dataset.
@@ -422,6 +428,36 @@ func (s *datasetAppService) DeleteLike(datasetId primitive.Identity) error {
 
 	if err := s.repoAdapter.DeleteLike(dataset); err != nil {
 		return xerrors.Errorf("failed to delete dataset(%d) like:, %w", datasetId, err)
+	}
+	return nil
+}
+
+func (s *datasetAppService) SendReportMail(user primitive.Account, cmd *CmdToReportDatasetEmail) error {
+	pattern, _ := regexp.Compile(config.GegexpRule)
+	html := pattern.FindStringSubmatch(cmd.Msg)
+	if len(html) > 0 {
+		e := fmt.Errorf("contains illegal characters")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	index := domain.DatasetIndex{
+		Owner: cmd.Owner,
+		Name:  cmd.DataSetName,
+	}
+	data, err := s.repoAdapter.FindByName(&index)
+	if err != nil {
+		err := allerror.NewNoPermission(err.Error(), err)
+		return err
+	}
+	if data.Visibility == primitive.CreateVisibility("private") && data.Owner != user {
+		e := fmt.Errorf("no permission")
+		err := allerror.NewNoPermission(e.Error(), e)
+		return err
+	}
+	safeMsg := utils.XSSEscapeString(cmd.Msg)
+	url := fmt.Sprintf("%s/datasets/%s/%s", s.email.GetRootUrl(), data.Owner.Account(), data.Name)
+	if err := s.email.Send(cmd.DataSetName.MSDName(), safeMsg, user.Account(), url); err != nil {
+		return err
 	}
 	return nil
 }
