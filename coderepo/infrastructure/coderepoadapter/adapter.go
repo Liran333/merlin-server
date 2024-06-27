@@ -130,5 +130,8 @@ func (adapter *codeRepoAdapter) FindByIndex(index primitive.Identity) (domain.Co
 // IsNotFound check whether a code repository is not found
 func (adapter *codeRepoAdapter) IsNotFound(index primitive.Identity) bool {
 	_, resp, _ := adapter.client.GetRepoByID(index.Integer())
-	return resp.StatusCode == http.StatusNotFound
+	if resp != nil {
+		return resp.StatusCode == http.StatusNotFound
+	}
+	return false
 }
