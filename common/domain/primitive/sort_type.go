@@ -14,6 +14,7 @@ const (
 	SortByMostLikes       = "most_likes"
 	SortByAlphabetical    = "alphabetical"
 	SortByMostDownloads   = "most_downloads"
+	SortByMostVisits      = "most_visits"
 	SortByRecentlyUpdated = "recently_updated"
 	SortByRecentlyCreated = "recently_created"
 	SortByGlobal          = "global"
@@ -36,6 +37,8 @@ func NewSortType(v string) (SortType, error) {
 
 	case SortByMostDownloads:
 		return sortType(SortByMostDownloads), nil
+	case SortByMostVisits:
+		return sortType(SortByMostVisits), nil
 
 	case SortByRecentlyUpdated:
 		return sortType(SortByRecentlyUpdated), nil
