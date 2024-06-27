@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"sort"
 
 	"golang.org/x/xerrors"
@@ -13,6 +14,9 @@ import (
 	"github.com/openmerlin/merlin-server/discussion/domain"
 	"github.com/openmerlin/merlin-server/discussion/domain/repository"
 )
+
+var discussionDisabledErr = allerror.New(
+	allerror.ErrorCodeDiscussionDisabled, "discussion disabled", errors.New("discussion disabled"))
 
 type IssueService interface {
 	ListIssuesCount(context.Context, primitive.Account, primitive.Identity) (ListIssuesCountDTO, error)
@@ -35,32 +39,31 @@ func NewIssueService(
 	iq IssueRepoQuery,
 	c repository.IssueComment,
 ) *issueService {
+	rp := resourcePermission{
+		resource:   re,
+		permission: p,
+	}
+
 	return &issueService{
-		resource:       re,
-		permission:     p,
-		issueRepo:      i,
-		issueRepoQuery: iq,
-		commentRepo:    c,
+		resourcePermission: rp,
+		issueRepo:          i,
+		issueRepoQuery:     iq,
+		commentRepo:        c,
 	}
 }
 
 type issueService struct {
-	resource       resourceadapter.ResourceAdapter
-	permission     app.ResourcePermissionAppService
-	issueRepo      repository.Issue
-	issueRepoQuery IssueRepoQuery
-	commentRepo    repository.IssueComment
+	resourcePermission resourcePermission
+	issueRepo          repository.Issue
+	issueRepoQuery     IssueRepoQuery
+	commentRepo        repository.IssueComment
 }
 
 func (i *issueService) CreateIssue(ctx context.Context, cmd CmdToCreateIssue) error {
 	//todo sensitive check
 
-	r, err := i.resource.GetByIndex(cmd.Resource.Id)
+	_, err := i.resourcePermission.CanRead(ctx, cmd.Resource.Id, cmd.Owner)
 	if err != nil {
-		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
-	}
-
-	if err = i.permission.CanRead(ctx, cmd.Owner, r); err != nil {
 		return err
 	}
 
@@ -70,8 +73,8 @@ func (i *issueService) CreateIssue(ctx context.Context, cmd CmdToCreateIssue) er
 		return allerror.New(allerror.ErrorCodeFailToCreateIssue, "failed to create issue", err)
 	}
 
-	comment := domain.NewIssueComment(cmd.Owner, issueId, cmd.Content)
-	if err = i.commentRepo.Save(comment); err != nil {
+	comment := domain.NewFirstIssueComment(cmd.Owner, issueId, cmd.Content)
+	if _, err = i.commentRepo.Save(comment); err != nil {
 		return allerror.New(allerror.ErrorCodeFailToCreateComment, "failed to create comment", err)
 	}
 
@@ -79,17 +82,17 @@ func (i *issueService) CreateIssue(ctx context.Context, cmd CmdToCreateIssue) er
 }
 
 func (i *issueService) CloseIssue(ctx context.Context, cmd CmdToCloseIssue) error {
-	r, err := i.resource.GetByIndex(cmd.Resource.Id)
+	_, err := i.resourcePermission.CanRead(ctx, cmd.Resource.Id, cmd.User)
 	if err != nil {
-		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
+		return err
 	}
 
 	canUpdateResource := false
-	if err = i.permission.CanUpdate(ctx, cmd.User, r); err == nil {
+	if err = i.resourcePermission.CanUpdate(ctx, cmd.Resource.Id, cmd.User); err == nil {
 		canUpdateResource = true
 	}
 
-	issue, err := i.issueRepo.Find(cmd.IssueId)
+	issue, err := i.issueRepo.Find(ctx, cmd.IssueId)
 	if err != nil {
 		return allerror.NewNotFound(
 			allerror.ErrorCodeIssueNotFound,
@@ -114,17 +117,17 @@ func (i *issueService) CloseIssue(ctx context.Context, cmd CmdToCloseIssue) erro
 }
 
 func (i *issueService) ReopenIssue(ctx context.Context, cmd CmdToReopenIssue) error {
-	r, err := i.resource.GetByIndex(cmd.Resource.Id)
+	_, err := i.resourcePermission.CanRead(ctx, cmd.Resource.Id, cmd.User)
 	if err != nil {
-		return allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
+		return err
 	}
 
 	canUpdateResource := false
-	if err = i.permission.CanUpdate(ctx, cmd.User, r); err == nil {
+	if err = i.resourcePermission.CanUpdate(ctx, cmd.Resource.Id, cmd.User); err == nil {
 		canUpdateResource = true
 	}
 
-	issue, err := i.issueRepo.Find(cmd.IssueId)
+	issue, err := i.issueRepo.Find(ctx, cmd.IssueId)
 	if err != nil {
 		return allerror.NewNotFound(
 			allerror.ErrorCodeIssueNotFound,
@@ -150,34 +153,22 @@ func (i *issueService) ReopenIssue(ctx context.Context, cmd CmdToReopenIssue) er
 
 func (i *issueService) ListIssuesCount(ctx context.Context, user primitive.Account, id primitive.Identity,
 ) (dto ListIssuesCountDTO, err error) {
-	r, err := i.resource.GetByIndex(id)
+	_, err = i.resourcePermission.CanRead(ctx, id, user)
 	if err != nil {
-		err = allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
-
-		return
-	}
-
-	if err = i.permission.CanRead(ctx, user, r); err != nil {
 		return
 	}
 
 	return i.issueRepoQuery.CountByStatus(id)
 }
 
-func (i *issueService) ListIssues(
-	ctx context.Context, user primitive.Account, cmd CmdToListIssues) (dto ListIssuesDTO, err error) {
-	r, err := i.resource.GetByIndex(cmd.ResourceId)
+func (i *issueService) ListIssues(ctx context.Context, user primitive.Account, cmd CmdToListIssues,
+) (dto ListIssuesDTO, err error) {
+	_, err = i.resourcePermission.CanRead(ctx, cmd.Resource.Id, user)
 	if err != nil {
-		err = allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
-
 		return
 	}
 
-	if err = i.permission.CanRead(ctx, user, r); err != nil {
-		return
-	}
-
-	issuesDTO, err := i.issueRepoQuery.List(cmd.ResourceId, cmd.Option)
+	issuesDTO, err := i.issueRepoQuery.List(cmd.Resource.Id, cmd.Option)
 
 	return ListIssuesDTO{
 		List: issuesDTO,
@@ -185,18 +176,12 @@ func (i *issueService) ListIssues(
 }
 
 func (i *issueService) GetIssue(ctx context.Context, cmd CmdToGetIssue) (dto IssueDetailDTO, err error) {
-	r, err := i.resource.GetByIndex(cmd.ResourceId)
+	_, err = i.resourcePermission.CanRead(ctx, cmd.Resource.Id, cmd.User)
 	if err != nil {
-		err = allerror.New(allerror.ErrorCodeRepoNotFound, "resource not found", err)
-
 		return
 	}
 
-	if err = i.permission.CanRead(ctx, cmd.User, r); err != nil {
-		return
-	}
-
-	issue, err := i.issueRepo.Find(cmd.IssueId)
+	issue, err := i.issueRepo.Find(ctx, cmd.IssueId)
 	if err != nil {
 		return IssueDetailDTO{}, allerror.NewNotFound(
 			allerror.ErrorCodeIssueNotFound,
@@ -207,7 +192,7 @@ func (i *issueService) GetIssue(ctx context.Context, cmd CmdToGetIssue) (dto Iss
 
 	// check whether user has the permission to close/reopen issue
 	var isOwner = false
-	if err = i.permission.CanUpdate(ctx, cmd.User, r); err == nil {
+	if err = i.resourcePermission.CanUpdate(ctx, cmd.Resource.Id, cmd.User); err == nil {
 		isOwner = true
 	}
 

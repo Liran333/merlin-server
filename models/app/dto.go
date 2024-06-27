@@ -61,20 +61,21 @@ func (cmd *CmdToDisableModel) toModel(model *domain.Model) {
 
 // ModelDTO is a struct that represents a data transfer object for a model.
 type ModelDTO struct {
-	Id            string         `json:"id"`
-	Name          string         `json:"name"`
-	Desc          string         `json:"desc"`
-	Owner         string         `json:"owner"`
-	Labels        ModelLabelsDTO `json:"labels"`
-	Fullname      string         `json:"fullname"`
-	CreatedAt     int64          `json:"created_at"`
-	UpdatedAt     int64          `json:"updated_at"`
-	LikeCount     int            `json:"like_count"`
-	Visibility    string         `json:"visibility"`
-	Usage         string         `json:"usage"`
-	DownloadCount int            `json:"download_count"`
-	Disable       bool           `json:"disable"`
-	DisableReason string         `json:"disable_reason"`
+	Id                   string         `json:"id"`
+	Name                 string         `json:"name"`
+	Desc                 string         `json:"desc"`
+	Owner                string         `json:"owner"`
+	Labels               ModelLabelsDTO `json:"labels"`
+	Fullname             string         `json:"fullname"`
+	CreatedAt            int64          `json:"created_at"`
+	UpdatedAt            int64          `json:"updated_at"`
+	LikeCount            int            `json:"like_count"`
+	Visibility           string         `json:"visibility"`
+	Usage                string         `json:"usage"`
+	DownloadCount        int            `json:"download_count"`
+	Disable              bool           `json:"disable"`
+	DisableReason        string         `json:"disable_reason"`
+	IsDiscussionDisabled bool           `json:"is_discussion_disabled"`
 }
 
 // ModelLabelsDTO is a struct that represents a data transfer object for model labels.
@@ -114,9 +115,11 @@ func toModelDTO(model *domain.Model) ModelDTO {
 		Visibility:    model.Visibility.Visibility(),
 		DownloadCount: model.DownloadCount,
 
-		Usage:         model.UseInOpenmind,
-		Disable:       model.Disable,
-		DisableReason: model.DisableReason.DisableReason()}
+		Usage:                model.UseInOpenmind,
+		Disable:              model.Disable,
+		DisableReason:        model.DisableReason.DisableReason(),
+		IsDiscussionDisabled: model.IsDiscussionDisabled,
+	}
 
 	if model.Desc != nil {
 		dto.Desc = model.Desc.MSDDesc()

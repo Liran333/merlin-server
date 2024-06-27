@@ -13,6 +13,7 @@ import (
 	computilityapp "github.com/openmerlin/merlin-server/computility/app"
 	"github.com/openmerlin/merlin-server/config"
 	datasetapp "github.com/openmerlin/merlin-server/datasets/app"
+	"github.com/openmerlin/merlin-server/discussion/app"
 	modelapp "github.com/openmerlin/merlin-server/models/app"
 	orgapp "github.com/openmerlin/merlin-server/organization/app"
 	sessionapp "github.com/openmerlin/merlin-server/session/app"
@@ -65,6 +66,10 @@ type allServices struct {
 	computilityApp computilityapp.ComputilityInternalAppService
 
 	privacyClear controller.PrivacyClear
+
+	discussionIssue   app.IssueService
+	discussionComment app.CommentService
+	discussion        app.DiscussionService
 }
 
 func initServices(cfg *config.Config) (services allServices, err error) {
@@ -110,6 +115,9 @@ func initServices(cfg *config.Config) (services allServices, err error) {
 
 	// initResource depends on initModel and initSpace
 	initResource(&services)
+
+	// initDiscussion depends on init initOrg
+	initDiscussion(cfg, &services)
 
 	return
 }

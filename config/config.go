@@ -25,6 +25,7 @@ import (
 	"github.com/openmerlin/merlin-server/common/infrastructure/securestorage"
 	"github.com/openmerlin/merlin-server/computility"
 	"github.com/openmerlin/merlin-server/datasets"
+	"github.com/openmerlin/merlin-server/discussion"
 	"github.com/openmerlin/merlin-server/models"
 	"github.com/openmerlin/merlin-server/organization"
 	"github.com/openmerlin/merlin-server/organization/domain/permission"
@@ -75,6 +76,7 @@ type Config struct {
 	CodeRepo     coderepo.Config      `json:"coderepo"`
 	Internal     internal.Config      `json:"internal"`
 	Primitive    primitive.Config     `json:"primitive"`
+	Discussion   discussion.Config    `json:"discussion"`
 	Postgresql   postgresql.Config    `json:"postgresql"`
 	Permission   permission.Config    `json:"permission"`
 	RateLimiter  ratelimiter.Config   `json:"ratelimit"`
@@ -109,6 +111,8 @@ func (cfg *Config) Init() error {
 
 	cfg.Activity.Init()
 
+	cfg.Discussion.Init()
+
 	cfg.User.Init()
 
 	internal.Init(&cfg.Internal)
@@ -138,6 +142,7 @@ func (cfg *Config) ConfigItems() []interface{} {
 		&cfg.CodeRepo,
 		&cfg.Internal,
 		&cfg.Primitive,
+		&cfg.Discussion,
 		&cfg.Postgresql,
 		&cfg.Vault,
 		&cfg.OtherConfig,

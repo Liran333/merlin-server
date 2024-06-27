@@ -19,6 +19,9 @@ type Resource interface {
 	IsDisable() bool
 	ResourceVisibility() primitive.Visibility
 	ResourceLicense() primitive.License
+	DiscussionDisabled() bool
+	CloseDiscussion() error
+	ReopenDiscussion() error
 }
 
 // CodeRepoIndex represents a code repository index with a name and owner.

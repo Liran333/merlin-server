@@ -1,7 +1,8 @@
 package repository
 
 import (
-	commonprimitive "github.com/openmerlin/merlin-server/common/domain/primitive"
+	"context"
+
 	"github.com/openmerlin/merlin-server/discussion/domain"
 	"github.com/openmerlin/merlin-server/discussion/domain/primitive"
 )
@@ -21,17 +22,12 @@ func (i IssueListOption) Paginate() (int, int) {
 
 type Issue interface {
 	Save(issue domain.Issue) (int64, error)
-	List(id commonprimitive.Identity, option IssueListOption) ([]domain.Issue, error)
-	Find(int64) (domain.Issue, error)
+	Find(context.Context, int64) (domain.Issue, error)
 }
 
 type IssueComment interface {
-	Save(comment domain.IssueComment) error
+	Save(comment domain.IssueComment) (domain.IssueComment, error)
 	List(int64) ([]domain.IssueComment, error)
-	Delete(int64) error
-	Find(int64) (domain.IssueComment, error)
-}
-
-type IssueCommentReport interface {
-	Save(report domain.IssueCommentReport) error
+	Delete(context.Context, int64) error
+	Find(context.Context, int64) (domain.IssueComment, error)
 }

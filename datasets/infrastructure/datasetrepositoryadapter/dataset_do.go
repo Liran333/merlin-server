@@ -39,20 +39,21 @@ var (
 
 func toDatasetDO(m *domain.Dataset) datasetDO {
 	do := datasetDO{
-		Id:            m.Id.Integer(),
-		Desc:          m.Desc.MSDDesc(),
-		Name:          m.Name.MSDName(),
-		Owner:         m.Owner.Account(),
-		Licenses:      m.License.License(),
-		Fullname:      m.Fullname.MSDFullname(),
-		CreatedBy:     m.CreatedBy.Account(),
-		Visibility:    m.Visibility.Visibility(),
-		Disable:       m.Disable,
-		CreatedAt:     m.CreatedAt,
-		LikeCount:     m.LikeCount,
-		UpdatedAt:     m.UpdatedAt,
-		Version:       m.Version,
-		DownloadCount: m.DownloadCount,
+		Id:                   m.Id.Integer(),
+		Desc:                 m.Desc.MSDDesc(),
+		Name:                 m.Name.MSDName(),
+		Owner:                m.Owner.Account(),
+		Licenses:             m.License.License(),
+		Fullname:             m.Fullname.MSDFullname(),
+		CreatedBy:            m.CreatedBy.Account(),
+		Visibility:           m.Visibility.Visibility(),
+		Disable:              m.Disable,
+		CreatedAt:            m.CreatedAt,
+		LikeCount:            m.LikeCount,
+		UpdatedAt:            m.UpdatedAt,
+		Version:              m.Version,
+		DownloadCount:        m.DownloadCount,
+		IsDiscussionDisabled: m.IsDiscussionDisabled,
 	}
 
 	if m.DisableReason != nil {
@@ -100,21 +101,22 @@ func toLabelsDO(labels *domain.DatasetLabels) datasetDO {
 }
 
 type datasetDO struct {
-	Id            int64          `gorm:"column:id;"`
-	Desc          string         `gorm:"column:desc"`
-	Name          string         `gorm:"column:name;index:dataset_index,unique,priority:2"`
-	Owner         string         `gorm:"column:owner;index:dataset_index,unique,priority:1"`
-	Licenses      pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:license,type:gin"`
-	Fullname      string         `gorm:"column:fullname"`
-	CreatedBy     string         `gorm:"column:created_by"`
-	Visibility    string         `gorm:"column:visibility"`
-	Disable       bool           `gorm:"column:disable"`
-	DisableReason string         `gorm:"column:disable_reason"`
-	CreatedAt     int64          `gorm:"column:created_at"`
-	UpdatedAt     int64          `gorm:"column:updated_at"`
-	Version       int            `gorm:"column:version"`
-	LikeCount     int            `gorm:"column:like_count;not null;default:0"`
-	DownloadCount int            `gorm:"column:download_count;not null;default:0"`
+	Id                   int64          `gorm:"column:id;"`
+	Desc                 string         `gorm:"column:desc"`
+	Name                 string         `gorm:"column:name;index:dataset_index,unique,priority:2"`
+	Owner                string         `gorm:"column:owner;index:dataset_index,unique,priority:1"`
+	Licenses             pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:license,type:gin"`
+	Fullname             string         `gorm:"column:fullname"`
+	CreatedBy            string         `gorm:"column:created_by"`
+	Visibility           string         `gorm:"column:visibility"`
+	Disable              bool           `gorm:"column:disable"`
+	DisableReason        string         `gorm:"column:disable_reason"`
+	CreatedAt            int64          `gorm:"column:created_at"`
+	UpdatedAt            int64          `gorm:"column:updated_at"`
+	Version              int            `gorm:"column:version"`
+	LikeCount            int            `gorm:"column:like_count;not null;default:0"`
+	DownloadCount        int            `gorm:"column:download_count;not null;default:0"`
+	IsDiscussionDisabled bool           `gorm:"column:is_discussion_disabled"`
 
 	// labels
 	Task     pq.StringArray `gorm:"column:task;type:text[];default:'{}';index:task,type:gin"`
@@ -138,15 +140,16 @@ func (do *datasetDO) toDataset() domain.Dataset {
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
-		Disable:       do.Disable,
-		DisableReason: primitive.CreateDisableReason(do.DisableReason),
-		Desc:          primitive.CreateMSDDesc(do.Desc),
-		Fullname:      primitive.CreateMSDFullname(do.Fullname),
-		CreatedAt:     do.CreatedAt,
-		UpdatedAt:     do.UpdatedAt,
-		Version:       do.Version,
-		LikeCount:     do.LikeCount,
-		DownloadCount: do.DownloadCount,
+		Disable:              do.Disable,
+		DisableReason:        primitive.CreateDisableReason(do.DisableReason),
+		Desc:                 primitive.CreateMSDDesc(do.Desc),
+		Fullname:             primitive.CreateMSDFullname(do.Fullname),
+		CreatedAt:            do.CreatedAt,
+		UpdatedAt:            do.UpdatedAt,
+		Version:              do.Version,
+		LikeCount:            do.LikeCount,
+		DownloadCount:        do.DownloadCount,
+		IsDiscussionDisabled: do.IsDiscussionDisabled,
 
 		Labels: domain.DatasetLabels{
 			Task:     sets.New[string](do.Task...),

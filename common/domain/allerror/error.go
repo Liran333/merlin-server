@@ -379,7 +379,11 @@ const (
 
 	ErrorCodeFailToCreateComment = "failed_to_create_comment"
 	ErrorCodeFailToUpdateComment = "failed_to_update_comment"
+	ErrorCodeFailToDeleteComment = "failed_to_delete_comment"
 	ErrorCodeCommentNotFound     = "comment_not_found"
+
+	ErrorCodeDiscussionDisabled = "discussion_is_disabled"
+	ErrorCodeDiscussionEnabled  = "discussion_is_enabled"
 )
 
 // errorImpl

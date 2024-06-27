@@ -15,4 +15,5 @@ type ResourceAdapter interface {
 	GetByName(*domain.CodeRepoIndex) (domain.Resource, error)
 	GetByIndex(identity primitive.Identity) (domain.Resource, error)
 	GetByType(primitive.RepoType, *domain.CodeRepoIndex) (domain.Resource, error)
+	Save(r domain.Resource) error
 }

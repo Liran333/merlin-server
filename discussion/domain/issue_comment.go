@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -10,12 +11,23 @@ import (
 )
 
 type IssueComment struct {
-	Id        int64
-	Author    primitive.Account
-	emojis    []Emoji
-	IssueId   int64
-	Content   discussionprimitive.CommentContent
-	CreatedAt time.Time
+	Id             int64
+	Author         primitive.Account
+	emojis         []Emoji
+	IssueId        int64
+	Content        discussionprimitive.CommentContent
+	CreatedAt      time.Time
+	IsFirstComment bool
+}
+
+func NewFirstIssueComment(author primitive.Account, issueId int64, content discussionprimitive.CommentContent,
+) IssueComment {
+	return IssueComment{
+		Author:         author,
+		IssueId:        issueId,
+		Content:        content,
+		IsFirstComment: true,
+	}
 }
 
 func NewIssueComment(author primitive.Account, issueId int64, content discussionprimitive.CommentContent,
@@ -54,6 +66,10 @@ func (c *IssueComment) UpdateContent(user primitive.Account, content discussionp
 	return nil
 }
 
+func (c *IssueComment) IsFirstCommentOfIssue() bool {
+	return c.IsFirstComment
+}
+
 type Emoji struct {
 	Type  discussionprimitive.EmojiType
 	Users []primitive.Account
@@ -69,9 +85,18 @@ func (e *Emoji) addUser(t discussionprimitive.EmojiType, user primitive.Account)
 	return false
 }
 
-type IssueCommentReport struct {
-	User      primitive.Account
-	Type      string
-	Content   string
-	CommentId int64
+type updateCommentCountEvent struct {
+	IssueId              int64 `json:"issue_id"`
+	IncreaseCommentCount int64 `json:"increase_comment_count"`
+}
+
+func (u updateCommentCountEvent) Message() ([]byte, error) {
+	return json.Marshal(u)
+}
+
+func NewUpdateCommentCountEvent(issueId, count int64) updateCommentCountEvent {
+	return updateCommentCountEvent{
+		IssueId:              issueId,
+		IncreaseCommentCount: count,
+	}
 }

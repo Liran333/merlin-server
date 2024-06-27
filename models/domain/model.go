@@ -6,9 +6,11 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package domain
 
 import (
+	"golang.org/x/xerrors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 )
 
@@ -29,6 +31,8 @@ type Model struct {
 
 	Disable       bool
 	DisableReason primitive.DisableReason
+
+	IsDiscussionDisabled bool
 }
 
 // ResourceType returns the type of the model resource.
@@ -39,6 +43,38 @@ func (m *Model) ResourceType() primitive.ObjType {
 // IsDisable checks if the space is disable.
 func (m *Model) IsDisable() bool {
 	return m.Disable
+}
+
+func (m *Model) DiscussionDisabled() bool {
+	return m.IsDiscussionDisabled
+}
+
+func (m *Model) CloseDiscussion() error {
+	if m.IsDiscussionDisabled {
+		return allerror.New(
+			allerror.ErrorCodeDiscussionDisabled,
+			"failed to close discussion",
+			xerrors.Errorf("discussion is closed"),
+		)
+	}
+
+	m.IsDiscussionDisabled = true
+
+	return nil
+}
+
+func (m *Model) ReopenDiscussion() error {
+	if !m.IsDiscussionDisabled {
+		return allerror.New(
+			allerror.ErrorCodeDiscussionEnabled,
+			"failed to reopen discussion",
+			xerrors.Errorf("discussion is open"),
+		)
+	}
+
+	m.IsDiscussionDisabled = false
+
+	return nil
 }
 
 // ModelLabels represents the labels associated with a model, including task labels, other labels, and framework labels.

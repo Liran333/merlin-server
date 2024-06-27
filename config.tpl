@@ -459,3 +459,18 @@ trace:
   enabled: true
   name: merlin-server
   endpoint: {{(ds "data").OTEL_ENDPOINT }}
+
+discussion:
+  tables:
+    issue: "discussion_issue"
+    issue_comment: "discussion_issue_comment"
+  primitive:
+    max_title_length: 200
+    max_content_length: 10000
+  topics:
+    comment_event: "discussion_comment_event"
+  report:
+    report_title: "讨论区评论举报"
+    report_email_receiver:
+      - "yangwei266@h-partners.com"
+    root_url: https://modelfoundry.test.osinfra.cn/

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	timeFormat = "2006-01-02T15:04:05Z"
+	TimeFormat = "2006-01-02T15:04:05Z"
 )
 
 type CmdToCreateIssue struct {
@@ -30,17 +30,17 @@ type CmdToCloseIssue struct {
 type CmdToReopenIssue = CmdToCloseIssue
 
 type CmdToGetIssue struct {
-	User       primitive.Account
-	ResourceId primitive.Identity
-	IssueId    int64
+	User     primitive.Account
+	Resource domain.Resource
+	IssueId  int64
 
 	PageNum      int
 	CountPerPage int
 }
 
 type CmdToListIssues struct {
-	ResourceId primitive.Identity
-	Option     repository.IssueListOption
+	Resource domain.Resource
+	Option   repository.IssueListOption
 }
 
 type ListIssuesCountDTO struct {
@@ -69,7 +69,7 @@ func ToIssueDTO(issue domain.Issue) IssueDTO {
 		Owner:        issue.Author.Account(),
 		Status:       issue.Status.IssueStatus(),
 		CommentCount: issue.CommentCount,
-		CreatedAt:    issue.CreatedAt.Format(timeFormat),
+		CreatedAt:    issue.CreatedAt.In(time.UTC).Format(TimeFormat),
 	}
 }
 
@@ -106,27 +106,35 @@ type ItemDTO struct {
 func mergeOperationAndComments(operations []domain.Operation, comments []domain.IssueComment) ItemsDTO {
 	var data ItemsDTO
 	for _, v := range operations {
-		data = append(data, ItemDTO{
-			Type:      "operation",
-			Owner:     v.User,
-			Content:   v.Action,
-			createdAt: v.CreatedAt,
-			CreatedAt: v.CreatedAt.Format(timeFormat),
-		})
+		data = append(data, operationToItemDTO(v))
 	}
 
 	for _, v := range comments {
-		data = append(data, ItemDTO{
-			Id:        v.Id,
-			Type:      "comment",
-			Owner:     v.Author.Account(),
-			Content:   v.Content.CommentContent(),
-			createdAt: v.CreatedAt,
-			CreatedAt: v.CreatedAt.Format(timeFormat),
-		})
+		data = append(data, commentToItemDTO(v))
 	}
 
 	return data
+}
+
+func operationToItemDTO(o domain.Operation) ItemDTO {
+	return ItemDTO{
+		Type:      "operation",
+		Owner:     o.User,
+		Content:   o.Action,
+		createdAt: o.CreatedAt,
+		CreatedAt: o.CreatedAt.In(time.UTC).Format(TimeFormat),
+	}
+}
+
+func commentToItemDTO(c domain.IssueComment) ItemDTO {
+	return ItemDTO{
+		Id:        c.Id,
+		Type:      "comment",
+		Owner:     c.Author.Account(),
+		Content:   c.Content.CommentContent(),
+		createdAt: c.CreatedAt,
+		CreatedAt: c.CreatedAt.In(time.UTC).Format(TimeFormat),
+	}
 }
 
 func (d ItemsDTO) paginate(pageNum, countPerPage int) ItemsDTO {
@@ -163,26 +171,29 @@ func (d ItemsDTO) slicePage(page, pageSize, nums int) (sliceStart int, sliceEnd 
 }
 
 type CmdToCreateIssueComment struct {
-	IssueId    int64
-	ResourceId primitive.Identity
-	Owner      primitive.Account
-	Content    discussionprimitive.CommentContent
+	IssueId  int64
+	Resource domain.Resource
+	Owner    primitive.Account
+	Content  discussionprimitive.CommentContent
 }
 
 type CmdToUpdateIssueComment struct {
-	CommentId  int64
-	ResourceId primitive.Identity
-	Content    discussionprimitive.CommentContent
-	User       primitive.Account
+	CommentId int64
+	Resource  domain.Resource
+	Content   discussionprimitive.CommentContent
+	User      primitive.Account
 }
 
 type CmdToDeleteIssueComment struct {
-	CommentId  int64
-	ResourceId primitive.Identity
-	User       primitive.Account
+	CommentId int64
+	Resource  domain.Resource
+	User      primitive.Account
 }
 
 type CmdToReportComment struct {
-	domain.IssueCommentReport
-	ResourceId primitive.Identity
+	Resource  domain.Resource
+	User      primitive.Account
+	Type      string
+	Content   discussionprimitive.CommentContent
+	CommentId int64
 }

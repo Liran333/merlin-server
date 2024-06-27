@@ -137,9 +137,10 @@ type SpaceDTO struct {
 	DisableReason string         `json:"disable_reason"`
 	Exception     string         `json:"exception"`
 
-	IsNpu              bool `json:"is_npu"`
-	CompPowerAllocated bool `json:"comp_power_allocated"`
-	NoApplicationFile  bool `json:"no_application_file"`
+	IsNpu                bool `json:"is_npu"`
+	CompPowerAllocated   bool `json:"comp_power_allocated"`
+	NoApplicationFile    bool `json:"no_application_file"`
+	IsDiscussionDisabled bool `json:"is_discussion_disabled"`
 }
 
 // SpaceLabelsDTO is a struct used to represent labels of a space.
@@ -181,9 +182,10 @@ func toSpaceDTO(space *domain.Space) SpaceDTO {
 		DisableReason: space.DisableReason.DisableReason(),
 		Exception:     space.Exception.Exception(),
 
-		IsNpu:              space.Hardware.IsNpu(),
-		CompPowerAllocated: space.CompPowerAllocated,
-		NoApplicationFile:  space.NoApplicationFile,
+		IsNpu:                space.Hardware.IsNpu(),
+		CompPowerAllocated:   space.CompPowerAllocated,
+		NoApplicationFile:    space.NoApplicationFile,
+		IsDiscussionDisabled: space.IsDiscussionDisabled,
 	}
 
 	if space.Desc != nil {

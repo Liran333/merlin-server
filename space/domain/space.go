@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/xerrors"
+
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
+	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	spaceprimitive "github.com/openmerlin/merlin-server/space/domain/primitive"
 	"github.com/openmerlin/merlin-server/space/domain/securestorage"
@@ -46,9 +49,10 @@ type Space struct {
 	DisableReason primitive.DisableReason
 	Exception     primitive.Exception
 
-	CompPowerAllocated bool
-	NoApplicationFile  bool
-	CommitId           string
+	CompPowerAllocated   bool
+	NoApplicationFile    bool
+	CommitId             string
+	IsDiscussionDisabled bool
 }
 
 // ResourceType returns the type of the model resource.
@@ -59,6 +63,38 @@ func (m *Space) ResourceType() primitive.ObjType {
 // IsDisable checks if the space is disable.
 func (m *Space) IsDisable() bool {
 	return m.Disable
+}
+
+func (m *Space) DiscussionDisabled() bool {
+	return m.IsDiscussionDisabled
+}
+
+func (m *Space) CloseDiscussion() error {
+	if m.IsDiscussionDisabled {
+		return allerror.New(
+			allerror.ErrorCodeDiscussionDisabled,
+			"failed to close discussion",
+			xerrors.Errorf("discussion is closed"),
+		)
+	}
+
+	m.IsDiscussionDisabled = true
+
+	return nil
+}
+
+func (m *Space) ReopenDiscussion() error {
+	if !m.IsDiscussionDisabled {
+		return allerror.New(
+			allerror.ErrorCodeDiscussionEnabled,
+			"failed to reopen discussion",
+			xerrors.Errorf("discussion is open"),
+		)
+	}
+
+	m.IsDiscussionDisabled = false
+
+	return nil
 }
 
 // IsNoApplicationFile checks if the space is valid.

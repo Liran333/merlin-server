@@ -42,21 +42,22 @@ var (
 
 func toModelDO(m *domain.Model) modelDO {
 	do := modelDO{
-		Id:            m.Id.Integer(),
-		Desc:          m.Desc.MSDDesc(),
-		Name:          m.Name.MSDName(),
-		Owner:         m.Owner.Account(),
-		Licenses:      m.License.License(),
-		Fullname:      m.Fullname.MSDFullname(),
-		CreatedBy:     m.CreatedBy.Account(),
-		Visibility:    m.Visibility.Visibility(),
-		Disable:       m.Disable,
-		CreatedAt:     m.CreatedAt,
-		LikeCount:     m.LikeCount,
-		UpdatedAt:     m.UpdatedAt,
-		Version:       m.Version,
-		DownloadCount: m.DownloadCount,
-		UseInOpenmind: m.UseInOpenmind,
+		Id:                   m.Id.Integer(),
+		Desc:                 m.Desc.MSDDesc(),
+		Name:                 m.Name.MSDName(),
+		Owner:                m.Owner.Account(),
+		Licenses:             m.License.License(),
+		Fullname:             m.Fullname.MSDFullname(),
+		CreatedBy:            m.CreatedBy.Account(),
+		Visibility:           m.Visibility.Visibility(),
+		Disable:              m.Disable,
+		CreatedAt:            m.CreatedAt,
+		LikeCount:            m.LikeCount,
+		UpdatedAt:            m.UpdatedAt,
+		Version:              m.Version,
+		DownloadCount:        m.DownloadCount,
+		UseInOpenmind:        m.UseInOpenmind,
+		IsDiscussionDisabled: m.IsDiscussionDisabled,
 	}
 
 	if m.DisableReason != nil {
@@ -110,21 +111,22 @@ func toLabelsDO(labels *domain.ModelLabels) modelDO {
 }
 
 type modelDO struct {
-	Id            int64          `gorm:"column:id;"`
-	Desc          string         `gorm:"column:desc"`
-	Name          string         `gorm:"column:name;index:model_index,unique,priority:2"`
-	Owner         string         `gorm:"column:owner;index:model_index,unique,priority:1"`
-	Licenses      pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:licenses,type:gin"`
-	Fullname      string         `gorm:"column:fullname"`
-	CreatedBy     string         `gorm:"column:created_by"`
-	Visibility    string         `gorm:"column:visibility"`
-	Disable       bool           `gorm:"column:disable"`
-	DisableReason string         `gorm:"column:disable_reason"`
-	CreatedAt     int64          `gorm:"column:created_at"`
-	UpdatedAt     int64          `gorm:"column:updated_at"`
-	Version       int            `gorm:"column:version"`
-	LikeCount     int            `gorm:"column:like_count;not null;default:0"`
-	DownloadCount int            `gorm:"column:download_count;not null;default:0"`
+	Id                   int64          `gorm:"column:id;"`
+	Desc                 string         `gorm:"column:desc"`
+	Name                 string         `gorm:"column:name;index:model_index,unique,priority:2"`
+	Owner                string         `gorm:"column:owner;index:model_index,unique,priority:1"`
+	Licenses             pq.StringArray `gorm:"column:license;type:text[];default:'{}';index:licenses,type:gin"`
+	Fullname             string         `gorm:"column:fullname"`
+	CreatedBy            string         `gorm:"column:created_by"`
+	Visibility           string         `gorm:"column:visibility"`
+	Disable              bool           `gorm:"column:disable"`
+	DisableReason        string         `gorm:"column:disable_reason"`
+	CreatedAt            int64          `gorm:"column:created_at"`
+	UpdatedAt            int64          `gorm:"column:updated_at"`
+	Version              int            `gorm:"column:version"`
+	LikeCount            int            `gorm:"column:like_count;not null;default:0"`
+	DownloadCount        int            `gorm:"column:download_count;not null;default:0"`
+	IsDiscussionDisabled bool           `gorm:"column:is_discussion_disabled"`
 
 	// labels
 	Task        string         `gorm:"column:task;index:task"`
@@ -153,16 +155,17 @@ func (do *modelDO) toModel() domain.Model {
 			CreatedBy:  primitive.CreateAccount(do.CreatedBy),
 			Visibility: primitive.CreateVisibility(do.Visibility),
 		},
-		Disable:       do.Disable,
-		DisableReason: primitive.CreateDisableReason(do.DisableReason),
-		Desc:          primitive.CreateMSDDesc(do.Desc),
-		Fullname:      primitive.CreateMSDFullname(do.Fullname),
-		CreatedAt:     do.CreatedAt,
-		UpdatedAt:     do.UpdatedAt,
-		Version:       do.Version,
-		LikeCount:     do.LikeCount,
-		DownloadCount: do.DownloadCount,
-		UseInOpenmind: do.UseInOpenmind,
+		Disable:              do.Disable,
+		DisableReason:        primitive.CreateDisableReason(do.DisableReason),
+		Desc:                 primitive.CreateMSDDesc(do.Desc),
+		Fullname:             primitive.CreateMSDFullname(do.Fullname),
+		CreatedAt:            do.CreatedAt,
+		UpdatedAt:            do.UpdatedAt,
+		Version:              do.Version,
+		LikeCount:            do.LikeCount,
+		DownloadCount:        do.DownloadCount,
+		UseInOpenmind:        do.UseInOpenmind,
+		IsDiscussionDisabled: do.IsDiscussionDisabled,
 
 		Labels: domain.ModelLabels{
 			Task:        do.Task,

@@ -11,8 +11,11 @@ import (
 	"github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/coderepo/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
+	datasetsdomain "github.com/openmerlin/merlin-server/datasets/domain"
 	datasetrepo "github.com/openmerlin/merlin-server/datasets/domain/repository"
+	modeldomain "github.com/openmerlin/merlin-server/models/domain"
 	modelrepo "github.com/openmerlin/merlin-server/models/domain/repository"
+	spacedomain "github.com/openmerlin/merlin-server/space/domain"
 	spacerepo "github.com/openmerlin/merlin-server/space/domain/repository"
 )
 
@@ -105,4 +108,17 @@ func (adapter *resourceAdapterImpl) GetByIndex(index primitive.Identity) (domain
 	space, err := adapter.space.FindById(index)
 
 	return &space, err
+}
+
+func (adapter *resourceAdapterImpl) Save(r domain.Resource) error {
+	switch t := r.(type) {
+	case *modeldomain.Model:
+		return adapter.model.Save(t)
+	case *spacedomain.Space:
+		return adapter.space.Save(t)
+	case *datasetsdomain.Dataset:
+		return adapter.dataset.Save(t)
+	default:
+		return commonrepo.NewErrorResourceNotExists(errors.New("unknown resource type"))
+	}
 }

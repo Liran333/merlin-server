@@ -42,33 +42,33 @@ var (
 
 func toSpaceDO(m *domain.Space) spaceDO {
 	do := spaceDO{
-		Id:       m.Id.Integer(),
-		SDK:      m.SDK.SDK(),
-		Desc:     m.Desc.MSDDesc(),
-		Name:     m.Name.MSDName(),
-		Owner:    m.Owner.Account(),
-		License:  m.License.License(),
-		AvatarId: m.AvatarId.Storage(),
-
-		Hardware:           m.Hardware.Hardware(),
-		Fullname:           m.Fullname.MSDFullname(),
-		Framework:          m.Labels.Framework,
-		HardwareType:       m.Labels.HardwareType,
-		BaseImage:          m.BaseImage.BaseImage(),
-		CreatedBy:          m.CreatedBy.Account(),
-		Visibility:         m.Visibility.Visibility(),
-		Disable:            m.Disable,
-		CreatedAt:          m.CreatedAt,
-		UpdatedAt:          m.UpdatedAt,
-		LikeCount:          m.LikeCount,
-		Version:            m.Version,
-		LocalCmd:           m.LocalCmd,
-		LocalEnvInfo:       m.LocalEnvInfo,
-		DownloadCount:      m.DownloadCount,
-		VisitCount:         m.VisitCount,
-		CompPowerAllocated: m.CompPowerAllocated,
-		NoApplicationFile:  m.NoApplicationFile,
-		CommitId:           m.CommitId,
+		Id:                   m.Id.Integer(),
+		SDK:                  m.SDK.SDK(),
+		Desc:                 m.Desc.MSDDesc(),
+		Name:                 m.Name.MSDName(),
+		Owner:                m.Owner.Account(),
+		License:              m.License.License(),
+		AvatarId:             m.AvatarId.Storage(),
+		Hardware:             m.Hardware.Hardware(),
+		Fullname:             m.Fullname.MSDFullname(),
+		Framework:            m.Labels.Framework,
+		HardwareType:         m.Labels.HardwareType,
+		BaseImage:            m.BaseImage.BaseImage(),
+		CreatedBy:            m.CreatedBy.Account(),
+		Visibility:           m.Visibility.Visibility(),
+		Disable:              m.Disable,
+		CreatedAt:            m.CreatedAt,
+		UpdatedAt:            m.UpdatedAt,
+		LikeCount:            m.LikeCount,
+		Version:              m.Version,
+		LocalCmd:             m.LocalCmd,
+		LocalEnvInfo:         m.LocalEnvInfo,
+		DownloadCount:        m.DownloadCount,
+		VisitCount:           m.VisitCount,
+		CompPowerAllocated:   m.CompPowerAllocated,
+		NoApplicationFile:    m.NoApplicationFile,
+		CommitId:             m.CommitId,
+		IsDiscussionDisabled: m.IsDiscussionDisabled,
 	}
 
 	if m.DisableReason != nil {
@@ -145,6 +145,8 @@ type spaceDO struct {
 	NoApplicationFile bool `gorm:"column:no_application_file;default:t"`
 	// latest commit id
 	CommitId string `gorm:"column:commit_id"`
+
+	IsDiscussionDisabled bool `gorm:"column:is_discussion_disabled"`
 }
 
 // TableName returns the table name of spaceDO.
@@ -185,9 +187,10 @@ func (do *spaceDO) toSpace() domain.Space {
 			Framework:    do.Framework,
 			HardwareType: do.HardwareType,
 		},
-		CompPowerAllocated: do.CompPowerAllocated,
-		NoApplicationFile:  do.NoApplicationFile,
-		CommitId:           do.CommitId,
+		CompPowerAllocated:   do.CompPowerAllocated,
+		NoApplicationFile:    do.NoApplicationFile,
+		CommitId:             do.CommitId,
+		IsDiscussionDisabled: do.IsDiscussionDisabled,
 	}
 }
 

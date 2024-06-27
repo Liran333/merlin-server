@@ -13,7 +13,7 @@ type CommentContent interface {
 func NewCommentContent(v string) (CommentContent, error) {
 	if utils.StrLen(v) > cfg.MaxContentLength ||
 		utils.StrLen(utils.XSSEscapeString(v)) > cfg.MaxContentLength {
-		return nil, errors.New("title is too long")
+		return nil, errors.New("content is too long")
 	}
 
 	return commentContent(v), nil
