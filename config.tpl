@@ -298,6 +298,12 @@ user:
     obs_path:  {{ (ds "common").USER_AVATAR_OBS_PATH }}
     obs_bucket:  {{ (ds "data").USER_OBS_BUCKET }}
     cdn_endpoint: {{ (ds "data").AVATAR_CDN_ENDPOINT }}
+    audit_email:
+            - xxxx@xxxx.com
+    mail_templates:
+    {{- range (ds "common").MAIL_TEMPLATES}}
+      - "{{ . }}"
+    {{- end }}
   controller:
     max_avatar_file_size: {{ (ds "common").MAX_AVATAR_FILE_SIZE }}
     

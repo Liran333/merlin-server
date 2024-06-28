@@ -17,6 +17,7 @@ import (
 
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/opentelemetry"
@@ -31,6 +32,7 @@ import (
 	"github.com/openmerlin/merlin-server/session/infrastructure/oidcimpl"
 	"github.com/openmerlin/merlin-server/session/infrastructure/sessionrepositoryadapter"
 	userapp "github.com/openmerlin/merlin-server/user/app"
+	"github.com/openmerlin/merlin-server/user/infrastructure/emailadapter"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	"github.com/openmerlin/merlin-server/user/infrastructure/obsadapter"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
@@ -69,7 +71,8 @@ func initorg() {
 	)
 
 	userService := userapp.NewUserService(user, member, git, t, loginrepositoryadapter.LoginAdapter(),
-		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain, obsadapter.NewClient(obs.Client()))
+		oidcimpl.NewAuthingUser(), session, &cfg.User.Domain, obsadapter.NewClient(obs.Client()),
+		emailadapter.NewEmailImpl(email.GetEmailInst(), cfg.User.Domain.AuditEmail, cfg.User.Domain.MailTemplates))
 
 	orgAppService = orgapp.NewOrgService(userService, user, member, invite, p, &cfg.Org.Domain, git,
 		messageadapter.MessageAdapter(&cfg.Org.Domain.Topics), certRepo, opentelemetry.NewTracer(&cfg.Trace),

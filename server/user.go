@@ -10,6 +10,7 @@ import (
 	redisdb "github.com/opensourceways/redis-lib"
 
 	"github.com/openmerlin/merlin-server/common/domain/crypto"
+	"github.com/openmerlin/merlin-server/common/infrastructure/email"
 	"github.com/openmerlin/merlin-server/common/infrastructure/gitea"
 	"github.com/openmerlin/merlin-server/common/infrastructure/obs"
 	"github.com/openmerlin/merlin-server/common/infrastructure/postgresql"
@@ -23,6 +24,7 @@ import (
 	"github.com/openmerlin/merlin-server/space/infrastructure/obsadapter"
 	"github.com/openmerlin/merlin-server/user/app"
 	"github.com/openmerlin/merlin-server/user/controller"
+	"github.com/openmerlin/merlin-server/user/infrastructure/emailadapter"
 	usergit "github.com/openmerlin/merlin-server/user/infrastructure/git"
 	userrepoimpl "github.com/openmerlin/merlin-server/user/infrastructure/repositoryimpl"
 )
@@ -52,6 +54,7 @@ func initUser(cfg *config.Config, services *allServices) {
 		session,
 		&cfg.User.Domain,
 		obsadapter.NewClient(obs.Client()),
+		emailadapter.NewEmailImpl(email.GetEmailInst(), cfg.User.Domain.AuditEmail, cfg.User.Domain.MailTemplates),
 	)
 }
 

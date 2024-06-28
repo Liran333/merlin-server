@@ -17,6 +17,7 @@ import (
 	orgrepository "github.com/openmerlin/merlin-server/organization/domain/repository"
 	session "github.com/openmerlin/merlin-server/session/domain/repository"
 	"github.com/openmerlin/merlin-server/user/domain"
+	"github.com/openmerlin/merlin-server/user/domain/email"
 	"github.com/openmerlin/merlin-server/user/domain/obs"
 	"github.com/openmerlin/merlin-server/user/domain/platform"
 	"github.com/openmerlin/merlin-server/user/domain/repository"
@@ -66,6 +67,8 @@ type UserService interface {
 	IsAgreePrivacy(context.Context, primitive.Account) (bool, error)
 
 	UploadAvatar(*CmdToUploadAvatar) (AvatarUrlDTO, error)
+
+	RevokeList(ctx context.Context) error
 }
 
 // NewUserService creates a new UserService instance with the provided dependencies.
@@ -79,6 +82,7 @@ func NewUserService(
 	sc SessionClearAppService,
 	config *domain.Config,
 	obs obs.ObsService,
+	email email.Email,
 ) UserService {
 	return userService{
 		repo:         repo,
@@ -90,6 +94,7 @@ func NewUserService(
 		sessionClear: sc,
 		config:       config,
 		obs:          obs,
+		email:		  email,
 	}
 }
 
@@ -103,6 +108,7 @@ type userService struct {
 	sessionClear SessionClearAppService
 	config       *domain.Config
 	obs          obs.ObsService
+	email	     email.Email
 }
 
 // Create creates a new user in the system.
@@ -898,4 +904,28 @@ func (s userService) UploadAvatar(cmd *CmdToUploadAvatar) (AvatarUrlDTO, error) 
 	}
 
 	return dto, nil
+}
+
+// RevokeList submit check user revoke list.
+func (s userService) RevokeList(ctx context.Context) error {
+	// get all user list
+	t := domain.UserTypeUser
+	allUserList, _, err := s.repo.ListAccount(ctx, &repository.ListOption{Type: &t})
+	if err != nil {
+		err = xerrors.Errorf("failed to list users: %w", err)
+		return err
+	}
+	// get revoke user list
+	revokeUserList := make([]domain.User, 0)
+	for _, user := range allUserList {
+		if user.RequestDelete && user.RequestDeleteAt != 0 {
+			revokeUserList = append(revokeUserList, user)
+		}
+	}
+	if len(revokeUserList) == 0 {
+		logrus.Infof("no revoke user to submit")
+		return nil
+	}
+	// send email to audit
+	return s.email.Send(revokeUserList)
 }

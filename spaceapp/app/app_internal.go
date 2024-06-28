@@ -512,7 +512,7 @@ func (s *spaceappInternalAppService) SleepSpaceApp(ctx context.Context, cmd *Cmd
 
 	if app.Status.IsSleeping() {
 		logrus.Infof("spaceId:%s is sleeping", space.Id.Identity())
-		return nil
+		return s.sendSpaceAppSleepMsg(app)
 	}
 
 	if err := app.SleepService(); err != nil {
@@ -526,13 +526,17 @@ func (s *spaceappInternalAppService) SleepSpaceApp(ctx context.Context, cmd *Cmd
 		logrus.Errorf("spaceId:%s space sleep app failed:%s", space.Id.Identity(), err)
 		return err
 	}
+	return s.sendSpaceAppSleepMsg(app)
+}
+
+func (s *spaceappInternalAppService) sendSpaceAppSleepMsg(app domain.SpaceApp) error {
 	e := domain.NewSpaceAppSleepEvent(&domain.SpaceAppIndex{
 		SpaceId: app.SpaceId,
 	})
 	if err := s.msg.SendSpaceAppSleepEvent(&e); err != nil {
-		logrus.Errorf("spaceId:%s send sleep topic failed:%s", space.Id.Identity(), err)
+		logrus.Errorf("spaceId:%s send sleep topic failed:%s", app.SpaceId.Identity(), err)
 		return err
 	}
-	logrus.Infof("spaceId:%s sleep app successful", space.Id.Identity())
+	logrus.Infof("spaceId:%s sleep app successful", app.SpaceId.Identity())
 	return nil
 }

@@ -12,12 +12,14 @@ type tables struct {
 
 // Config is a struct that holds the configuration for the program.
 type Config struct {
-	Key             []byte `json:"key"    required:"true"`
-	Tables          tables `json:"tables" required:"true"`
-	ObsPath         string `json:"obs_path" required:"true"`
-	ObsBucket       string `json:"obs_bucket" required:"true"`
-	CdnEndpoint     string `json:"cdn_endpoint" required:"true"`
-	MaxTokenPerUser int    `json:"max_token_per_user" required:"true"`
+	Key             []byte   `json:"key"    required:"true"`
+	Tables          tables   `json:"tables" required:"true"`
+	ObsPath         string   `json:"obs_path" required:"true"`
+	ObsBucket       string   `json:"obs_bucket" required:"true"`
+	CdnEndpoint     string   `json:"cdn_endpoint" required:"true"`
+	MaxTokenPerUser int      `json:"max_token_per_user" required:"true"`
+	AuditEmail      []string `json:"audit_email"`
+	MailTemplates   []string `json:"mail_templates"`
 }
 
 // SetDefault sets the default values for the Config struct if they are not already set.

@@ -28,6 +28,7 @@ func AddRouterForUserInternalController(
 	rg.POST("/v1/user/token/verify", m.Write, ctl.VerifyToken)
 	rg.GET("/v1/user/:name/platform", m.Write, ctl.GetPlatformUser)
 	rg.GET("/v1/user/:name/avatar_id", m.Write, ctl.GetUserAvatarId)
+	rg.POST("/v1/user/revoke", m.Write, ctl.CheckUserRevoke)
 
 }
 
@@ -114,5 +115,20 @@ func (ctl *UserInernalController) GetUserAvatarId(ctx *gin.Context) {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
+	}
+}
+
+// @Summary  CheckUserRevoke
+// @Description  send email to check user revoke
+// @Tags     UserInternal
+// @Accept   json
+// @Security Internal
+// @Success  201
+// @Router   /v1/user/revoke [post]
+func (ctl *UserInernalController) CheckUserRevoke(ctx *gin.Context) {
+	if err := ctl.s.RevokeList(ctx); err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPost(ctx,nil)
 	}
 }

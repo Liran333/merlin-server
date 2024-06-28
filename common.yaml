@@ -191,3 +191,23 @@ MAIL_TEMPLATE:     <html>
     <p>%s</p>
     </body>
     </html>
+
+MAIL_TEMPLATES:
+  - <html>
+    <head>
+    <meta charset=\"UTF-8\">
+    <title>openmind注销人员</title>
+    </head>
+    <body>
+    <table border=\"1\" cellpadding=\"5\" cellspacing=\"0\">
+    <tr>
+    <th>注销用户ID</th>
+    <th>注销用户名</th>
+    <th>注销时间</th>
+    </tr>
+  - <tr>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    </tr>
+  - </table></body></html>
