@@ -895,9 +895,9 @@ func (s *SuiteSpace) TestCheckStr() {
 	assert.Nil(s.T(), err)
 	// 发送举报
 	_, r, err = ApiRest.SpaceRestfulApi.V1SpaceReportPost(AuthRest, swaggerRest.ControllerReqReportSpaceEmail{
-		SpaceName: s.Name,
-		Msg:       "</p>hello,world",
-		Owner:     s.Owner,
+		Name:  s.Name,
+		Msg:   "</p>hello,world",
+		Owner: s.Owner,
 	})
 	assert.NotNil(s.T(), err)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
@@ -926,9 +926,9 @@ func (s *SuiteSpace) TestPrivateReport() {
 	assert.Nil(s.T(), err)
 	// 发送举报
 	_, r, err = ApiRest.SpaceRestfulApi.V1SpaceReportPost(AuthRest2, swaggerRest.ControllerReqReportSpaceEmail{
-		SpaceName: s.Name,
-		Msg:       "hello,world",
-		Owner:     s.Owner,
+		Name:  s.Name,
+		Msg:   "hello,world",
+		Owner: s.Owner,
 	})
 	assert.NotNil(s.T(), err)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)

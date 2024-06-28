@@ -283,7 +283,7 @@ func (req *restfulReqToListSpaces) toCmd() (app.CmdToListSpaces, error) {
 }
 
 type reqReportSpaceEmail struct {
-	SpaceName string `json:"space_name"`
+	SpaceName string `json:"name"`
 	Msg       string `json:"msg"`
 	Owner     string `json:"owner"`
 }

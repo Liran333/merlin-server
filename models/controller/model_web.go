@@ -51,7 +51,7 @@ func AddRouteForModelWebController(
 	r.GET("/v1/model/relation/:id/space", m.Optional, rl.CheckLimit, ctl.GetSpacesByModelId)
 
 	r.PUT("/v1/model/:id/disable", ctl.ModelController.userMiddleWare.Write, l.Write, ctl.disable)
-	r.POST("/v1/model/web/report", m.Optional, p.CheckOwner, ctl.Report)
+	r.POST("/v1/model/web/report", rl.CheckLimit, m.Write, l.Write, ctl.Report)
 }
 
 // ModelWebController is a struct that holds the app service for model web operations.

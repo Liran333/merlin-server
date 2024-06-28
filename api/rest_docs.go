@@ -463,6 +463,60 @@ const docTemplaterest = `{
                 }
             }
         },
+        "/v1/dataset/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportDatasetEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/dataset/{id}": {
             "put": {
                 "security": [
@@ -1001,6 +1055,60 @@ const docTemplaterest = `{
                                         },
                                         "data": {
                                             "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -4469,6 +4577,9 @@ const docTemplaterest = `{
                 },
                 "visit_count": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4571,6 +4682,48 @@ const docTemplaterest = `{
             ],
             "properties": {
                 "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportDatasetEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportSpaceEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
                     "type": "string"
                 }
             }
@@ -4921,6 +5074,9 @@ const docTemplaterest = `{
                 },
                 "visibility": {
                     "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 },
                 "visit_count": {
                     "type": "integer"
@@ -5299,6 +5455,9 @@ const docTemplaterest = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 },
                 "visit_count": {

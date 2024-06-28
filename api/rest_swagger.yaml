@@ -442,6 +442,8 @@ definitions:
         type: string
       visit_count:
         type: integer
+      visit_count:
+        type: integer
     type: object
   controller.bindEmailRequest:
     properties:
@@ -511,6 +513,33 @@ definitions:
         type: string
     required:
     - user
+    type: object
+  controller.reqReportDatasetEmail:
+    properties:
+      msg:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+    type: object
+  controller.reqReportEmail:
+    properties:
+      msg:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+    type: object
+  controller.reqReportSpaceEmail:
+    properties:
+      msg:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
     type: object
   controller.reqReportDatasetEmail:
     properties:
@@ -738,6 +767,8 @@ definitions:
         type: integer
       visibility:
         type: string
+      visit_count:
+        type: integer
       visit_count:
         type: integer
     type: object
@@ -991,6 +1022,8 @@ definitions:
       status:
         type: string
       updated_at:
+        type: integer
+      visit_count:
         type: integer
       visit_count:
         type: integer
@@ -1371,6 +1404,37 @@ paths:
       summary: SendReportMail
       tags:
       - DatasetRestful
+  /v1/dataset/report:
+    post:
+      consumes:
+      - application/json
+      description: send report Email
+      parameters:
+      - description: body of send report
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqReportDatasetEmail'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: SendReportMail
+      tags:
+      - DatasetRestful
   /v1/invite:
     delete:
       consumes:
@@ -1709,6 +1773,37 @@ paths:
       security:
       - Bearer: []
       summary: Get
+      tags:
+      - ModelRestful
+  /v1/model/report:
+    post:
+      consumes:
+      - application/json
+      description: send report Email
+      parameters:
+      - description: body of send report
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reqReportEmail'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Bearer: []
+      summary: SendReportMail
       tags:
       - ModelRestful
   /v1/model/report:

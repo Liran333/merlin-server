@@ -232,7 +232,7 @@ func (req *restfulReqToListDatasets) toCmd() (app.CmdToListDatasets, error) {
 }
 
 type reqReportDatasetEmail struct {
-	DatasetName string `json:"dataset_name"`
+	DatasetName string `json:"name"`
 	Msg         string `json:"msg"`
 	Owner       string `json:"owner"`
 }

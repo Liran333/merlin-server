@@ -448,6 +448,60 @@
                 }
             }
         },
+        "/v1/dataset/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DatasetRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportDatasetEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/dataset/{id}": {
             "put": {
                 "security": [
@@ -986,6 +1040,60 @@
                                         },
                                         "data": {
                                             "type": "string"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/model/report": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "send report Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelRestful"
+                ],
+                "summary": "SendReportMail",
+                "parameters": [
+                    {
+                        "description": "body of send report",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.reqReportEmail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
                                         },
                                         "msg": {
                                             "type": "string"
@@ -2605,6 +2713,9 @@
                 "consumes": [
                     "application/json"
                 ],
+                "consumes": [
+                    "application/json"
+                ],
                 "tags": [
                     "SpaceRestful"
                 ],
@@ -3889,6 +4000,50 @@
                 }
             }
         },
+        "app.DatasetDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "$ref": "#/definitions/app.DatasetLabelsDTO"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
         "app.DatasetLabelsDTO": {
             "type": "object",
             "properties": {
@@ -3905,6 +4060,10 @@
                     }
                 },
                 "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3935,9 +4094,26 @@
                 }
             }
         },
+        "app.DatasetsDTO": {
+            "type": "object",
+            "properties": {
+                "datasets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.DatasetSummary"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "app.MemberDTO": {
             "type": "object",
             "properties": {
+                "avatar_id": {
+                    "type": "string"
+                },
                 "avatar_id": {
                     "type": "string"
                 },
@@ -4094,6 +4270,7 @@
                     }
                 },
                 "language": {
+                "language": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4103,6 +4280,10 @@
                     "type": "string"
                 },
                 "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4188,6 +4369,10 @@
                     "type": "string"
                 },
                 "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4454,6 +4639,9 @@
                 },
                 "visit_count": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4556,6 +4744,48 @@
             ],
             "properties": {
                 "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportDatasetEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqReportSpaceEmail": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
                     "type": "string"
                 }
             }
@@ -4715,6 +4945,20 @@
             "type": "object",
             "properties": {
                 "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.reqToUpdateDataset": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "visibility": {
                     "type": "string"
                 }
             }
@@ -4909,6 +5153,9 @@
                 },
                 "visit_count": {
                     "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -4994,6 +5241,7 @@
                     "description": "framework",
                     "type": "string"
                 },
+                "licenses": {
                 "licenses": {
                     "description": "license label"
                 },
@@ -5179,6 +5427,68 @@
                 }
             }
         },
+        "repository.DatasetSummary": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "disable_reason": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "download_count": {
+                    "type": "integer"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
         "repository.ModelSummary": {
             "type": "object",
             "properties": {
@@ -5207,6 +5517,10 @@
                     "type": "string"
                 },
                 "license": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -5284,6 +5598,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                },
+                "visit_count": {
                     "type": "integer"
                 },
                 "visit_count": {

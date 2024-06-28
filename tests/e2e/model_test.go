@@ -77,7 +77,7 @@ func (s *SuiteModel) TestReportError() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.ModelRestfulApi.V1ModelReportPost(AuthRest, swaggerRest.ControllerReqReportEmail{
-		Model: "testmodel",
+		Name:  "testmodel",
 		Msg:   "</p>hello,world",
 		Owner: "test1",
 	})
@@ -104,7 +104,7 @@ func (s *SuiteModel) TestPrivate() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.ModelRestfulApi.V1ModelReportPost(AuthRest2, swaggerRest.ControllerReqReportEmail{
-		Model: "testmodel",
+		Name:  "testmodel",
 		Msg:   "hello",
 		Owner: "test1",
 	})

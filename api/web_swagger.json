@@ -5888,10 +5888,10 @@
         "controller.reqReportDatasetEmail": {
             "type": "object",
             "properties": {
-                "dataset_name": {
+                "msg": {
                     "type": "string"
                 },
-                "msg": {
+                "name": {
                     "type": "string"
                 },
                 "owner": {
@@ -5902,10 +5902,10 @@
         "controller.reqReportEmail": {
             "type": "object",
             "properties": {
-                "model": {
+                "msg": {
                     "type": "string"
                 },
-                "msg": {
+                "name": {
                     "type": "string"
                 },
                 "owner": {
@@ -5919,10 +5919,10 @@
                 "msg": {
                     "type": "string"
                 },
-                "owner": {
+                "name": {
                     "type": "string"
                 },
-                "space_name": {
+                "owner": {
                     "type": "string"
                 }
             }

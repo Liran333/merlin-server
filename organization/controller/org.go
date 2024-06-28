@@ -69,7 +69,7 @@ func AddRouterForOrgController(
 	rg.PUT("/v1/request", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.ApproveRequest)
 	rg.GET("/v1/request", m.Read, rl.CheckLimit, ctl.ListRequests)
-	rg.GET("/v1/request/only/:username/:orgname", m.Read, rl.CheckLimit, ctl.GetOnlyRequest)
+	rg.GET("/v1/request/only/:username/:orgname", m.Optional, rl.CheckLimit, ctl.GetOnlyRequest)
 	rg.DELETE("/v1/request", m.Write,
 		userctl.CheckMail(ctl.m, ctl.user, sl), l.Write, rl.CheckLimit, ctl.RemoveRequest)
 

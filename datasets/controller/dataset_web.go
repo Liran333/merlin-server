@@ -47,7 +47,7 @@ func AddRouteForDatasetWebController(
 	r.GET("/v1/dataset", m.Optional, ctl.ListGlobal)
 
 	r.PUT("/v1/dataset/:id/disable", ctl.DatasetController.userMiddleWare.Write, l.Write, ctl.disable)
-	r.POST("/v1/dataset/web/report", m.Optional, p.CheckOwner, ctl.Report)
+	r.POST("/v1/dataset/web/report", rl.CheckLimit, m.Write, l.Write, ctl.Report)
 }
 
 // DatasetWebController is a struct that holds the app service for dataset web operations.

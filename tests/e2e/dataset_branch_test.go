@@ -237,9 +237,9 @@ func (s *SuiteInternalDataset) TestDatasetReport() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest2, swaggerRest.ControllerReqReportDatasetEmail{
-		DatasetName: "testdataset",
-		Msg:         "test Reprot</a>",
-		Owner:       "test2",
+		Name:  "testdataset",
+		Msg:   "test Reprot</a>",
+		Owner: "test2",
 	})
 	assert.NotNil(s.T(), err)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
@@ -264,9 +264,9 @@ func (s *SuiteInternalDataset) TestPrivateDataset() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest, swaggerRest.ControllerReqReportDatasetEmail{
-		DatasetName: "testdataset",
-		Msg:         "test report",
-		Owner:       "test2",
+		Name:  "testdataset",
+		Msg:   "test report",
+		Owner: "test2",
 	})
 	assert.NotNil(s.T(), err)
 	fmt.Println(err.Error())
@@ -293,9 +293,9 @@ func (s *SuiteInternalDataset) TestDatasetReportWeb() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest2, swaggerRest.ControllerReqReportDatasetEmail{
-		DatasetName: "testdataset",
-		Msg:         "test Reprot</a>",
-		Owner:       "test2",
+		Name:  "testdataset",
+		Msg:   "test Reprot</a>",
+		Owner: "test2",
 	})
 	assert.NotNil(s.T(), err)
 	assert.Equal(s.T(), http.StatusForbidden, r.StatusCode)
@@ -320,9 +320,9 @@ func (s *SuiteInternalDataset) TestPrivateDatasetWeb() {
 	id := getString(s.T(), data.Data)
 	// 提交举报信息
 	_, r, err = ApiRest.DatasetRestfulApi.V1DatasetReportPost(AuthRest, swaggerRest.ControllerReqReportDatasetEmail{
-		DatasetName: "testdataset",
-		Msg:         "test report",
-		Owner:       "test2",
+		Name:  "testdataset",
+		Msg:   "test report",
+		Owner: "test2",
 	})
 	assert.NotNil(s.T(), err)
 	fmt.Println(err.Error())

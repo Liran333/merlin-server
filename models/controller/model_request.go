@@ -232,7 +232,7 @@ func (req *restfulReqToListModels) toCmd() (app.CmdToListModels, error) {
 }
 
 type reqReportEmail struct {
-	Model string `json:"model"`
+	Model string `json:"name"`
 	Msg   string `json:"msg"`
 	Owner string `json:"owner"`
 }

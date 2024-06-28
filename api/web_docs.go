@@ -5903,10 +5903,10 @@ const docTemplateweb = `{
         "controller.reqReportDatasetEmail": {
             "type": "object",
             "properties": {
-                "dataset_name": {
+                "msg": {
                     "type": "string"
                 },
-                "msg": {
+                "name": {
                     "type": "string"
                 },
                 "owner": {
@@ -5917,10 +5917,10 @@ const docTemplateweb = `{
         "controller.reqReportEmail": {
             "type": "object",
             "properties": {
-                "model": {
+                "msg": {
                     "type": "string"
                 },
-                "msg": {
+                "name": {
                     "type": "string"
                 },
                 "owner": {
@@ -5934,10 +5934,10 @@ const docTemplateweb = `{
                 "msg": {
                     "type": "string"
                 },
-                "owner": {
+                "name": {
                     "type": "string"
                 },
-                "space_name": {
+                "owner": {
                     "type": "string"
                 }
             }

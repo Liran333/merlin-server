@@ -686,18 +686,18 @@ definitions:
     type: object
   controller.reqReportDatasetEmail:
     properties:
-      dataset_name:
-        type: string
       msg:
+        type: string
+      name:
         type: string
       owner:
         type: string
     type: object
   controller.reqReportEmail:
     properties:
-      model:
-        type: string
       msg:
+        type: string
+      name:
         type: string
       owner:
         type: string
@@ -706,9 +706,9 @@ definitions:
     properties:
       msg:
         type: string
-      owner:
+      name:
         type: string
-      space_name:
+      owner:
         type: string
     type: object
   controller.reqToCreateDataset:
