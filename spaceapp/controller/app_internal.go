@@ -220,6 +220,7 @@ func (ctl *SpaceAppInternalController) NotifySpaceAppFailedStatus(ctx *gin.Conte
 		commonctl.SendError(ctx, err)
 		return
 	}
+	commonctl.SendRespOfPost(ctx, "successfully")
 }
 
 // @Summary  Post
