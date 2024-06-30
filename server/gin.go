@@ -48,7 +48,7 @@ func StartWebServer(key, cert string, removeCfg bool, port int, timeout time.Dur
 	engine.Use(logRequest())
 	engine.Use(otelgin.Middleware(cfg.Trace.Name, otelgin.WithFilter(RequestFilter)), ReponseTraceID())
 	engine.UseRawPath = true
-	engine.TrustedPlatform = "x-real-ip"
+	engine.TrustedPlatform = cfg.ClientIP
 
 	// init services
 	services, err := initServices(cfg)

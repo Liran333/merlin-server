@@ -55,8 +55,9 @@ func LoadConfig(path string, cfg *Config, remove bool) error {
 
 // Config is a struct that represents the overall configuration for the application.
 type Config struct {
-	ReadHeaderTimeout   int  `json:"read_header_timeout"`
-	NeedTokenForEachAPI bool `json:"need_token_for_each_api"`
+	ReadHeaderTimeout   int    `json:"read_header_timeout"`
+	NeedTokenForEachAPI bool   `json:"need_token_for_each_api"`
+	ClientIP            string `json:"client_ip"`
 
 	Git          gitea.Config         `json:"gitea"`
 	Obs          obs.Config           `json:"obs"`

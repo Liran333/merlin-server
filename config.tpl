@@ -1,3 +1,4 @@
+client_ip: "x-real-ip"
 organization:
   controller:
     max_avatar_file_size: {{ (ds "common").MAX_AVATAR_FILE_SIZE }}
