@@ -109,6 +109,7 @@ func (s *SuiteModelBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(
 		AuthRest2, "model", s.name, "testmodel", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -156,6 +157,7 @@ func (s *SuiteModelBranch) TestOrgAdminCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest, "model", s.name,
 		"testmodel", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -183,8 +185,7 @@ func (s *SuiteModelBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	time.Sleep(1 * time.Second)
-
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "model", s.name,
 		"test2model", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -216,7 +217,7 @@ func (s *SuiteModelBranch) TestOrgUserCreateInvalidBranch() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	r, err = ApiRest.ModelApi.V1ModelIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

@@ -122,6 +122,9 @@ const (
 	// ErrorCodeBranchExist is const
 	ErrorCodeBranchExist = "branch_exist"
 
+	// ErrorCodeBranchNotExist failed to find branch
+	ErrorCodeBranchNotExist = "branch_not_exist"
+
 	// ErrorCodeBranchInavtive is const
 	ErrorCodeBranchInavtive = "branch_inactive"
 

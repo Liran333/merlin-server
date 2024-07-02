@@ -34,9 +34,13 @@ func (adapter *branchAdapter) Add(branch *domain.Branch) error {
 
 // Delete deletes a branch from the repository by its ID.
 func (adapter *branchAdapter) Delete(ctx context.Context, id primitive.Identity) error {
-	return adapter.DeleteByPrimaryKey(
-		ctx, &branchDO{Id: id.Integer()},
-	)
+	if id != nil {
+		return adapter.DeleteByPrimaryKey(
+			ctx, &branchDO{Id: id.Integer()},
+		)
+	}
+
+	return nil
 }
 
 // FindByIndex finds a branch in the repository by its index.

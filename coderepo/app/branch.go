@@ -76,16 +76,16 @@ func (s *branchAppService) Delete(ctx context.Context, user primitive.Account, c
 		return err
 	}
 
+	if err := s.branchClientAdapter.DeleteBranch(&cmd.BranchIndex); err != nil {
+		return allerror.New(allerror.ErrorCodeBranchNotExist, "no branch", err)
+	}
+
 	br, err := s.branchAdapter.FindByIndex(ctx, &cmd.BranchIndex)
 	if err != nil {
 		if commonrepo.IsErrorResourceNotExists(err) {
 			err = nil
 		}
 
-		return err
-	}
-
-	if err = s.branchClientAdapter.DeleteBranch(&cmd.BranchIndex); err != nil {
 		return err
 	}
 

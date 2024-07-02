@@ -7,6 +7,7 @@ package e2e
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -122,6 +123,7 @@ func (s *SuiteSpaceBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "space", s.name,
 		"testspace", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -171,6 +173,7 @@ func (s *SuiteSpaceBranch) TestOrgAdminCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest, "space", s.name,
 		"testspace", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
@@ -205,6 +208,7 @@ func (s *SuiteSpaceBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "space", "test2",
 		"test2space", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

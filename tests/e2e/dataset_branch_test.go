@@ -110,6 +110,7 @@ func (s *SuiteDatasetBranch) TestOrgWriteCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "dataset", s.name, "testdataset", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -156,6 +157,7 @@ func (s *SuiteDatasetBranch) TestOrgAdminCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest, "dataset", s.name, "testdataset", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -182,8 +184,7 @@ func (s *SuiteDatasetBranch) TestOrgUserCanCreateDeleteBranch() {
 	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
 	assert.Nil(s.T(), err)
 
-	time.Sleep(1 * time.Second)
-
+	time.Sleep(2 * time.Second)
 	r, err = ApiRest.BranchRestfulApi.V1BranchTypeOwnerRepoBranchDelete(AuthRest2, "dataset", s.name, "test2dataset", branchName)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -214,7 +215,7 @@ func (s *SuiteDatasetBranch) TestOrgUserCreateInvalidBranch() {
 	assert.Equal(s.T(), http.StatusBadRequest, r.StatusCode)
 	assert.NotNil(s.T(), err)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	r, err = ApiRest.DatasetApi.V1DatasetIdDelete(AuthRest2, id)
 	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)

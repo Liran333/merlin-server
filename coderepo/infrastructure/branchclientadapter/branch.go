@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package branchclientadapter
 
 import (
+	"errors"
+
 	"github.com/openmerlin/go-sdk/gitea"
 
 	"github.com/openmerlin/merlin-server/coderepo/domain"
@@ -47,9 +49,12 @@ func (adapter *branchClientAdapter) CreateBranch(branch *domain.Branch) (n strin
 
 // DeleteBranch deletes the specified branch from the repository.
 func (adapter *branchClientAdapter) DeleteBranch(branch *domain.BranchIndex) error {
-	_, _, err := adapter.client.DeleteRepoBranch(
+	b, _, err := adapter.client.DeleteRepoBranch(
 		branch.Owner.Account(), branch.Repo.MSDName(), branch.Branch.BranchName(),
 	)
+	if !b {
+		err = errors.New("delete failed, branch not exist")
+	}
 
 	return err
 }
