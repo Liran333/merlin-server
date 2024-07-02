@@ -54,3 +54,5 @@ func (req *reqToResetLabel) toCmd() app.CmdToResetLabels {
 
 	return cmd
 }
+
+type reqToSaveModelDeploy = app.CmdToDeploy

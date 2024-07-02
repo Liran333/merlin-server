@@ -8,5 +8,6 @@ package modelrepositoryadapter
 
 // Tables is a struct that represents table names for different entities.
 type Tables struct {
-	Model string `json:"model" required:"true"`
+	Model       string `json:"model" required:"true"`
+	ModelDeploy string `json:"model_deploy" required:"true"`
 }

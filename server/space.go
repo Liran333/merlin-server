@@ -60,6 +60,7 @@ func initSpace(cfg *config.Config, services *allServices) error {
 		modelapp.NewModelInternalAppService(
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),
+			modelrepositoryadapter.ModelDeployAdapter(),
 		),
 	)
 

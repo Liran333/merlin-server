@@ -220,6 +220,7 @@ permission:
 model:
   tables:
     model: "model"
+    model_deploy: "model_deploy"
   topics:
     model_created: model_created
     model_updated: model_updated

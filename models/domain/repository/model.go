@@ -88,3 +88,9 @@ type ModelRepositoryAdapter interface {
 type ModelLabelsRepoAdapter interface {
 	Save(primitive.Identity, *domain.ModelLabels) error
 }
+
+type ModelDeployRepoAdapter interface {
+	Create(domain.ModelIndex, []domain.Deploy) error
+	DeleteByOwnerName(domain.ModelIndex) error
+	FindByOwnerName(*domain.ModelIndex) ([]domain.Deploy, error)
+}

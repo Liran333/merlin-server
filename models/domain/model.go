@@ -90,3 +90,11 @@ type ModelLabels struct {
 
 // ModelIndex represents the index for models in the code repository.
 type ModelIndex = coderepo.CodeRepoIndex
+
+type Deploy struct {
+	Cloud  string `json:"cloud"`
+	Icon   string `json:"icon"`
+	Link   string `json:"link"`
+	Desc   string `json:"desc"`
+	DescCn string `json:"desc_cn"`
+}

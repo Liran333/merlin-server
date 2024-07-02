@@ -226,6 +226,24 @@ func (s *SuiteInternalModel) TestInternalModelResetLabelfail() {
 	assert.Nil(s.T(), err)
 }
 
+// TestModelDeploy used fot testing
+// 模型deploy设置
+func (s *SuiteInternalModel) TestModelDeploy() {
+	reqDeploy := []swaggerInternal.DomainDeploy{
+		{
+			Cloud:  "ctyun",
+			Desc:   "i am desc",
+			DescCn: "i am desc cn",
+			Icon:   "i am icon",
+			Link:   "i am link",
+		},
+	}
+
+	_, r, err := ApiInteral.ModelInternalApi.V1ModelDeployOwnerNamePut(Interal, "owner", "name", reqDeploy)
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestInternalModel used for testing
 func TestInternalModel(t *testing.T) {
 	suite.Run(t, new(SuiteInternalModel))

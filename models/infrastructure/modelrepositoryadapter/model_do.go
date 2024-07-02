@@ -6,6 +6,8 @@ Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved
 package modelrepositoryadapter
 
 import (
+	"time"
+
 	"github.com/lib/pq"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -37,7 +39,8 @@ const (
 )
 
 var (
-	modelTableName = ""
+	modelTableName       = ""
+	modelDeployTableName = ""
 )
 
 func toModelDO(m *domain.Model) modelDO {
@@ -194,5 +197,44 @@ func (do *modelDO) toModelSummary() repository.ModelSummary {
 		DownloadCount: do.DownloadCount,
 		Disable:       do.Disable,
 		DisableReason: do.DisableReason,
+	}
+}
+
+type modelDeployDO struct {
+	Id        int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	Owner     string    `gorm:"column:owner;index:idx_owner_name"`
+	Name      string    `gorm:"column:name;index:idx_owner_name"`
+	Cloud     string    `gorm:"column:cloud"`
+	Icon      string    `gorm:"column:icon"`
+	Link      string    `gorm:"column:link"`
+	Desc      string    `gorm:"column:desc"`
+	DescCn    string    `gorm:"column:desc_cn"`
+	CreatedAt time.Time `gorm:"column:created_at;<-:create"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
+}
+
+func (do modelDeployDO) TableName() string {
+	return modelDeployTableName
+}
+
+func toModelDeployDO(index *domain.ModelIndex, deploy domain.Deploy) modelDeployDO {
+	return modelDeployDO{
+		Owner:  index.Owner.Account(),
+		Name:   index.Name.MSDName(),
+		Cloud:  deploy.Cloud,
+		Icon:   deploy.Icon,
+		Link:   deploy.Link,
+		Desc:   deploy.Desc,
+		DescCn: deploy.DescCn,
+	}
+}
+
+func (do modelDeployDO) toDeploy() domain.Deploy {
+	return domain.Deploy{
+		Cloud:  do.Cloud,
+		Icon:   do.Icon,
+		Link:   do.Link,
+		Desc:   do.Desc,
+		DescCn: do.DescCn,
 	}
 }

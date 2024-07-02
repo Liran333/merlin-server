@@ -34,6 +34,7 @@ func initModel(cfg *config.Config, services *allServices) error {
 		services.disable,
 		services.userApp,
 		emailimpl.NewEmailImpl(email.GetEmailInst(), cfg.Email.ReportEmail, cfg.Email.RootUrl, cfg.Email.MailTemplate),
+		modelrepositoryadapter.ModelDeployAdapter(),
 	)
 
 	return nil
@@ -74,6 +75,7 @@ func setRouterOfModelInternal(rg *gin.RouterGroup, services *allServices) {
 		app.NewModelInternalAppService(
 			modelrepositoryadapter.ModelLabelsAdapter(),
 			modelrepositoryadapter.ModelAdapter(),
+			modelrepositoryadapter.ModelDeployAdapter(),
 		),
 		services.modelSpace,
 		services.userMiddleWare,

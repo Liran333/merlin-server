@@ -8,13 +8,15 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
+
 	coderepo "github.com/openmerlin/merlin-server/coderepo/domain"
 	"github.com/openmerlin/merlin-server/common/domain/allerror"
 	"github.com/openmerlin/merlin-server/common/domain/primitive"
 	commonrepo "github.com/openmerlin/merlin-server/common/domain/repository"
 	"github.com/openmerlin/merlin-server/models/domain"
 	"github.com/openmerlin/merlin-server/models/domain/repository"
-	"github.com/sirupsen/logrus"
 )
 
 // ModelInternalAppService is an interface for the internal model application service.
@@ -24,22 +26,26 @@ type ModelInternalAppService interface {
 	GetById(modelId primitive.Identity) (ModelDTO, error)
 	GetByNames([]*domain.ModelIndex) ([]primitive.Identity, error)
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
+	SaveDeploy(domain.ModelIndex, CmdToDeploy) error
 }
 
 // NewModelInternalAppService creates a new instance of the internal model application service.
 func NewModelInternalAppService(
 	repoAdapter repository.ModelLabelsRepoAdapter,
 	mAdapter repository.ModelRepositoryAdapter,
+	deploy repository.ModelDeployRepoAdapter,
 ) ModelInternalAppService {
 	return &modelInternalAppService{
-		repoAdapter:  repoAdapter,
-		modelAdapter: mAdapter,
+		repoAdapter:   repoAdapter,
+		modelAdapter:  mAdapter,
+		deployAdapter: deploy,
 	}
 }
 
 type modelInternalAppService struct {
-	repoAdapter  repository.ModelLabelsRepoAdapter
-	modelAdapter repository.ModelRepositoryAdapter
+	repoAdapter   repository.ModelLabelsRepoAdapter
+	modelAdapter  repository.ModelRepositoryAdapter
+	deployAdapter repository.ModelDeployRepoAdapter
 }
 
 // ResetLabels resets the labels of a model.
@@ -143,4 +149,13 @@ func (s *modelInternalAppService) UpdateUseInOpenmind(modelId primitive.Identity
 	}
 
 	return nil
+}
+
+func (s *modelInternalAppService) SaveDeploy(index domain.ModelIndex, deploy CmdToDeploy) error {
+	if err := s.deployAdapter.DeleteByOwnerName(index); err != nil {
+		return xerrors.Errorf("delete deploy of [%s/%s] error:%w",
+			index.Owner.Account(), index.Name.MSDName(), err)
+	}
+
+	return s.deployAdapter.Create(index, deploy)
 }

@@ -52,6 +52,7 @@ func NewModelAppService(
 	disableOrg orgapp.PrivilegeOrg,
 	user userapp.UserService,
 	email email.Email,
+	deploy repository.ModelDeployRepoAdapter,
 ) ModelAppService {
 	return &modelAppService{
 		permission:  permission,
@@ -62,6 +63,7 @@ func NewModelAppService(
 		disableOrg:  disableOrg,
 		user:        user,
 		email:       email,
+		deploy:      deploy,
 	}
 }
 
@@ -74,6 +76,7 @@ type modelAppService struct {
 	disableOrg  orgapp.PrivilegeOrg
 	user        userapp.UserService
 	email       email.Email
+	deploy      repository.ModelDeployRepoAdapter
 }
 
 // Create creates a new model.
@@ -306,7 +309,17 @@ func (s *modelAppService) GetByName(
 		return dto, err
 	}
 
-	return toModelDTO(&model), nil
+	dto = toModelDTO(&model)
+
+	deploy, err := s.deploy.FindByOwnerName(index)
+	if err != nil {
+		logrus.Errorf("get deploy of [%s/%s] error: %s",
+			index.Owner.Account(), index.Name.MSDName(), err.Error())
+	}
+
+	dto.Deploy = deploy
+
+	return dto, nil
 }
 
 // List retrieves a list of models.

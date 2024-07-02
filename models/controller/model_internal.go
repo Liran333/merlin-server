@@ -33,10 +33,13 @@ func AddRouterForModelInternalController(
 
 	r.PUT("/v1/model/:id/use_in_openmind", m.Write, ctl.UpdateUseInOpenmind)
 	r.GET("/v1/model/relation/:id/space", m.Read, ctl.GetSpacesByModelId)
+
+	r.PUT("/v1/model/deploy/:owner/:name", m.Write, ctl.Deploy)
 }
 
 // ModelInternalController is a struct that holds the app service for model internal operations.
 type ModelInternalController struct {
+	ModelController
 	appService        app.ModelInternalAppService
 	modelSpaceService spaceapp.ModelSpaceAppService
 }
@@ -191,4 +194,35 @@ func (ctl *ModelInternalController) GetSpacesByModelId(ctx *gin.Context) {
 	}
 
 	commonctl.SendRespOfGet(ctx, &spaces)
+}
+
+// @Summary  Update deploy
+// @Description  update deploy info of model
+// @Tags     ModelInternal
+// @Param    owner  path  string  true  "owner of model" MaxLength(40)
+// @Param    name   path  string  true  "name of model" MaxLength(100)
+// @Param    body  body  reqToSaveModelDeploy   true  "deploy info"
+// @Accept   json
+// @Security Internal
+// @Success  202  {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Router   /v1/model/deploy/{owner}/{name} [put]
+func (ctl *ModelInternalController) Deploy(ctx *gin.Context) {
+	index, err := ctl.parseIndex(ctx)
+	if err != nil {
+		return
+	}
+
+	var req reqToSaveModelDeploy
+	if err = ctx.BindJSON(&req); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+
+		return
+	}
+
+	err = ctl.appService.SaveDeploy(index, req)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+	} else {
+		commonctl.SendRespOfPut(ctx, nil)
+	}
 }
