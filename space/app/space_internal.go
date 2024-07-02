@@ -30,6 +30,7 @@ type SpaceInternalAppService interface {
 	UpdateLocalCMD(spaceId primitive.Identity, cmd string) error
 	UpdateEnvInfo(spaceId primitive.Identity, envInfo string) error
 	UpdateStatistics(primitive.Identity, *CmdToUpdateStatistics) error
+	UpdateVisitCount(primitive.Identity, *CmdToUpdateVisitCount) error
 	Disable(context.Context, primitive.Identity) error
 	ResetLabels(primitive.Identity, *CmdToResetLabels) error
 	NotifyUpdateCodes(primitive.Identity, *CmdToNotifyUpdateCode) error
@@ -120,11 +121,34 @@ func (s *spaceInternalAppService) UpdateStatistics(spaceId primitive.Identity, c
 			Id: spaceId,
 		},
 		DownloadCount: cmd.DownloadCount,
-		VisitCount:    cmd.VisitCount,
 	}
 
 	return s.repoAdapter.InternalSave(&newSpace)
 }
+
+func (s *spaceInternalAppService) UpdateVisitCount(spaceId primitive.Identity,
+	cmd *CmdToUpdateVisitCount) error {
+	_, err := s.repoAdapter.FindById(spaceId)
+	if err != nil {
+		if commonrepo.IsErrorResourceNotExists(err) {
+			err = allerror.NewNotFound(
+				allerror.ErrorCodeSpaceNotFound,
+				"not found",
+				fmt.Errorf("%s not found, err: %w", spaceId.Identity(), err))
+		}
+
+		return err
+	}
+	newSpace := domain.Space{
+		CodeRepo: coderepo.CodeRepo{
+			Id: spaceId,
+		},
+		VisitCount: cmd.VisitCount,
+	}
+
+	return s.repoAdapter.InternalSave(&newSpace)
+}
+
 
 // Disable disable the space with the given space ID using the provided command and returns the action performed.
 func (s *spaceInternalAppService) Disable(ctx context.Context, spaceId primitive.Identity) (err error) {

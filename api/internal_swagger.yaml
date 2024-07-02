@@ -200,6 +200,9 @@ definitions:
     properties:
       download_count:
         type: integer
+    type: object
+  controller.repoVisitCount:
+    properties:
       visit_count:
         type: integer
     type: object
@@ -484,7 +487,7 @@ paths:
       summary: Get coderepo info
       tags:
       - CodeRepoInternal
-  /v1/coderepo/{id}/statistic:
+  /v1/coderepo/{id}/statistic/download:
     put:
       consumes:
       - application/json
@@ -519,6 +522,43 @@ paths:
       security:
       - Internal: []
       summary: Update
+      tags:
+      - CodeRepoInternal
+  /v1/coderepo/{id}/statistic/visit:
+    put:
+      consumes:
+      - application/json
+      description: update the visit count of a space
+      parameters:
+      - description: id of space
+        in: path
+        maxLength: 20
+        name: id
+        required: true
+        type: string
+      - description: body of updating space info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.repoVisitCount'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.ResponseData'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: object
+                msg:
+                  type: string
+              type: object
+      security:
+      - Internal: []
+      summary: UpdateVisitCount
       tags:
       - CodeRepoInternal
   /v1/coderepo/permission/read:

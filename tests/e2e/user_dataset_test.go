@@ -184,7 +184,7 @@ func (s *SuiteUserDataset) TestUserSetDatasetDownloadCount() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建数据集返回400
-	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(
+	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticDownloadPut(
 		Interal, id, swaggerInternal.ControllerRepoStatistics{
 			DownloadCount: 10,
 		})

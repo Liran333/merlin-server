@@ -333,6 +333,10 @@ func (cmd *CmdToUpdateSpaceSecret) toSpaceSecret(spaceSecret *domain.SpaceSecret
 // CmdToUpdateStatistics is to update download count
 type CmdToUpdateStatistics struct {
 	DownloadCount int `json:"download_count"`
+}
+
+// CmdToUpdateVisitCount is to update visit count
+type CmdToUpdateVisitCount struct {
 	VisitCount    int `json:"visit_count"`
 }
 

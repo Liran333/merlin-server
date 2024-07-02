@@ -34,5 +34,9 @@ func ToCmdToCheckRepoExists(ctx *gin.Context) (*app.CmdToCheckRepoExists, error)
 // repoStatistics download count
 type repoStatistics struct {
 	DownloadCount int `json:"download_count"`
+}
+
+// repoVisitCount visit count
+type repoVisitCount struct {
 	VisitCount    int `json:"visit_count"`
 }

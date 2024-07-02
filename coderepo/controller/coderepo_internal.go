@@ -37,7 +37,8 @@ func AddRouteForCodeRepoStatisticInternalController(
 		spaceInternalApp:   p,
 	}
 
-	r.PUT(`/v1/coderepo/:id/statistic`, m.Write, ctl.Update)
+	r.PUT(`/v1/coderepo/:id/statistic/download`, m.Write, ctl.Update)
+	r.PUT(`/v1/coderepo/:id/statistic/visit`, m.Write, ctl.UpdateVisitCount)
 	r.GET(`/v1/coderepo/:id`, m.Read, ctl.Get)
 }
 
@@ -58,7 +59,7 @@ type StatisticInternalController struct {
 // @Accept   json
 // @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
 // @Security Internal
-// @Router   /v1/coderepo/{id}/statistic [put]
+// @Router   /v1/coderepo/{id}/statistic/download [put]
 func (ctl *StatisticInternalController) Update(ctx *gin.Context) {
 	repoId, err := primitive.NewIdentity(ctx.Param("id"))
 	if err != nil {
@@ -90,8 +91,53 @@ func (ctl *StatisticInternalController) Update(ctx *gin.Context) {
 	case primitive.ObjTypeSpace:
 		middleware.SetAction(ctx, fmt.Sprintf("Update space statistics, ID: %v", repoId))
 		err = ctl.spaceInternalApp.UpdateStatistics(repoId,
-			&spaceapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount,
-				VisitCount: stats.VisitCount})
+			&spaceapp.CmdToUpdateStatistics{DownloadCount: stats.DownloadCount})
+	default:
+		commonctl.SendError(ctx, fmt.Errorf("unsupported resource type"))
+		return
+	}
+
+	if err != nil {
+		commonctl.SendError(ctx, err)
+		return
+	}
+
+	commonctl.SendRespOfPut(ctx, nil)
+}
+
+// @Summary  UpdateVisitCount
+// @Description  update the visit count of a space
+// @Tags     CodeRepoInternal
+// @Param    id    path  string   true  "id of space" MaxLength(20)
+// @Param    body  body  repoVisitCount  true  "body of updating space info"
+// @Accept   json
+// @Success  202   {object}  commonctl.ResponseData{data=nil,msg=string,code=string}
+// @Security Internal
+// @Router   /v1/coderepo/{id}/statistic/visit [put]
+func (ctl *StatisticInternalController) UpdateVisitCount(ctx *gin.Context) {
+	repoId, err := primitive.NewIdentity(ctx.Param("id"))
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+		return
+	}
+
+	var stats repoVisitCount
+	if err := ctx.BindJSON(&stats); err != nil {
+		commonctl.SendBadRequestBody(ctx, err)
+		return
+	}
+
+	repo, err := ctl.repo.GetByIndex(repoId)
+	if err != nil {
+		commonctl.SendError(ctx, err)
+		return
+	}
+
+	switch repo.ResourceType() {
+	case primitive.ObjTypeSpace:
+		middleware.SetAction(ctx, fmt.Sprintf("Update space visit count, ID: %v", repoId))
+		err = ctl.spaceInternalApp.UpdateVisitCount(repoId,
+			&spaceapp.CmdToUpdateVisitCount{VisitCount: stats.VisitCount})
 	default:
 		commonctl.SendError(ctx, fmt.Errorf("unsupported resource type"))
 		return

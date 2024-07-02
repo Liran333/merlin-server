@@ -221,6 +221,46 @@ func (s *SuiteUserSpace) TestCreateSpace() {
 	assert.Nil(s.T(), err)
 }
 
+// TestUserSetSpaceVisitCount
+// 可以通过内部接口设置访问次数
+func (s *SuiteUserModel) TestUserSetSpaceVisitCount() {
+	data, r, err := ApiRest.SpaceApi.V1SpacePost(AuthRest, swaggerRest.ControllerReqToCreateSpace{
+		Desc:          "space desc",
+		Fullname:      "spacefullname",
+		Hardware:      "CPU basic 2 vCPU · 16GB · FREE",
+		License:       "mit",
+		BaseImage:     "python3.8-pytorch2.1",
+		Name:          "testspace",
+		Owner:         "test1",
+		Sdk:           "gradio",
+		Visibility:    "public",
+		SpaceAvatarId: "https://gitee.com/1",
+	})
+	assert.Equal(s.T(), http.StatusCreated, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	id := getString(s.T(), data.Data)
+
+	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticVisitPut(Interal, id,
+		swaggerInternal.ControllerRepoVisitCount{
+			VisitCount: 20,
+		})
+	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	data1, r, err := ApiRest.SpaceRestfulApi.V1SpaceOwnerNameGet(AuthRest, "test1", "testspace")
+	assert.Equal(s.T(), http.StatusOK, r.StatusCode)
+	assert.Nil(s.T(), err)
+
+	model := getData(s.T(), data1.Data)
+	assert.Equal(s.T(), int32(20), model["visit_count"])
+
+	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
+
+	assert.Equal(s.T(), http.StatusNoContent, r.StatusCode)
+	assert.Nil(s.T(), err)
+}
+
 // TestUserSetSpaceDownloadCount used for testing
 // 可以通过内部接口设置下载统计
 func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
@@ -242,10 +282,9 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 	id := getString(s.T(), data.Data)
 
 	// 重复创建模型返回400
-	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticPut(Interal, id,
+	_, r, err = ApiInteral.CodeRepoInternalApi.V1CoderepoIdStatisticDownloadPut(Interal, id,
 		swaggerInternal.ControllerRepoStatistics{
 			DownloadCount: 15,
-			VisitCount:    20,
 		})
 	assert.Equal(s.T(), http.StatusAccepted, r.StatusCode)
 	assert.Nil(s.T(), err)
@@ -256,7 +295,6 @@ func (s *SuiteUserModel) TestUserSetSpaceDownloadCount() {
 
 	model := getData(s.T(), data1.Data)
 	assert.Equal(s.T(), int32(15), model["download_count"])
-	assert.Equal(s.T(), int32(20), model["visit_count"])
 
 	r, err = ApiRest.SpaceApi.V1SpaceIdDelete(AuthRest, id)
 

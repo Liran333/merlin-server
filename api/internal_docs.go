@@ -281,7 +281,7 @@ const docTemplateinternal = `{
                 }
             }
         },
-        "/v1/coderepo/{id}/statistic": {
+        "/v1/coderepo/{id}/statistic/download": {
             "put": {
                 "security": [
                     {
@@ -312,6 +312,68 @@ const docTemplateinternal = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/controller.repoStatistics"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.ResponseData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/coderepo/{id}/statistic/visit": {
+            "put": {
+                "security": [
+                    {
+                        "Internal": []
+                    }
+                ],
+                "description": "update the visit count of a space",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CodeRepoInternal"
+                ],
+                "summary": "UpdateVisitCount",
+                "parameters": [
+                    {
+                        "maxLength": 20,
+                        "type": "string",
+                        "description": "id of space",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "body of updating space info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.repoVisitCount"
                         }
                     }
                 ],
@@ -2374,7 +2436,12 @@ const docTemplateinternal = `{
             "properties": {
                 "download_count": {
                     "type": "integer"
-                },
+                }
+            }
+        },
+        "controller.repoVisitCount": {
+            "type": "object",
+            "properties": {
                 "visit_count": {
                     "type": "integer"
                 }
